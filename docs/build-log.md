@@ -10,3 +10,5 @@
 - [surfaces] Identity.lean OK (245 lines, 7s)
 - [surfaces] InverseFunction.lean OK (200 lines, 7s)
 - [localmult] AdaptedCharts.lean OK (293 lines, 9s)
+- [localmult] Composition.lean OK (241 lines, 7s)
+- [localmult] Jacobian/LocalMultiplicity.lean (unit root) OK (33 lines, 4s; scripts/check.sh Jacobian/LocalMultiplicity passes, zero sorries — unit COMPLETE)

@@ -223,7 +223,7 @@ theorem differentiableAt_trans {e e' : OpenPartialHomeomorph X ℂ}
     exact ⟨hzt, hzs⟩
   have hCD : ContDiffAt ℂ ω ⇑(e'.symm.trans e) z :=
     h1.contDiffAt ((e'.symm.trans e).open_source.mem_nhds hzsrc)
-  have hD : DifferentiableAt ℂ ⇑(e'.symm.trans e) z := hCD.differentiableAt le_top
+  have hD : DifferentiableAt ℂ ⇑(e'.symm.trans e) z := hCD.differentiableAt (by simp)
   have hcoe : ⇑(e'.symm.trans e) = ⇑e ∘ ⇑e'.symm := rfl
   rwa [hcoe] at hD
 
@@ -264,7 +264,7 @@ theorem coeffIn_trans {e e' : OpenPartialHomeomorph X ℂ}
   -- the model factor is the classical derivative
   have hτ1 : mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z (1 : ℂ) = deriv (⇑e ∘ ⇑e'.symm) z := by
     rw [mfderiv_eq_fderiv]
-    exact fderiv_apply_one_eq_deriv
+    rfl
   -- scalar form of the chain rule
   have hscal : tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ)) =
       deriv (⇑e ∘ ⇑e'.symm) z *
@@ -272,7 +272,7 @@ theorem coeffIn_trans {e e' : OpenPartialHomeomorph X ℂ}
     have h1 : tangentCoord ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z) (1 : ℂ)) =
         tangentCoord ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)))
           ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z) (1 : ℂ))) := by
-      rw [hmf]
+      rw [hmf]; rfl
     rw [h1, hτ1]
     exact tangentCLM_apply_eq_mul _ _
   -- both coefficients against the common `coeffAt (e'.symm z) η`
