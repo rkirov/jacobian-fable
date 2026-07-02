@@ -12,3 +12,4 @@
 - [localmult] AdaptedCharts.lean OK (293 lines, 9s)
 - [localmult] Composition.lean OK (241 lines, 7s)
 - [localmult] Jacobian/LocalMultiplicity.lean (unit root) OK (33 lines, 4s; scripts/check.sh Jacobian/LocalMultiplicity passes, zero sorries — unit COMPLETE)
+- [residue] TaylorCoeff.lean OK (235 lines)
