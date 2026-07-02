@@ -8,3 +8,5 @@
 - [localmult] ChartBridge.lean OK (212 lines, 5s)
 - [localmult] Multiplicity.lean OK (244 lines, 6s)
 - [surfaces] Identity.lean OK (245 lines, 7s)
+- [surfaces] InverseFunction.lean OK (200 lines, 7s)
+- [localmult] AdaptedCharts.lean OK (293 lines, 9s)
