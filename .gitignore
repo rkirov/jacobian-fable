@@ -1,0 +1,4 @@
+.lake/
+*.olean
+*.pdf
+scratch_*.lean
