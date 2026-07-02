@@ -57,6 +57,7 @@ unchanged by `restr`). -/
 theorem coeffIn_restr (e : OpenPartialHomeomorph X ℂ) (V : Set X) (η : Form1 X) :
     coeffIn (e.restr V) η = coeffIn e η := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp]
 theorem coeffInFun_restr (e : OpenPartialHomeomorph X ℂ) (V : Set X)
     (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x) :
@@ -112,30 +113,39 @@ theorem coeffAt_sub (x : X) (η η' : Form1 X) :
 Every `TangentSpace 𝓘(ℂ) q ≡ ℂ ≡ Bundle.Trivial X ℂ q` crossing of this unit happens in the
 next few declarations, and nowhere else. -/
 
+/-- The canonical (definitional) identification of a tangent fiber of a `ℂ`-charted space with
+`ℂ`. `TangentSpace` is not reducible, so instance search does not see through it; this reducible
+wrapper lets scalar formulas (`HMul` etc.) elaborate. -/
+abbrev tangentCoord {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y] {y : Y}
+    (v : TangentSpace 𝓘(ℂ) y) : ℂ := v
+
 /-- Non-dependent evaluation of a raw covector section, through the definitional equality
 `TangentSpace 𝓘(ℂ) q ≡ ℂ ≡ Bundle.Trivial X ℂ q`. Point-congruences for the dependent
 evaluation are done through this function. -/
 def evalC (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x) (q : X) (w : ℂ) : ℂ :=
   σ q w
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem coeffInFun_eq_evalC (e : OpenPartialHomeomorph X ℂ)
     (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x) (z : ℂ) :
     coeffInFun e σ z = evalC σ (e.symm z) (mfderiv 𝓘(ℂ) 𝓘(ℂ) e.symm z (1 : ℂ)) := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 set_option backward.isDefEq.respectTransparency false in
 /-- Scalars pull out of the non-dependent evaluation (the fiberwise CLM is `ℂ`-linear). -/
 theorem evalC_mul (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x)
     (q : X) (c w : ℂ) : evalC σ q (c * w) = c * evalC σ q w :=
   (σ q).map_smul c w
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 set_option backward.isDefEq.respectTransparency false in
 /-- A continuous linear map between a tangent fiber of the model `ℂ` and a tangent fiber of `X`
 (both definitionally `ℂ`) is multiplication by its value at `1`. -/
 theorem tangentCLM_apply_eq_mul {w : ℂ} {q : X}
     (T : TangentSpace 𝓘(ℂ) w →L[ℂ] TangentSpace 𝓘(ℂ) q) (c : ℂ) :
-    (T c : ℂ) = c * (T (1 : ℂ) : ℂ) := by
+    tangentCoord (T c) = c * tangentCoord (T (1 : ℂ)) := by
   have h : (c : TangentSpace 𝓘(ℂ) w) = c • ((1 : ℂ) : TangentSpace 𝓘(ℂ) w) := by
-    show c = c * 1
+    show c = c * (1 : ℂ)
     rw [mul_one]
   conv_lhs => rw [h, T.map_smul]
   rfl
@@ -147,7 +157,7 @@ theorem mfderiv_chartAt_symm_chartAt_self (x : X) :
     mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ x).symm (chartAt ℂ x x) = ContinuousLinearMap.id ℂ ℂ := by
   have h := mfderivWithin_range_extChartAt_symm (I := 𝓘(ℂ)) (x := x)
   simp only [extChartAt_coe_symm, extChartAt_coe, modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm, Function.comp_id, Function.id_comp, Set.range_id,
+    modelWithCornersSelf_coe_symm, Function.comp_id, Set.range_id,
     Function.comp_apply, id_eq, mfderivWithin_univ] at h
   exact h
 
@@ -163,22 +173,24 @@ theorem coeffAt_eq_apply_one (η : Form1 X) (x : X) : coeffAt x η = η x (1 : �
   calc coeffAt x η
       = evalC (⇑η) ((chartAt ℂ x).symm (chartAt ℂ x x))
           (ContinuousLinearMap.id ℂ ℂ (1 : ℂ)) := by
-        rw [h0, mfderiv_chartAt_symm_chartAt_self]
+        rw [h0, mfderiv_chartAt_symm_chartAt_self]; rfl
     _ = evalC (⇑η) x (ContinuousLinearMap.id ℂ ℂ (1 : ℂ)) := by rw [hpt]
-    _ = η x (1 : ℂ) := by rw [ContinuousLinearMap.id_apply]
+    _ = η x (1 : ℂ) := by rw [ContinuousLinearMap.id_apply]; rfl
 
 set_option backward.isDefEq.respectTransparency false in
 /-- Evaluation of a 1-form on a tangent vector, via the canonical identification: the fiber is
 one-dimensional and `η x v = v * coeffAt x η`. -/
 theorem Form1.apply_eq_smul_coeffAt (η : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
-    η x v = (v : ℂ) * coeffAt x η := by
+    η x v = tangentCoord v * coeffAt x η := by
   rw [coeffAt_eq_apply_one]
-  have h : (v : TangentSpace 𝓘(ℂ) x) = (v : ℂ) • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) := by
-    show v = v * 1
+  have h : (v : TangentSpace 𝓘(ℂ) x) = tangentCoord v • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) := by
+    show v = tangentCoord v * (1 : ℂ)
     rw [mul_one]
-  calc (η x v : ℂ) = η x ((v : ℂ) • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)) := by rw [← h]
-    _ = (v : ℂ) * (η x (1 : ℂ) : ℂ) := (η x).map_smul (v : ℂ) ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)
+  calc (η x) v = (η x) (tangentCoord v • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)) := by rw [← h]
+    _ = tangentCoord v * η x (1 : ℂ) :=
+        (η x).map_smul (tangentCoord v) ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The non-dependent-evaluation version of `Form1.apply_eq_smul_coeffAt`. -/
 theorem evalC_eq_mul_coeffAt (η : Form1 X) (q : X) (w : ℂ) :
     evalC (⇑η) q w = w * coeffAt q η :=
@@ -201,7 +213,7 @@ theorem differentiableAt_trans {e e' : OpenPartialHomeomorph X ℂ}
     (hzt : z ∈ e'.target) (hzs : e'.symm z ∈ e.source) :
     DifferentiableAt ℂ (⇑e ∘ ⇑e'.symm) z := by
   have hcompat := compatible_of_mem_maximalAtlas he' he
-  rw [mem_groupoid_of_pregroupoid] at hcompat
+  rw [contDiffGroupoid, mem_groupoid_of_pregroupoid] at hcompat
   have h1 : ContDiffOn ℂ ω (⇑𝓘(ℂ) ∘ ⇑(e'.symm.trans e) ∘ ⇑𝓘(ℂ).symm)
       (⇑𝓘(ℂ).symm ⁻¹' (e'.symm.trans e).source ∩ Set.range ⇑𝓘(ℂ)) := hcompat.1
   simp only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm, Function.comp_id,
@@ -243,34 +255,34 @@ theorem coeffIn_trans {e e' : OpenPartialHomeomorph X ℂ}
     mdifferentiableAt_iff_differentiableAt.mpr hτdiff
   have hesymm : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) := by
     have hmem : e (e'.symm z) ∈ e.target := e.map_source hps.1
-    exact (contMDiffAt_symm_of_mem_maximalAtlas he hmem).mdifferentiableAt le_top
+    exact (contMDiffAt_symm_of_mem_maximalAtlas he hmem).mdifferentiableAt (by simp)
   -- chain rule (the point of the outer factor is stated in aligned form `e (e'.symm z)`)
   have hmf : mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z =
       (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z))).comp
         (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z) :=
-    heq.mfderiv_eq.trans (mfderiv_comp hesymm hτm)
+    heq.mfderiv_eq.trans (mfderiv_comp z hesymm hτm)
   -- the model factor is the classical derivative
   have hτ1 : mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z (1 : ℂ) = deriv (⇑e ∘ ⇑e'.symm) z := by
     rw [mfderiv_eq_fderiv]
     exact fderiv_apply_one_eq_deriv
   -- scalar form of the chain rule
-  have hscal : (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ) : ℂ) =
+  have hscal : tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ)) =
       deriv (⇑e ∘ ⇑e'.symm) z *
-        (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) (1 : ℂ) : ℂ) := by
-    have h1 : (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z) (1 : ℂ) =
-        (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)))
-          ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z) (1 : ℂ)) := by
-      rw [hmf]; rfl
+        tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) (1 : ℂ)) := by
+    have h1 : tangentCoord ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z) (1 : ℂ)) =
+        tangentCoord ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)))
+          ((mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e ∘ ⇑e'.symm) z) (1 : ℂ))) := by
+      rw [hmf]
     rw [h1, hτ1]
     exact tangentCLM_apply_eq_mul _ _
   -- both coefficients against the common `coeffAt (e'.symm z) η`
   have hcoeff : coeffAt (e.symm (e (e'.symm z))) η = coeffAt (e'.symm z) η := by
     rw [e.left_inv hps.1]
   have hL : coeffIn e' η z =
-      (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ) : ℂ) * coeffAt (e'.symm z) η :=
+      tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ)) * coeffAt (e'.symm z) η :=
     evalC_eq_mul_coeffAt η (e'.symm z) (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ))
   have hR : coeffIn e η (e (e'.symm z)) =
-      (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) (1 : ℂ) : ℂ) *
+      tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) (1 : ℂ)) *
         coeffAt (e'.symm z) η := by
     have h := evalC_eq_mul_coeffAt η (e.symm (e (e'.symm z)))
         (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) (e (e'.symm z)) (1 : ℂ))
