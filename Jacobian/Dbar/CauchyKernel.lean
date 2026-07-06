@@ -23,6 +23,8 @@ noncomputable section
 
 namespace RS
 
+variable (g : ℂ → ℂ)
+
 /-- The Cauchy kernel `1/(π w)`. -/
 def cauchyKernel : ℂ → ℂ := fun w => (Real.pi * w)⁻¹
 
@@ -156,6 +158,24 @@ private theorem hasDerivAt_circleMap_r (c : ℂ) (θ r : ℝ) :
     (Complex.exp (θ * Complex.I))).const_add c
   simpa [circleMap] using h
 
+private theorem conj_exp_real_mul_I (x : ℝ) :
+    (starRingEnd ℂ) (Complex.exp ((x : ℂ) * Complex.I)) = Complex.exp (-(x : ℂ) * Complex.I) := by
+  rw [← Complex.exp_conj]
+  congr 1
+  rw [map_mul, Complex.conj_ofReal, Complex.conj_I]
+  ring
+
+/-- Fubini in the reversed order for a rectangle, on `IntegrableOn` (mathlib has no
+`setIntegral_prod_symm` at the pin, design §5 fallback (ii)). -/
+private theorem setIntegral_prod_symm {f : ℝ × ℝ → ℂ} {s t : Set ℝ}
+    (hf : IntegrableOn f (s ×ˢ t) (volume.prod volume)) :
+    ∫ x in s, ∫ y in t, f (x, y) ∂volume ∂volume =
+      ∫ y in t, ∫ x in s, f (x, y) ∂volume ∂volume := by
+  have hf' : Integrable (Function.uncurry (fun x y => f (x, y)))
+      ((volume.restrict s).prod (volume.restrict t)) := by
+    rw [Measure.prod_restrict]; exact hf
+  exact integral_integral_swap hf'
+
 /-- Forster 13.1 / Cauchy–Pompeiu, proved by the polar-FTC computation of design §5. -/
 theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : ℂ) :
     ∫ w : ℂ, cauchyKernel w * wirtingerDbar g (z - w) = g z := by
@@ -230,6 +250,202 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
     have hc2 : Continuous (fun p : ℝ × ℝ =>
         Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) := by fun_prop
     exact ((hfc.comp hcirc_cont).clm_apply hc2).neg
-  sorry
+  -- Step 5: a global bound on `fderiv ℝ g`, and the two boundedness facts
+  obtain ⟨M, hM⟩ : ∃ M : ℝ, ∀ w, ‖fderiv ℝ g w‖ ≤ M := by
+    have hcsfd : HasCompactSupport (fderiv ℝ g) := hcs.fderiv ℝ
+    have hcsnorm : HasCompactSupport (fun w => ‖fderiv ℝ g w‖) := by
+      apply hcsfd.mono'
+      intro w hw
+      simp only [Function.mem_support, ne_eq, norm_eq_zero] at hw
+      exact subset_tsupport _ hw
+    obtain ⟨x0, hx0⟩ := hfc.norm.exists_forall_ge_of_hasCompactSupport hcsnorm
+    exact ⟨‖fderiv ℝ g x0‖, hx0⟩
+  have hGr_bound : ∀ p : ℝ × ℝ, ‖Gr p‖ ≤ M := by
+    intro p
+    rw [hGr_def, norm_neg]
+    calc ‖(fderiv ℝ g (z - circleMap 0 p.1 p.2)) (Complex.exp ((p.2 : ℂ) * Complex.I))‖
+        ≤ ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ * ‖Complex.exp ((p.2 : ℂ) * Complex.I)‖ :=
+          (fderiv ℝ g (z - circleMap 0 p.1 p.2)).le_opNorm _
+      _ = ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ := by
+          rw [Complex.norm_exp_ofReal_mul_I, mul_one]
+      _ ≤ M := hM _
+  have hGθ_ratio_bound : ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ * Gθ p‖ ≤ M := by
+    intro p hp1
+    have hnorm_Ir : ‖Complex.I * (p.1 : ℂ)‖ = p.1 := by
+      rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_of_nonneg hp1.le]
+    have hbound2 : ‖Gθ p‖ ≤ M * p.1 := by
+      rw [hGθ_def, norm_neg]
+      calc ‖(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+              (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))‖
+          ≤ ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ *
+              ‖Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)‖ :=
+            (fderiv ℝ g (z - circleMap 0 p.1 p.2)).le_opNorm _
+        _ = ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ * p.1 := by
+            rw [norm_mul, hnorm_Ir, Complex.norm_exp_ofReal_mul_I, mul_one]
+        _ ≤ M * p.1 := mul_le_mul_of_nonneg_right (hM _) hp1.le
+    rw [norm_mul, norm_inv, hnorm_Ir]
+    calc p.1⁻¹ * ‖Gθ p‖ ≤ p.1⁻¹ * (M * p.1) :=
+          mul_le_mul_of_nonneg_left hbound2 (inv_nonneg.mpr hp1.le)
+      _ = M := by field_simp
+  -- the bounded box `T'`
+  set T' : Set (ℝ × ℝ) := Set.Ioc (0 : ℝ) R' ×ˢ Set.Ioo (-Real.pi) Real.pi with hT'_def
+  have hT'sub : T' ⊆ Complex.polarCoord.target := by
+    rintro ⟨r, θ⟩ ⟨hr, hθ⟩
+    exact ⟨hr.1, hθ⟩
+  have hT'meas : MeasurableSet T' := measurableSet_Ioc.prod measurableSet_Ioo
+  have hT'_finite : volume T' ≠ ⊤ := by
+    rw [hT'_def, show (volume : Measure (ℝ × ℝ)) = (volume : Measure ℝ).prod volume from rfl,
+      Measure.prod_prod, Real.volume_Ioc, Real.volume_Ioo]
+    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
+  -- Step 3: reduce the polar integral from the full target to the bounded box
+  set F : ℂ → ℂ := fun w => cauchyKernel w * h (z - w) with hF_def
+  have hreduce : ∫ p in Complex.polarCoord.target, p.1 • F (Complex.polarCoord.symm p) =
+      ∫ p in T', p.1 • F (Complex.polarCoord.symm p) := by
+    rw [show T' = Complex.polarCoord.target ∩ T' from
+      (Set.inter_eq_self_of_subset_right hT'sub).symm,
+      ← MeasureTheory.setIntegral_indicator hT'meas]
+    apply MeasureTheory.setIntegral_congr_fun Complex.polarCoord.open_target.measurableSet
+    intro p hp
+    by_cases hpT : p ∈ T'
+    · rw [Set.indicator_of_mem hpT]
+    · rw [Set.indicator_of_notMem hpT]
+      obtain ⟨r, θ⟩ := p
+      have hr : 0 < r := hp.1
+      have hθ : θ ∈ Set.Ioo (-Real.pi) Real.pi := hp.2
+      have hrR' : R' < r := by
+        by_contra hle
+        push_neg at hle
+        exact hpT ⟨⟨hr, hle⟩, hθ⟩
+      have hzero : h (z - circleMap 0 r θ) = 0 := hvanish_h r θ hrR'.le
+      show r • F (Complex.polarCoord.symm (r, θ)) = 0
+      rw [polarCoord_symm_eq_circleMap, hF_def]
+      simp [hzero]
+  have step3 : ∫ w, F w = ∫ p in T', p.1 • F (Complex.polarCoord.symm p) :=
+    (Complex.integral_comp_polarCoord_symm F).symm.trans hreduce
+  -- Steps 3+4 combined: the pointwise Wirtinger-split identity on `T'`
+  have hstep34 : Set.EqOn (fun p : ℝ × ℝ => p.1 • F (Complex.polarCoord.symm p))
+      (fun p => (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)) T' := by
+    intro p hp
+    have hp1 : 0 < p.1 := hp.1.1
+    have hne : (p.1 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hp1.ne'
+    have hexpne : Complex.exp ((p.2 : ℂ) * Complex.I) ≠ 0 := Complex.exp_ne_zero _
+    have hdec : DifferentiableAt ℝ g (z - circleMap 0 p.1 p.2) := hgdiff _
+    have hv1 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
+        (Complex.exp ((p.2 : ℂ) * Complex.I))
+    have hv2 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
+        (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))
+    rw [conj_exp_real_mul_I] at hv1
+    have hconj2 : (starRingEnd ℂ) (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) =
+        -Complex.I * (p.1 : ℂ) * Complex.exp (-(p.2 : ℂ) * Complex.I) := by
+      rw [map_mul, map_mul, Complex.conj_I, Complex.conj_ofReal, conj_exp_real_mul_I]
+    rw [hconj2] at hv2
+    have hFval : F (Complex.polarCoord.symm p) =
+        (Real.pi * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))⁻¹ *
+          h (z - circleMap 0 p.1 p.2) := by
+      simp only [hF_def, polarCoord_symm_eq_circleMap, cauchyKernel, circleMap, zero_add,
+        mul_assoc]
+    show p.1 • F (Complex.polarCoord.symm p) =
+        (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)
+    rw [hFval, Complex.real_smul]
+    simp only [hGr_def, hGθ_def]
+    rw [hv1, hv2, ← hh_def]
+    have hexp_prod : Complex.exp ((p.2 : ℂ) * Complex.I) *
+        Complex.exp (-((p.2 : ℂ) * Complex.I)) = 1 := by
+      rw [← Complex.exp_add]; simp
+    have hpi_ne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+    field_simp
+    linear_combination (-(2 * h (z - circleMap 0 p.1 p.2))) * hexp_prod
+  -- integrability of `Gr` and the ratio on `T'`
+  have hGr_intOn : IntegrableOn Gr T' := by
+    apply Integrable.mono' (integrableOn_const (C := M) hT'_finite)
+      hGr_cont.aestronglyMeasurable.restrict
+    filter_upwards with p using hGr_bound p
+  have hratio_contOn : ContinuousOn (fun p : ℝ × ℝ => (Complex.I * (p.1 : ℂ))⁻¹ * Gθ p) T' := by
+    apply ContinuousOn.mul
+    · apply ContinuousOn.inv₀ (by fun_prop)
+      intro p hp
+      simp [Complex.I_ne_zero, hp.1.1.ne']
+    · exact hGθ_cont.continuousOn
+  have hratio_intOn : IntegrableOn (fun p : ℝ × ℝ => (Complex.I * (p.1 : ℂ))⁻¹ * Gθ p) T' := by
+    apply Integrable.mono' (integrableOn_const (C := M) hT'_finite)
+      (hratio_contOn.aestronglyMeasurable hT'meas)
+    filter_upwards [MeasureTheory.ae_restrict_mem hT'meas] with p hp using
+      hGθ_ratio_bound p hp.1.1
+  have step8_pre : ∫ p in T', p.1 • F (Complex.polarCoord.symm p) =
+      (Real.pi : ℂ)⁻¹ * ((∫ p in T', (Complex.I * (p.1 : ℂ))⁻¹ * Gθ p) - ∫ p in T', Gr p) / 2 := by
+    rw [MeasureTheory.setIntegral_congr_fun hT'meas hstep34, integral_const_mul, integral_div,
+      integral_sub hratio_intOn hGr_intOn]
+    ring
+  have hvol_eq : (volume : Measure (ℝ × ℝ)) = (volume : Measure ℝ).prod volume := rfl
+  -- Step 6: the θ-leg vanishes
+  have stepA : ∫ p in T', (Complex.I * (p.1 : ℂ))⁻¹ * Gθ p = 0 := by
+    rw [hT'_def, hvol_eq, MeasureTheory.setIntegral_prod _ (hvol_eq ▸ hT'_def ▸ hratio_intOn)]
+    have hinner : ∀ r ∈ Set.Ioc (0 : ℝ) R', (∫ θ in Set.Ioo (-Real.pi) Real.pi,
+        (Complex.I * (r : ℂ))⁻¹ * Gθ (r, θ)) = 0 := by
+      intro r hr
+      rw [integral_const_mul]
+      have hIoo_eq : ∫ θ in Set.Ioo (-Real.pi) Real.pi, Gθ (r, θ) ∂volume =
+          ∫ θ in Set.Ioc (-Real.pi) Real.pi, Gθ (r, θ) ∂volume :=
+        MeasureTheory.setIntegral_congr_set Ioo_ae_eq_Ioc
+      rw [hIoo_eq,
+        ← intervalIntegral.integral_of_le (by linarith [Real.pi_pos] : -Real.pi ≤ Real.pi)]
+      have hGθ_deriv' : ∀ θ' ∈ Set.uIcc (-Real.pi) Real.pi,
+          HasDerivAt (fun t => g (z - circleMap 0 r t)) (Gθ (r, θ')) θ' :=
+        fun θ' _ => hGθ_deriv (r, θ')
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hGθ_deriv'
+        ((show Continuous (fun θ => Gθ (r, θ)) from
+          hGθ_cont.comp (continuous_const.prodMk continuous_id)).intervalIntegrable _ _)]
+      have hcirc_eq : circleMap 0 r Real.pi = circleMap 0 r (-Real.pi) := by
+        rw [circleMap, circleMap]
+        congr 1
+        rw [show ((-Real.pi : ℝ) : ℂ) = -(Real.pi : ℂ) by push_cast; ring, neg_mul,
+          Complex.exp_neg, Complex.exp_pi_mul_I]
+        norm_num
+      rw [hcirc_eq, sub_self, mul_zero]
+    rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioc (fun r hr => by
+      rw [hinner r hr]), integral_zero]
+  -- Step 7: the r-leg telescopes
+  have stepB : ∫ p in T', Gr p = -(2 * Real.pi) * g z := by
+    have hswap : ∫ r in Set.Ioc (0 : ℝ) R', ∫ θ in Set.Ioo (-Real.pi) Real.pi, Gr (r, θ) ∂volume
+          ∂volume =
+        ∫ θ in Set.Ioo (-Real.pi) Real.pi, ∫ r in Set.Ioc (0 : ℝ) R', Gr (r, θ) ∂volume ∂volume :=
+      setIntegral_prod_symm (hvol_eq ▸ hT'_def ▸ hGr_intOn)
+    have hinner : ∀ θ ∈ Set.Ioo (-Real.pi) Real.pi,
+        (∫ r in Set.Ioc (0 : ℝ) R', Gr (r, θ)) = -g z := by
+      intro θ hθ
+      rw [← intervalIntegral.integral_of_le hR'pos.le]
+      have hGr_deriv' : ∀ r' ∈ Set.uIcc (0 : ℝ) R',
+          HasDerivAt (fun t => g (z - circleMap 0 t θ)) (Gr (r', θ)) r' :=
+        fun r' _ => hGr_deriv (r', θ)
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hGr_deriv'
+        ((show Continuous (fun r => Gr (r, θ)) from
+          hGr_cont.comp (continuous_id.prodMk continuous_const)).intervalIntegrable _ _)]
+      have h1 : g (z - circleMap 0 R' θ) = 0 := hvanish R' θ le_rfl
+      have h2 : circleMap 0 (0 : ℝ) θ = 0 := by simp [circleMap]
+      rw [h1, h2, sub_zero]
+      ring
+    rw [hT'_def, hvol_eq, MeasureTheory.setIntegral_prod _ (hvol_eq ▸ hT'_def ▸ hGr_intOn), hswap,
+      MeasureTheory.setIntegral_congr_fun measurableSet_Ioo (fun θ hθ => by
+        rw [hinner θ hθ])]
+    rw [MeasureTheory.integral_const, Measure.real, MeasureTheory.Measure.restrict_apply_univ,
+      Real.volume_Ioo, ENNReal.toReal_ofReal (by linarith [Real.pi_pos]), Complex.real_smul]
+    push_cast
+    ring
+  rw [step3, step8_pre, stepA, stepB]
+  have hpi_ne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  field_simp
+  ring
+
+/-- Forster 13.1: `∂̄` of the Cauchy transform recovers `g`. -/
+theorem wirtingerDbar_cauchyTransform_eq (hg : ContDiff ℝ ∞ g) (hcs : HasCompactSupport g) :
+    ∀ z, wirtingerDbar (cauchyTransform g) z = g z := by
+  intro z
+  rw [wirtingerDbar_cauchyTransform g hg hcs z]
+  exact cauchyPompeiu g (hg.of_le (by norm_num)) hcs z
+
+/-- Forster 13.1, existential form: `∂̄u = g` is solvable for compactly supported smooth `g`. -/
+theorem exists_dbar_solution_of_hasCompactSupport (hg : ContDiff ℝ ∞ g)
+    (hcs : HasCompactSupport g) : ∃ u, ContDiff ℝ ∞ u ∧ ∀ z, wirtingerDbar u z = g z :=
+  ⟨cauchyTransform g, contDiff_cauchyTransform g hg hcs, wirtingerDbar_cauchyTransform_eq g hg hcs⟩
 
 end RS

@@ -219,12 +219,13 @@ section Manifold
 
 variable (L : AddSubgroup V) [DiscreteTopology L]
 
-/-- The torus `V ⧸ L` is an `ω`-manifold modelled on `V` (raw representative charts; transitions
-are translations by a locally-constant lattice element). -/
-instance isManifold_torus : IsManifold 𝓘(ℂ, V) ω (V ⧸ L) := by
-  apply isManifold_of_family' (chartAt' L)
-    (fun q => Function.surjInv QuotientAddGroup.mk_surjective q) (chartAt'_mem_source L)
-  intro x x' w hw
+/-- The transition map between two raw representative charts is analytic on its whole source
+(translation by a locally-constant lattice element). Exposed standalone (not just inside the
+`IsManifold` instance) so the `ULift` transport toolkit can reuse it verbatim. -/
+theorem analyticOnNhd_chartAt'_trans (x x' : V) :
+    AnalyticOnNhd ℂ ((chartAt' L x).symm ≫ₕ chartAt' L x')
+      ((chartAt' L x).symm ≫ₕ chartAt' L x').source := by
+  intro w hw
   rw [OpenPartialHomeomorph.trans_source] at hw
   obtain ⟨hw1, hw2⟩ := hw
   rw [chartAt'_symm, rawChartAux_source] at hw1
@@ -243,13 +244,19 @@ instance isManifold_torus : IsManifold 𝓘(ℂ, V) ω (V ⧸ L) := by
     exact hw'
   exact (analyticAt_id.add analyticAt_const).congr heq.symm
 
+/-- The torus `V ⧸ L` is an `ω`-manifold modelled on `V` (raw representative charts; transitions
+are translations by a locally-constant lattice element). -/
+instance isManifold_torus : IsManifold 𝓘(ℂ, V) ω (V ⧸ L) :=
+  isManifold_of_family' (chartAt' L) (fun q => Function.surjInv QuotientAddGroup.mk_surjective q)
+    (chartAt'_mem_source L) (analyticOnNhd_chartAt'_trans L)
+
 end Manifold
 
 /-! ## §5. `LieAddGroup`: addition/negation are affine in the raw charts -/
 
 section LieGroupAux
 
-variable (L : AddSubgroup V) [DiscreteTopology L]
+variable (L : AddSubgroup V) [DiscreteTopology L] [CompleteSpace V]
 
 theorem continuous_add_torus : Continuous (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) := by
   haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
@@ -296,7 +303,7 @@ theorem contMDiff_add_torus :
     rw [extChartAt_apply_eq]
     have hsymm : (extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p
         = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2) := by
-      rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe_symm]
+      rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe]
       show ((extChartAt 𝓘(ℂ, V) q₁).symm p.1, (extChartAt 𝓘(ℂ, V) q₂).symm p.2)
         = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2)
       rw [extChartAt_symm_apply_eq, extChartAt_symm_apply_eq]
@@ -394,7 +401,7 @@ end Compact
 
 section InducedHom
 
-variable {V' : Type*} [NormedAddCommGroup V'] [NormedSpace ℂ V']
+variable {V' : Type*} [NormedAddCommGroup V'] [NormedSpace ℂ V'] [CompleteSpace V']
   [FiniteDimensional ℂ V] [FiniteDimensional ℂ V']
 
 /-- The `→ₜ+` functoriality substrate: a `ℂ`-linear map `T : V →ₗ[ℂ] V'` with `L ≤ L'.comap T`
