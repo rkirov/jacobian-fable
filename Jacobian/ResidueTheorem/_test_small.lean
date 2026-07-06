@@ -1,72 +1,75 @@
-import Jacobian.ResidueCalculus.IntegralBridge
-import Mathlib.MeasureTheory.Integral.CircleAverage
+import Jacobian.ResidueTheorem.RationalOnP1
 
-open Filter Topology Metric Function Real Complex MeasureTheory
+set_option maxHeartbeats 1000000
+
+open scoped ContDiff Manifold OnePoint Classical
+open Set Filter Topology OnePoint RS.P1
 
 noncomputable section
 
-theorem circleIntegral_inv_eq_neg (R_mid : ℂ → ℂ) {ρ : ℝ} (hρ : 0 < ρ) :
-    (∮ w in C(0, ρ), -(w ^ 2)⁻¹ * R_mid w⁻¹) = -(∮ z in C(0, ρ⁻¹), R_mid z) := by
-  have hρne : ρ ≠ 0 := hρ.ne'
-  have hshift : (∫ x : ℝ in (0:ℝ)..2 * π,
-        deriv (circleMap 0 ρ⁻¹) (-x) • R_mid (circleMap 0 ρ⁻¹ (-x)))
-      = ∫ θ : ℝ in (0:ℝ)..2 * π, deriv (circleMap 0 ρ⁻¹) θ • R_mid (circleMap 0 ρ⁻¹ θ) := by
-    rw [intervalIntegral.integral_comp_neg
-      (fun θ => deriv (circleMap 0 ρ⁻¹) θ • R_mid (circleMap 0 ρ⁻¹ θ))]
-    have hper : Function.Periodic
-        (fun θ : ℝ => deriv (circleMap 0 ρ⁻¹) θ • R_mid (circleMap 0 ρ⁻¹ θ)) (2 * π) := by
-      intro θ
-      simp only [deriv_circleMap]
-      rw [periodic_circleMap 0 ρ⁻¹ θ]
-    simpa using hper.intervalIntegral_add_eq (-(2 * π)) 0
-  show (∫ θ : ℝ in (0:ℝ)..2 * π,
-      deriv (circleMap 0 ρ) θ • (-(circleMap 0 ρ θ ^ 2)⁻¹ * R_mid (circleMap 0 ρ θ)⁻¹))
-    = -(∫ θ : ℝ in (0:ℝ)..2 * π, deriv (circleMap 0 ρ⁻¹) θ • R_mid (circleMap 0 ρ⁻¹ θ))
-  rw [← hshift]
-  rw [← intervalIntegral.integral_neg]
-  apply intervalIntegral.integral_congr
-  intro θ _
-  simp only [smul_eq_mul, deriv_circleMap]
-  rw [circleMap_zero_inv]
-  have hcnz : circleMap 0 ρ θ ≠ 0 := circleMap_ne_center hρne
-  rw [show circleMap 0 ρ θ * I * (-(circleMap 0 ρ θ ^ 2)⁻¹ * R_mid (circleMap 0 ρ⁻¹ (-θ)))
-      = -(circleMap 0 ρ⁻¹ (-θ) * I) * R_mid (circleMap 0 ρ⁻¹ (-θ)) by
-    rw [← circleMap_zero_inv]; field_simp]
-  ring
-
-/-- The residue "at infinity" of an entire function's `invChart`-transported reading always
-vanishes: no Liouville-growth-polynomial machinery needed, just Cauchy's theorem (`R_mid` entire
-⟹ every circle integral of it is `0`) transported through the `z ↦ z⁻¹` reindexing above. -/
-theorem resAt_neg_sq_inv_mul_comp_inv_eq_zero {R_mid : ℂ → ℂ} (hdiff : Differentiable ℂ R_mid)
-    (hg : MeromorphicAt (fun w => -(w ^ 2)⁻¹ * R_mid w⁻¹) 0) :
-    RS.resAt (fun w => -(w ^ 2)⁻¹ * R_mid w⁻¹) 0 = 0 := by
-  set g : ℂ → ℂ := fun w => -(w ^ 2)⁻¹ * R_mid w⁻¹ with hg_def
-  have hgdiff : ∀ w : ℂ, w ∈ Metric.closedBall (0:ℂ) 1 \ {0} → DifferentiableAt ℂ g w := by
-    rintro w ⟨-, hw0⟩
-    have hwne : w ≠ 0 := hw0
-    have h1 : DifferentiableAt ℂ (fun v : ℂ => v⁻¹) w := differentiableAt_inv hwne
-    have h2 : DifferentiableAt ℂ (fun v : ℂ => R_mid v⁻¹) w := (hdiff (w⁻¹)).comp w h1
-    have h3 : DifferentiableAt ℂ (fun v : ℂ => -(v ^ 2)⁻¹) w := by
-      have hp : DifferentiableAt ℂ (fun v : ℂ => v ^ 2) w := by fun_prop
-      exact (hp.inv (pow_ne_zero 2 hwne)).neg
-    exact h3.mul h2
-  have hkey := RS.circleIntegral_eq_two_pi_I_mul_resAt (f := g) (z₀ := 0) one_pos hg hgdiff
-  have hzero : (∮ w in C(0, (1:ℝ)), g w) = 0 := by
-    rw [hg_def, circleIntegral_inv_eq_neg R_mid one_pos]
-    have hRanalytic : AnalyticAt ℂ R_mid 0 := hdiff.analyticAt 0
-    have hRres : RS.resAt R_mid 0 = 0 := RS.resAt_of_analyticAt hRanalytic
-    have hRint := RS.circleIntegral_eq_two_pi_I_mul_resAt (f := R_mid) (z₀ := 0)
-      (show (0:ℝ) < 1⁻¹ by norm_num) hRanalytic.meromorphicAt
-      (fun z _ => hdiff z)
-    rw [hRres, mul_zero] at hRint
-    rw [hRint]
-    ring
-  rw [hzero] at hkey
-  have h2pi : (2 * (π:ℂ) * I) ≠ 0 := by
-    apply mul_ne_zero
-    apply mul_ne_zero two_ne_zero
-    · exact_mod_cast Real.pi_ne_zero
-    · exact Complex.I_ne_zero
-  exact (mul_eq_zero.mp hkey.symm).resolve_left h2pi
-
-end
+theorem sum_resAt_eq_zero_P1 (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ p, Θ.resAt p = 0 := by
+  obtain ⟨θ, rfl⟩ := Θ.exists_rep
+  set R : ℂ → ℂ := θ.coeffAt ((0:ℂ):OnePoint ℂ) with hR_def
+  have hRsame : ∀ a : ℂ, θ.coeffAt ((a:ℂ):OnePoint ℂ) = R :=
+    fun a => coeffAt_coe_eq_coeffAt_coe θ a 0
+  have hRmero : MeromorphicOn R Set.univ := by
+    have h := θ.meromorphicOn_coeffAt ((0:ℂ):OnePoint ℂ)
+    rwa [chartAt_coe, coeChart_target] at h
+  have hordeq : ∀ a : ℂ, θ.ord ((a:ℂ):OnePoint ℂ) = meromorphicOrderAt R a := by
+    intro a
+    show meromorphicOrderAt (θ.coeffAt ((a:ℂ):OnePoint ℂ))
+      (chartAt ℂ ((a:ℂ):OnePoint ℂ) ((a:ℂ):OnePoint ℂ)) = _
+    rw [hRsame a, chartAt_coe, coeChart_apply_coe]
+  have hSfin0 : (RS.MForm.mk θ).divisor.support.Finite :=
+    (RS.MForm.mk θ).divisor.finiteSupport isCompact_univ
+  have hSsub : {p : OnePoint ℂ | (RS.MForm.mk θ).ord p < 0} ⊆ (RS.MForm.mk θ).divisor.support := by
+    intro p hp
+    simp only [Set.mem_setOf_eq] at hp
+    simp only [Function.mem_support, ne_eq, RS.MForm.divisor_apply]
+    intro hcon
+    rw [WithTop.untop₀_eq_zero] at hcon
+    rcases hcon with hcon | hcon
+    · rw [hcon] at hp; exact absurd hp (lt_irrefl 0)
+    · rw [hcon] at hp; exact absurd hp (by simp)
+  have hSfin : {p : OnePoint ℂ | (RS.MForm.mk θ).ord p < 0}.Finite := hSfin0.subset hSsub
+  have hSfinC : {a : ℂ | meromorphicOrderAt R a < 0}.Finite := by
+    have heq : {a : ℂ | meromorphicOrderAt R a < 0}
+        = ((↑) : ℂ → OnePoint ℂ) ⁻¹' {p : OnePoint ℂ | (RS.MForm.mk θ).ord p < 0} := by
+      ext a
+      simp only [Set.mem_setOf_eq, Set.mem_preimage, RS.MForm.ord_mk, hordeq]
+    rw [heq]
+    exact Set.Finite.preimage (Set.injOn_of_injective (fun x y => coe_eq_coe.mp)) hSfin
+  set S : Finset ℂ := hSfinC.toFinset with hS_def
+  have haS : ∀ a : ℂ, a ∈ S ↔ meromorphicOrderAt R a < 0 := by
+    intro a; rw [hS_def, Set.Finite.mem_toFinset]; rfl
+  -- The tail
+  set R_tail : ℂ → ℂ := fun z => ∑ a ∈ S, RS.principalPartAt R a z with hRtail_def
+  have hRtailMero : MeromorphicOn R_tail Set.univ := by
+    intro z _
+    apply MeromorphicAt.fun_sum
+    intro a _
+    exact RS.meromorphicAt_principalPartAt
+  have hRtailInv : MeromorphicOn (fun w => -(w ^ 2)⁻¹ * R_tail w⁻¹) Set.univ := by
+    intro w _
+    have heq : (fun w => -(w ^ 2)⁻¹ * R_tail w⁻¹)
+        = fun w => ∑ a ∈ S, (-(w ^ 2)⁻¹ * RS.principalPartAt R a w⁻¹) := by
+      funext w; rw [hRtail_def]; simp [Finset.mul_sum]
+    rw [heq]
+    apply MeromorphicAt.fun_sum
+    intro a _
+    unfold RS.principalPartAt
+    have heq2 : (fun w => -(w ^ 2)⁻¹ *
+          ∑ k ∈ Finset.Icc (meromorphicOrderAt R a).untop₀ (-1), RS.laurentCoeffAt R a k * (w⁻¹ - a) ^ k)
+        = fun w => ∑ k ∈ Finset.Icc (meromorphicOrderAt R a).untop₀ (-1),
+          RS.laurentCoeffAt R a k * (-(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k) := by
+      funext w; rw [Finset.mul_sum]; congr 1; funext k; ring
+    rw [heq2]
+    apply MeromorphicAt.fun_sum
+    intro k _
+    exact (RS.meromorphicAt_neg_sq_inv_mul_sub_inv_zpow a k).const_mul _
+  set Θtail : RS.MFormData (OnePoint ℂ) := formOfCoeFn R_tail hRtailMero hRtailInv with hΘtail_def
+  have hΘtail_coe : ∀ a : ℂ, Θtail.coeffAt ((a:ℂ):OnePoint ℂ) = R_tail := by
+    intro a; rfl
+  have hΘtail_infty : Θtail.coeffAt (∞ : OnePoint ℂ) = fun w => -(w ^ 2)⁻¹ * R_tail w⁻¹ := by
+    rfl
+  sorry

@@ -36,14 +36,14 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 `e a`. `k : ℤ` ranges over all integers (a genuine `zpow`, allowing a pole `k < 0`). -/
 def IsWeakSolutionAt (f : X → ℂ) (a : X) (k : ℤ) : Prop :=
   ∃ e : OpenPartialHomeomorph X ℂ, e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X ∧ a ∈ e.source ∧
-    ∃ ψ : ℂ → ℂ, (∀ᶠ z in 𝓝 (e a), ψ z ≠ 0) ∧ ContDiffAt ℝ ⊤ ψ (e a) ∧
+    ∃ ψ : ℂ → ℂ, (∀ᶠ z in 𝓝 (e a), ψ z ≠ 0) ∧ ContDiffAt ℝ ∞ ψ (e a) ∧
       f =ᶠ[𝓝 a] (fun x => ψ (e x) * (e x - e a) ^ k)
 
 /-- The weak-solution predicate for the two-point pair `(P, Q)` this unit builds: `ℝ`-smooth
 away from `Q`, weak-solution local model `+1` at `P` (a genuine `C^∞` zero), `-1` at `Q` (a
 simple pole, excluded from the smoothness domain), non-vanishing everywhere else. -/
 structure IsWeakSolutionOfPair (f : X → ℂ) (P Q : X) : Prop where
-  contMDiffOn : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f {Q}ᶜ
+  contMDiffOn : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {Q}ᶜ
   ne_zero_off : ∀ x, x ≠ P → x ≠ Q → f x ≠ 0
   weakAt_P : IsWeakSolutionAt f P 1
   weakAt_Q : IsWeakSolutionAt f Q (-1)
@@ -53,7 +53,7 @@ generalization — a weak solution of `k` pairwise-disjoint two-point pairs `(x 
 `i : ι`, order `+1` at each `x i`, `-1` at each `a i`, matching the conclusion shape
 `RS.Abel.exists_mero_of_periodVector_mem` needs. -/
 structure IsWeakSolutionOfFinset {ι : Type*} (f : X → ℂ) (a x : ι → X) : Prop where
-  contMDiffOn : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f (Set.range a)ᶜ
+  contMDiffOn : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f (Set.range a)ᶜ
   ne_zero_off : ∀ z, (∀ i, z ≠ a i) → (∀ i, z ≠ x i) → f z ≠ 0
   weakAt_x : ∀ i, IsWeakSolutionAt f (x i) 1
   weakAt_a : ∀ i, IsWeakSolutionAt f (a i) (-1)
@@ -66,14 +66,14 @@ a real algebra) — so finite products of `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, 
 routing through `ContDiffAt ℝ` in a fixed chart (`RS.contMDiffAt_real_iff_contDiffAt`) and mathlib's
 generic `contDiffAt_prod` (valid for any normed ring), then bridging back. -/
 
-/-- Finite pointwise products of `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` functions are again
-`ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` (Compat: no `ContMDiffMul 𝓘(ℝ, ℂ) ⊤ ℂ` instance is registered,
+/-- Finite pointwise products of `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` functions are again
+`ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` (Compat: no `ContMDiffMul 𝓘(ℝ, ℂ) ∞ ℂ` instance is registered,
 so this routes through `ContDiffAt ℝ` in the chart `extChartAt 𝓘(ℂ) x`). -/
 theorem contMDiffAt_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X → ℂ} {x : X}
-    (h : ∀ i ∈ t, ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (f i) x) :
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun z => ∏ i ∈ t, f i z) x := by
+    (h : ∀ i ∈ t, ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f i) x) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun z => ∏ i ∈ t, f i z) x := by
   rw [RS.contMDiffAt_real_iff_contDiffAt]
-  have h' : ∀ i ∈ t, ContDiffAt ℝ ⊤ (f i ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
+  have h' : ∀ i ∈ t, ContDiffAt ℝ ∞ (f i ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
     fun i hi => RS.contMDiffAt_real_iff_contDiffAt.1 (h i hi)
   have hp := contDiffAt_prod (𝕜 := ℝ) (t := t) h'
   have heq : (fun z => ∏ i ∈ t, f i z) ∘ (extChartAt 𝓘(ℂ) x).symm
@@ -85,37 +85,50 @@ theorem contMDiffAt_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X �
 /-- `ContMDiffOn` companion of `contMDiffAt_finsetProd_real`, for an OPEN set `s` (the only case
 needed here: `s` is always a finite-set complement, open since `X` is `T2Space`). -/
 theorem contMDiffOn_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X → ℂ} {s : Set X}
-    (hs : IsOpen s) (h : ∀ i ∈ t, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (f i) s) :
-    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun z => ∏ i ∈ t, f i z) s := by
+    (hs : IsOpen s) (h : ∀ i ∈ t, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f i) s) :
+    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun z => ∏ i ∈ t, f i z) s := by
   intro z hz
   exact (contMDiffAt_finsetProd_real
     fun i hi => (h i hi).contMDiffAt (hs.mem_nhds hz)).contMDiffWithinAt
 
-/-- Compat bridge: composing a `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` function `h` with the inverse of
-ANY maximal-atlas chart `e` at `a` gives a `ContDiffAt ℝ ⊤` planar function at `e a` (needed for
+/-- Compat bridge: composing a `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` function `h` with the inverse of
+ANY maximal-atlas chart `e` at `a` gives a `ContDiffAt ℝ ∞` planar function at `e a` (needed for
 `IsWeakSolutionAt.mul_of_contMDiffAt`, which must reuse the *existing* witness chart of its
 `IsWeakSolutionAt` argument rather than switch to `extChartAt`). -/
 theorem contDiffAt_comp_symm_of_contMDiffAt {h : X → ℂ} {a : X}
     {e : OpenPartialHomeomorph X ℂ} (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X)
-    (ha : a ∈ e.source) (hh : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ h a) :
-    ContDiffAt ℝ ⊤ (h ∘ e.symm) (e a) := by
+    (ha : a ∈ e.source) (hh : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ h a) :
+    ContDiffAt ℝ ∞ (h ∘ e.symm) (e a) := by
   have hsymm0 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (⇑e.symm) (e a) :=
     contMDiffAt_symm_of_mem_maximalAtlas he (e.map_source ha)
-  have hsymm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (⇑e.symm) (e a) :=
+  have hsymm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑e.symm) (e a) :=
     RS.contMDiffAt_real_of_holomorphicAt hsymm0
   have heaa : e.symm (e a) = a := e.left_inv ha
-  have hh' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ h (e.symm (e a)) := by rw [heaa]; exact hh
+  have hh' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ h (e.symm (e a)) := by rw [heaa]; exact hh
   exact (hh'.comp (e a) hsymm).contDiffAt
+
+/-- Compat bridge, the converse direction: a planar `ContDiffAt ℝ ∞` function `g` composed with
+ANY maximal-atlas chart `e` (at a point `x ∈ e.source`) is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` as a
+function on `X` (needed by `SingleChart.lean`'s construction, which builds its weak solution's
+local formula directly in a `ChartChain`-supplied chart `e`, not `extChartAt`). -/
+theorem contMDiffAt_comp_of_contDiffAt {g : ℂ → ℂ} {x : X} {e : OpenPartialHomeomorph X ℂ}
+    (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source)
+    (hg : ContDiffAt ℝ ∞ g (e x)) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (g ∘ e) x := by
+  have he0 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (⇑e) x := contMDiffAt_of_mem_maximalAtlas he hx
+  have he1 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑e) x := RS.contMDiffAt_real_of_holomorphicAt he0
+  have hg1 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g (e x) := contMDiffAt_iff_contDiffAt.2 hg
+  exact hg1.comp x he1
 
 /-! ### Multiplicativity (Forster's Lemma 20.1) -/
 
 /-- The core multiplicativity step: multiplying a weak solution at `a` by a smooth, non-vanishing
 (at `a`) cofactor `h` preserves the local model (same order `k`, same witness chart). -/
 theorem IsWeakSolutionAt.mul_of_contMDiffAt {f h : X → ℂ} {a : X} {k : ℤ}
-    (hf : IsWeakSolutionAt f a k) (hh : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ h a) (hha : h a ≠ 0) :
+    (hf : IsWeakSolutionAt f a k) (hh : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ h a) (hha : h a ≠ 0) :
     IsWeakSolutionAt (fun x => f x * h x) a k := by
   obtain ⟨e, he, hae, ψ, hψne, hψdiff, hfeq⟩ := hf
-  have hcompC : ContDiffAt ℝ ⊤ (h ∘ e.symm) (e a) := contDiffAt_comp_symm_of_contMDiffAt he hae hh
+  have hcompC : ContDiffAt ℝ ∞ (h ∘ e.symm) (e a) := contDiffAt_comp_symm_of_contMDiffAt he hae hh
   have heventually : ∀ᶠ x in 𝓝 a, e.symm (e x) = x := by
     filter_upwards [e.open_source.mem_nhds hae] with x hx using e.left_inv hx
   refine ⟨e, he, hae, fun z => ψ z * h (e.symm z), ?_, ?_, ?_⟩
@@ -142,7 +155,7 @@ theorem isWeakSolutionOfFinset_prod {ι : Type*} [Fintype ι] [DecidableEq ι]
     (hax : ∀ i j, a i ≠ x j) (hf : ∀ i, IsWeakSolutionOfPair (f i) (x i) (a i)) :
     IsWeakSolutionOfFinset (fun z => ∏ i, f i z) a x := by
   have hcof_smooth : ∀ (p : X) (S : Finset ι), (∀ j ∈ S, p ≠ a j) →
-      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun z => ∏ j ∈ S, f j z) p := by
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun z => ∏ j ∈ S, f j z) p := by
     intro p S hnej
     apply contMDiffAt_finsetProd_real
     intro j hj
