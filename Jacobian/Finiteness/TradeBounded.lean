@@ -379,7 +379,26 @@ end GermBridge
 
 /-! ### §5 steps 4–6: `tradePi_surjective` (the qualitative trade, Banach layer) -/
 
-variable [T1Space X] [T2Space X] [CompactSpace X]
+variable [T1Space X] [T2Space X] [CompactSpace X] (T : ShrinkChain X)
+
+/-- The germified `V`-level cocycle `c` viewed at `T.coverV` directly (same two-step naming
+device as `starPairMem`/`starPairGerm`, needed since `coverOfP T T.V T.covers_V` and `T.coverV`
+are `rfl`-equal but the coercion chain `Z1 → C1 → (ascribe)` cannot be nested inline). -/
+noncomputable def cC1 (ξ : NZ1 T T.V) : C1 (0 : RS.Divisor X) T.coverV :=
+  (toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X) (coverOfP T T.V T.covers_V))
+
+noncomputable def cCompMem (ξ : NZ1 T T.V) (α β : Fin T.n) :
+    RS.LinSysOn (0 : RS.Divisor X) ((T.V α ⊓ T.V β : Opens X) : Set X) :=
+  cC1 T ξ (α, β)
+
+noncomputable def cComp (ξ : NZ1 T T.V) (α β : Fin T.n) :
+    RS.MeroGermOn X ((T.V α ⊓ T.V β : Opens X) : Set X) :=
+  cCompMem T ξ α β
+
+theorem cComp_eq (ξ : NZ1 T T.V) (α β : Fin T.n) :
+    cComp T ξ α β = toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β)) := by
+  rw [cComp, cCompMem, cC1, toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
+  rfl
 
 /-- **§5's centerpiece**: the trade projection `π : L →L Z¹(𝔙)` is onto (Forster 14.6(a) upgraded
 to the Banach layer). -/
@@ -410,14 +429,90 @@ theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T)
       (evalAt_toGerm ((ξ : NC1 T T.V) (α, β))
         (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2).symm
     rw [hξeval]
-    have hcgerm : (toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β))) =
-        ((toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X) (coverOfP T T.V T.covers_V))
-          (α, β) : RS.MeroGermOn X (T.V α ⊓ T.V β : Set X)) := by
-      rw [toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
-    rw [hcgerm]
-    exact (trade_evalAt T T.ref_star_V F (toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X)
-        T.coverV) g hFg α β ⟨(Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.1,
-          (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.2⟩).symm
+    rw [← cComp_eq]
+    exact trade_evalAt T T.ref_star_V F (cC1 T ξ) g hFg α β
+      ⟨(Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.1,
+        (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.2⟩
   exact ⟨⟨(ζ, ξ, η), hmem⟩, rfl⟩
+
+/-! ### §5 steps 8–9: `classMap` and the two Schwartz-consumer properties -/
+
+/-- Composition law for the Banach-level restriction (mirrors `resZ1_comp`/`resC1_comp`). -/
+theorem resZ_resZ {P P' P'' : Fin T.n → Opens X} (h1 : ∀ i, P' i ≤ P i) (h2 : ∀ i, P'' i ≤ P' i)
+    (h3 : ∀ i, P'' i ≤ P i) (x : NZ1 T P) :
+    resZ T P' P'' h2 (resZ T P P' h1 x) = resZ T P P'' h3 x := by
+  apply Subtype.ext
+  funext p
+  rw [resZ_apply_coe, resZ_apply_coe, resZ_apply_coe, resNC1_apply, resNC1_apply, resNC1_apply,
+    restrictCLM_restrictCLM]
+
+/-- Germification of a `P`-indexed `0`-cochain (needed for `classMap`'s coboundary witness). -/
+noncomputable def toGermC0 (P : Fin T.n → Opens X) :
+    NC0 T P →ₗ[ℂ] ∀ i : Fin T.n, RS.LinSysOn (0 : RS.Divisor X) ((P i : Opens X) : Set X) :=
+  LinearMap.pi fun i => (toGermSub (P i)).comp (LinearMap.proj i)
+
+theorem toGermC0_apply (P : Fin T.n → Opens X) (h : NC0 T P) (i : Fin T.n) :
+    toGermC0 T P h i = toGermSub (P i) (h i) := rfl
+
+/-- Naturality: germifying a `0`-cochain then taking its cover-level coboundary agrees with
+germifying the Banach-level coboundary (§5 step 8's "`toGermZ1 ∘ δ_W = d0 ∘ toGermC0`"). -/
+theorem toGermC1_deltaCLM_eq_d0 (η : NC0 T T.W) (p : Fin T.n × Fin T.n) :
+    toGermC1 T T.W (deltaCLM T T.W η) p =
+      d0 (0 : RS.Divisor X) T.coverW (toGermC0 T T.W η) p := by
+  rw [toGermC1_apply, deltaCLM_apply, map_sub, toGermSub_restrictCLM_comm,
+    toGermSub_restrictCLM_comm, d0_apply, toGermC0_apply, toGermC0_apply]
+  rfl
+
+/-- The `toGermZ1`-image of a `T.W`-level bounded cocycle, viewed at `T.coverW` directly (same
+two-step naming device as `cC1`). -/
+noncomputable def toGermZ1W (ψ : NZ1 T T.W) : Z1 (0 : RS.Divisor X) T.coverW :=
+  (toGermZ1 T T.W T.covers_W ψ : Z1 (0 : RS.Divisor X) (coverOfP T T.W T.covers_W))
+
+theorem toGermZ1W_apply_coe (ψ : NZ1 T T.W) :
+    (toGermZ1W T ψ : C1 (0 : RS.Divisor X) T.coverW) = toGermC1 T T.W (ψ : NC1 T T.W) := rfl
+
+/-- **The Čech class map** (§5 step 8): bound `V`-level cocycles down to `W`, germify, take the
+Mittag-Leffler class. -/
+noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.coverW :=
+  (H1Cover.mk (0 : RS.Divisor X) T.coverW).comp
+    ({ toFun := fun ψ => toGermZ1W T ψ
+       map_add' := fun ψ ψ' => by
+         apply Subtype.ext
+         rw [toGermZ1W_apply_coe]
+         simp only [Submodule.coe_add]
+         rw [map_add, toGermZ1W_apply_coe, toGermZ1W_apply_coe]
+       map_smul' := fun c ψ => by
+         apply Subtype.ext
+         rw [toGermZ1W_apply_coe]
+         simp only [Submodule.coe_smul, RingHom.id_apply]
+         rw [map_smul, toGermZ1W_apply_coe] } ∘ₗ (resZ T T.V T.W T.W_le_V))
+
+theorem classMap_apply (ψ : NZ1 T T.V) :
+    classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
+  rfl
+
+/-- **Schwartz-consumer property 1** (§5 step 8): the trade defect dies in `H¹(𝔚)`. -/
+theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
+    classMap T (tradePi T x - tradeCompact T x) = 0 := by
+  have hxmem := (mem_tradeSpace_iff_eq T x.1).1 x.2
+  have hkey : (resZ T T.V T.W T.W_le_V (tradePi T x - tradeCompact T x) : NC1 T T.W) =
+      -(deltaCLM T T.W x.1.2.2) := by
+    rw [map_sub]
+    funext p
+    obtain ⟨α, β⟩ := p
+    simp only [Submodule.coe_sub, Pi.sub_apply, Pi.neg_apply]
+    rw [tradePi_apply]
+    have hcomp : resZ T T.V T.W T.W_le_V (tradeCompact T x) = resZ T T.U T.W T.W_le_U x.1.1 := by
+      rw [tradeCompact_apply, resZ_resZ]
+    rw [hcomp, resZ_apply_coe, resZ_apply_coe, resNC1_apply, resNC1_apply, deltaCLM_apply]
+    have e1 := hxmem (α, β)
+    rw [e1]
+    abel
+  rw [classMap_apply, H1Cover.mk_eq_zero_iff]
+  refine ⟨-(toGermC0 T T.W x.1.2.2), ?_⟩
+  rw [toGermZ1W_apply_coe, hkey, map_neg, map_neg]
+  congr 1
+  funext p
+  exact (toGermC1_deltaCLM_eq_d0 T x.1.2.2 p).symm
 
 end RS.Finiteness

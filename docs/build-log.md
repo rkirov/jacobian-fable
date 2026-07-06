@@ -1183,3 +1183,162 @@
   one consumption site (`RS.TailDuality.pairT_alpha`, its design §6 P3) is gated on this landing —
   it does NOT land with this delivery. No sorries anywhere; both gaps are honest absences (undecided
   theorems left unstated), not placeholder tactics, per the hard "zero sorries" rule.
+- [jfun] Jacobian/JacFunctorial/Pullback.lean OK (301 lines, ~15s) — the centerpiece "easy
+  direction": `Form1.pullback f hf : Form1 Y →ₗ[ℂ] Form1 X` (chain-rule pullback of a holomorphic
+  1-form along any `f : X → Y`), built via `Form1.ofSectionAnalytic` (pointwise, mirroring
+  `mdifferential`'s pattern, NOT `Form1CoeffData`/`ofCoeffs` — that route needs chart restriction
+  and gains nothing here), plus `coeffAt_pullback`/`coeffIn_pullback` (chart formulas) and
+  `Form1.pullback_id`/`Form1.pullback_comp` (Form1-level functoriality). Needed three new
+  `Compat` lemmas not present upstream (recorded in the file, request-worthy for
+  holomorphic-forms): `analyticAt_of_mem_maximalAtlas` (two-manifold arbitrary-chart analyticity
+  bridge via mathlib's `contMDiffWithinAt_iff_of_mem_maximalAtlas`, generalizing
+  `contMDiffAt_iff_analyticAt_of_mem_source` from ℂ-valued targets to any charted target),
+  `mfderiv_chartAt_self` (forward-chart analogue of `mfderiv_chartAt_symm_chartAt_self`, via
+  mathlib's `mfderiv_extChartAt_self`), `tangentCoord_mfderiv_chart_comp` (two-manifold
+  generalization of `tangentCoord_mfderiv_comp`, reading the target through its own preferred
+  chart). The "master computation" `coeffInFun_pullbackSection` handles the moving-preferred-
+  chart-at-the-image-point subtlety via a `coeffIn_trans` + chain-rule-of-two-transitions
+  argument (`deriv_eq_of_eventuallyEq_comp`, an `HasDerivAt.comp`+`congr_of_eventuallyEq`
+  helper) — the same technique reused verbatim in `pullback_comp`'s proof. Zero sorries.
+- [jfun] Jacobian/JacFunctorial/PullbackIntegral.lean OK (100 lines, ~10s) — path-integral
+  naturality: `IsPrimitiveAlongMap.pullback_comp` (needs `ContinuousOn K s` added as an explicit
+  hypothesis, absent from the design's sketch but needed exactly like `.comp`/`.rechart`'s own
+  continuity hypotheses) and `pathIntegral_pullback` (`pathIntegral γ (Form1.pullback f hf η) =
+  pathIntegral (γ.map hf.continuous) η`), via `exists_isPrimitiveAlong` + a hand-proved
+  `(γ.map hf.continuous).extend = f ∘ γ.extend` function identity (`Path.map_coe` + `IccExtend`
+  unfolding). Zero sorries.
+- [jfun] Jacobian/JacFunctorial/Density.lean OK (113 lines, ~10s) — `Form1.eq_of_eqOn_dense`
+  ("Lemma A"). **Deviation from the design**: the design's own sketch proposed routing this
+  through a standalone `Form1.continuous_coeffAt : Continuous (fun x => coeffAt x η)`; this
+  needs a genuine tangent-bundle fact (continuity of `mfderiv (chartAt ℂ x)` *as its base point
+  varies*) that does not reduce to anything already built anywhere in this project (investigated
+  `ContMDiffOn.continuousOn_tangentMapWithin`, `ContMDiffAt.mfderiv_const`/`.mfderiv_apply`/
+  `inTangentCoordinates` at length — every natural instantiation degenerates to a tautological
+  `mfderiv e₀ x ∘L mfderiv e₀.symm (e₀ x) = id`, not isolating the needed factor). **Avoided
+  entirely**: compare `η`/`η'` against one *fixed* reference chart `e₀` and cancel a provably-
+  nonzero transition factor (`coeffAt_eq_deriv_mul_coeffIn` + `deriv_transition_ne_zero`, both
+  pure algebra via `coeffIn_trans`/`analyticAt_transition`, no continuity-in-the-basepoint
+  needed), reducing to a comparison of `coeffIn e₀ η`/`coeffIn e₀ η'` — genuinely continuous
+  PLANAR functions (`Form1.continuousOn_coeffIn`, already built) — on a dense subset of
+  `e₀.target`, closed via a direct `tendsto_nhds_unique_of_eventuallyEq` filter argument
+  (`ContinuousOn.eqOn_of_subset_closure` + `target_subset_closure_image_inter`, the latter
+  transporting density through the chart homeomorphism). Zero sorries — this fully replaces and
+  discharges what the design flagged as a to-be-confirmed `Continuous.ext_on` risk (R3), with a
+  cleaner, gap-free route.
+- [jfun] Jacobian/JacFunctorial/PeriodMaps.lean OK (92 lines) — the pushforward half of §8:
+  `periodCoordEquiv` (`Basis.dualBasis.equivFun`, spiked in `scratch_jfun.lean`, confirmed
+  compiling as designed), `pushforwardT` (via `Form1.pullback`'s `dualMap`),
+  `pushforwardT_periodVector` (naturality of `pushforwardT` on period vectors, from
+  `pathIntegral_pullback`), `periodSubgroup_le_comap_pushforwardT` (`hT`, exact membership via
+  the basepoint-flexible `periodVector_mem_periodSubgroup` — no closure/density needed, matching
+  the design's own "easy direction" assessment), and the assembly `Jacobian.pushforward` via
+  `Jacobian.inducedHom`. GOTCHA for siblings: eliaborating `Jacobian.pushforward`'s *definition*
+  (not any proof about it — the bare `def`) needs a very large `set_option maxHeartbeats`
+  (default 200000 was nowhere near enough; landed at unbounded/`4000000`, several minutes of wall
+  time under concurrent-agent CPU/memory load) — the accumulated size of `Form1.pullback`'s own
+  proof terms makes the final `T`/`hT` unification against `Jacobian.inducedHom`'s implicit `T`
+  expensive. Zero sorries.
+- [jfun] Jacobian/JacFunctorial/Challenge.lean OK (36 lines) — `Jacobian.pushforward_contMDiff`
+  (free one-liner from `Jacobian.contMDiff_inducedHom`, same `maxHeartbeats` bump as
+  `PeriodMaps.lean`). Zero sorries.
+- [jfun] Jacobian/JacFunctorial.lean (unit root) — API docstring + LEDGER written; imports all
+  five files above. **Unit INCOMPLETE, by design/necessity, not oversight**: `Form1.trace`
+  (branch-point analyticity — the naive `traceZkForm` value at a branch coordinate does not equal
+  the removable singularity's actual limit for multiplicity > 1, needing a genuine value-*repair*
+  construction beyond a closed-form identity, per `RS.FormTrace.traceZkForm_hAdapted_eq_apply`'s
+  own `w ≠ 0` guard), `Jacobian/JacFunctorial/TraceIntegral.lean` (the `FiberChain`/monodromy
+  construction, the design's own highest-risk item, ~150-200 new lines, downstream of
+  `Form1.trace` anyway), `Jacobian.pullback`, `pullback_contMDiff`, `pullback_id_apply`,
+  `pullback_comp_apply`, `pushforward_pullback` (all need `Form1.trace`), and
+  `pushforward_id_apply`/`pushforward_comp_apply` (need `Torus.inducedHom_id`/`_comp`, confirmed
+  ABSENT from `Jacobian/JacobianConstruction/Torus.lean` — the design doc's claim that a request
+  was filed for these is stale, `docs/requests/jacobian-construction.md` does not exist) are
+  **not built**, reported loudly per the stuck→blocker protocol rather than left as silent gaps
+  or filled with sorries (so `scripts/check.sh Jacobian/JacFunctorial` passes cleanly on what IS
+  delivered: the full pullback-of-forms + path-integral-naturality + pushforward-on-Jacobians
+  chain, zero sorries). NOT registered in `Jacobian.lean` per task hard rule. Full detail and
+  recommended next steps in the builder's final report.
+- [ltails] Jacobian/LaurentTail/TailSpace.lean OK (150 lines, was 154 — a small net simplification)
+  — continuation build. `TailAt p D` changed from a plain `def` to **`abbrev`** (matching `T D`'s
+  own D2 convention exactly), and its two hand-written `instAddCommGroupTailAt`/`instModuleTailAt`
+  instances **removed** (found automatically through the now-transparent quotient). Root cause:
+  `Submodule.liftQ`'s output type and the previously-opaque `TailAt p D` do not unify even though
+  definitionally the same quotient (confirmed via `apply`'s own unification trace: same quotient
+  type shown on both sides, different-though-propositionally-equal instance terms) — needed for
+  `Comparison.lean`'s `tailAtToH1`. Reverified `Truncation.lean` still builds clean after the
+  change (zero sorries, no regressions to `TailAt.mk`/`windowAt_toTailAt`'s existing proofs).
+- [ltails] Jacobian/LaurentTail/Comparison.lean OK (830 lines, was 224 mid-edit at session start)
+  — **`tailToH1 : T D →ₗ[ℂ] Cech.H1 D` now FULLY BUILT, zero sorries** (this was the unit's
+  hardest genuinely-new mathematical content, and the previous builder's own file-end note had
+  reported it entirely unbuilt, citing "needs adapted-cover realization machinery beyond this
+  unit's remaining time budget" — that budget wall is now cleared). Route: a from-scratch
+  per-point Mittag-Leffler class `mlClassAt D p ψ : H1 D` via a 2-member cover `{V, X∖{p}}`
+  (`pairCover`/`gOf`, reusing the previous builder's own machinery) on a neighbourhood `V`
+  simultaneously clean for `ψ` and avoiding `D`'s other poles (`cleanNbhd`), typed at an
+  auxiliary divisor `DPrimeOf D p ψ` (`D` bumped at `p` to `nOf D p ψ`, the least usable bound).
+  Proved **independent of every choice** via `mlClassAtOf_agree` (any two valid `(V, D')`
+  representations agree — combines a cover-shrink step via `Skyscraper.lean`'s already-built
+  `mlClass_res` with a divisor-raise step via a NEW general lemma `mlClass_inclC0` — `Cech.mlClass`
+  is invariant under raising a cochain's auxiliary divisor typing on a fixed cover, since only the
+  underlying germs matter, not the membership proof), packaged via a new general helper
+  `mlClass_congr` (`heq : g = g' → mlClass 𝒰 g hg = mlClass 𝒰 g' (heq ▸ hg)`, `by subst heq; rfl`)
+  that sidesteps `rw`/`erw` repeatedly hitting "motive is not type correct" on `mlClass`'s
+  dependent `hg` argument. Additivity/`ℂ`-linearity of `mlClassAt` (`mlClassAt_add`/`_smul`) each
+  reduce every operand to a **single common** `(V, D')` (neighbourhood intersection, divisor sup)
+  via `mlClassAtOf_agree`, then use `gOf`'s own linearity + `mlClass_add`/`mlClass_smul` there.
+  Assembled into `tailAtToH1 D p : TailAt p D →ₗ[ℂ] H1 D` (`Submodule.liftQ`, kernel condition
+  `mlClassAt_eq_zero_of_mem_ordGe` via `mlClass_eq_zero_of_exists` with the zero witness) then
+  `tailToH1 D := DFinsupp.lsum ℕ tailAtToH1`. **Two build-environment gotchas hit and fixed**
+  (full post-mortem in the file's own file-end note): (a) `fin_cases i` on `i : Fin 𝒰.n` produces
+  `⟨0,⋯⟩`/`⟨1,⋯⟩`, not the `OfNat` literal, silently breaking `rw` against lemmas stated with
+  `(0 : Fin 2)` — fixed by stating `gOf`'s value at a literal index as a bare `rfl` fact instead
+  of rewriting; (b) **`AddCommGroup (Cech.H1 D)` is not found by plain `inferInstance` through the
+  `H1` abbrev** — `Module.DirectLimit.addCommGroup` (`Mathlib.Algebra.Colimit.Module`) takes its
+  index family/connecting-maps as *explicit* (re-shadowed) arguments, which defeats automatic
+  discovery even with every other needed instance (`DecidableEq`/`Preorder`/`IsDirectedOrder
+  (FinCover ⊤)`) in scope — confirmed by an isolated failing `inferInstance` example, fixed by
+  registering it as a genuine global instance (`instAddCommGroupH1`) in this file; **flagged as a
+  `docs/requests/cech-cohomology.md` item** to register it upstream in `Cech/Colimit.lean` so
+  future consumers building `LinearMap`s into `H1 D` don't rediscover this (a `haveI` local-scope
+  workaround was tried first and caused a multi-minute `whnf` heartbeat timeout instead of a clean
+  error — the global `instance` route is the one that actually works, recorded so no one repeats
+  the slow path). **Deferred, exact gates and full completion plans in the file's own file-end
+  note**: `tailToH1_alpha` (`tailToH1 D (alphaL D f) = 0`, needed for `H1Tail.toH1` to descend) —
+  gated on a new but fully-scoped *multi-point* generalization of this file's *two-point*
+  `mlClassAt_add` (a `Finset`-indexed combination lemma, `Finset.induction_on` + an
+  `(|S|+1)`-member cover generalizing `pairCover`, mirroring the pattern `Cech.SixTerm.lean`'s own
+  `exists_realization` already uses internally); hence `H1Tail.toH1`/injectivity (injectivity is
+  otherwise a **direct** consequence once `H1Tail.toH1` exists — `Cech.toH1_injective`/
+  `mlClass_eq_zero_iff` both directions are confirmed **landed**, `Injectivity.lean:247`/
+  `Skyscraper.lean:176` — the design's own flagged risk R2 is closed upstream); `H1Tail.equiv`.
+  Surjectivity separately gated on `dolbeault-comparison`'s Leray theorem
+  (`toH1_surjective_of_isGood`), confirmed **not yet on disk** as of this build
+  (`Jacobian/DolbeaultComparison/Leray.lean` exists, 345 lines, ends at `exists_crossGlue` — the
+  member-gluing step, not yet the surjectivity conclusion) — soft, non-circular dependency per
+  the design's own §8 R1. `scripts/check.sh Jacobian/LaurentTail` passes (2890 jobs), zero sorries
+  across the whole unit.
+- [ltails] Jacobian/LaurentTail/RiemannRoch.lean OK (49 lines, empty of declarations by design) —
+  **entirely deferred**: gated on `finiteness-and-chi`'s `Chi.lean` (confirmed absent —
+  `Jacobian/Finiteness/` has only `Schwartz.lean`/`BddHolo.lean`/`CompactRestrict.lean`/
+  `Chain.lean`; its own root docstring records `TradeBounded.lean`/`H1Finite.lean`/`Chi.lean` as
+  gated on `dolbeault-comparison`, itself still absent beyond `Leray.lean`) *and* on
+  `Comparison.lean`'s own deferred `H1Tail.equiv`. Every export the design's §4.4 lists (`g0`,
+  `H1Tail.finiteDimensional`, `h1tail`, `h1tail_eq_h1`, `firstFormRR`, the tail-level six-term
+  restatement) is a pure transport (`Module.Finite.equiv`/`LinearEquiv.finrank_eq`) once both
+  gates open — no new mathematics — so per `CONVENTIONS.md` rule 3 ("no vacuous instances"), the
+  file states the gates and a verbatim completion recipe rather than shipping an unusable stub.
+- [ltails] Jacobian/LaurentTail.lean (unit root) OK (61 lines) — API docstring covering all four
+  files' exact export/deferral status; NOT registered in `Jacobian.lean` per task hard rule.
+  **Consumer notes for serre-duality-tails** (its own design doc's frozen bank, reconciled): `T D`,
+  `TailAt p D`, `alphaL D`, `H1Tail D := T D ⧸ range(alphaL D)` are all available now, zero
+  sorries, matching the frozen shapes exactly — serre-duality-tails' own build-wave plan already
+  anticipated this (file 1 gates only on `TailSpace.lean`/`Truncation.lean`, NOT `Comparison.lean`)
+  and can proceed today. `H1Tail.equiv` (needed to transport serre-duality-tails' dimension counts
+  against `finiteness-and-chi`'s χ ledger) is NOT yet available — see `Comparison.lean`'s file-end
+  note for the exact multi-point gate; this is the one blocking item for that unit's own
+  dimension-counting endgame (its Lemma 3.4/3.6 chain), everything else in its design (the pairing
+  itself, `mulInto`, the residue computations) is independent of it. `mulTail`/`mulTailEquiv`
+  (design §2 D5) are deliberately not built — `serre-duality-tails` already designed its own
+  `mulInto` directly on `T D`/`TailAt p D` as a superseding replacement (its design doc §0.1),
+  a genuine scope relief recorded in `TailSpace.lean`'s own docstring, not a shortfall.
+  `firstFormRR`/`g0` (riemann-roch's eventual consumer) remain gated on `finiteness-and-chi`.
