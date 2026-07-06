@@ -700,7 +700,7 @@ R4); any mapping-degree machinery (unused despite the blueprint edge, §0).
 
 ---
 
-## 15. Spike report (`scratch_jac.lean`, 44 lines, kept at project root)
+## 15. Spike report (`scratch_jac.lean`, 58 lines, kept at project root)
 
 Gated per protocol (`pgrep -cx lean` was `0` before running). Compiles clean,
 `lake env lean scratch_jac.lean`, ~6.6s wall, exit 0. Four items, all load-bearing for this design:
