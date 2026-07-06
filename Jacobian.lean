@@ -3,3 +3,4 @@
 import Jacobian.Init
 import Jacobian.Surface
 import Jacobian.LocalMultiplicity
+import Jacobian.Forms

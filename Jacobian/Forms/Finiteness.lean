@@ -26,8 +26,13 @@ Main declarations:
 * `instance : FiniteDimensional ℂ (Form1 X)` (compact T2 `X`).
 -/
 
-open scoped ContDiff Manifold Bundle Topology
+open scoped ContDiff Manifold Bundle Topology Classical
 open Set Filter IsManifold
+
+-- Several lemmas about `G.P`/`gext` below are stated in a section carrying
+-- `[IsManifold 𝓘(ℂ) ω X]` (needed by other declarations in the same `variable` block) but do not
+-- themselves use it; silence the resulting (harmless) unused-variable linter noise.
+set_option linter.unusedSectionVars false
 
 noncomputable section
 
@@ -185,7 +190,8 @@ theorem restr_target_eq (i : Fin G.n) : ((G.e i).restr (G.V i)).target = G.O i :
     exact ⟨(G.e i).symm z, hzs, (G.e i).right_inv hzt⟩
   · rintro ⟨p, hp, rfl⟩
     have hps : p ∈ (G.e i).source := G.V_subset_source i hp
-    exact ⟨(G.e i).map_source hps, by rwa [(G.e i).left_inv hps]⟩
+    exact ⟨(G.e i).map_source hps, by
+      rw [Set.mem_preimage, (G.e i).left_inv hps]; exact hp⟩
 
 /-! ### The coefficient embedding `J` -/
 
@@ -315,6 +321,7 @@ theorem J_mem_montelFamily [CompactSpace X] {C : ℝ}
 def gext (f : G.P) (i : Fin G.n) : ℂ → ℂ :=
   fun z => if h : z ∈ G.K i then f i ⟨z, h⟩ else 0
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem gext_apply (f : G.P) {i : Fin G.n} {z : ℂ} (hz : z ∈ G.K i) :
     G.gext f i z = f i ⟨z, hz⟩ := dif_pos hz
 
@@ -394,7 +401,7 @@ theorem isClosed_ball_inter_range [CompactSpace X] :
   obtain ⟨D, hDchart, hDcoeff⟩ : ∃ D : Form1CoeffData X (Fin G.n),
       (∀ i, D.chart i = (G.e i).restr (G.V i)) ∧ ∀ i, D.coeff i = G.gext f i := by
     refine ⟨⟨fun i => (G.e i).restr (G.V i),
-      fun i => StructureGroupoid.restr_mem_maximalAtlas (G.e_mem_maximalAtlas i)
+      fun i => restr_mem_maximalAtlas (contDiffGroupoid ω 𝓘(ℂ)) (G.e_mem_maximalAtlas i)
         (G.isOpen_V i),
       fun x => ?_, G.gext f, fun i => ?_, fun i j x hx => ?_⟩, fun _ => rfl, fun _ => rfl⟩
     · obtain ⟨i, hi⟩ := G.exists_mem_V x
@@ -404,7 +411,7 @@ theorem isClosed_ball_inter_range [CompactSpace X] :
     · -- compatibility, inherited in the limit
       rw [G.restr_source_eq i, G.restr_source_eq j] at hx
       exact G.gext_compat hlim' i j hx.1.2 hx.2.2
-  refine ⟨isClosed_closedBall.mem_of_tendsto hlim
+  refine ⟨Metric.isClosed_closedBall.mem_of_tendsto hlim
     (Filter.Eventually.of_forall fun m => (hF m).1), Form1.ofCoeffs D, ?_⟩
   -- the reassembled form has coefficient tuple `f`
   funext i
