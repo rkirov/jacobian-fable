@@ -123,6 +123,8 @@ source and the planar root set `{ζ | ζ ^ k = e' y}` — the same `BijOn` as ma
 (private) `FiberStack.bijOn_e` (`LocalConstancy.lean`), reproved here verbatim since it is not
 exported there, then used to reindex `h`-weighted sums instead of multiplicity counts. -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] [T2Space Y]
+  [IsManifold 𝓘(ℂ) ω Y] in
 /-- The adapted-chart bijection over `y ∈ S.V` (mapping-degree's `bijOn_e`, reproved). -/
 private theorem bijOn_stack_e {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy : y ∈ S.V)
     (i : Fin S.n) :
@@ -132,7 +134,7 @@ private theorem bijOn_stack_e {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy 
   set A := S.A i
   have hk0 : k ≠ 0 := S.mult_ne_zero i
   have hyA' : y ∈ A.e'.source := S.V_subset i hy
-  have hw : ‖A.e' y‖ < A.radius ^ k := Metric.mem_ball_zero_iff.mp (S.map_V_mem_ball i y hy)
+  have hw : ‖A.e' y‖ < A.radius ^ k := mem_ball_zero_iff.mp (S.map_V_mem_ball i y hy)
   refine ⟨?_, ?_, ?_⟩
   · rintro x ⟨hx1, hx2⟩
     have hxy : F x = y := hx1
@@ -142,7 +144,7 @@ private theorem bijOn_stack_e {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy 
   · intro ζ hζ
     have hζeq : ζ ^ k = A.e' y := hζ
     have hζlt : ‖ζ‖ < A.radius := RS.norm_lt_of_pow_eq hk0 A.radius_pos.le hζeq hw
-    have hζt : ζ ∈ A.e.target := by rw [A.target_eq]; exact Metric.mem_ball_zero_iff.mpr hζlt
+    have hζt : ζ ∈ A.e.target := by rw [A.target_eq]; exact mem_ball_zero_iff.mpr hζlt
     have hxs : A.e.symm ζ ∈ A.e.source := A.e.map_target hζt
     have hex : A.e (A.e.symm ζ) = ζ := A.e.right_inv hζt
     have hxe' : F (A.e.symm ζ) ∈ A.e'.source := A.mapsTo hxs
@@ -151,6 +153,8 @@ private theorem bijOn_stack_e {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy 
     have hFxy : F (A.e.symm ζ) = y := A.e'.injOn hxe' hyA' heq2
     exact ⟨A.e.symm ζ, ⟨hFxy, hxs⟩, hex⟩
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] [T2Space Y]
+  [IsManifold 𝓘(ℂ) ω Y] in
 /-- Per-chart piece: over `y ∈ S.V`, the planar `traceZk` of the chart-transported `h` at the
 chart image of `y` is the naive `h`-sum over the part of the fibre inside the `i`-th chart
 source (reindex along `bijOn_stack_e`). -/
@@ -165,6 +169,8 @@ private theorem traceZk_stack_piece {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y
   simp only [Function.comp_apply]
   rw [(S.A i).e.left_inv hx.2]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] [T2Space Y]
+  [IsManifold 𝓘(ℂ) ω Y] in
 /-- The stack formula computes the naive fibre sum — over ALL of `S.V`, not just at `y₀` (the
 `h`-weighted analogue of mapping-degree's `FiberStack.fiberMultSum_eq_sum`). No holomorphy or
 nonconstancy hypotheses: the identity is forced by the stack structure alone. -/
@@ -248,8 +254,8 @@ theorem meromorphicAtX_trace (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F) (hne : ¬
     intro i
     have hy₀src : y₀ ∈ (S.A i).e'.source := S.V_subset i S.mem_V
     have hy₀0 : (S.A i).e' y₀ = 0 := by
-      rw [← S.maps_pt_eq i]
-      exact (S.A i).map_eq_zero'
+      have h0 : (S.A i).e' (F (S.pt i)) = 0 := (S.A i).map_eq_zero'
+      rwa [S.maps_pt_eq i] at h0
     rw [RS.meromorphicAtX_iff_of_mem_source (S.A i).mem_maximalAtlas' hy₀src, hy₀0]
     have h0tgt : (0 : ℂ) ∈ (S.A i).e'.target := by
       rw [(S.A i).target_eq']

@@ -29,9 +29,15 @@ manifold content, independent of `ToP1`/`OrderMultiplicity`/`ArgumentPrinciple`.
 * `meromorphicAt_traceZk` (P5): `traceZk h k` is meromorphic at `0` when `h` is, via a growth
   bound on the root-sum and Riemann's removable singularity theorem — no convergent Laurent
   series needed for existence.
+* `traceZk_zpow`: closed form for monomial traces, `traceZk (·^e) k w = k * w^(e/k)` if `k ∣ e`,
+  `0` otherwise (`w ≠ 0`) — the geometric-sum collapse of `k`-th roots of unity, computed on the
+  abstract root set (one root + a primitive root of unity), purely algebraically.
 * `laurentCoeffAt_traceZk` (P6): the Laurent-coefficient formula
-  `laurentCoeffAt (traceZk h k) 0 m = k * laurentCoeffAt h 0 (k * m)`, via the branch formula and
-  a geometric-sum collapse of `k`-th roots of unity.
+  `laurentCoeffAt (traceZk h k) 0 m = k * laurentCoeffAt h 0 (k * m)`, `tsum`-free: exact finite
+  Taylor remainder of the order presentation's unit factor (cutoff chosen so the remainder
+  exponent is an exact multiple of `k`, making the remainder trace factor as
+  `w ^ s' * traceZk r k w` with NO second growth bound), `traceZk_zpow` on the finitely many
+  monomials, and residue-calculus's presentation-independent `laurentCoeffAt` characterization.
 -/
 
 open Filter Set Topology Metric Function
@@ -685,5 +691,15 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
       rw [not_le] at hcase
       have hd0 : (0 : ℤ) ≤ (d : ℤ) := Int.natCast_nonneg d
       linarith
+
+/-- Residue corollary of P6 (design §4.4): the residue of the trace is `k` times `h`'s
+coefficient at index `-k` — NOT `h`'s residue unless `k = 1`. (Miranda's residue identity
+`Res(Tr(h·ω)) = ∑ Res(h·ω)` needs the form's Jacobian factor to compensate this shift; that is
+`form-trace-tower`'s job, confirming the scope split.) -/
+theorem resAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
+    resAt (traceZk h k) 0 = (k : ℂ) * laurentCoeffAt h 0 (-(k : ℤ)) := by
+  have h1 := laurentCoeffAt_traceZk hh hk (-1)
+  rw [mul_neg_one] at h1
+  exact h1
 
 end RS.MTrace

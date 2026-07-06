@@ -33,24 +33,28 @@ API summary (see `docs/design/meromorphic-trace.md`). Standing surface hypothese
 * **`PlanarTrace.lean`** (pure planar, independent of the above): `traceZk h k w`, the trace of
   `h` along `z ↦ z ^ k` at `w`. `analyticAt_traceZk` (analyticity away from `0`, via local root
   branches, no monodromy), `meromorphicAt_traceZk` (meromorphy at `0`, via a norm/`zpow` growth
-  bound + Riemann's removable-singularity theorem — **zero sorries**, the unit's hardest theorem).
-  **One documented blocker**: `laurentCoeffAt_traceZk` (the Laurent-coefficient formula
-  `laurentCoeffAt (traceZk h k) 0 m = k · laurentCoeffAt h 0 (k·m)`) is left as the file's one
-  admitted goal — see its inline comment for the two candidate proof routes identified
-  (a `tsum`/power-series substitution as designed, or a `tsum`-free finite-remainder route found
-  during this build) and why neither was completed in the time budget. Existence of `traceZk`'s
-  meromorphy (needed everywhere else in this unit and by `form-trace-tower`) does **not** depend
-  on this lemma.
+  bound + Riemann's removable-singularity theorem, the unit's hardest theorem),
+  `traceZk_zpow` (closed form for monomial traces — the geometric-sum collapse, computed on the
+  abstract root set, purely algebraically), and `laurentCoeffAt_traceZk` (P6, the
+  Laurent-coefficient formula `laurentCoeffAt (traceZk h k) 0 m = k · laurentCoeffAt h 0 (k·m)`),
+  proved `tsum`-free: exact finite Taylor remainder of the unit factor with the cutoff chosen so
+  the remainder exponent is an exact multiple of `k` (so the remainder trace factors EXACTLY as
+  `w^{s'} · traceZk r k w`, no second growth bound), `traceZk_zpow` on the finitely many
+  monomials, and residue-calculus's presentation-independent `laurentCoeffAt_of_eventuallyEq`.
+  **Zero sorries.**
 * **`FunctionTrace.lean`**: `trace F h y₀` (`Tr_F h`, D7), the surface-level fibre trace, defined
   totally via an `if`-dispatch on `Nonempty (FiberStack F y₀)`. `trace_of_forall_eq` (the
   constant-`F` junk guard) is proved in full, including the case the design worried might need to
-  stay an "open sub-case" (resolved via a short infiniteness-of-`X` argument). **Scope decision**:
-  `meromorphicAtX_trace` (the design's centerpiece for this file) and `trace_of_regular` are
-  **not proved** — both need `trace`'s well-definedness against the `FiberStack` choice (the
-  design's own flagged risk R1), which this build traced one level further (see the file's
-  module docstring for the exact resolution route found: routing through the naive fibre sum
-  `∑ᶠ x ∈ F⁻¹{y}, h x`, which needs a `mapping-degree`-style bijection argument not completed) but
-  did not finish. This is the documented, sanctioned fallback from the design's own §7 Risks 2/7.
+  stay an "open sub-case" (resolved via a short infiniteness-of-`X` argument).
+  **Well-definedness (design risk R1) is resolved**: `trace_eq_finsum` identifies `trace F h y₀`
+  with the naive fibre sum `∑ᶠ x ∈ F⁻¹{y₀}, h x` whenever ANY stack exists (so the
+  `Classical.choice` of stack is immaterial), via `sum_traceZk_stack`, the `h`-weighted
+  planar-to-fibre reindexing along the adapted-chart bijection (mapping-degree's `bijOn_e`
+  pattern), valid over the stack's whole neighborhood `S.V`. `trace_eq_finsum'` (every point,
+  holomorphic nonconstant `F`), `trace_eq_stack_sum` (read `trace` through an arbitrary stack on
+  `S.V` — form-trace-tower's consumption shape), `trace_of_regular` (the design's sanity anchor),
+  and `meromorphicAtX_trace` (P7, the design's centerpiece: `Tr_F h` is `MeromorphicAtX`
+  everywhere on `Y`, via the stack formula + P5 + CC3 chart invariance) are all proved.
 
 ## Downstream notes
 
@@ -60,11 +64,12 @@ API summary (see `docs/design/meromorphic-trace.md`). Standing surface hypothese
   `Divisor.degree`'s shape (`Function.locallyFinsuppWithin.degree`), so the repackaging is a
   rewrite, not a re-derivation.
 * **form-trace-tower** needs the planar trace atom + its Laurent behavior, and `Tr_F h` as a
-  black box: `traceZk`, `analyticAt_traceZk`, `meromorphicAt_traceZk` are ready;
-  `laurentCoeffAt_traceZk` is the one blocked lemma (see `PlanarTrace.lean`'s docstring for the
-  two routes to finish it); `RS.MTrace.trace`/`trace_of_forall_eq` are ready, but
-  `meromorphicAtX_trace` (needed for `Tr_F(h·ω)`'s own meromorphy) is not yet available — see
-  `FunctionTrace.lean`'s module docstring for the precise remaining gap and resolution route.
+  black box: ALL of it is now ready — `traceZk`, `analyticAt_traceZk`, `meromorphicAt_traceZk`,
+  `traceZk_zpow`, `laurentCoeffAt_traceZk` (P6, was the one blocked lemma; now proved);
+  `RS.MTrace.trace`, `trace_of_forall_eq`, `trace_eq_finsum`/`trace_eq_finsum'`,
+  `trace_eq_stack_sum` (the "fix one stack, read `trace` through it near `y₀`" shape its
+  `resAtP1_trace_eq_sum` plan step 1 consumes), `trace_of_regular`, and `meromorphicAtX_trace`
+  (needed for `Tr_F(h·ω)`'s own meromorphy).
 * **laurent-tails (CC8)**: no direct edge (per the design, nothing here is laurent-tails-facing
   beyond what `residue-calculus`/`form-trace-tower` already mediate).
 -/
