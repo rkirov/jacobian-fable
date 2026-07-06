@@ -2223,3 +2223,65 @@ wrappers), `Jacobian/Abel.lean` (imports + docstring), `docs/build-log.md` (this
 `Jacobian.lean` NOT touched.
 
 - [abel] UPGRADE DISCHARGED
+
+## cechcount: the FINAL GATE — `dim H¹(𝒪_X) ≤ genus X`, and every remaining discharge
+
+**New unit `Jacobian/CechCount/`** (root `Jacobian/CechCount.lean` — NOT yet registered in
+`Jacobian.lean`, per this pass's edit-surface rule; registration is a one-line
+`import Jacobian.CechCount`). Forster §17.8–17.9's dimension count executed directly on the
+Čech colimit (Hodge-free, residue-functional-free, duality-free):
+
+* `Mul.lean` — **multiplication on Čech `H¹`**: `RS.Cech.MulBound f D E`
+  (`∀ x, D x − E x ≤ ord_x f` in `WithTop ℤ`; holds for `f = 0`), the tower
+  `mulOn` (germ level, `LinearMap.mulLeft` + `MeroGermOn.restrict`) → `mulC0`/`mulC1`
+  (commuting with `d0`/`d1`/`resC1`) → `mulZ1`/`mulH1Cover` (`Submodule.mapQ`) →
+  **`RS.Cech.mulH1 f hf : H1 D →ₗ[ℂ] H1 E`** (`Module.DirectLimit.map`, mirroring `H1Incl`
+  verbatim), plus laws `mulH1_add`/`mulH1_smul`/`mulH1_mulH1`/`mulH1_one` (= `H1Incl`)/
+  `mulH1_H1Incl`/`mulH1_congr`. All descents are triple `Subtype.ext`+`funext` to the germ
+  algebra; `mulH1_H1Incl` closes by `congr 1` alone (inclusion is coe-identity).
+* `Surjective.lean` — **Forster 17.8 (primal)**: `mulH1_surjective` for `f ≠ 0`, factoring
+  through `D₁ := E + divisor f`: `H1Incl_surjective` (six-term part (g)) ∘ exact-bound
+  multiplication (inverse `f⁻¹` via `Mero.mul_inv_cancel` + `divisor_inv` +
+  `WithTop.coe_untop₀_of_ne_top`).
+* `Count.lean` — the ledger + growth contradiction. Step 1 (constancy): for `n > 2g−2`,
+  `l(nP) = n+1−g` (`riemannRoch` + `deg_canonical` + `linSys_eq_bot_of_degree_neg'` +
+  `degree_single`), so `chi_eq_chi_zero_add_degree` + `l_zero` give
+  `h¹(nP) = h¹(0) − g` — constant. Step 2 (Forster 17.9, primal): if `h¹(0) > g`, set
+  `c := h¹(0) − g ≥ 1`, `n₀ := 2g`, `m := g + h¹(0) + 1`; pick `ξ ≠ 0` in `H¹(n₀P)`
+  (`Module.nontrivial_of_finrank_pos`); `Φ : L(mP) →ₗ H¹((n₀+m)P)`, `f ↦ (f·)ξ` has
+  `dim L(mP) = h¹(0)+2 > c = dim H¹((n₀+m)P)`, hence a nonzero `f := q − r` with
+  `(f·)ξ = 0`; but `mulH1_surjective` between equal dimensions `c` forces injectivity
+  (rank–nullity: `finrank_range_add_finrank_ker` + `finrank_top` +
+  `Submodule.finrank_eq_zero`), so `ξ = 0` — contradiction. **`RS.cechCount :
+  Module.finrank ℂ (RS.Cech.H1 (0 : RS.Divisor X)) ≤ genus X`** (alias
+  `RS.finrank_H1_zero_le_genus`).
+* `Final.lean` — the ungated finals: **`RS.tailToH1_zero_surjective`** (via the built
+  `RS.Abel.tailToH1_zero_surjective_iff_finrank_le`), `RS.finrank_H1_zero_eq_genus`
+  (`dim H¹(X,𝒪_X) = genus X`, the deferred cech-h1-genus identity),
+  **`RS.Abel.weakSolutionUpgrade_final : WeakSolutionUpgrade X`**,
+  `RS.Abel.weakSolutionUpgradeFinset_final`, **`RS.discretenessHyp_final :
+  RS.DiscretenessHyp X`**, the global instances `DiscreteTopology (RS.periodSubgroup X)`,
+  `DiscreteTopology (RS.periodSubgroup X).topologicalClosure`, `IsZLattice ℝ
+  (RS.periodSubgroup X).topologicalClosure.toIntSubmodule` (the exact recorded
+  `PeriodLattice` discharge shapes — both fire by `inferInstance`, spot-checked),
+  `RS.finrank_int_periodSubgroup_final` (`ℤ`-rank `2g`), and
+  **`Jacobian.ofCurve_inj_final (P : X) (h : 0 < genus X) :
+  Function.Injective (Jacobian.ofCurve P)`** — the challenge's `ofCurve_inj`,
+  hypothesis-free.
+
+**Lean gotchas hit**: `rw [mem_linSysOn_iff_of_isOpen U.2]` fails on the `U.carrier`-vs-`↑U`
+pattern mismatch — pass `U.isOpen` instead; `omega` cannot bridge `locallyFinsuppWithin.le_def`'s
+coe atoms against pointwise hypotheses (close with `sub_nonpos.mp`/`sub_le_iff_le_add'` term
+lemmas); every `H1`-level declaration needs `set_option maxHeartbeats 1000000` (DirectLimit
+`isDefEq` unfolding, as in `Colimit.lean`); a `set_option … in` must precede the docstring, not
+sit between it and the declaration; `tailToH1` needs `[DecidableEq X]` even to *state* — the
+`Final.lean` consumers take it via a single `classical` per proof (one consistent local
+instance).
+
+**Verification**: `scripts/check.sh Jacobian/CechCount` — Build completed successfully
+(3292 jobs), zero sorries. `#print axioms` on all seven finals: `[propext, Classical.choice,
+Quot.sound]` only. Files: `Jacobian/CechCount/{Mul,Surjective,Count,Final}.lean`,
+`Jacobian/CechCount.lean` (all new), `docs/build-log.md` (this entry). `Jacobian.lean` NOT
+touched (registration pending, one line).
+
+- [cechcount] FINAL GATE CLOSED
