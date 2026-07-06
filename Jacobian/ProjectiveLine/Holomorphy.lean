@@ -67,7 +67,7 @@ theorem contMDiffAt_iff_analyticAt_of_ne_infty {f : Z → OnePoint ℂ} {x : Z}
     funext y
     simp only [writtenInExtChartAt, extChartAt_coe, extChartAt_coe_symm,
       modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm, Function.comp_apply,
-      Function.comp_id, Function.id_comp, id_eq, hchart]
+      Function.comp_id, Function.id_comp, hchart]
   rw [hfun, hpt]
 
 /-- Holomorphy at `∞`, read in the `invChart` ("`1/f` is analytic"). -/
@@ -82,7 +82,7 @@ theorem contMDiffAt_iff_analyticAt_of_eq_infty {f : Z → OnePoint ℂ} {x : Z}
     funext y
     simp only [writtenInExtChartAt, extChartAt_coe, extChartAt_coe_symm,
       modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm, Function.comp_apply,
-      Function.comp_id, Function.id_comp, id_eq, hchart]
+      Function.comp_id, Function.id_comp, hchart]
   rw [hfun, hpt]
 
 /-- `(↑)` sends `cobounded ℂ` to `𝓝 ∞`. -/

@@ -92,8 +92,11 @@ noncomputable def mk (f : X → ℂ) (hf : MeromorphicOnX f U) : MeroGermOn X U 
 
 theorem mk_eq_mk {f g : X → ℂ} {hf : MeromorphicOnX f U} {hg : MeromorphicOnX g U} :
     mk f hf = mk g hg ↔ f =ᶠ[codiscreteWithin U] g := by
-  rw [Subtype.ext_iff]
-  exact Filter.Germ.coe_eq
+  constructor
+  · intro h
+    exact Filter.Germ.coe_eq.1 (congrArg Subtype.val h)
+  · intro h
+    exact Subtype.ext (Filter.Germ.coe_eq.2 h)
 
 theorem exists_rep (φ : MeroGermOn X U) : ∃ f, ∃ hf : MeromorphicOnX f U, mk f hf = φ := by
   obtain ⟨f, hf, hfeq⟩ := φ.2
@@ -121,11 +124,17 @@ theorem ind {motive : MeroGermOn X U → Prop} (h : ∀ f (hf : MeromorphicOnX f
     c • mk f hf = mk (c • f) (hf.smul c) :=
   Subtype.ext (Filter.Germ.coe_smul c f).symm
 
-@[simp] theorem mk_zero : mk (fun _ : X => (0 : ℂ)) (meromorphicOnX_const 0 U) = 0 :=
-  Subtype.ext rfl
+@[simp] theorem mk_zero :
+    (mk (fun _ : X => (0 : ℂ)) (meromorphicOnX_const 0 U) : MeroGermOn X U) = 0 := by
+  apply Subtype.ext
+  show ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 0
+  exact Filter.Germ.coe_zero
 
-@[simp] theorem mk_one : mk (fun _ : X => (1 : ℂ)) (meromorphicOnX_const 1 U) = 1 :=
-  Subtype.ext (Filter.Germ.coe_one).symm
+@[simp] theorem mk_one :
+    (mk (fun _ : X => (1 : ℂ)) (meromorphicOnX_const 1 U) : MeroGermOn X U) = 1 := by
+  apply Subtype.ext
+  show ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 1
+  exact Filter.Germ.coe_one
 
 theorem algebraMap_mk (c : ℂ) :
     algebraMap ℂ (MeroGermOn X U) c = mk (fun _ => c) (meromorphicOnX_const c U) := by
@@ -141,31 +150,38 @@ end MeroGermOn
 noncomputable def restrictGerm (h : V ⊆ U) (γ : Filter.Germ (codiscreteWithin U) ℂ) :
     Filter.Germ (codiscreteWithin V) ℂ :=
   γ.liftOn (fun f => (f : Filter.Germ (codiscreteWithin V) ℂ))
-    (fun f g hfg => Filter.Germ.coe_eq.2 (hfg.filter_mono (codiscreteWithin_mono h)))
+    (fun _f _g hfg => Filter.Germ.coe_eq.2 (hfg.filter_mono (codiscreteWithin_mono h)))
 
+omit [ChartedSpace ℂ X] in
 @[simp] theorem restrictGerm_coe (h : V ⊆ U) (f : X → ℂ) :
     restrictGerm h (f : Filter.Germ (codiscreteWithin U) ℂ) =
       (f : Filter.Germ (codiscreteWithin V) ℂ) := rfl
 
+omit [ChartedSpace ℂ X] in
 theorem restrictGerm_add (h : V ⊆ U) (γ₁ γ₂ : Filter.Germ (codiscreteWithin U) ℂ) :
     restrictGerm h (γ₁ + γ₂) = restrictGerm h γ₁ + restrictGerm h γ₂ :=
   Filter.Germ.inductionOn₂ γ₁ γ₂ fun f g => by
     simp only [← Filter.Germ.coe_add, restrictGerm_coe]
 
+omit [ChartedSpace ℂ X] in
 theorem restrictGerm_mul (h : V ⊆ U) (γ₁ γ₂ : Filter.Germ (codiscreteWithin U) ℂ) :
     restrictGerm h (γ₁ * γ₂) = restrictGerm h γ₁ * restrictGerm h γ₂ :=
   Filter.Germ.inductionOn₂ γ₁ γ₂ fun f g => by
     simp only [← Filter.Germ.coe_mul, restrictGerm_coe]
 
+omit [ChartedSpace ℂ X] in
 theorem restrictGerm_one (h : V ⊆ U) :
     restrictGerm h (1 : Filter.Germ (codiscreteWithin U) ℂ) = 1 := by
-  show restrictGerm h ((fun _ => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
-  rw [restrictGerm_coe, Filter.Germ.coe_one]
+  show restrictGerm h ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
+  rw [restrictGerm_coe]
+  exact Filter.Germ.coe_one
 
+omit [ChartedSpace ℂ X] in
 theorem restrictGerm_zero (h : V ⊆ U) :
     restrictGerm h (0 : Filter.Germ (codiscreteWithin U) ℂ) = 0 := by
-  show restrictGerm h ((fun _ => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
-  rw [restrictGerm_coe, Filter.Germ.coe_zero]
+  show restrictGerm h ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
+  rw [restrictGerm_coe]
+  exact Filter.Germ.coe_zero
 
 theorem restrictGerm_mem (h : V ⊆ U) {γ : Filter.Germ (codiscreteWithin U) ℂ}
     (hγ : γ ∈ meroGermSubalgebra X U) : restrictGerm h γ ∈ meroGermSubalgebra X V := by
@@ -204,11 +220,12 @@ end MeroGermOn
 
 theorem algebraMap_injective [Nonempty X] : Function.Injective (algebraMap ℂ (ℳ X)) := by
   intro c d hcd
-  have hcd' : (mk (fun _ => c) (meromorphicOnX_const c univ) : MeroGermOn X univ) =
-      mk (fun _ => d) (meromorphicOnX_const d univ) := by
+  have hcd' : (MeroGermOn.mk (fun _ : X => c) (meromorphicOnX_const c univ) :
+      MeroGermOn X univ) = MeroGermOn.mk (fun _ : X => d) (meromorphicOnX_const d univ) := by
     rw [← MeroGermOn.algebraMap_mk, ← MeroGermOn.algebraMap_mk]; exact hcd
   have heq := MeroGermOn.mk_eq_mk.1 hcd'
-  rw [eventuallyEq_codiscrete_iff] at heq
-  exact heq (Classical.arbitrary X)
+  have heq2 := eventuallyEq_codiscrete_iff.mp heq (Classical.arbitrary X)
+  obtain ⟨_, hcd2⟩ := heq2.exists
+  exact hcd2
 
 end RS
