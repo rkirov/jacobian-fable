@@ -79,3 +79,13 @@
 - [mero] Jacobian/Meromorphic.lean (unit root) OK (scripts/check.sh Jacobian/Meromorphic passes, zero sorries — unit COMPLETE, all 10 files + design doc's six hard proof plans §6.1-§6.7 including gluing and linSysMulEquiv). NOT registered in Jacobian.lean per task hard rule.
 - [paths] Jacobian/Path/Periods.lean OK (75 lines; period/period_trans/symm/refl/
   congr_homotopic/conj, periodVector + trans/symm/refl)
+- [paths] Jacobian/Path/Perturb.lean PARTIAL (184 lines; nonempty_open_diff_finite and
+  exists_homotopic_avoiding_of_ball [single-chart-ball base case] are complete and sorry-free;
+  exists_homotopic_avoiding / Loop.exists_homotopic_avoiding are BLOCKED with one `sorry` and a
+  detailed TODO(blocker) note — the general ChartChain-induction (design R4: breakpoint insertion
+  + homotopic_truncate_trans reparametrization bookkeeping) was time-boxed out; see module doc for
+  the precise reparam strategy worked out for a future pass. Gates only abel-weak-solutions.)
+- [paths] Jacobian/Path.lean (unit root) OK (69 lines; scripts/check.sh Jacobian/Path builds
+  clean but FAILS the sorry-grep solely due to Perturb.lean's one documented blocker sorry —
+  all 8 unit files individually build with zero errors; 7/8 are fully sorry-free. NOT registered
+  in Jacobian.lean per task hard rule, orchestrator to add `import Jacobian.Path`.)
