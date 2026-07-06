@@ -9,12 +9,16 @@ map, free from `jacobian-construction`'s `Jacobian.contMDiff_inducedHom`, inheri
 every other `Jacobian _` manifold instance and `ofCurve_contMDiff` already need — no new gate
 introduced here).
 
+Same-universe convention as `PeriodMaps.lean`'s `Jacobian.pushforward` (see the universe warning
+there): both surfaces live in one `Type u`, matching `JacobianConstruction/Functorial.lean`.
+
 **Scope note**: `pushforward_id_apply`/`pushforward_comp_apply` (needing `Torus.inducedHom_id`/
 `_comp`, not built upstream — confirmed absent from `Jacobian/JacobianConstruction/Torus.lean` by
-this unit's own research) and the full pullback-direction exports (`Jacobian.pullback`,
-`pullback_contMDiff`, `pullback_id_apply`, `pullback_comp_apply`, `pushforward_pullback`) are
-**not built in this unit** — see the root file's LEDGER and this builder's final report for the
-precise gap (`Form1.trace`'s branch-point analyticity and the trace–path-integral relation).
+this unit's own research; request now actually filed at `docs/requests/jacobian-construction.md`)
+and the full pullback-direction exports (`Jacobian.pullback`, `pullback_contMDiff`,
+`pullback_id_apply`, `pullback_comp_apply`, `pushforward_pullback`) are **not built in this
+unit** — see the root file's LEDGER and this builder's final report for the precise gap
+(`Form1.trace`'s branch-point analyticity and the trace–path-integral relation).
 -/
 
 open scoped ContDiff Manifold
@@ -23,12 +27,13 @@ noncomputable section
 
 namespace RS
 
-variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+universe u
+
+variable {X : Type u} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
-variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
+variable {Y : Type u} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-set_option maxHeartbeats 0 in
 /-- The pushforward map on Jacobians is holomorphic (§9.1 — free from
 `Jacobian.contMDiff_inducedHom`; gated by `[DiscreteTopology (periodSubgroup _).topologicalClosure]`
 exactly as `ofCurve_contMDiff` and every `ChartedSpace`/`IsManifold` instance on `Jacobian _`
