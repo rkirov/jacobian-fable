@@ -44,3 +44,24 @@ D(x) = 0` at `x` (analytic, since `ω`'s own order is `≥ D(x)` there), hence c
 `toH`.
 
 Nothing here blocks serre-duality-cech; it is entirely forward-looking for #26.
+
+## From serre-duality-tails (designer, see `docs/design/serre-duality-tails.md`) — confirmation
+
+Filed 2026-07-06. The unit that actually consumes your headline (us) confirms the shape
+requested above by serre-duality-cech, with one simplification discovered at design time: since
+canonical-forms' `coeffAt_smul_mero` is `rfl` (verified on disk, `Differential.lean:175`), the
+requested statement is literally
+
+```lean
+theorem sum_resAt_eq_zero … (f : ℳ X) (θ : MForm X) : ∑ᶠ x, (f • θ).resAt x = 0
+```
+
+Either this finsum form or the Finset-flexible form
+`residueTheorem (θ : MForm X) {S : Finset X} (hS : θ.PoleSet ⊆ ↑S) : ∑ x ∈ S, θ.resAt x = 0`
+(your own §2 design shape) works for us — we consume it in exactly ONE lemma
+(`RS.TailDuality.pairT_alpha`, design §6 P3), so late shape drift costs one edit. The reduction
+recorded by serre-duality-cech (splitting `f` into `D`-tail + regular part) is NOT needed on the
+germ model: our term-by-term identification is direct (`resAt_congr` + `holoRepr` rigidity), and
+off-tail-support terms vanish by `resAt_of_order_nonneg`. Timing note: this is our risk R2 —
+files 3–4 of `Jacobian/TailDuality/` gate on your unit landing (trace route primary per the
+orchestrator addendum).
