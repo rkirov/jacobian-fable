@@ -880,3 +880,140 @@
   `integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` (the exact two-puncture `g b - g a` shape,
   §7.3 step 3) are all ready to consume directly — no further Stokes/measure-theory work should be
   needed for that unit's Lemma-20.3 step.
+- [dolb] Jacobian/DolbeaultComparison/Leray.lean OK (677 lines; continuation of a MID-WORK file
+  left by a previous builder at 345 lines — steps 1-3 of Forster 12.8's member-splitting proof
+  were already in place, namespace `RS.Cech`; this pass finished steps 4-7 per
+  `docs/design/dolbeault-comparison.md` §5). Added: `exists_crossGlueLinSysOn`/`patch_restrict`
+  (LinSysOn-level unfolding of the step-3 glue), `exists_crossGlueFam`/`crossGlueFam_mem_Z1`
+  (step 4: the glued family is a genuine `𝒰`-cocycle — PURE telescoping algebra from `patch`'s
+  definition, no cocycle hypothesis on the input `f` needed at all, contrary to what the
+  step-by-step design prose might suggest), `tradeH0`/`resC1_crossGlueFam_add_eq` (step 5's frozen
+  conclusion `resC1 F + f = d0 h`, verified against Forster PDF 108's mirror-convention sign
+  warning), then the 4 exports: `exists_trade`, `resH1_surjective_of_isGood`,
+  `toH1_surjective_of_isGood` (**Leray's theorem**, discharging cech's `Colimit.lean`-recorded
+  interface), `h1CoverEquiv`. `scripts/check.sh` not yet run (comparison files not built this
+  pass); direct `lake env lean Jacobian/DolbeaultComparison/Leray.lean` compiles clean, **zero
+  sorries**. Per design §0.1 this file ALONE (no `Form01`/PoU/∂̄) unblocks finiteness-and-chi —
+  reporting now even though the comparison files (`GlueForm01`/`Splitting`/`Comparison`) are
+  separate follow-up work. Gotchas hit repeatedly (new, beyond DiskAcyclic's prior notes):
+  (1) type ascriptions `(𝒰.U i ⊓ 𝒰.U j : Set X)` elaborate as `↑(𝒰.U i) ⊓ ↑(𝒰.U j)`
+  (Set-level inf of the coercions), NOT `↑(𝒰.U i ⊓ 𝒰.U j)` (coe of the Opens-level inf) — these
+  are equal but not syntactically so; `rw [mem_linSysOn_iff_of_isOpen ...]` against an
+  `Opens.isOpen`-sourced `IsOpen` proof can fail to unify for exactly this reason — use
+  `refine (mem_linSysOn_iff_of_isOpen hU).2 ?_` instead (extends the DiskAcyclic-recorded
+  `rw`-vs-`refine` iff-lemma gotcha to this new shape). (2) After `rw` collapses two nested
+  `MeroGermOn.restrict`s via `restrict_restrict` into a single restrict, the two sides of the
+  goal are only equal via PROOF IRREVELANCE of the two `≤`/`⊆` witnesses (same Prop, different
+  terms) — `rw`'s automatic trailing-`rfl` closer does not always fire on this; append an
+  explicit `rfl` tactic line after such a `rw` rather than assuming it auto-closes. (3) when a
+  restriction-along-`le_rfl` appears in a helper lemma's conclusion (e.g. `splitting_eq_restrict`
+  applied with `hWαβ := le_refl _`), convert it to the bare (unrestricted) term via
+  `RS.MeroGermOn.restrict_id` explicitly (it is a propositional lemma, proved by `induction`, NOT
+  `rfl`) rather than trying to state the bare form directly as the lemma's output type. (4) for
+  chained additive/subtractive identities across 3+ `have`-facts, `linear_combination h1 - h2 -
+  h3`-style closing (treating `MeroGermOn`'s `CommRing` structure as the ring `ring` normalizes
+  over) is far more robust than manual `rw [...]; abel` chains, which break when the terms to
+  rewrite are not literally contiguous subterms of the goal (interleaved differently after a
+  prior rewrite) — prefer it whenever 3 or more equational facts must be combined.
+  **Notes for finiteness-and-chi** (the actual compiled signatures, `D` auto-inserted first from
+  the ambient `variable (D : RS.Divisor X)`, `𝒰 𝒱 : FinCover (⊤ : Opens X)` implicit throughout):
+  `exists_trade (D) (h𝒰 : 𝒰.IsGood) (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (f : Z1 D 𝒱) :
+  ∃ (F : Z1 D 𝒰) (g : C0 D 𝒱), (resZ1 D τ hτ F : C1 D 𝒱) = (f : C1 D 𝒱) + d0 D 𝒱 g`;
+  `resH1_surjective_of_isGood (D) (h𝒰) (τ) (hτ) : Function.Surjective (resH1 D τ hτ)`;
+  `toH1_surjective_of_isGood (D) (h𝒰 : 𝒰.IsGood) : Function.Surjective (toH1 D 𝒰)` (exactly the
+  interface cech's `Colimit.lean` docstring recorded); `h1CoverEquiv (D) (h𝒰) : H1Cover D 𝒰 ≃ₗ[ℂ]
+  H1 D` (`:= LinearEquiv.ofBijective (toH1 D 𝒰) ⟨toH1_injective D 𝒰, toH1_surjective_of_isGood D
+  h𝒰⟩`), `h1CoverEquiv_apply`. All four hold for EVERY `D : Divisor X` (no `D = 0` restriction),
+  matching cech's recorded signature exactly — no drift. Needs `[T2Space X] [CompactSpace X]`
+  throughout (inherited from dbar's disk-acyclicity twist + `exists_good_refinement`).
+- [dolb] Jacobian/Dbar/Form01.lean UPDATED (299 lines, was 121) — added `Form01CoeffData`/
+  `Form01.ofCoeffs`/`Form01.coeffAt_ofCoeffs` (design §1.4's substrate list), confirmed NOT
+  present from any prior pass, added here under dolbeault-comparison's authorization (needed by
+  `GlueForm01.lean`'s `DbarGlueData.form` constructor, design §6.1) — a clean transcription of
+  `Form1CoeffData`/`Form1.ofCoeffs` (`Jacobian/Forms/OfCoeffs.lean`) with `starRingEnd ℂ` (`conj`)
+  inserted in the transition rule per `Form01`'s own `compat` field. SIMPLER than the `Form1`
+  original: `Form01` is a raw chart-coefficient structure (not a bundled `ContMDiffSection`), so
+  no covector/hom-bundle/`mfderiv`/`tangentCoord` detour is needed — `rawCoeffAt` is assembled
+  directly as an `X → ℂ → ℂ` function via a chosen covering-chart index per point (`idx`,
+  `Classical.choice`-based), the master transport identity `rawCoeffAt_eq` (independence of the
+  chosen index, via `compat` + `RS.deriv_trans_comp`'s 3-chart chain rule), real-smoothness
+  (`AnalyticAt.restrictScalars (𝕜 := ℝ)` + `.contDiffAt`, `Complex.conjCLE.contDiff` for the
+  `conj` factor), and the cross-preferred-chart transition `rawCoeffAt_trans` (feeds `Form01`'s
+  `compat` field directly). `scripts/check.sh Jacobian/Dbar` re-run: still passes (2964 jobs),
+  **zero sorries**. Gotchas (new): (1) a `def` using `if h : P then _ else _` (`dite`) on a
+  non-syntactically-`Decidable` `Prop` (e.g. `z ∈ (chartAt ℂ x).target`) needs `open scoped
+  Classical` in scope BEFORE the `def` — omitting it fails with `synthInstanceFailed` on the
+  `dite`, which then CASCADES into spurious "Invalid field notation"/"unknown identifier" errors
+  on every later dot-notation use of that same malformed function (misleading — the root cause
+  is always the missing `Classical` instance at the `def` site, chase it first). (2)
+  `ContDiffAt.congr_of_eventuallyEq (h : ContDiffAt 𝕜 n f x) (hg : f₁ =ᶠ[𝓝 x] f) : ContDiffAt 𝕜 n
+  f₁ x` — the `EventuallyEq` direction is `f₁ =ᶠ f` (new-name first), the OPPOSITE of the
+  intuitive "old =ᶠ new" reading; passing `.symm` when it looks like it should be needed is
+  usually the tell that the un-symm'd hypothesis was correct all along. **Note for any future
+  `Form01`-consuming unit**: `Form01.ofCoeffs`/`Form01CoeffData` are now available at the exact
+  shapes design's §1.4/§4.2/§6.1 quote; `Form01.coeffAt_ofCoeffs` gives the CENTER-point value
+  only (`(Form01.ofCoeffs Data).coeffAt x (chartAt ℂ x x)`, mirroring `Form1.coeffAt_ofCoeffs`
+  exactly), matching GlueForm01's consumption plan verbatim.
+- [serrec] Jacobian/SerrePairing/{TailSpace,Pairing,Duality}.lean + Jacobian/SerrePairing.lean
+  (unit root) OK — `scripts/check.sh Jacobian/SerrePairing` passes (2927 jobs), zero sorries
+  across 4 files (472 lines total: TailSpace 101, Pairing 170, Duality 201, root docstring 88).
+  Continuation of an interrupted builder: `TailSpace.lean`/`Pairing.lean` were already on disk and
+  compiled clean as-is (previous builder had already adapted `Tail X` to `abbrev` and `pair` to
+  route through `MForm.laurentCoeffAt` on classes rather than raw `coeffAt`, per the CanonicalForms
+  quotient revision); this pass wrote `Duality.lean` (D4 `exists_tail_pair_ne_zero`, D5
+  `finrank_omegaSpace_le`) and the unit root from scratch. Centerpieces: `Tail X`/`TailSpace D`
+  (free `Finsupp`-of-`Finsupp`s, D1), `pair`/`pairL` bilinear (D2, via `Finsupp.lsum` over
+  `MForm.laurentCoeffAt`), `exists_tail_pair_ne_zero` (the injectivity core — single-term test tail
+  at the leading Laurent exponent, computed via `pair_single` + a new Compat lemma
+  `MForm.laurentCoeffAt_ord_ne_zero` lifting residue-calculus's `laurentCoeffAt_order_ne_zero`
+  through `MForm.exists_rep`), `finrank_omegaSpace_le` (the generic, premise-parameterized `≤`-half
+  interface: any finite-dimensional `H` + surjective `toH : ↥(TailSpace D) →ₗ[ℂ] H` + a
+  well-definedness hypothesis `hwd` give `finrank Ω(-D) ≤ finrank H`). Needs only
+  `[T1Space X] [ConnectedSpace X]` throughout (dropped the design's extra `[T2Space][CompactSpace]`
+  — `MForm.OmegaSpace`/`Module.finrank` are topology-free after the canonical-forms revision).
+  NOT registered in `Jacobian.lean` (task hard rule; orchestrator to add `import
+  Jacobian.SerrePairing`).
+
+  **Deviation (adaptation, not correction) — the quotient revision**: `pair` is defined directly
+  from `MForm.laurentCoeffAt` on classes (Miranda's own boxed formula) rather than via `resAt` of a
+  representative product + `resAt_tail_mul`, since `MForm` no longer exposes raw `coeffAt`;
+  same content, less proof debt (bilinearity in `τ` free from `Finsupp.lsum`). `mem_omegaSpace_iff`
+  also dropped the design's `θ = 0 ∨ -D ≤ θ.divisor` disjunction for a single order-wise condition
+  (uniform since `θ = 0` has `ord = ⊤` everywhere) — `exists_tail_pair_ne_zero`'s proof uses this
+  directly, one `Divisor.neg_apply`/`neg_neg` unwind then an `omega`-closed integer inequality.
+
+  **Genuine mathlib-instance gap found and worked around (flagged for any future `Tail X`/
+  `TailSpace D` consumer, e.g. laurent-tails/serre-duality-tails if they ever build further
+  `Submodule`s over this carrier)**: the design's primary plan for D5 (`Submodule.liftQ` +
+  `LinearMap.quotKerEquivOfSurjective`, stacking a further quotient `↥(TailSpace D) ⧸ ker toH` on
+  top of `Tail X`) elaborates so slowly it deterministically times out at `whnf`/`isDefEq` even at
+  1,000,000 heartbeats. Root cause, isolated by direct scratch experiment (bisecting instance
+  arguments): `↥(TailSpace D)` — a `Submodule` over the DOUBLY-NESTED `Finsupp` carrier
+  `Tail X := X →₀ (ℤ →₀ ℂ)` — has no *findable* `AddCommGroup`/`Sub`/`Neg` instance at this pin;
+  `AddSubgroupClass (Submodule ℂ (Tail X)) (Tail X)` itself fails `inferInstance` (confirmed this
+  is NOT about the previous builder's `abbrev`-vs-`def` choice — reproduced identically with the
+  custom instances stripped out), even though `Tail X` unwrapped has a perfectly good
+  `AddCommGroup`/`Sub`, and the SEMIRING-level `Submodule.add_mem`/`smul_mem` (needing only
+  `Semiring`/`AddCommMonoid`, not `Ring`/`AddCommGroup`) resolve fine. Fix: used the design's own
+  pre-registered risk-3 fallback (§7) instead — `resDual`/`Φ` are built from a chosen section
+  `Function.surjInv` of `toH` plus a congruence lemma `pair_congr_of_toH_eq`, and every place a
+  "difference" of `↥(TailSpace D)` elements was needed is built as `τ + (-1 : ℂ) • σ` (`+`/`•`,
+  confirmed working) instead of `τ - σ` (`Sub`, confirmed broken) — zero mathematical content lost.
+  Gotcha for siblings: avoid `Submodule.sub_mem`/`neg_mem`/`AddSubgroupClass`/bare `Sub`/`Neg` on
+  `↥(TailSpace D)` (or any `Submodule` over a nested-`Finsupp` carrier) directly; `add_mem`/
+  `smul_mem` plus the `(-1 : ℂ) • ·` trick sidestep it completely. Also recorded: `omit [...] in`
+  and `set_option ... in` must precede a declaration's docstring, not follow it (`/-- doc -/`
+  between the modifier and `def`/`theorem` causes an "unexpected token" parse error) — a `let`
+  bound to a structure must use `:= { field := ... }`, not `where` (the latter is `def`/`theorem`-
+  only syntax, not valid after `let` in tactic mode).
+
+  Consumer notes for serre-duality-tails (#26), the adapter surface as built: `Tail X`/`TailSpace
+  D`/`pair`/`pairL`/bilinearity/`pair_single` (self-contained, provable off canonical-forms +
+  residue-calculus alone, confirmed no dependence on laurent-tails/residue-theorem/cech-cohomology)
+  remain available exactly as their own design's frozen §0 reconciliation records — per that
+  reconciliation, #26 runs Miranda VI.3 on its own germ tail model instead of instantiating this
+  unit's `finrank_omegaSpace_le`/`Tail X` directly, reusing only the proof PATTERN
+  (`resAt_zpow_mul`/`laurentCoeffAt_order_ne_zero`-shaped injectivity computation, matching
+  `RS.Cech.tailGerm`'s literal-monomial normalization) and citing `exists_tail_pair_ne_zero`'s shape;
+  nothing here blocks or needs revision for that plan. `finrank_omegaSpace_le` itself remains a
+  ready-made, zero-sorry `≤`-half interface (instantiable at `H := RS.Cech.H1 D`) if ever wanted.

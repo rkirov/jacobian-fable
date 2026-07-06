@@ -80,22 +80,44 @@ variable {D : RS.Divisor X} {H : Type*} [AddCommGroup H] [Module ℂ H] [FiniteD
 -- when it appears in that declaration's stated TYPE, not merely in its tactic proof — `hwd` is
 -- only ever used inside proof bodies below, so it must be explicit.
 
+omit [T1Space X] [ConnectedSpace X] [FiniteDimensional ℂ H] in
 /-- `pair Θ` is invariant on the fibres of `toH` (a repackaging of `hwd`: since `pair Θ` vanishes
 on `ker toH`, it agrees on any two tails with the same `toH`-image). The engine behind `resDual`
 below — the design's risk-3 fallback (`docs/design/serre-duality-cech.md` §7): instead of
 `Submodule.liftQ`/`LinearMap.quotKerEquivOfSurjective` (which stacks a further quotient on top of
 the already-reducible `abbrev Tail X`, and was found to elaborate very slowly / time out), we work
-directly with a section `Function.surjInv` of `toH` and this congruence lemma. -/
+directly with a section `Function.surjInv` of `toH` and this congruence lemma.
+
+**A genuine mathlib-instance gap found and worked around**: `↥(TailSpace D)` has no *findable*
+`AddCommGroup`/`Sub`/`Neg` instance at this pin — confirmed by direct experiment that
+`AddSubgroupClass (Submodule ℂ (Tail X)) (Tail X)` fails to synthesize (`Tail X`'s doubly-nested
+`Finsupp` carrier `X →₀ (ℤ →₀ ℂ)` defeats it), even though `Tail X` itself (unwrapped) has a
+perfectly good `AddCommGroup`/`Sub`, and the SEMIRING-level `Submodule.add_mem`/`smul_mem` (not
+`neg_mem`/`sub_mem`, which need `Ring`/`AddCommGroup`) resolve fine. So the proof below builds
+"`τ - σ`" as `τ + (-1 : ℂ) • σ` (`+`/`•` on `↥(TailSpace D)`, both confirmed working), never
+invoking `Sub`/`Neg` on the submodule-subtype itself. -/
 theorem pair_congr_of_toH_eq (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0)
     {Θ : MForm X} (hΘ : Θ ∈ MForm.OmegaSpace (-D)) {τ σ : ↥(TailSpace D)} (h : toH τ = toH σ) :
     pair Θ (τ : Tail X) = pair Θ (σ : Tail X) := by
-  have hker : toH ((τ - σ : ↥(TailSpace D))) = 0 := by rw [map_sub, h, sub_self]
-  have hz := hwd Θ hΘ (τ - σ : ↥(TailSpace D)) hker
-  rw [Submodule.coe_sub] at hz
-  have hlin : pair Θ ((τ : Tail X) - (σ : Tail X)) = pair Θ (τ : Tail X) - pair Θ (σ : Tail X) := by
-    show pairL Θ ((τ : Tail X) - (σ : Tail X)) = pairL Θ (τ : Tail X) - pairL Θ (σ : Tail X)
-    rw [map_sub]
+  set negσ : ↥(TailSpace D) := (-1 : ℂ) • σ with hnegσ_def
+  set δ : ↥(TailSpace D) := τ + negσ with hδ_def
+  have hnegσcoe : (negσ : Tail X) = -(σ : Tail X) := by
+    rw [hnegσ_def, Submodule.coe_smul]
+    exact neg_one_smul ℂ (σ : Tail X)
+  have hδcoe : (δ : Tail X) = (τ : Tail X) - (σ : Tail X) := by
+    rw [hδ_def, Submodule.coe_add, hnegσcoe]
+    abel
+  have hδker : toH δ = 0 := by
+    have e1 : toH δ = toH τ + toH negσ := map_add toH τ negσ
+    have e2 : toH negσ = (-1 : ℂ) • toH σ := map_smul toH (-1 : ℂ) σ
+    rw [e2, neg_one_smul] at e1
+    rw [e1, h]
+    abel
+  have hz := hwd Θ hΘ δ hδker
+  rw [hδcoe] at hz
+  have hlin : pair Θ ((τ : Tail X) - (σ : Tail X)) = pair Θ (τ : Tail X) - pair Θ (σ : Tail X) :=
+    map_sub (pairL Θ) (τ : Tail X) (σ : Tail X)
   rw [hlin] at hz
   exact sub_eq_zero.mp hz
 
@@ -124,6 +146,7 @@ def resDual (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     rw [hcong, Submodule.coe_smul, RingHom.id_apply, smul_eq_mul]
     exact pair_smul_right Θ.1 c _
 
+omit [T1Space X] [ConnectedSpace X] [FiniteDimensional ℂ H] in
 theorem resDual_apply_toH (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0)
     (hsurj : Function.Surjective toH) (Θ : ↥(MForm.OmegaSpace (-D))) (τ : ↥(TailSpace D)) :
