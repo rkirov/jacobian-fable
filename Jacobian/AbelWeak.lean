@@ -2,6 +2,8 @@ import Jacobian.AbelWeak.PlanarLogBranch
 import Jacobian.AbelWeak.WeakSolution
 import Jacobian.AbelWeak.SingleChart
 import Jacobian.AbelWeak.ChainAssembly
+import Jacobian.AbelWeak.Rechart
+import Jacobian.AbelWeak.GeneralChain
 
 /-!
 # abel-weak-solutions: weak solutions, the planar log-branch, and chain assembly (Forster §20.1–20.4)
@@ -57,39 +59,66 @@ NOT registered in `Jacobian.lean` (orchestrator's job, per this unit's task hard
     `g` needed (citing `planar-stokes-atoms`' own hypothesis-free two-puncture export
     `RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` directly).
 
-## Status: the general multi-chart `exists_weakSolutionOfPair` is NOT built
+## Status: the general multi-chart `exists_weakSolutionOfPair` is NOW BUILT (`Rechart.lean` +
+`GeneralChain.lean`, closed by the `abel-theorem` builder, authorized to edit this unit for
+exactly this gap)
 
 The design's §6.3/§7.1 deliverable — a weak solution of `(P, Q)` for an **arbitrary** path
-`γ : Path Q P` not confined to one chart, assembled by taking the pointwise product of
-`SingleChart` pieces over a full `RS.ChartChain` — is **not built in this pass**. The gap: two
-adjacent `ChartChain` pieces meeting at an interior breakpoint `M` generally use *different*
-charts, so showing the product of their weak solutions is smooth *at* `M` (where one piece's
-`+1`-order zero must cancel the next piece's `-1`-order pole) needs a "rechart" lemma for
-`IsWeakSolutionAt`: transporting a simple-zero/pole local model across a holomorphic chart
-transition. This is provable — mathlib's removable-singularity theorem
-(`Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`, applied to the
-transition map's difference quotient, which tends to the transition's derivative at the
-breakpoint by `hasDerivAt_iff_tendsto_slope`) supplies exactly the missing "linear factor
-division" fact — but assembling it together with the chain induction (plus the per-piece radius
-bookkeeping needed so only *adjacent* pieces' transition supports can overlap) did not fit this
-pass's time budget. Flagged as risk R3 in the design's own §11, which underestimated it as
-"mechanical, ~20 lines"; it is real, correct, buildable content but genuinely more than that.
+`γ : Path Q P` not confined to one chart — is now built in full, zero sorries.
 
-**Consumer impact** (`abel-theorem`, #29): its `k`-point/Finset use (§1.4, `RS.Abel.exists_mero_of_periodVector_mem`)
-does **not** need the general case — its own account of Thm 21.4(a)'s construction is exactly
-the disjoint-single-chart-per-pair shape `exists_weakSolutionOfFinset` above already covers. Its
-two-point sufficiency direction (§2.1, `RS.Abel.exists_mero_of_pathIntegral_mem`) is the one
-consumer that *would* need the fully general version, since the path `δ'` it builds (via loop
-cancellation) is not generally confined to one chart. `abel-theorem`'s builder should either (a)
-build the rechart lemma + induction themselves on top of `SingleChart.exists_weakSolutionOfPair_chart`
-and `WeakSolution.IsWeakSolutionAt.mul_of_contMDiffAt` (the multiplicativity step already built
-here is exactly what the induction's *disjoint* pieces would need; only the *adjacent*-breakpoint
-rechart step is missing), or (b) find an alternative route (e.g. the third-kind-differential
-construction this unit's design §4 examined and deferred, gated on Riemann–Roch).
+* **`Rechart.lean`** (the missing "rechart" lemma this unit's original pass flagged as the gap):
+  `exists_localModel_of_isWeakSolutionAt` — `IsWeakSolutionAt`'s local model, witnessed in one
+  `maximalAtlas` chart, can be re-witnessed in ANY OTHER `maximalAtlas` chart at the same point.
+  Proved via mathlib's removable-singularity theorem: the transition map `S := e ∘ e'.symm`
+  between two charts is holomorphic (`IsManifold`'s groupoid compatibility, transported through
+  `ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω` and mathlib's generic `contMDiffAt_iff_contDiffAt`), its "divided
+  difference" `H := dslope S (e' a)` is analytic too
+  (`HasFPowerSeriesAt.has_fpower_series_dslope_fslope`) and NONZERO at the transition point
+  (`S` has a two-sided holomorphic inverse — the reverse transition — so the chain rule on
+  `T ∘ S = id` forces `deriv S (e' a) ≠ 0`), and the unconditional identity `sub_smul_dslope`
+  gives the exact factorisation `e x - e a = (e' x - e' a) * H (e' x)` needed to rewrite the local
+  model, with `H` supplying the new nonvanishing smooth cofactor. Consumer: `IsWeakSolutionAt.mul`
+  — fully general order-additive multiplication (subsuming `WeakSolution.lean`'s
+  `IsWeakSolutionAt.mul_of_contMDiffAt`'s `k2 = 0` case), combining `IsWeakSolutionAt f a k1` and
+  `IsWeakSolutionAt g a k2` (witnessed by POSSIBLY DIFFERENT charts, aligned via the rechart
+  lemma) into `h` equal to `f * g` everywhere except possibly at `a`, with
+  `IsWeakSolutionAt h a (k1 + k2)`. The "possibly except at `a`" `Function.update` is not a
+  cosmetic detail: at the cancelling case `k1 = -k2 ≠ 0` (a `+1`-order zero meeting a `-1`-order
+  pole — exactly what happens at every interior `ChartChain` breakpoint), the naive product
+  `f * g` genuinely disagrees with the correct weak solution AT the point `a` itself, because
+  `IsWeakSolutionAt`'s local model pins down `f`'s/`g`'s literal (junk-convention) value there via
+  `zpow`-at-zero (`0 ^ k = 0` for `k ≠ 0`, so `(f * g) a = 0`, but the removable-singularity limit
+  is `ψ (e a) * φ (e a) ≠ 0`); `Function.update` at the single point `a` repairs this uniformly
+  for every `k1, k2` (documented in the file's own docstring in full).
+
+* **`GeneralChain.lean`** (the chain induction, using `Rechart.lean`'s two exports as the engine):
+  `exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) : ∃ f U, IsWeakSolutionOfPair
+  f P Q ∧ IsOpen U ∧ IsCompact (closure U) ∧ P ∈ U ∧ Q ∈ U ∧ (∀ x ∉ U, f x = 1)` — the fully
+  general two-point deliverable, matching `abel-theorem`'s design's expected signature exactly
+  (§6.3/§7.1). Built by strong induction along a `RS.ChartChain δ` (`Jacobian.Path.Chain`,
+  breakpoints `M k := δ.extend (C.t k)`), gluing one fresh `SingleChart` piece per chain link at
+  each step via `IsWeakSolutionAt.mul`, applied at up to THREE points per step (the chain's fixed
+  basepoint `M 0`, the outgoing old endpoint `M m`, and the new endpoint `M (m + 1)`, since
+  `M 0` can coincide with either of the other two — handled by three exhaustive cases via the
+  file's own `merge_two`/`merge_two'`/`chainFinish`/`chainFinishSame` helper lemmas, INCLUDING the
+  case where the path revisits its own basepoint `Q` at an interior time before reaching `P`).
+  Also exports the small standalone lemmas `isWeakSolutionAt_zero_of_ne`,
+  `IsWeakSolutionAt.contMDiffAt_and_ne_zero_of_zero`, `IsWeakSolutionAt.contMDiffAt_of_nonneg`,
+  `IsWeakSolutionAt.apply_eq_zero_of_ne_zero`, `IsWeakSolutionAt.congr_of_eventuallyEq`,
+  `isWeakSolutionAt_one_zero` (all small, reusable "order ↔ smoothness/vanishing" bridges built
+  along the way; none of these needed a manifold-specific `ContMDiffMul` instance — the file's own
+  `contMDiffAt_mul_real` Compat, mirroring `WeakSolution.lean`'s `contMDiffAt_finsetProd_real`,
+  routes every product through planar `ContDiffAt ℝ` in `extChartAt 𝓘(ℂ) x` instead).
+
+**Consumer impact** (`abel-theorem`, #29): both the `k`-point/Finset use (§1.4,
+`RS.Abel.exists_mero_of_periodVector_mem`, via the already-existing `exists_weakSolutionOfFinset`)
+and the two-point sufficiency direction (§2.1, `RS.Abel.exists_mero_of_pathIntegral_mem`, via the
+now-built `exists_weakSolutionOfPair` above) have everything they need from this unit.
 
 ## DAG audit (confirmed at build time)
 
-Only `paths-and-integrals` (`Jacobian.Path`) and `planar-stokes-atoms` (`Jacobian.PlanarStokes`)
-are imported, matching the design's recommended tightened `Builds on:` line (§2.5). No file here
-imports `Jacobian.Monodromy`, `Jacobian.FormTrace`, or `Jacobian.Meromorphic`.
+`paths-and-integrals` (`Jacobian.Path`, now including `Jacobian.Path.Chain` for `ChartChain`) and
+`planar-stokes-atoms` (`Jacobian.PlanarStokes`) are imported, matching the design's recommended
+tightened `Builds on:` line (§2.5) plus the `ChartChain` dependency the general-chain gap closure
+needed. No file here imports `Jacobian.Monodromy`, `Jacobian.FormTrace`, or `Jacobian.Meromorphic`.
 -/

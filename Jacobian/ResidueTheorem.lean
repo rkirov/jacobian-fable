@@ -3,6 +3,7 @@ import Jacobian.ResidueTheorem.MFormCompat
 import Jacobian.ResidueTheorem.Calibrated
 import Jacobian.ResidueTheorem.P1Assembly
 import Jacobian.ResidueTheorem.Reduction
+import Jacobian.ResidueTheorem.Unconditional
 
 /-!
 # residue-theorem (namespaces `RS`/`RS.P1`) — HEADLINE CLOSED
@@ -14,25 +15,24 @@ Area-Gluing atom of §3–5 was NOT built, as instructed).
 
 ## Deliverables (zero sorries)
 
-* **THE residue theorem** — `RS.residue_sum_eq_zero_of_exists_nonconstant`
-  (`Reduction.lean`):
+* **THE residue theorem, UNCONDITIONAL** — `RS.residue_sum_eq_zero (θ : MForm X) :
+  ∑ᶠ x, θ.resAt x = 0` (`Unconditional.lean`). Canonical-forms D9's `Existence.lean` has now
+  landed (its own gate, `Finiteness/Chi.lean`, closed), so the conditional version this unit
+  shipped first —
   ```
   theorem residue_sum_eq_zero_of_exists_nonconstant
       [T2Space X] [CompactSpace X] [ConnectedSpace X]
       (hex : ∃ f : ℳ X, ∀ c : ℂ, f ≠ algebraMap ℂ (ℳ X) c) (θ : MForm X) :
       ∑ᶠ x, θ.resAt x = 0
   ```
-  The hypothesis `hex` is EXACTLY canonical-forms D9's `exists_nonconstant_mero` export shape
-  (`∃ f : ℳ X, ∀ c : ℂ, f ≠ algebraMap ℂ (ℳ X) c`, frozen in
-  `docs/design/canonical-forms.md` §D9). `CanonicalForms/Existence.lean` is still not on disk
-  (gated on the finiteness-and-chi existence chain; `Finiteness/Chi.lean` has landed but the
-  D9 export has not), so per the design the theorem is stated against the hypothesis; the
-  unconditional `residue_sum_eq_zero` is literally
-  `residue_sum_eq_zero_of_exists_nonconstant exists_nonconstant_mero θ` once D9 lands.
-* **serre-duality-tails' consumption shape** (`docs/requests/residue-theorem.md`) —
-  `RS.MForm.sum_resAt_eq_zero_of_exists_nonconstant (hex) (f : ℳ X) (θ : MForm X) :
-  ∑ᶠ x, (f • θ).resAt x = 0`, the well-definedness input of `RS.TailDuality.pairT_alpha`.
-  Also the `Finset`-flexible `RS.residueTheorem_of_exists_nonconstant`.
+  (`Reduction.lean`, `hex` EXACTLY canonical-forms D9's `exists_nonconstant_mero` shape) — is
+  discharged by `RS.exists_nonconstant_mero` in one line:
+  `residue_sum_eq_zero_of_exists_nonconstant exists_nonconstant_mero θ`.
+* **serre-duality-tails' consumption shape, unconditional** — `RS.MForm.sum_resAt_eq_zero
+  (f : ℳ X) (θ : MForm X) : ∑ᶠ x, (f • θ).resAt x = 0` (`Unconditional.lean`), the
+  well-definedness input of `RS.TailDuality.pairT_alpha`; thread this name now instead of the
+  conditional `MForm.sum_resAt_eq_zero_of_exists_nonconstant`. Also the unconditional
+  `Finset`-flexible `RS.residueTheorem`.
 * **The `ℙ¹` base case** — `RS.P1.sum_resAt_eq_zero (Θ : MForm (OnePoint ℂ)) :
   ∑ᶠ y, Θ.resAt y = 0`, UNCONDITIONAL (`P1Assembly.lean`; `ℙ¹` supplies its own coordinate
   function, no existence hypothesis needed).
@@ -70,14 +70,19 @@ Area-Gluing atom of §3–5 was NOT built, as instructed).
   `MForm.finite_support_resAt` (Compat, upstream candidates for canonical-forms).
 * `Calibrated.lean` — calibrated adapted charts / fiber stacks.
 * `P1Assembly.lean` — the ℙ¹ base case.
-* `Reduction.lean` — the bridges, `MForm.d_ne_zero`, THE theorem, the tails corollary.
+* `Reduction.lean` — the bridges, THE conditional theorem, the conditional tails corollary.
+  (`MForm.d_ne_zero` no longer lives here — moved to
+  `Jacobian/CanonicalForms/Existence.lean`, imported back from there; see that file's note.)
+* `Unconditional.lean` — `RS.residue_sum_eq_zero`/`RS.MForm.sum_resAt_eq_zero`/
+  `RS.residueTheorem`, each a one-line corollary discharging `hex` with
+  canonical-forms' `RS.exists_nonconstant_mero`.
 
 ## Notes for downstream consumers
 
-* **serre-duality-tails** (the only DAG-wired consumer): consume
-  `RS.MForm.sum_resAt_eq_zero_of_exists_nonconstant`, threading the same `hex` your unit
-  already needs for its `θ₀ ≠ 0` reference forms — or wait for canonical-forms D9 and wrap.
-  Shape confirmed against `docs/requests/residue-theorem.md` (the `(f • θ)`-finsum form).
+* **serre-duality-tails** (the only DAG-wired consumer): consume the UNCONDITIONAL
+  `RS.MForm.sum_resAt_eq_zero (f) (θ) : ∑ᶠ x, (f • θ).resAt x = 0` (`Unconditional.lean`) —
+  no `hex` to thread any more, canonical-forms D9 has landed. Shape confirmed against
+  `docs/requests/residue-theorem.md` (the `(f • θ)`-finsum form).
 * **canonical-forms**: `MFormCompat.lean`'s three lemmas are upstream candidates (requested
   at design time in `docs/design/residue-theorem.md` §11).
 -/

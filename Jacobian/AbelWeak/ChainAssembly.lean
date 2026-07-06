@@ -20,19 +20,15 @@ Unit: abel-weak-solutions (`docs/design/abel-weak-solutions.md` §7). Three deli
   two-puncture `planar-stokes-atoms` export
   `RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq`.
 
-**Status note on the general multi-chart `exists_weakSolutionOfPair` (design §6.3/§7.1, for an
-arbitrary path not confined to one chart)**: NOT built in this pass. The obstruction (flagged as
-LOW risk in the design's own §11 item 3, "internal-breakpoint cancellation bookkeeping") turned
-out to be a genuine gap, not a routine 20-line check: two `ChartChain` pieces meeting at an
-interior breakpoint `M` generally use *different* charts, so showing the product of adjacent
-weak solutions is smooth *at* `M` needs a "rechart" lemma for `IsWeakSolutionAt` (transporting a
-simple-zero/pole local model across a holomorphic chart transition via the removable-singularity
-theorem, `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt`, applied to the
-transition map's difference quotient). This is real, correct, buildable content, but did not fit
-in this pass's time budget alongside the rest of the unit. `abel-theorem`'s own two-point
-sufficiency direction (§2.1) is the consumer that needs the fully general version; its
-`k`-point/Finset use (§1.4) does **not** need it (see above). Filed as a coordination note
-(also in the root file, `Jacobian/AbelWeak.lean`) rather than a placeholder tactic.
+**Status note on the general multi-chart `exists_weakSolutionOfPair`** (design §6.3/§7.1, for an
+arbitrary path not confined to one chart): this file does NOT build it (only the disjoint-chart
+`k`-point layer above, and the telescoping/residue atoms). It is now built, in
+`Rechart.lean` + `GeneralChain.lean` (added by the `abel-theorem` builder, authorized to close
+this exact gap) — see the root file `Jacobian/AbelWeak.lean` for the full account: the missing
+piece was a "rechart" lemma for `IsWeakSolutionAt` (transporting a simple-zero/pole local model
+across a holomorphic chart transition via mathlib's removable-singularity theorem), plus a chain
+induction gluing `SingleChart` pieces at every interior breakpoint via a fully general
+order-additive `IsWeakSolutionAt.mul`.
 -/
 
 open scoped ContDiff Manifold

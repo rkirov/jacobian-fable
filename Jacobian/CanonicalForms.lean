@@ -4,12 +4,14 @@ import Jacobian.CanonicalForms.Quotient
 import Jacobian.CanonicalForms.Differential
 import Jacobian.CanonicalForms.OneDimensional
 import Jacobian.CanonicalForms.LinearSystems
+import Jacobian.CanonicalForms.Existence
 
 /-!
 # canonical-forms: meromorphic 1-forms and the canonical divisor `K` (namespace `RS`)
 
 API summary (see `docs/design/canonical-forms.md`). Builds on `residue-calculus` (BUILT) and
-`finiteness-and-chi` (IN FLIGHT — see the D9 gate note below).
+`finiteness-and-chi` (BUILT — its χ-ledger gate closed, see D9 below). **Unit COMPLETE**: all of
+D1–D13 are proved in full, zero sorries across all 8 files.
 
 ## Architecture (representational revision)
 
@@ -68,14 +70,20 @@ congruences; the raw files remain the foundation every proof works through via r
   `RS.genus_eq_finrank_omegaSpace_zero` (`[T2] [CompactSpace] [ConnectedSpace]`).
 * **D13** (`LinearSystems.lean`): `RS.MLFormData`/`.Realizes` (on classes, via
   `MForm.laurentCoeffAt`)/`.totalRes`/`.Realizes.resAt_eq`.
-
-## Deferral (documented, not sorried — zero sorries in every file above)
-
-**D9 — `Existence.lean` is UNWRITTEN**: gated on `Jacobian/Finiteness/`'s
-`chi`/`h1`/`chi_zero_add_degree_le_l`/`exists_ne_zero_mem_linSys`, which are **not on disk**
-(`Jacobian/Finiteness/` has only `BddHolo`/`Chain`/`CompactRestrict`/`Schwartz` — no `Chi.lean`).
-Per the design's own gating instructions, left unwritten rather than stated against a nonexistent
-import. Its companion `Divisor.single` Compat remains filed as an upstream request
-(`docs/requests/meromorphic-and-divisors.md`, item 6). Everything else in the design (D1–D8,
-D10–D13) is proved in full on the quotient.
+* **D9** (`Existence.lean`, the unit's raison d'être, gate now closed since
+  `Jacobian/Finiteness/Chi.lean` landed): `RS.exists_nonconstant_mero [T2Space X] [CompactSpace X]
+  [ConnectedSpace X] : ∃ f : ℳ X, ∀ c : ℂ, f ≠ algebraMap ℂ (ℳ X) c` (Forster 16.11 pattern: a
+  divisor `single P n` of large enough degree forces `l(D) ≥ 2 > 1 = l(0)` via
+  `finiteness-and-chi`'s `chi_zero_add_degree_le_l`, so `L(0) = span{1}` is a PROPER subspace of
+  `L(D)`) and `RS.exists_ne_zero_mform [T2Space X] [CompactSpace X] [ConnectedSpace X] :
+  ∃ θ : MForm X, θ ≠ 0` (`:= ⟨MForm.d f, MForm.d_ne_zero hf⟩`); `RS.exists_canonicalDivisor` (a
+  canonical divisor concretely exists, feeding D10's `canonicalDivisorOf`). Also
+  `Function.locallyFinsuppWithin.degree_single (P) (n) : (single P n : Divisor X).degree = n` —
+  closes the §1.6 `Divisor.single` gap honestly: mathlib's own `single` already lands in
+  `locallyFinsuppWithin univ Y`, definitionally `RS.Divisor X`, so no separate constructor was
+  ever needed, only this degree fact (generalizing `Finiteness.degree_single`'s fixed `n = 1`).
+  `RS.MForm.d_ne_zero` also lives here (moved from `residue-theorem/Reduction.lean`, which had
+  proved it purely with canonical-forms/meromorphic-and-divisors machinery as an internal step —
+  since residue-theorem is DOWNSTREAM of canonical-forms, importing it back would cycle; this is
+  the clean home, and `residue-theorem` now imports it from here).
 -/
