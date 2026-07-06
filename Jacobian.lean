@@ -9,3 +9,4 @@ import Jacobian.ProjectiveLine
 import Jacobian.ResidueCalculus
 import Jacobian.Meromorphic
 import Jacobian.Path
+import Jacobian.SphereTopology

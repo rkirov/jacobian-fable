@@ -288,20 +288,22 @@ theorem contMDiff_add_torus :
     show (extChartAt 𝓘(ℂ, V) q₁ q₁, extChartAt 𝓘(ℂ, V) q₂ q₂) = (x₁, x₂)
     rw [extChartAt_self_eq L q₁, extChartAt_self_eq L q₂]
   rw [hpt]
-  have hfunc : writtenInExtChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) 𝓘(ℂ, V) (q₁, q₂)
-      (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) = fun p : V × V =>
-        chartAt' L x₃ (QuotientAddGroup.mk (p.1 + p.2)) := by
-    funext p
-    show extChartAt 𝓘(ℂ, V) (q₁ + q₂)
-        ((fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2)
-          ((extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p)) = _
+  have hexact : ∀ p : V × V, extChartAt 𝓘(ℂ, V) (q₁ + q₂)
+      ((fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2)
+        ((extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p))
+      = chartAt' L x₃ (QuotientAddGroup.mk (p.1 + p.2)) := by
+    intro p
     rw [extChartAt_apply_eq]
-    congr 1
-    rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe_symm]
-    show (extChartAt 𝓘(ℂ, V) q₁).symm p.1 + (extChartAt 𝓘(ℂ, V) q₂).symm p.2
-      = QuotientAddGroup.mk (p.1 + p.2)
-    rw [extChartAt_symm_apply_eq, extChartAt_symm_apply_eq, QuotientAddGroup.mk_add]
-  rw [hfunc]
+    have hsymm : (extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p
+        = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2) := by
+      rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe_symm]
+      show ((extChartAt 𝓘(ℂ, V) q₁).symm p.1, (extChartAt 𝓘(ℂ, V) q₂).symm p.2)
+        = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2)
+      rw [extChartAt_symm_apply_eq, extChartAt_symm_apply_eq]
+    rw [hsymm]
+    show chartAt' L x₃ (QuotientAddGroup.mk p.1 + QuotientAddGroup.mk p.2)
+      = chartAt' L x₃ (QuotientAddGroup.mk (p.1 + p.2))
+    rw [QuotientAddGroup.mk_add]
   have hAnalytic : AnalyticAt ℂ (fun p : V × V => p.1 + p.2 + ℓ) (x₁, x₂) :=
     (analyticAt_fst.add analyticAt_snd).add analyticAt_const
   have hmemball : x₁ + x₂ + ℓ ∈ ball x₃ (injRadius L) := by
@@ -310,8 +312,16 @@ theorem contMDiff_add_torus :
     exact Metric.mem_ball_self (injRadius_pos L)
   have hEv : (fun w => chartAt' L x₃ (QuotientAddGroup.mk w)) =ᶠ[𝓝 (x₁ + x₂)]
       (fun w => w + ℓ) := chartAt'_eventuallyEq_add L hℓL' hmemball
-  have hcont : Tendsto (fun p : V × V => p.1 + p.2) (𝓝 (x₁, x₂)) (𝓝 (x₁ + x₂)) := by fun_prop
-  exact hAnalytic.congr (hcont.eventually hEv).symm
+  have hcont : Tendsto (fun p : V × V => p.1 + p.2) (𝓝 (x₁, x₂)) (𝓝 (x₁ + x₂)) :=
+    (continuous_add).tendsto (x₁, x₂)
+  have hgoal_eq : (fun p : V × V => extChartAt 𝓘(ℂ, V) (q₁ + q₂)
+      ((fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2)
+        ((extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p)))
+      =ᶠ[𝓝 (x₁, x₂)] (fun p : V × V => p.1 + p.2 + ℓ) := by
+    filter_upwards [hcont.eventually hEv] with p hp
+    rw [hexact p]
+    exact hp
+  exact (hAnalytic.congr hgoal_eq.symm).contDiffAt
 
 /-- Negation on the torus is `ω`-smooth: same affine-chart-composite argument as addition. -/
 theorem contMDiff_neg_torus : ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V) ω (fun q : V ⧸ L => -q) := by
@@ -331,12 +341,10 @@ theorem contMDiff_neg_torus : ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V) ω (fun q : V 
   rw [modelWithCornersSelf_coe, Set.range_id, contDiffWithinAt_univ]
   have hpt : extChartAt 𝓘(ℂ, V) q q = x := extChartAt_self_eq L q
   rw [hpt]
-  have hfunc : writtenInExtChartAt 𝓘(ℂ, V) 𝓘(ℂ, V) q (fun q : V ⧸ L => -q)
-      = fun w : V => chartAt' L x' (QuotientAddGroup.mk (-w)) := by
-    funext w
-    show extChartAt 𝓘(ℂ, V) (-q) (-(extChartAt 𝓘(ℂ, V) q).symm w) = _
+  have hexact : ∀ w : V, extChartAt 𝓘(ℂ, V) (-q) (-(extChartAt 𝓘(ℂ, V) q).symm w)
+      = chartAt' L x' (QuotientAddGroup.mk (-w)) := by
+    intro w
     rw [extChartAt_symm_apply_eq, QuotientAddGroup.mk_neg, extChartAt_apply_eq]
-  rw [hfunc]
   have hAnalytic : AnalyticAt ℂ (fun w : V => -w + ℓ) x :=
     (analyticAt_id.neg).add analyticAt_const
   have hmemball : -x + ℓ ∈ ball x' (injRadius L) := by
@@ -345,8 +353,13 @@ theorem contMDiff_neg_torus : ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V) ω (fun q : V 
     exact Metric.mem_ball_self (injRadius_pos L)
   have hEv : (fun w => chartAt' L x' (QuotientAddGroup.mk w)) =ᶠ[𝓝 (-x)]
       (fun w => w + ℓ) := chartAt'_eventuallyEq_add L hℓL hmemball
-  have hcont : Tendsto (fun w : V => -w) (𝓝 x) (𝓝 (-x)) := by fun_prop
-  exact hAnalytic.congr (hcont.eventually hEv).symm
+  have hcont : Tendsto (fun w : V => -w) (𝓝 x) (𝓝 (-x)) := continuous_neg.tendsto x
+  have hgoal_eq : (fun w : V => extChartAt 𝓘(ℂ, V) (-q) (-(extChartAt 𝓘(ℂ, V) q).symm w))
+      =ᶠ[𝓝 x] (fun w : V => -w + ℓ) := by
+    filter_upwards [hcont.eventually hEv] with w hw
+    rw [hexact w]
+    exact hw
+  exact (hAnalytic.congr hgoal_eq.symm).contDiffAt
 
 /-- The torus `V ⧸ L` is an additive Lie group. -/
 instance lieAddGroup_torus : LieAddGroup 𝓘(ℂ, V) ω (V ⧸ L) :=
@@ -390,8 +403,9 @@ def inducedHom (L : AddSubgroup V) (L' : AddSubgroup V') (T : V →ₗ[ℂ] V')
     (hT : L ≤ L'.comap T.toAddMonoidHom) : (V ⧸ L) →ₜ+ (V' ⧸ L') :=
   { QuotientAddGroup.map L L' T.toAddMonoidHom hT with
     continuous_toFun := by
+      show Continuous (⇑(QuotientAddGroup.map L L' T.toAddMonoidHom hT))
       rw [(QuotientAddGroup.isQuotientMap_mk (N := L)).continuous_iff]
-      have heq : (QuotientAddGroup.map L L' T.toAddMonoidHom hT) ∘ QuotientAddGroup.mk =
+      have heq : (⇑(QuotientAddGroup.map L L' T.toAddMonoidHom hT)) ∘ QuotientAddGroup.mk =
           QuotientAddGroup.mk ∘ T :=
         funext fun x => QuotientAddGroup.map_mk L L' T.toAddMonoidHom hT x
       rw [heq]
@@ -431,13 +445,11 @@ theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
   rw [modelWithCornersSelf_coe, Set.range_id, contDiffWithinAt_univ]
   have hpt : extChartAt 𝓘(ℂ, V) q q = x := extChartAt_self_eq L q
   rw [hpt]
-  have hfunc : writtenInExtChartAt 𝓘(ℂ, V) 𝓘(ℂ, V') q (inducedHom L L' T hT)
-      = fun w : V => chartAt' L' y (QuotientAddGroup.mk (T w)) := by
-    funext w
-    show extChartAt 𝓘(ℂ, V') (inducedHom L L' T hT q)
-        (inducedHom L L' T hT ((extChartAt 𝓘(ℂ, V) q).symm w)) = _
+  have hexact : ∀ w : V, extChartAt 𝓘(ℂ, V') (inducedHom L L' T hT q)
+      (inducedHom L L' T hT ((extChartAt 𝓘(ℂ, V) q).symm w))
+      = chartAt' L' y (QuotientAddGroup.mk (T w)) := by
+    intro w
     rw [extChartAt_symm_apply_eq, inducedHom_apply_mk, extChartAt_apply_eq]
-  rw [hfunc]
   have hAnalytic : AnalyticAt ℂ (fun w : V => T w + ℓ) x :=
     (analyticAt_linearMap T x).add analyticAt_const
   have hmemball : T x + ℓ ∈ ball y (injRadius L') := by
@@ -447,7 +459,13 @@ theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
   have hEv : (fun w => chartAt' L' y (QuotientAddGroup.mk w)) =ᶠ[𝓝 (T x)]
       (fun w => w + ℓ) := chartAt'_eventuallyEq_add L' hℓL' hmemball
   have hcont : Tendsto (⇑T) (𝓝 x) (𝓝 (T x)) := T.continuous_of_finiteDimensional.continuousAt
-  exact hAnalytic.congr (hcont.eventually hEv).symm
+  have hgoal_eq : (fun w : V => extChartAt 𝓘(ℂ, V') (inducedHom L L' T hT q)
+      (inducedHom L L' T hT ((extChartAt 𝓘(ℂ, V) q).symm w)))
+      =ᶠ[𝓝 x] (fun w : V => T w + ℓ) := by
+    filter_upwards [hcont.eventually hEv] with w hw
+    rw [hexact w]
+    exact hw
+  exact (hAnalytic.congr hgoal_eq.symm).contDiffAt
 
 end InducedHom
 
