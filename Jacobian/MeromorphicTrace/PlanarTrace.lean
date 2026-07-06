@@ -344,41 +344,346 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
     have hprod : MeromorphicAt (fun w => w ^ q * V w) 0 := hzpow_mero.mul hVmero
     exact hprod.congr hstep3.symm
 
-/-! ### The Laurent-coefficient formula (P6) -/
+/-! ### The Laurent-coefficient formula (P6)
 
-/-- THE Laurent-coefficient formula for `traceZk` (P6). -/
+Route (`tsum`-free; a sharpening of the file's previously recorded candidate route (b)): expand
+the unit factor `u` of `h`'s order presentation `h =ᶠ[𝓝[≠]0] (·)^n₀ * u` by the EXACT pointwise
+Taylor remainder `u = P + (·)^M * r` (`RS.AnalyticAt.exists_taylor_remainder`), choosing the
+cutoff `M` so that `n₀ + M = k * s'` is an exact multiple of `k` with `s' > m`. Then, summing
+over the root set of `z ^ k = w` (`w ≠ 0`):
+
+* each monomial `z ^ (n₀ + d)` traces to the CLOSED FORM `k · w ^ ((n₀+d)/k)` if `k ∣ n₀ + d` and
+  `0` otherwise (`traceZk_zpow`, the geometric-sum collapse — computed on the abstract root set
+  via a single root and a primitive root of unity, no analytic branches);
+* the remainder contributes `z ^ (n₀+M) * r z = w ^ s' * r z` EXACTLY (the whole point of the
+  divisibility choice of `M` — `z ^ (k s') = (z^k)^{s'} = w^{s'}` per root), so the remainder
+  term is `w ^ s' * traceZk r k w` with NO second growth bound needed; `traceZk r k` has an
+  analytic repair at `0` (`exists_analyticAt_traceZk`, the bounded-case removable singularity),
+  and `s' > m` makes it invisible to the `m`-th coefficient.
+
+All coefficients are then read off by residue-calculus's presentation-independent
+characterization `laurentCoeffAt_of_eventuallyEq` and the built linearity/shift API. -/
+
+/-- Enumeration of the root set: for `w ≠ 0`, any single root `z₁` of `z ^ k = w` and any
+primitive `k`-th root of unity `ζ` enumerate the root set bijectively as `i ↦ ζ ^ i * z₁`,
+`i < k`. -/
+private theorem bijOn_pow_mul_root (hk : k ≠ 0) {w z₁ ζ : ℂ} (hw : w ≠ 0)
+    (hz₁ : z₁ ^ k = w) (hζ : IsPrimitiveRoot ζ k) :
+    Set.BijOn (fun i : ℕ => ζ ^ i * z₁) ↑(Finset.range k) {z : ℂ | z ^ k = w} := by
+  have hz₁0 : z₁ ≠ 0 := by
+    rintro rfl
+    rw [zero_pow hk] at hz₁
+    exact hw hz₁.symm
+  have hmaps : ∀ i : ℕ, (ζ ^ i * z₁) ^ k = w := by
+    intro i
+    rw [mul_pow, ← pow_mul, mul_comm i k, pow_mul, hζ.pow_eq_one, one_pow, one_mul, hz₁]
+  have hinj : Set.InjOn (fun i : ℕ => ζ ^ i * z₁) ↑(Finset.range k) := hζ.injOn_pow_mul hz₁0
+  refine ⟨fun i _ => hmaps i, hinj, fun z hz => ?_⟩
+  have hsub : (fun i : ℕ => ζ ^ i * z₁) '' ↑(Finset.range k) ⊆ {z : ℂ | z ^ k = w} := by
+    rintro _ ⟨i, _, rfl⟩
+    exact hmaps i
+  have hcard1 : ((fun i : ℕ => ζ ^ i * z₁) '' ↑(Finset.range k)).ncard = k := by
+    rw [hinj.ncard_image, Set.ncard_coe_finset, Finset.card_range]
+  have heqset : (fun i : ℕ => ζ ^ i * z₁) '' ↑(Finset.range k) = {z : ℂ | z ^ k = w} :=
+    Set.eq_of_subset_of_ncard_le hsub
+      (by rw [hcard1, RS.ncard_setOf_pow_eq hk hw]) (RS.setOf_pow_eq_finite hk w)
+  rw [heqset]
+  exact hz
+
+/-- Closed form for the trace of a `zpow` monomial (`w ≠ 0`): the sum of `z ^ e` over the `k`
+roots of `w` collapses by the geometric sum of roots of unity to `k * w ^ (e / k)` when `k ∣ e`
+and to `0` otherwise. Purely algebraic — no branches, no analyticity. -/
+theorem traceZk_zpow (hk : k ≠ 0) (e : ℤ) {w : ℂ} (hw : w ≠ 0) :
+    traceZk (fun z => z ^ e) k w = if (k : ℤ) ∣ e then (k : ℂ) * w ^ (e / (k : ℤ)) else 0 := by
+  classical
+  obtain ⟨z₁, hz₁⟩ := RS.exists_pow_eq hk hw
+  obtain ⟨ζ, hζ⟩ : ∃ ζ : ℂ, IsPrimitiveRoot ζ k := ⟨_, Complex.isPrimitiveRoot_exp k hk⟩
+  have hbij := bijOn_pow_mul_root hk hw hz₁ hζ
+  have h1 : traceZk (fun z => z ^ e) k w = ∑ i ∈ Finset.range k, (ζ ^ i * z₁) ^ e := by
+    rw [traceZk_def,
+      ← finsum_mem_eq_of_bijOn (fun i : ℕ => ζ ^ i * z₁) hbij (fun i _ => rfl),
+      finsum_mem_coe_finset]
+  have h2 : ∀ i ∈ Finset.range k, (ζ ^ i * z₁) ^ e = (ζ ^ e) ^ i * z₁ ^ e := by
+    intro i _
+    rw [mul_zpow]
+    congr 1
+    rw [← zpow_natCast ζ i, ← zpow_mul, mul_comm (i : ℤ) e, zpow_mul, zpow_natCast]
+  rw [h1, Finset.sum_congr rfl h2, ← Finset.sum_mul]
+  by_cases hdvd : (k : ℤ) ∣ e
+  · rw [if_pos hdvd]
+    have hζe : ζ ^ e = 1 := (hζ.zpow_eq_one_iff_dvd e).2 hdvd
+    have hsum : ∑ i ∈ Finset.range k, (ζ ^ e) ^ i = (k : ℂ) := by
+      rw [hζe]
+      simp
+    have hz₁e : z₁ ^ e = w ^ (e / (k : ℤ)) := by
+      have hcancel : (k : ℤ) * (e / (k : ℤ)) = e := Int.mul_ediv_cancel' hdvd
+      calc z₁ ^ e = z₁ ^ ((k : ℤ) * (e / (k : ℤ))) := by rw [hcancel]
+        _ = (z₁ ^ (k : ℤ)) ^ (e / (k : ℤ)) := zpow_mul z₁ _ _
+        _ = (z₁ ^ k) ^ (e / (k : ℤ)) := by rw [zpow_natCast]
+        _ = w ^ (e / (k : ℤ)) := by rw [hz₁]
+    rw [hsum, hz₁e]
+  · rw [if_neg hdvd]
+    have hζe : ζ ^ e ≠ 1 := fun hone => hdvd ((hζ.zpow_eq_one_iff_dvd e).1 hone)
+    have hpow1 : (ζ ^ e) ^ k = 1 := by
+      rw [← zpow_natCast (ζ ^ e) k, ← zpow_mul, mul_comm e (k : ℤ), zpow_mul, zpow_natCast,
+        hζ.pow_eq_one, one_zpow]
+    rw [geom_sum_eq hζe, hpow1, sub_self, zero_div, zero_mul]
+
+/-- Analytic repair of the trace of a bounded analytic function: if `g` is analytic and bounded
+on a punctured ball at `0`, then `traceZk g k` agrees off `0` near `0` with a function honestly
+analytic AT `0` (Riemann's removable-singularity theorem; the trivial-growth-bound special case
+of P5's argument, promoted from a meromorphic to an analytic repair). -/
+private theorem exists_analyticAt_traceZk (hk : k ≠ 0) {g : ℂ → ℂ} {ρ C : ℝ} (hρ : 0 < ρ)
+    (hg : AnalyticOnNhd ℂ g (Metric.ball (0 : ℂ) ρ \ {0}))
+    (hb : ∀ z ∈ Metric.ball (0 : ℂ) ρ \ {0}, ‖g z‖ ≤ C) :
+    ∃ G : ℂ → ℂ, AnalyticAt ℂ G 0 ∧ traceZk g k =ᶠ[𝓝[≠] (0 : ℂ)] G := by
+  have hρ'0 : 0 < ρ ^ k := pow_pos hρ k
+  have hTan : ∀ w ∈ Metric.ball (0 : ℂ) (ρ ^ k) \ {0}, AnalyticAt ℂ (traceZk g k) w := by
+    rintro w ⟨hw1, hw2⟩
+    exact analyticAt_traceZk hk hρ hg hw2 (mem_ball_zero_iff.mp hw1)
+  have hTbound : ∀ w ∈ Metric.ball (0 : ℂ) (ρ ^ k) \ {0},
+      ‖traceZk g k w‖ ≤ (k : ℝ) * C := by
+    rintro w ⟨hw1, hw2⟩
+    have hw0 : w ≠ 0 := hw2
+    have hwlt : ‖w‖ < ρ ^ k := mem_ball_zero_iff.mp hw1
+    have hterm : ∀ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, ‖g z‖ ≤ C := by
+      intro z hz
+      rw [Set.Finite.mem_toFinset] at hz
+      have hzpow : z ^ k = w := hz
+      have hzlt : ‖z‖ < ρ := RS.norm_lt_of_pow_eq hk hρ.le hzpow hwlt
+      have hzne : z ≠ 0 := by
+        rintro rfl; rw [zero_pow hk] at hzpow; exact hw0 hzpow.symm
+      exact hb z ⟨mem_ball_zero_iff.mpr hzlt, hzne⟩
+    have hcard : (RS.setOf_pow_eq_finite hk w).toFinset.card = k := by
+      rw [← Set.ncard_eq_toFinset_card _ (RS.setOf_pow_eq_finite hk w),
+        RS.ncard_setOf_pow_eq hk hw0]
+    calc ‖traceZk g k w‖ = ‖∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, g z‖ := by
+          rw [traceZk_apply_of_ne_zero hk hw0]
+      _ ≤ ∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, ‖g z‖ := norm_sum_le _ _
+      _ ≤ ∑ _z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, C := Finset.sum_le_sum hterm
+      _ = (k : ℝ) * C := by rw [Finset.sum_const, hcard, nsmul_eq_mul]
+  have hd : DifferentiableOn ℂ (traceZk g k) (Metric.ball (0 : ℂ) (ρ ^ k) \ {0}) := fun z hz =>
+    (hTan z hz).differentiableAt.differentiableWithinAt
+  have hbdd : BddAbove ((norm ∘ traceZk g k) '' (Metric.ball (0 : ℂ) (ρ ^ k) \ {0})) :=
+    ⟨(k : ℝ) * C, by rintro _ ⟨z, hz, rfl⟩; exact hTbound z hz⟩
+  have hrep := Complex.differentiableOn_update_limUnder_of_bddAbove
+    (Metric.ball_mem_nhds (0 : ℂ) hρ'0) hd hbdd
+  refine ⟨Function.update (traceZk g k) 0 (limUnder (𝓝[≠] (0 : ℂ)) (traceZk g k)),
+    (Complex.analyticOnNhd_iff_differentiableOn Metric.isOpen_ball).2 hrep 0
+      (Metric.mem_ball_self hρ'0), ?_⟩
+  filter_upwards [self_mem_nhdsWithin] with z hz
+  exact (Function.update_of_ne hz _ _).symm
+
+/-- THE Laurent-coefficient formula for `traceZk` (P6): tracing along `z ↦ z ^ k` keeps exactly
+every `k`-th Laurent coefficient, scaled by `k`. See the section header for the proof route. -/
 theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ) :
     laurentCoeffAt (traceZk h k) 0 m = (k : ℂ) * laurentCoeffAt h 0 (k * m) := by
-  -- TODO(blocker): this coefficient identity is the one theorem in this unit not fully proved
-  -- within the time budget. BLOCKED for >45 min on the following genuine mathematical gap (not
-  -- a lemma-name lookup problem): P5's growth-bound/removable-singularity route establishes
-  -- *existence* of the analytic repair `update V 0 c` of `V := (·)^(-q) * traceZk h k` (`q,r`
-  -- the Euclidean split of `h`'s order `n₀` by `k`, `n₀ = k*q+r`), but does NOT compute its
-  -- Taylor coefficients, which is what this theorem needs (via `laurentCoeffAt_of_eventuallyEq`
-  -- applied to the presentation `traceZk h k =ᶠ[𝓝[≠]0] fun w => w^q * (update V 0 c) w`, reducing
-  -- the goal to `taylorCoeffAt (update V 0 c) 0 m' = k * taylorCoeffAt u 0 (k*m' - r)` for
-  -- `m' := (m - q).toNat`, `u` the unit factor of `h`'s order presentation).
-  --   Two viable routes, NEITHER completed here:
-  --   (a) design's original route (`docs/design/meromorphic-trace.md` §5 P6): expand `u` as a
-  --       genuine convergent power series (`HasFPowerSeriesAt`), substitute termwise into the
-  --       branch formula `V w = ∑_{i<k} (ψ_i w)^r u(ψ_i w)` (`ψ_i` the `k` root branches from
-  --       P4), and collapse `∑_{i<k} ζ^{i·e}` to `k·[k ∣ e]` via `geom_sum_eq` (spike-verified,
-  --       §9) — needs `tsum`/`HasSum` manipulation under the finite branch sum, not yet written.
-  --   (b) a `tsum`-free alternative sketched during this session: apply the ALREADY-BUILT
-  --       `AnalyticAt.exists_taylor_remainder hu M` (residue-calculus, `TaylorCoeff.lean`) to get
-  --       an EXACT (not just eventual) global identity `u z = P(z) + z^M * ρ(z)` (`P` a finite
-  --       polynomial, `ρ` analytic) for `M` large enough that `r + M > k*(m'+1)`; substitute into
-  --       the branch formula to get an EXPLICIT finite-polynomial-in-`w` main term (via the same
-  --       geometric-sum collapse, now on a FINITE index range `d < M`, no `tsum`) plus a genuinely
-  --       negligible remainder term, then bound the remainder exactly as in P5's step 5 to show
-  --       it does not affect the `m'`-th Taylor coefficient. This route stays inside the
-  --       `dslope`/`taylorCoeffAt` finite-order idiom residue-calculus itself uses (no `tsum`
-  --       anywhere in that unit either) but needs a second growth-bound argument analogous to
-  --       P5's, which is itself ~100+ lines; not completed in the time budget.
-  -- `traceZk`'s EXISTENCE as a meromorphic function at `0` (P5, `meromorphicAt_traceZk`) does NOT
-  -- depend on this theorem and is fully proved above, admitted-goal-free. `resAt_traceZk` and
-  -- `ordAt_traceZk_ge` (design §4.4, immediate corollaries of this formula) are also deferred as
-  -- a consequence and are NOT stated below, to avoid building further API on an admitted goal.
-  sorry
+  classical
+  by_cases hordtop : meromorphicOrderAt h 0 = ⊤
+  · -- Degenerate case: `h` vanishes near `0`, hence so does `traceZk h k`; both sides are `0`.
+    have hh0 : h =ᶠ[𝓝[≠] (0 : ℂ)] 0 := meromorphicOrderAt_eq_top_iff.1 hordtop
+    obtain ⟨ρ, hρ0, hρsub⟩ := Metric.eventually_nhds_iff_ball.mp (eventually_nhdsWithin_iff.mp hh0)
+    have htrace0 : traceZk h k =ᶠ[𝓝[≠] (0 : ℂ)] fun _ => (0 : ℂ) := by
+      have hballmem : Metric.ball (0 : ℂ) (ρ ^ k) ∈ 𝓝 (0 : ℂ) :=
+        Metric.ball_mem_nhds 0 (pow_pos hρ0 k)
+      filter_upwards [mem_nhdsWithin_of_mem_nhds hballmem, self_mem_nhdsWithin]
+        with w hwball hwne
+      have hw0 : w ≠ 0 := hwne
+      show traceZk h k w = 0
+      rw [traceZk_apply_of_ne_zero hk hw0]
+      apply Finset.sum_eq_zero
+      intro z hz
+      rw [Set.Finite.mem_toFinset] at hz
+      have hzpow : z ^ k = w := hz
+      have hzlt : ‖z‖ < ρ := RS.norm_lt_of_pow_eq hk hρ0.le hzpow (mem_ball_zero_iff.mp hwball)
+      have hzne : z ≠ 0 := by
+        rintro rfl; rw [zero_pow hk] at hzpow; exact hw0 hzpow.symm
+      exact hρsub z (mem_ball_zero_iff.mpr hzlt) hzne
+    rw [laurentCoeffAt_congr htrace0 m, laurentCoeffAt_zero_fun,
+      laurentCoeffAt_of_order_eq_top hordtop, mul_zero]
+  · -- Main case: order presentation `h =ᶠ[𝓝[≠]0] z ↦ z ^ n₀ * u z`, `u` analytic at `0`.
+    obtain ⟨u, hu, -, hu_eq⟩ := (meromorphicOrderAt_ne_top_iff hh).1 hordtop
+    generalize hn₀_def : (meromorphicOrderAt h 0).untop₀ = n₀ at hu_eq
+    have hpres : h =ᶠ[𝓝[≠] (0 : ℂ)] fun z => (z - 0) ^ n₀ * u z := by
+      filter_upwards [hu_eq] with z hz
+      rw [hz, smul_eq_mul]
+    have hu_eq' : h =ᶠ[𝓝[≠] (0 : ℂ)] fun z => z ^ n₀ * u z := by
+      filter_upwards [hpres] with z hz
+      rw [hz, sub_zero]
+    -- The right-hand side, via the presentation-independent characterization.
+    have hRHS : laurentCoeffAt h 0 ((k : ℤ) * m)
+        = if n₀ ≤ (k : ℤ) * m then taylorCoeffAt u 0 ((k : ℤ) * m - n₀).toNat else 0 :=
+      laurentCoeffAt_of_eventuallyEq hu hpres ((k : ℤ) * m)
+    -- Cutoff choice: `n₀ + M = k * s'`, an exact multiple of `k`, with `s' > m`.
+    have hkpos : (0 : ℤ) < (k : ℤ) := by exact_mod_cast Nat.pos_of_ne_zero hk
+    set s' : ℤ := max (m + 1) (max n₀ 0) with hs'_def
+    have hms' : m < s' := lt_of_lt_of_le (lt_add_one m) (le_max_left _ _)
+    have hs'0 : 0 ≤ s' := le_trans (le_max_right n₀ 0) (le_max_right _ _)
+    have hn₀s' : n₀ ≤ s' := le_trans (le_max_left n₀ 0) (le_max_right _ _)
+    have hks' : n₀ ≤ (k : ℤ) * s' :=
+      le_trans hn₀s' (le_mul_of_one_le_left hs'0 (by omega : (1 : ℤ) ≤ (k : ℤ)))
+    set M : ℕ := ((k : ℤ) * s' - n₀).toNat with hM_def
+    have hMz : (M : ℤ) = (k : ℤ) * s' - n₀ := Int.toNat_of_nonneg (sub_nonneg.mpr hks')
+    have hn₀M : n₀ + (M : ℤ) = (k : ℤ) * s' := by rw [hMz]; ring
+    -- Exact Taylor remainder of the unit factor.
+    obtain ⟨r, hran, -, hrep⟩ := RS.AnalyticAt.exists_taylor_remainder hu M
+    -- Analytic repair `G` of the remainder trace `traceZk r k` at `0`.
+    have hrball : ∀ᶠ z in 𝓝 (0 : ℂ), AnalyticAt ℂ r z ∧ ‖r z‖ ≤ ‖r 0‖ + 1 := by
+      have h1 : ∀ᶠ z in 𝓝 (0 : ℂ), AnalyticAt ℂ r z := hran.eventually_analyticAt
+      have h2 : ∀ᶠ z in 𝓝 (0 : ℂ), ‖r z‖ < ‖r 0‖ + 1 :=
+        hran.continuousAt.norm.tendsto.eventually (Iio_mem_nhds (by linarith))
+      filter_upwards [h1, h2] with z h1z h2z
+      exact ⟨h1z, h2z.le⟩
+    obtain ⟨ρ₁, hρ₁0, hρ₁sub⟩ := Metric.eventually_nhds_iff_ball.mp hrball
+    obtain ⟨G, hGan, hGeq⟩ := exists_analyticAt_traceZk hk hρ₁0
+      (fun z hz => (hρ₁sub z hz.1).1) (fun z hz => (hρ₁sub z hz.1).2)
+    -- The monomial-trace main term.
+    set T : ℕ → ℂ → ℂ := fun d w => taylorCoeffAt u 0 d *
+      (if (k : ℤ) ∣ (n₀ + (d : ℤ)) then (k : ℂ) * w ^ ((n₀ + (d : ℤ)) / (k : ℤ)) else 0)
+      with hT_def
+    -- Validity ball of the order presentation.
+    obtain ⟨ρ₂, hρ₂0, hρ₂sub⟩ :=
+      Metric.eventually_nhds_iff_ball.mp (eventually_nhdsWithin_iff.mp hu_eq')
+    -- THE master eventual identity.
+    have hkey : traceZk h k =ᶠ[𝓝[≠] (0 : ℂ)]
+        fun w => (∑ d ∈ Finset.range M, T d w) + w ^ s' * G w := by
+      have hball : Metric.ball (0 : ℂ) (ρ₂ ^ k) ∈ 𝓝 (0 : ℂ) :=
+        Metric.ball_mem_nhds 0 (pow_pos hρ₂0 k)
+      filter_upwards [mem_nhdsWithin_of_mem_nhds hball, self_mem_nhdsWithin, hGeq]
+        with w hwball hwne hGw
+      have hw0 : w ≠ 0 := hwne
+      have hwlt : ‖w‖ < ρ₂ ^ k := mem_ball_zero_iff.mp hwball
+      -- Per-root expansion of `h` through the exact Taylor remainder.
+      have hroot : ∀ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset,
+          h z = (∑ d ∈ Finset.range M, taylorCoeffAt u 0 d * z ^ (n₀ + (d : ℤ)))
+            + w ^ s' * r z := by
+        intro z hz
+        rw [Set.Finite.mem_toFinset] at hz
+        have hzpow : z ^ k = w := hz
+        have hzlt : ‖z‖ < ρ₂ := RS.norm_lt_of_pow_eq hk hρ₂0.le hzpow hwlt
+        have hzne : z ≠ 0 := by
+          rintro rfl; rw [zero_pow hk] at hzpow; exact hw0 hzpow.symm
+        have hexp : ∀ d : ℕ, z ^ n₀ * z ^ d = z ^ (n₀ + (d : ℤ)) := by
+          intro d
+          rw [← zpow_natCast z d, ← zpow_add₀ hzne]
+        have hzM : z ^ n₀ * (z ^ M * r z) = w ^ s' * r z := by
+          rw [← mul_assoc]
+          congr 1
+          calc z ^ n₀ * z ^ M = z ^ (n₀ + (M : ℤ)) := hexp M
+            _ = z ^ ((k : ℤ) * s') := by rw [hn₀M]
+            _ = (z ^ (k : ℤ)) ^ s' := zpow_mul z _ _
+            _ = w ^ s' := by rw [zpow_natCast, hzpow]
+        calc h z = z ^ n₀ * u z := hρ₂sub z (mem_ball_zero_iff.mpr hzlt) hzne
+          _ = z ^ n₀ * ((∑ d ∈ Finset.range M, taylorCoeffAt u 0 d * (z - 0) ^ d)
+              + (z - 0) ^ M * r z) := by rw [← hrep z]
+          _ = (∑ d ∈ Finset.range M, taylorCoeffAt u 0 d * z ^ (n₀ + (d : ℤ)))
+              + w ^ s' * r z := by
+            simp only [sub_zero]
+            rw [mul_add, Finset.mul_sum, hzM]
+            congr 1
+            exact Finset.sum_congr rfl fun d _ => by rw [← hexp d]; ring
+      -- Assemble the trace as main term + remainder term.
+      have hsum : traceZk h k w
+          = (∑ d ∈ Finset.range M,
+              taylorCoeffAt u 0 d * traceZk (fun z => z ^ (n₀ + (d : ℤ))) k w)
+            + w ^ s' * traceZk r k w := by
+        rw [traceZk_apply_of_ne_zero hk hw0, Finset.sum_congr rfl hroot,
+          Finset.sum_add_distrib]
+        congr 1
+        · rw [Finset.sum_comm]
+          exact Finset.sum_congr rfl fun d _ => by
+            rw [traceZk_apply_of_ne_zero hk hw0, Finset.mul_sum]
+        · rw [← Finset.mul_sum, traceZk_apply_of_ne_zero hk hw0]
+      show traceZk h k w = (∑ d ∈ Finset.range M, T d w) + w ^ s' * G w
+      rw [hsum, ← hGw]
+      congr 1
+      refine Finset.sum_congr rfl fun d _ => ?_
+      simp only [hT_def]
+      rw [traceZk_zpow hk (n₀ + (d : ℤ)) hw0]
+    -- Meromorphy and Laurent coefficients of the pieces.
+    have hterm_mero : ∀ d ∈ Finset.range M, MeromorphicAt (T d) 0 := by
+      intro d _
+      simp only [hT_def]
+      by_cases hdvd : (k : ℤ) ∣ (n₀ + (d : ℤ))
+      · simp only [if_pos hdvd]
+        have h1 : MeromorphicAt (fun w : ℂ => w ^ ((n₀ + (d : ℤ)) / (k : ℤ))) 0 := by
+          simpa using (MeromorphicAt.id (0 : ℂ)).zpow ((n₀ + (d : ℤ)) / (k : ℤ))
+        exact (MeromorphicAt.const _ _).mul ((MeromorphicAt.const _ _).mul h1)
+      · simp only [if_neg hdvd, mul_zero]
+        exact MeromorphicAt.const 0 0
+    have hterm_coeff : ∀ d ∈ Finset.range M, laurentCoeffAt (T d) 0 m
+        = if n₀ + (d : ℤ) = (k : ℤ) * m then (k : ℂ) * taylorCoeffAt u 0 d else 0 := by
+      intro d _
+      simp only [hT_def]
+      by_cases hdvd : (k : ℤ) ∣ (n₀ + (d : ℤ))
+      · simp only [if_pos hdvd]
+        have hk0' : (k : ℤ) ≠ 0 := by exact_mod_cast hk
+        have hmono : laurentCoeffAt (fun w : ℂ => w ^ ((n₀ + (d : ℤ)) / (k : ℤ))) 0 m
+            = if m = (n₀ + (d : ℤ)) / (k : ℤ) then 1 else 0 := by
+          have hfun : (fun w : ℂ => w ^ ((n₀ + (d : ℤ)) / (k : ℤ)))
+              = fun w : ℂ => (w - 0) ^ ((n₀ + (d : ℤ)) / (k : ℤ)) := by
+            funext w
+            rw [sub_zero]
+          rw [hfun, laurentCoeffAt_zpow_monomial]
+        rw [laurentCoeffAt_const_mul, laurentCoeffAt_const_mul, hmono]
+        by_cases hcase : n₀ + (d : ℤ) = (k : ℤ) * m
+        · rw [if_pos hcase, if_pos (by rw [hcase, Int.mul_ediv_cancel_left m hk0']), mul_one]
+          ring
+        · rw [if_neg hcase, if_neg (fun hcon => hcase
+            (by rw [hcon]; exact (Int.mul_ediv_cancel' hdvd).symm)), mul_zero, mul_zero]
+      · simp only [if_neg hdvd, mul_zero]
+        rw [laurentCoeffAt_zero_fun, if_neg]
+        intro hcon
+        exact hdvd ⟨m, hcon⟩
+    have hPmero : MeromorphicAt (fun w => ∑ d ∈ Finset.range M, T d w) 0 :=
+      MeromorphicAt.fun_sum hterm_mero
+    have hBmero : MeromorphicAt (fun w : ℂ => w ^ s' * G w) 0 := by
+      have h1 : MeromorphicAt (fun w : ℂ => w ^ s') 0 := by
+        simpa using (MeromorphicAt.id (0 : ℂ)).zpow s'
+      exact h1.mul hGan.meromorphicAt
+    have hB : laurentCoeffAt (fun w : ℂ => w ^ s' * G w) 0 m = 0 := by
+      have hBpres : (fun w : ℂ => w ^ s' * G w) =ᶠ[𝓝[≠] (0 : ℂ)]
+          fun w => (w - 0) ^ s' * G w := by
+        filter_upwards with w
+        rw [sub_zero]
+      rw [laurentCoeffAt_of_eventuallyEq hGan hBpres m, if_neg (by omega : ¬ s' ≤ m)]
+    -- Final assembly.
+    rw [laurentCoeffAt_congr hkey m, laurentCoeffAt_fun_add hPmero hBmero m, hB, add_zero,
+      laurentCoeffAt_fun_sum hterm_mero m, Finset.sum_congr rfl hterm_coeff, hRHS]
+    by_cases hcase : n₀ ≤ (k : ℤ) * m
+    · set d₀ : ℕ := ((k : ℤ) * m - n₀).toNat with hd₀_def
+      have hd₀z : (d₀ : ℤ) = (k : ℤ) * m - n₀ := Int.toNat_of_nonneg (sub_nonneg.mpr hcase)
+      have hd₀M : d₀ < M := by
+        have h1 : (d₀ : ℤ) < (M : ℤ) := by
+          rw [hd₀z, hMz]
+          have hkm : (k : ℤ) * m < (k : ℤ) * s' := mul_lt_mul_of_pos_left hms' hkpos
+          linarith
+        exact_mod_cast h1
+      have hcond : ∀ d : ℕ, (n₀ + (d : ℤ) = (k : ℤ) * m) ↔ d = d₀ := by
+        intro d
+        constructor
+        · intro hcon
+          have hz : (d : ℤ) = (d₀ : ℤ) := by rw [hd₀z]; linarith
+          exact_mod_cast hz
+        · rintro rfl
+          rw [hd₀z]; ring
+      rw [if_pos hcase]
+      calc ∑ d ∈ Finset.range M,
+            (if n₀ + (d : ℤ) = (k : ℤ) * m then (k : ℂ) * taylorCoeffAt u 0 d else 0)
+          = ∑ d ∈ Finset.range M,
+            (if d = d₀ then (k : ℂ) * taylorCoeffAt u 0 d else 0) :=
+            Finset.sum_congr rfl fun d _ => by rw [if_congr (hcond d) rfl rfl]
+        _ = if d₀ ∈ Finset.range M then (k : ℂ) * taylorCoeffAt u 0 d₀ else 0 :=
+            Finset.sum_ite_eq' _ _ _
+        _ = (k : ℂ) * taylorCoeffAt u 0 d₀ := by
+            rw [if_pos (Finset.mem_range.mpr hd₀M)]
+    · rw [if_neg hcase, mul_zero]
+      apply Finset.sum_eq_zero
+      intro d _
+      apply if_neg
+      intro hcon
+      rw [not_le] at hcase
+      have hd0 : (0 : ℤ) ≤ (d : ℤ) := Int.natCast_nonneg d
+      linarith
 
 end RS.MTrace

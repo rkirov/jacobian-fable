@@ -111,7 +111,7 @@ theorem isClosed_bddHoloOn (S : Opens X) :
     have hey : e.symm (e y) = y := e.left_inv hyV.2
     show dist (gLim (e.symm (e y))) ((g n) (e.symm (e y))) < ε
     rw [hey]
-    have h1 : gLim y = f ⟨y, hys⟩ := by simp [hgLim_def, hys]
+    have h1 : gLim y = f ⟨y, hys⟩ := by rw [hgLim_def]; exact dif_pos hys
     have h2 : g n y = Fb n ⟨y, hys⟩ := (hgeq n ⟨y, hys⟩).symm
     rw [h1, h2]
     exact hn ⟨y, hys⟩
@@ -177,6 +177,15 @@ noncomputable def restrictCLM {S' S : Opens X} (h : S' ≤ S) : BddHoloOn S →L
     (z : ↥(S' : Set X)) :
     (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) z = (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z) := rfl
 
+/-- Presheaf law: restrictions compose (the analogue of `MeroGermOn.restrict_restrict` /
+`LinSysOn.restrictL_restrictL`, needed for the cochain-level naturality of `resNC1`). -/
+theorem restrictCLM_restrictCLM {S'' S' S : Opens X} (h1 : S' ≤ S) (h2 : S'' ≤ S') (h3 : S'' ≤ S)
+    (f : BddHoloOn S) : restrictCLM h2 (restrictCLM h1 f) = restrictCLM h3 f := by
+  apply Subtype.ext
+  apply BoundedContinuousFunction.ext
+  intro z
+  rfl
+
 theorem norm_restrictCLM_apply_le {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     ‖restrictCLM h f‖ ≤ ‖f‖ := by
   show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
@@ -222,27 +231,32 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
     show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
     rw [← ecf, hval, ef]
 
+/-- Unfolding lemma for `toGerm` (forces the `mk`-shape syntactically, since neither
+metavariable unification nor `rw` reliably unfolds the `LinearMap`/`FunLike` layers of the
+named `toGerm` application on their own). -/
+theorem toGerm_eq_mk {S : Opens X} (f : BddHoloOn S) :
+    toGerm S f = MeroGermOn.mk f.2.choose
+      (fun x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))) :=
+  rfl
+
 theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
     toGerm S f ∈ RS.LinSysOn (0 : RS.Divisor X) (S : Set X) := by
+  rw [toGerm_eq_mk]
   refine (RS.mem_linSysOn_iff_of_isOpen S.2).2 (fun x hx => ?_)
   have h0 : (0 : RS.Divisor X) x = 0 := by
     simp [Function.locallyFinsuppWithin.coe_zero]
-  show ((-(0 : RS.Divisor X) x : ℤ) : WithTop ℤ) ≤ (toGerm S f).ord x
-  rw [h0]
-  show ((0 : ℤ) : WithTop ℤ) ≤ (MeroGermOn.mk f.2.choose _).ord x
-  rw [RS.MeroGermOn.ord_mk S.2 hx]
+  rw [h0, RS.MeroGermOn.ord_mk S.2 hx]
   simpa using RS.ContMDiffAt.ordAtX_nonneg (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
 
 theorem evalAt_toGerm {S : Opens X} (f : BddHoloOn S) {x : X} (hx : x ∈ S) :
     (toGerm S f).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := by
-  show (MeroGermOn.mk f.2.choose _).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩
-  rw [RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
+  rw [toGerm_eq_mk, RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
     (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))]
   exact (f.2.choose_spec.2 ⟨x, hx⟩).symm
 
 theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     toGerm S' (restrictCLM h f) = RS.MeroGermOn.restrict h (toGerm S f) := by
-  rw [RS.MeroGermOn.restrict_mk]
+  rw [toGerm_eq_mk, toGerm_eq_mk, RS.MeroGermOn.restrict_mk]
   apply mk_eq_mk_of_eqOn S'.2
   intro x hx
   show (restrictCLM h f).2.choose x = f.2.choose x
@@ -288,7 +302,14 @@ theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
     (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) :
     toGerm S' (restrictGerm hc φ) =
       RS.MeroGermOn.restrict (le_of_closure hc) (φ : RS.MeroGermOn X (S : Set X)) := by
-  rw [← RS.MeroGermOn.mk_holoRepr S.2 (φ : RS.MeroGermOn X (S : Set X)), RS.MeroGermOn.restrict_mk]
+  rw [toGerm_eq_mk]
+  have hRHS : RS.MeroGermOn.restrict (le_of_closure hc) (φ : RS.MeroGermOn X (S : Set X)) =
+      MeroGermOn.mk (φ : RS.MeroGermOn X (S : Set X)).holoRepr
+        (fun x hx => (RS.MeroGermOn.meromorphicOnX_holoRepr S.2
+          (φ : RS.MeroGermOn X (S : Set X))) x (le_of_closure hc hx)) := by
+    conv_lhs => rw [← RS.MeroGermOn.mk_holoRepr S.2 (φ : RS.MeroGermOn X (S : Set X))]
+    exact RS.MeroGermOn.restrict_mk (le_of_closure hc)
+  rw [hRHS]
   apply mk_eq_mk_of_eqOn S'.2
   intro x hx
   show (restrictGerm hc φ).2.choose x = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x
