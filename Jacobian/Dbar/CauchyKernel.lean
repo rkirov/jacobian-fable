@@ -177,7 +177,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
   have hnotmem_tsupport : ∀ r θ : ℝ, R' ≤ r → z - circleMap 0 r θ ∉ tsupport g := by
     intro r θ hr hmem
     have h1 := hR0 hmem
-    rw [Metric.mem_closedBall_zero_iff] at h1
+    rw [mem_closedBall_zero_iff] at h1
     have h2 : ‖circleMap 0 r θ‖ = r := by
       rw [circleMap, zero_add, norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one,
         Complex.norm_real, Real.norm_of_nonneg (hR'pos.le.trans hr)]
@@ -208,7 +208,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
       (hasDerivAt_circleMap_r 0 p.2 p.1).const_sub z
     have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
       (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
-    simpa [Gr, map_neg] using h3.comp_hasDerivAt h1
+    simpa [Gr, map_neg] using HasFDerivAt.comp_hasDerivAt_of_eq p.1 h3 h1 rfl
   have hGθ_deriv : ∀ p : ℝ × ℝ, HasDerivAt (fun θ => g (z - circleMap 0 p.1 θ)) (Gθ p) p.2 := by
     intro p
     have h1 : HasDerivAt (fun θ : ℝ => z - circleMap 0 p.1 θ)
@@ -216,31 +216,20 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
       (hasDerivAt_circleMap 0 p.1 p.2).const_sub z
     have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
       (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
-    have h4 := h3.comp_hasDerivAt h1
+    have h4 := HasFDerivAt.comp_hasDerivAt_of_eq p.2 h3 h1 rfl
     have heq : circleMap 0 p.1 p.2 * Complex.I = Complex.I * p.1 * Complex.exp (p.2 * Complex.I) := by
       rw [circleMap]; ring
     rw [heq] at h4
     simpa [Gθ, map_neg] using h4
+  have hcirc_cont : Continuous (fun p : ℝ × ℝ => z - circleMap 0 p.1 p.2) := by
+    unfold circleMap; fun_prop
   have hGr_cont : Continuous Gr := by
-    have : Continuous (fun p : ℝ × ℝ => z - circleMap 0 p.1 p.2) := by
-      apply Continuous.sub continuous_const
-      exact continuous_const.add (Complex.continuous_ofReal.fst'.mul
-        ((Complex.continuous_exp.comp (continuous_const.mul
-          (Complex.continuous_ofReal.comp continuous_snd)))))
-    exact ((hfc.comp this).clm_apply (Complex.continuous_exp.comp
-      (continuous_const.mul (Complex.continuous_ofReal.comp continuous_snd)))).neg
+    have hc2 : Continuous (fun p : ℝ × ℝ => Complex.exp ((p.2 : ℂ) * Complex.I)) := by fun_prop
+    exact ((hfc.comp hcirc_cont).clm_apply hc2).neg
   have hGθ_cont : Continuous Gθ := by
-    have hc1 : Continuous (fun p : ℝ × ℝ => z - circleMap 0 p.1 p.2) := by
-      apply Continuous.sub continuous_const
-      exact continuous_const.add (Complex.continuous_ofReal.fst'.mul
-        ((Complex.continuous_exp.comp (continuous_const.mul
-          (Complex.continuous_ofReal.comp continuous_snd)))))
     have hc2 : Continuous (fun p : ℝ × ℝ =>
-        Complex.I * (p.1 : ℂ) * Complex.exp (p.2 * Complex.I)) :=
-      (continuous_const.mul Complex.continuous_ofReal.fst').mul
-        (Complex.continuous_exp.comp (continuous_const.mul
-          (Complex.continuous_ofReal.comp continuous_snd)))
-    exact ((hfc.comp hc1).clm_apply hc2).neg
+        Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) := by fun_prop
+    exact ((hfc.comp hcirc_cont).clm_apply hc2).neg
   sorry
 
 end RS
