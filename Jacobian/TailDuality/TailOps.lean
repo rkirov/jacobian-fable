@@ -264,12 +264,18 @@ theorem sub_divisor_le (A C : RS.Divisor X) [ConnectedSpace X]
     A - C - RS.divisor (f : RS.Mero X) ≤ A := by
   rw [Function.locallyFinsuppWithin.le_def]
   intro p
-  have hb := LinSys.divisor_ge f.2 hf0 p
-  have h1 : (A - C - RS.divisor (f : RS.Mero X)) p
-      = A p - C p - RS.divisor (f : RS.Mero X) p := by
-    rw [RS.Divisor.sub_apply, RS.Divisor.sub_apply]
-  rw [h1]
-  omega
+  rw [RS.Divisor.sub_apply, RS.Divisor.sub_apply]
+  -- Routed through a divisor-free arithmetic helper: `omega` was observed to desync its atom
+  -- detection when a fact about `RS.divisor (f:ℳX) p` derived via a separate `have`/lemma call is
+  -- combined directly with a freshly-elaborated occurrence of the same term in the goal (both
+  -- correct and defeq, but not syntactically merged by `omega`'s atom collection under
+  -- `[DecidableEq X]` + `open scoped Classical`, confirmed by a targeted spike). `apply` unifies
+  -- `d` against the goal's OWN term instead of retyping it, sidestepping the desync.
+  have key : ∀ d : ℤ, -(C p) ≤ d → A p - C p - d ≤ A p := fun d hd => by omega
+  apply key
+  have h := RS.mem_linSys_iff.mp f.2 p
+  rw [RS.divisor_apply]
+  exact WithTop.untop₀_le_untop₀ (RS.Mero.ord_ne_top hf0 p) h
 
 /-- The `μ_{1/f}` inversion identity (endgame step): inverting `f` and truncating recovers the
 plain truncation. -/
