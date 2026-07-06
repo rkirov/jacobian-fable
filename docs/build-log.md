@@ -1146,3 +1146,40 @@
   (`f := ∏ i, f i`) is instead available pre-packaged here as `RS.AbelWeak.
   exists_weakSolutionOfFinset` + `RS.AbelWeak.IsWeakSolutionOfFinset` — abel-theorem should cite
   this directly rather than re-deriving the `Finset.prod` bookkeeping.
+- [resthm] Jacobian/ResidueTheorem/RationalOnP1.lean OK (no open goals; ~330 lines) + Jacobian/
+  ResidueTheorem.lean (unit root) OK; `scripts/check.sh Jacobian/ResidueTheorem` passes. Per the
+  orchestrator addendum, built against the §6 trace-route primary (PoU/Stokes §3-5, the
+  Area-Gluing atom, deliberately NOT built). **PARTIAL DELIVERY — read both files' docstrings in
+  full before extending.** Delivered: a set of independently correct, reusable atoms toward the
+  `ℙ¹` base case (task item 2) — `RS.P1.formOfCoeFn` (two-chart `MFormData` constructor from a
+  finite-chart coefficient function), `RS.P1.coeffAt_coe_eq_coeffAt_coe` (ℙ¹'s finite points share
+  one raw coefficient function), and the headline new technique,
+  `RS.P1.resAt_neg_sq_inv_mul_comp_inv_eq_zero`: the residue at `∞` of an ENTIRE function's
+  `invChart` reading vanishes via Cauchy's theorem transported through the `z ↦ z⁻¹` contour
+  reindexing (`RS.P1.circleIntegral_inv_eq_neg`) — NOT a polynomial-growth/degree argument, cheaper
+  than what `form-trace-tower`'s superseded non-quotient design had budgeted for the same "Liouville"
+  step. **NOT delivered**: (1) the `ℙ¹` assembly itself — every other piece (finite-pole-set
+  extraction from `θ.divisor`, the principal-part tail as a second `formOfCoeFn` instance, the
+  order-≥0-everywhere argument via `MeromorphicAt.orderAt_sub_principalPartAt_nonneg` +
+  `Finset.analyticAt_fun_sum`, the `θ.coeffAt ∞` transition-formula bridge) was worked out and
+  test-compiled, but the final step needs `Differentiable ℂ R_mid` and the remainder `R_mid`,
+  built from bare `MeromorphicAt`-junk-valued subtraction, is only known to have order `≥ 0` at the
+  finitely many former poles — NOT necessarily continuous there (`MeromorphicAt`'s witness at a
+  positive-order point puts zero constraint on the actual value, since it's multiplied by `0`).
+  Fix sketched in `RationalOnP1.lean`'s docstring (weaken the Liouville-free fact to an explicit
+  small radius avoiding the finite pole set) but not implemented — genuinely found late in the
+  build, after the harder Liouville-free technique itself was already de-risked and working; (2)
+  the general-`X` reduction (task items 1/3/4, `residue_sum_eq_zero_of_exists_nonconstant`) — NOT
+  EVEN ATTEMPTED IN CODE beyond design-level reading, because `MForm.d f` (canonical-forms) does
+  NOT match `resAtX`'s pullback convention (`RS.FormTrace.resAtX`, form-trace-tower) at a pole of
+  `f`: `d f`'s coefficient there is `deriv(f)`-shaped (order matching `f`'s own pole, worse), while
+  `F^*(dz)`'s (`F := toP1 f`) is `d(1/f)`-shaped (order matching the ramification, generically
+  simple) — checked directly, a genuine cross-unit convention mismatch neither unit's design
+  anticipated. Closing it needs a dedicated `MForm.ofPullback F` construction (build `F^*(dz)`
+  itself as an honest `MFormData`, via `resAtX`'s own per-chart formula) NOT attempted here, before
+  the `θ = h • (F-pullback)` reduction (canonical-forms D8) and the `FiberStack` sum-over-fibres
+  bookkeeping (design §6.2) on top of that. **Loud flag for the orchestrator**: `serre-duality-tails`
+  is the only unit whose frozen edge points here (confirmed by both units' own DAG audits) and its
+  one consumption site (`RS.TailDuality.pairT_alpha`, its design §6 P3) is gated on this landing —
+  it does NOT land with this delivery. No sorries anywhere; both gaps are honest absences (undecided
+  theorems left unstated), not placeholder tactics, per the hard "zero sorries" rule.
