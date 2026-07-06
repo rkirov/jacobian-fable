@@ -73,7 +73,7 @@ theorem ind {motive : MForm X → Prop} (h : ∀ θ : MFormData X, motive (mk θ
 theorem sound {θ η : MFormData X} (h : MFormData.Eqv θ η) : mk θ = mk η := Quotient.sound h
 
 theorem mk_eq_mk {θ η : MFormData X} : mk θ = mk η ↔ MFormData.Eqv θ η :=
-  ⟨Quotient.exact, Quotient.sound⟩
+  ⟨fun h => Quotient.exact h, fun h => Quotient.sound h⟩
 
 /-! ### `ℂ`-algebra structure, descended pointwise -/
 
@@ -182,7 +182,8 @@ noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (Θ : MForm X
   Quotient.liftOn Θ MFormData.divisor fun θ η h =>
     Function.locallyFinsuppWithin.ext fun y => by
       show (θ.ord y).untop₀ = (η.ord y).untop₀
-      rw [meromorphicOrderAt_congr (h y)]
+      have hord : θ.ord y = η.ord y := meromorphicOrderAt_congr (h y)
+      rw [hord]
 
 @[simp] theorem divisor_mk [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) :
     (mk θ).divisor = θ.divisor := rfl

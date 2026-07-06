@@ -153,9 +153,9 @@ end Helpers
 
 /-! ## The annulus identity (Atom 1′) -/
 
+set_option maxHeartbeats 4000000 in
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `∂̄` of an arbitrary `C¹` function on a closed annulus. -/
-set_option maxHeartbeats 4000000 in
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
     {u : ℂ → ℂ} {c : ℂ} {r R : ℝ} (h0 : 0 < r) (hle : r ≤ R)
     (hu : ContDiffOn ℝ 1 u (Metric.closedBall c R \ Metric.ball c r)) :
