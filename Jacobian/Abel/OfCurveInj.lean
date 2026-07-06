@@ -5,16 +5,17 @@ import Jacobian.Abel.Sufficiency
 
 Unit: abel-theorem. Namespace `Jacobian`. The challenge's `ofCurve_inj`
 (`docs/Jacobian_challenge.lean:99`), assembled from `RS.Abel.genus_eq_zero_of_pathIntegral_mem`
-(`Sufficiency.lean` — currently gated on that file's ONE documented external blocker,
-`serre-duality-tails`, entirely unbuilt) via the frozen ordering-resolution bridge
+(`Sufficiency.lean`) via the frozen ordering-resolution bridge
 (`AddSubgroup.isClosed_of_discrete`, §1.3/§9 of the design, spike-verified).
 
 Both theorems below are stated exactly at their design shape and type-check; `ofCurve_inj'`'s
 PROOF calls `RS.Abel.genus_eq_zero_of_pathIntegral_mem`, so it inherits that theorem's one
-admitted step transitively (no NEW admitted step is introduced in this file). `ofCurve_inj` is
-a one-line
-wrapper, discharged unconditionally the moment `period-lattice-rank` registers
-`instance : DiscreteTopology (RS.periodSubgroup X)` AND `serre-duality-tails` lands.
+remaining explicit hypothesis (`RS.Abel.WeakSolutionUpgrade X`, see `Sufficiency.lean`'s own
+docstring for the precise account — the external `serre-duality-tails` blocker itself has
+CLEARED) transitively, as an explicit hypothesis argument here too (no NEW hypothesis is
+introduced in this file). `ofCurve_inj` is a one-line wrapper, discharged unconditionally the
+moment `period-lattice-rank` registers `instance : DiscreteTopology (RS.periodSubgroup X)` AND
+`WeakSolutionUpgrade X` is proved (see `Sufficiency.lean` for the precise remaining roadmap).
 -/
 
 open scoped ContDiff Manifold
@@ -27,8 +28,10 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 /-- **The challenge lemma, gated** on the literal (uncompleted) period subgroup's discreteness —
 Forster 21.4(i) exactly, NOT the `.topologicalClosure` variant `jacobian-construction`'s other
 gated instances use (§4.4 reconciles the two shapes; `period-lattice-rank` is expected to
-register both, per the design's coordination note). -/
-theorem ofCurve_inj' (P : X) (h : 0 < genus X) [DiscreteTopology (RS.periodSubgroup X)] :
+register both, per the design's coordination note) — AND on `RS.Abel.WeakSolutionUpgrade X`
+(`Sufficiency.lean`), the one remaining, precisely-isolated non-external hypothesis. -/
+theorem ofCurve_inj' (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 < genus X)
+    [DiscreteTopology (RS.periodSubgroup X)] :
     Function.Injective (ofCurve P) := by
   intro x y hxy
   by_contra hne
@@ -61,13 +64,15 @@ theorem ofCurve_inj' (P : X) (h : 0 < genus X) [DiscreteTopology (RS.periodSubgr
     ring
   have hmem : (fun i => RS.pathIntegral τ (RS.basis X i)) ∈ RS.periodSubgroup X := by
     rw [hτ_eq]; exact (RS.periodSubgroup X).neg_mem hxy'
-  exact absurd (RS.Abel.genus_eq_zero_of_pathIntegral_mem hne τ hmem) (by omega)
+  exact absurd (RS.Abel.genus_eq_zero_of_pathIntegral_mem hupgrade hne τ hmem) (by omega)
 
 /-- **The literal challenge statement** (`docs/Jacobian_challenge.lean:99`), discharged the
 moment `period-lattice-rank` registers `instance : DiscreteTopology (RS.periodSubgroup X)` for
-the real period subgroup (Forster 21.4(i)). A one-line wrapper, not new mathematics. -/
-theorem ofCurve_inj (P : X) (h : 0 < genus X) [DiscreteTopology (RS.periodSubgroup X)] :
+the real period subgroup (Forster 21.4(i)) AND `RS.Abel.WeakSolutionUpgrade X` is proved. A
+one-line wrapper, not new mathematics. -/
+theorem ofCurve_inj (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 < genus X)
+    [DiscreteTopology (RS.periodSubgroup X)] :
     Function.Injective (ofCurve P) :=
-  ofCurve_inj' P h
+  ofCurve_inj' hupgrade P h
 
 end Jacobian
