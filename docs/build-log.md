@@ -1855,3 +1855,43 @@
   `docs/Jacobian_challenge.lean:104-153` demands, modulo the standing
   `[DiscreteTopology (periodSubgroup _).topologicalClosure]` gate on the two `contMDiff`
   statements only (inherited, no new gate). NOT registered in `Jacobian.lean` per task hard rule.
+- [tdual] `Jacobian/TailDuality/` OK — the make-or-break unit. `scripts/check.sh
+  Jacobian/TailDuality` passes (3049 jobs), zero sorries. Delivers Serre duality via Miranda
+  VI.3's Laurent-tail calculus, worked ENTIRELY at the tail level per the orchestrator addendum
+  (2026-07-08): does NOT wait on `H1Tail.toH1`'s surjectivity (Serre-circular, out of scope).
+  `TailOps.lean`: `truncT`/`mulInto`/`nuL` (+ `nuL_mulInto_inv`), the `LinSys`/order bookkeeping.
+  `Pairing.lean`: `readAt`/`pairAtData`/`pairAt`/`pairT` (built on `MFormData` — `MForm` exposes
+  only lifted `ord`/`resAt`/`laurentCoeffAt`, no raw `coeffAt` — then descended via
+  `Quotient.liftOn`), `pairT_trunc`/`pairT_mulInto`/`pairT_alpha` (the **only** residue-theorem
+  citation, via `RS.residueTheorem`), `pairT_ne_zero` (Miranda Thm 3.3 injectivity),
+  `resMap`/`resMap_injective`. `Counting.lean`: `instFiniteDimensional_H1Tail` (via
+  `H1Tail.toH1_injective` + `Finiteness.finiteDimensional_H1`, the addendum's re-basing),
+  `h1T`/`h1T_le_h1`, `nuPairDual`, **`exists_mul_functional_eq`** (Miranda **Lemma 3.4**).
+  `Duality.lean`: **`mem_omegaSpace_of_vanishing_ker_trunc`** (Miranda **Lemma 3.6**),
+  **`exists_pairT_eq`** (Thm 3.3's surjectivity half — the full PDF 202–203 endgame: Lemma 3.4 +
+  inverting `μ_{f₁}` + Lemma 3.6 applied twice), `resMap_surjective`/`resEquiv` (`resMap` is a
+  genuine linear ISOMORPHISM `Ω(-D) ≃ₗ Dual(H1Tail D)`, not just a dimension count), and the
+  export bank `i_neg_eq_h1T`/`l_sub_eq_h1T`/`h1T_zero_eq_l_K`/`h1T_zero_eq_genus`/`h1T_canonical`.
+  **Two build-engineering gotchas hit and documented** (recorded in `TailOps.lean`/`Counting.lean`
+  comments for future builders): (1) `omega` (and `guard_target =ₐ`) can desync its atom
+  detection when a fact about a divisor-pointwise value (`RS.divisor f p`, `D p`) derived via one
+  lemma application is combined directly with a syntactically-different-but-defeq occurrence of
+  the same term from a separate `rw` — same statement, same instances, provably equal by `rfl`,
+  but NOT merged by `omega`'s atom collection; the fix is to route through a divisor-free generic
+  arithmetic helper (`have key : ∀ d : ℤ, ... := fun d hd => by omega`) and connect via `apply`/
+  `exact` (full `isDefEq` unification), never `omega` directly, across such a boundary — hit and
+  fixed in `TailOps.lean`'s `sub_divisor_le` and `Counting.lean`'s `exists_mul_functional_eq`.
+  (2) `rw`/`▸` cannot rewrite a `MForm` argument *inside* a dependent proof term like
+  `pairT θ hθ` (motive not type-correct); fixed by a small proof-irrelevance helper
+  `pairT_eq_of_eq (hEq : θ₁ = θ₂) (h1) (h2) : pairT θ₁ h1 = pairT θ₂ h2 := by subst hEq; rfl`
+  instead. **Honest gap** (flagged, not blocking): the tail-chi ledger's additivity
+  (`chiT D = chiT 0 + deg D`) is NOT delivered — `chiT` is defined but its additivity is
+  genuinely independent content from Serre duality (Miranda §2.3/2.6 six-term exactness, not
+  §3), NOT derivable from `i_neg_eq_h1T` alone; a proof sketch (reusing Cech's `Window`/
+  `windowToT`/`windowMap` as the finite-dimensional bridge) is recorded in `Duality.lean`'s file
+  docstring. Does not block riemann-roch (#28), which can combine this unit's export bank with
+  `Finiteness.chi_eq_chi_zero_add_degree` (Čech-level, already built) directly. Root docstring
+  (`Jacobian/TailDuality.lean`) records the exact consumer notes for riemann-roch (#28),
+  cech-h1-genus (#27, re-based to `h1T_zero_eq_genus`), and `Jacobian/Abel/Sufficiency.lean`'s
+  blocked step (needs `RS.H1Tail.equiv`, unavailable; only `resEquiv`/`H1Tail.equiv_of_surjective`
+  exist). `Jacobian.lean` NOT touched per task hard rule (orchestrator's job).
