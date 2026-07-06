@@ -1,6 +1,7 @@
 import Jacobian.ResidueTheorem.P1Assembly
 import Jacobian.ResidueTheorem.Calibrated
 import Jacobian.FormTrace
+import Jacobian.CanonicalForms.Existence
 
 /-!
 # residue-theorem: the general-`X` reduction and THE residue theorem
@@ -24,14 +25,22 @@ so the trace form is assembled from TWO coefficient functions of ONE pair `(h', 
   (`trace_const_mul_pullback` + fibre-wise honesty of `holoRepr`).
 
 Main exports:
-* `RS.MForm.d_ne_zero` — the differential of a nonconstant meromorphic function is a nonzero
-  meromorphic 1-form (identity-theorem dichotomy).
 * `RS.residue_sum_eq_zero_of_exists_nonconstant` — **THE residue theorem**
   `∑ᶠ x, θ.resAt x = 0` on a compact connected surface admitting a nonconstant meromorphic
-  function (canonical-forms D9 `exists_nonconstant_mero`'s exact export shape; the
-  unconditional wrapper is one line once `Jacobian/CanonicalForms/Existence.lean` lands).
+  function (canonical-forms D9 `exists_nonconstant_mero`'s exact export shape; now that
+  `Jacobian/CanonicalForms/Existence.lean` has landed, the unconditional wrapper
+  `RS.residue_sum_eq_zero` lives in `Jacobian/ResidueTheorem/Unconditional.lean`).
 * `RS.MForm.sum_resAt_eq_zero_of_exists_nonconstant` — the serre-duality-tails consumption
   shape (`docs/requests/residue-theorem.md`): `∑ᶠ x, (f • θ).resAt x = 0`.
+
+**`RS.MForm.d_ne_zero` moved to canonical-forms** (`Jacobian/CanonicalForms/Existence.lean`):
+its proof used only canonical-forms/meromorphic-and-divisors machinery (no `ℙ¹`/trace/
+calibration content), and canonical-forms itself needed exactly this fact for its own D9
+existence chain (`exists_ne_zero_mform := ⟨MForm.d f, MForm.d_ne_zero hf⟩`). Since
+residue-theorem is DOWNSTREAM of canonical-forms, keeping a second copy here would either
+duplicate the ~90-line proof or require importing residue-theorem back into canonical-forms
+(a cycle); canonical-forms is the clean home, so this file now imports it from there instead
+(`import Jacobian.CanonicalForms.Existence`, above) — the call site below is unchanged.
 -/
 
 open scoped ContDiff Manifold OnePoint Classical
@@ -191,114 +200,21 @@ theorem resAtX_toP1_eq_of_ord_neg (φ h : ℳ X) {x : X}
   simp only [Function.comp_apply]
   field_simp
 
-/-! ### Nonvanishing of `d φ` for nonconstant `φ` -/
+/-! ### `MForm.d_ne_zero` — now imported from `canonical-forms`
 
-/-- The differential of a nonconstant meromorphic function is a nonzero meromorphic 1-form
-(identity-theorem dichotomy: were `d φ = 0`, the chart derivative would vanish near some
-nonnegative-order point, forcing `φ.holoRepr` to be locally — hence codiscretely — constant). -/
-theorem MForm.d_ne_zero {φ : ℳ X} (hφ : ∀ c : ℂ, φ ≠ algebraMap ℂ (ℳ X) c) :
-    MForm.d φ ≠ 0 := by
-  intro hd0
-  have hφ0 : φ ≠ 0 := by
-    have h := hφ 0
-    rwa [map_zero] at h
-  have hf'mero : MeromorphicOnX φ.holoRepr Set.univ :=
-    MeroGermOn.meromorphicOnX_holoRepr isOpen_univ φ
-  -- a point of nonnegative order
-  obtain ⟨x₁, hx₁⟩ : ∃ x₁ : X, 0 ≤ φ.ord x₁ := by
-    set x₀ := Classical.arbitrary X with hx₀_def
-    rcases le_or_gt 0 (φ.ord x₀) with hle | hlt
-    · exact ⟨x₀, hle⟩
-    · obtain ⟨y, hy⟩ := (RS.eventually_ord_eq_zero hφ0 x₀).exists
-      exact ⟨y, le_of_eq hy.symm⟩
-  have hcmd : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω φ.holoRepr x₁ :=
-    MeroGermOn.holoRepr_contMDiffAt isOpen_univ (Set.mem_univ x₁) hx₁
-  have hgan : AnalyticAt ℂ (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) (chartAt ℂ x₁ x₁) :=
-    RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hcmd
-  -- `d φ = 0` forces the chart derivative to vanish on a punctured neighborhood
-  have hd_top : meromorphicOrderAt (deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm))
-      (chartAt ℂ x₁ x₁) = ⊤ := by
-    have h1 : (MForm.d φ).ord x₁ = ⊤ := by
-      rw [hd0]
-      exact MForm.ord_zero x₁
-    have h2 : (MForm.d φ).ord x₁
-        = meromorphicOrderAt ((MFormData.d φ).coeffAt x₁) (chartAt ℂ x₁ x₁) := rfl
-    rw [h2] at h1
-    have h3 : (MFormData.d φ).coeffAt x₁ =ᶠ[𝓝[≠] (chartAt ℂ x₁ x₁)]
-        deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) := by
-      have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x₁ x₁), z ∈ (chartAt ℂ x₁).target :=
-        eventually_nhdsWithin_of_eventually_nhds
-          ((chartAt ℂ x₁).open_target.mem_nhds (mem_chart_target ℂ x₁))
-      filter_upwards [htarget] with z hz
-      show (if z ∈ (chartAt ℂ x₁).target then
-        deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) z else 0) = _
-      rw [if_pos hz]
-    rw [meromorphicOrderAt_congr h3] at h1
-    exact h1
-  have hderiv0 : deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm)
-      =ᶠ[𝓝[≠] (chartAt ℂ x₁ x₁)] 0 := meromorphicOrderAt_eq_top_iff.1 hd_top
-  -- upgrade to a full neighborhood
-  have hdc : AnalyticAt ℂ (deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm)) (chartAt ℂ x₁ x₁) :=
-    hgan.deriv
-  have hval0 : deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) (chartAt ℂ x₁ x₁) = 0 := by
-    have h1 : Tendsto (deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm)) (𝓝[≠] (chartAt ℂ x₁ x₁))
-        (𝓝 (deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) (chartAt ℂ x₁ x₁))) :=
-      hdc.continuousAt.tendsto.mono_left nhdsWithin_le_nhds
-    have h2 : Tendsto (deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm)) (𝓝[≠] (chartAt ℂ x₁ x₁))
-        (𝓝 0) := by
-      rw [tendsto_congr' hderiv0]
-      exact tendsto_const_nhds
-    exact tendsto_nhds_unique h1 h2
-  have hderiv0' : deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) =ᶠ[𝓝 (chartAt ℂ x₁ x₁)] 0 :=
-    eventuallyEq_nhds_of_eventuallyEq_nhdsNE hderiv0 (by simpa using hval0)
-  -- constant on a small ball
-  have hanev : ∀ᶠ w in 𝓝 (chartAt ℂ x₁ x₁),
-      AnalyticAt ℂ (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) w := hgan.eventually_analyticAt
-  obtain ⟨r, hr0, hball⟩ := Metric.eventually_nhds_iff_ball.mp (hanev.and hderiv0')
-  have hconst : ∀ w ∈ Metric.ball (chartAt ℂ x₁ x₁) r,
-      (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) w
-        = (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) (chartAt ℂ x₁ x₁) := by
-    intro w hw
-    exact Metric.isOpen_ball.is_const_of_deriv_eq_zero
-      (convex_ball (chartAt ℂ x₁ x₁) r).isPreconnected
-      (fun v hv => ((hball v hv).1).differentiableAt.differentiableWithinAt)
-      (fun v hv => (hball v hv).2) hw (Metric.mem_ball_self hr0)
-  set cval : ℂ := (φ.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) (chartAt ℂ x₁ x₁) with hcval_def
-  -- back on `X`: `φ.holoRepr` is constant near `x₁`
-  have hXconst : ∀ᶠ p in 𝓝 x₁, φ.holoRepr p = cval := by
-    have hmem : (chartAt ℂ x₁).source ∩
-        ⇑(chartAt ℂ x₁) ⁻¹' Metric.ball (chartAt ℂ x₁ x₁) r ∈ 𝓝 x₁ := by
-      apply Filter.inter_mem
-      · exact (chartAt ℂ x₁).open_source.mem_nhds (mem_chart_source ℂ x₁)
-      · exact ((chartAt ℂ x₁).continuousAt (mem_chart_source ℂ x₁)).preimage_mem_nhds
-          (Metric.ball_mem_nhds _ hr0)
-    filter_upwards [hmem] with p hp
-    have h := hconst (chartAt ℂ x₁ p) hp.2
-    rwa [Function.comp_apply, (chartAt ℂ x₁).left_inv hp.1] at h
-  -- hence `φ` is a constant class — contradiction
-  have hsubmero : MeromorphicOnX (fun p => φ.holoRepr p - cval) Set.univ :=
-    fun p hp => (hf'mero p hp).sub (meromorphicAtX_const cval)
-  have htop : ordAtX (fun p => φ.holoRepr p - cval) x₁ = ⊤ := by
-    rw [ordAtX_eq_top_iff]
-    filter_upwards [hXconst.filter_mono nhdsWithin_le_nhds] with p hp
-    show φ.holoRepr p - cval = 0
-    rw [hp, sub_self]
-  rcases hsubmero.eventuallyEq_zero_or_forall_ordAtX_ne_top with hzero | hnetop
-  · apply hφ cval
-    rw [← MeroGermOn.mk_holoRepr isOpen_univ φ, MeroGermOn.algebraMap_mk]
-    apply MeroGermOn.mk_eq_mk.2
-    have h1 : ∀ᶠ p in Filter.codiscrete X, φ.holoRepr p - cval = 0 := hzero
-    filter_upwards [h1] with p hp
-    exact sub_eq_zero.1 hp
-  · exact hnetop x₁ htop
+Moved to `Jacobian/CanonicalForms/Existence.lean` (see the module docstring above): the proof
+never used any residue-theorem-specific content, and canonical-forms' own D9 existence chain
+needed exactly this fact. `import Jacobian.CanonicalForms.Existence` (above) brings it into
+scope unchanged; the call site below (`MForm.d_ne_zero hφ`) is untouched. -/
 
 /-! ### THE residue theorem -/
 
 /-- **THE residue theorem** (Forster 10.21 / Miranda VI eq. 3.2, blueprint headline
 `∑_p Res_p(θ) = 0`): on a compact connected Riemann surface admitting a nonconstant meromorphic
-function (the exact shape of canonical-forms D9's `exists_nonconstant_mero`, whose
-`Existence.lean` is gated on finiteness-and-chi — pass it here once it lands for the
-unconditional statement), the residues of any meromorphic 1-form sum to zero.
+function (the exact shape of canonical-forms D9's `exists_nonconstant_mero`), the residues of
+any meromorphic 1-form sum to zero. The unconditional statement (`hex` discharged by
+`exists_nonconstant_mero` itself, now that `Existence.lean` has landed) is
+`RS.residue_sum_eq_zero` in `Jacobian/ResidueTheorem/Unconditional.lean`.
 
 Proved by the trace route (design §6): write `θ = h • d φ` (D8, one-dimensionality over
 `ℳ(X)`), push down along `F := toP1 φ.holoRepr` fibre-by-fibre through calibrated fiber stacks

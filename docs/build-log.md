@@ -1588,3 +1588,61 @@
   `ConnectedSpace` needed), `h1`, `h1_le_of_le`. **Notes for tail-duality/serre-duality-cech**:
   `finiteDimensional_H1 D` discharges their pairing-nondegeneracy finiteness hypothesis
   directly as an instance (no extra argument needed at call sites).
+- [abelweak] Jacobian/AbelWeak/Rechart.lean OK (190 lines) + Jacobian/AbelWeak/GeneralChain.lean OK
+  (505 lines) — **the general multi-chart `exists_weakSolutionOfPair` gap CLOSED** (task: closure
+  authorized inside `Jacobian/AbelWeak/` by the `abel-theorem` builder, per this unit's own
+  documented gap in `ChainAssembly.lean`/root docstring). `Rechart.lean`: the "rechart" lemma
+  (`exists_localModel_of_isWeakSolutionAt`, `IsWeakSolutionAt`'s local model transports across ANY
+  two `maximalAtlas` charts at the same point) via mathlib's removable-singularity theorem —
+  transition map `S := e ∘ e'.symm` is holomorphic (`IsManifold`'s groupoid compatibility +
+  generic `contMDiffAt_iff_contDiffAt`), its `dslope` is analytic
+  (`HasFPowerSeriesAt.has_fpower_series_dslope_fslope`) and NONZERO at the transition point (chain
+  rule on `T ∘ S = id`, `T` the reverse transition), `sub_smul_dslope` (unconditional, no `b = a`
+  case split) gives the factorisation needed to rewrite the local model. Consumer:
+  `IsWeakSolutionAt.mul`, fully general order-additive multiplication (any `k1, k2 : ℤ`, possibly
+  different witness charts), via `Function.update` at the single point `a` (uniformly repairs the
+  `zpow`-at-zero junk-value mismatch that occurs exactly when `k1, k2 ≠ 0` and `k1 + k2 = 0` — the
+  `+1`/`-1` cancellation every interior `ChartChain` breakpoint needs). `GeneralChain.lean`:
+  `exists_weakSolutionOfPair {P Q} (hPQ : Q ≠ P) (δ : Path Q P) : ∃ f U, IsWeakSolutionOfPair f P Q
+  ∧ IsOpen U ∧ IsCompact (closure U) ∧ P ∈ U ∧ Q ∈ U ∧ (∀ x ∉ U, f x = 1)` (exact design shape) —
+  strong induction along a `RS.ChartChain δ`, gluing one fresh `SingleChart` piece per link via
+  `IsWeakSolutionAt.mul` applied at up to 3 points per step (chain basepoint `M 0`, outgoing
+  endpoint `M m`, new endpoint `M (m+1)` — `M 0` can coincide with either, handled by 3 exhaustive
+  cases via `merge_two`/`merge_two'`/`chainFinish`/`chainFinishSame`, INCLUDING the path-revisits-
+  its-own-basepoint edge case). `Q ∈ U` tracked throughout (seeded by a small chart-ball `B0 ∋ M 0`
+  at the base case); `P ∈ U` via contradiction (nonzero-order weak solutions genuinely vanish at
+  their own point, via new helper `IsWeakSolutionAt.apply_eq_zero_of_ne_zero`). Small reusable
+  helpers also exported: `isWeakSolutionAt_zero_of_ne`, `IsWeakSolutionAt.contMDiffAt_and_ne_zero_
+  of_zero`, `IsWeakSolutionAt.contMDiffAt_of_nonneg`, `IsWeakSolutionAt.congr_of_eventuallyEq`,
+  `isWeakSolutionAt_one_zero`. GOTCHA for siblings: no `ContMDiffMul 𝓘(ℝ, ℂ) ∞ ℂ` instance exists
+  at this pin (matches `WeakSolution.lean`'s own finding) — `ContMDiffAt.mul`/`.pow` fail to
+  synthesize; route through `RS.contMDiffAt_real_iff_contDiffAt` (2-ary product, new Compat
+  `contMDiffAt_mul_real`) or `contMDiffAt_finsetProd_real` (n-ary, e.g. for `(e·-ea)^n` as an
+  n-fold `Finset.prod`) instead. Zero sorries; `scripts/check.sh Jacobian/AbelWeak` passes (1547
+  lines total across all 6 files + root). Root docstring and `ChainAssembly.lean`'s own status
+  note both updated to record the closure (no more "NOT built" framing anywhere in the unit).
+- [canon] Existence.lean OK — `Jacobian/CanonicalForms/Existence.lean` (D9, the unit's
+  raison d'être; gate `Jacobian/Finiteness/Chi.lean` landed): `Function.locallyFinsuppWithin.
+  degree_single (P) (n) : (single P n : Divisor X).degree = n` (Compat, generalizes
+  `Finiteness.degree_single`'s fixed `n = 1`; closes the §1.6 gap honestly — no separate
+  `Divisor.single` constructor was ever needed, mathlib's own `single` already lands in
+  `locallyFinsuppWithin univ Y`, definitionally `RS.Divisor X`); `MForm.d_ne_zero` (MOVED here
+  from `residue-theorem/Reduction.lean` — that proof used only canonical-forms/meromorphic-and-
+  divisors machinery, and residue-theorem is downstream of canonical-forms, so importing it back
+  would cycle; `Reduction.lean` now imports it from here, call site unchanged);
+  **`exists_nonconstant_mero`**/**`exists_ne_zero_mform`** at the exact frozen shapes (Forster
+  16.11 pattern: `D := single P (|chi 0| + 2)` gives `chi 0 + D.degree ≥ 2`, so
+  `chi_zero_add_degree_le_l` forces `l D ≥ 2 > 1 = l 0`, hence `LinSys 0 = span{1} ⊊ LinSys D`
+  by `SetLike.exists_of_lt`, giving a witness outside every constant); `exists_canonicalDivisor`
+  (D10 existence corollary). Zero sorries. `scripts/check.sh Jacobian/CanonicalForms` passes —
+  unit COMPLETE (D1–D13 all proved, 8 files). Root docstring updated (no more "IN FLIGHT"/
+  "UNWRITTEN" framing).
+- [resthm] unconditional — `Jacobian/ResidueTheorem/Unconditional.lean` (new file): now that
+  canonical-forms' D9 has landed, `RS.residue_sum_eq_zero (θ : MForm X) : ∑ᶠ x, θ.resAt x = 0`
+  is the one-liner `residue_sum_eq_zero_of_exists_nonconstant exists_nonconstant_mero θ`; also
+  unconditional `RS.MForm.sum_resAt_eq_zero (f) (θ) : ∑ᶠ x, (f • θ).resAt x = 0` (the
+  tail-duality shape serre-duality-tails' `pairT_alpha` should thread instead of the conditional
+  `MForm.sum_resAt_eq_zero_of_exists_nonconstant`) and `RS.residueTheorem` (Finset-flexible).
+  `Reduction.lean` updated: imports `Jacobian.CanonicalForms.Existence`, its local
+  `MForm.d_ne_zero` proof removed (now resolves via that import, call site unchanged). Root
+  docstring updated. Zero sorries; `scripts/check.sh Jacobian/ResidueTheorem` passes.

@@ -23,3 +23,5 @@ import Jacobian.SerrePairing
 import Jacobian.AbelWeak
 import Jacobian.DolbeaultComparison
 import Jacobian.ResidueTheorem
+import Jacobian.CanonicalForms
+import Jacobian.LaurentTail

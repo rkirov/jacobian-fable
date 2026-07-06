@@ -82,10 +82,14 @@ theorem periodSubgroup_le_comap_pushforwardT (f : X → Y) (hf : ContMDiff 𝓘(
 
 set_option maxHeartbeats 0 in
 /-- **`Jacobian.pushforward` (§8.4)**: the pushforward map between Jacobians associated to a
-holomorphic map of the underlying curves. -/
+holomorphic map of the underlying curves. (`maxHeartbeats 0`: elaborating this bare `def` —
+unifying `Jacobian.inducedHom`'s implicit `T` from `hT`'s type through the `Jacobian`/`Jac₀`
+quotient abbrevs — takes ~8-9 minutes of wall time on an otherwise-idle machine. Do NOT "help"
+by passing `T` explicitly (`(T := pushforwardT f hf)`): the named-argument elaboration path is
+dramatically SLOWER, not faster — measured >40 minutes before being killed.) -/
 noncomputable def Jacobian.pushforward (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     Jacobian X →ₜ+ Jacobian Y :=
-  Jacobian.inducedHom (T := pushforwardT f hf) (periodSubgroup_le_comap_pushforwardT f hf)
+  Jacobian.inducedHom (periodSubgroup_le_comap_pushforwardT f hf)
 
 end RS
 
