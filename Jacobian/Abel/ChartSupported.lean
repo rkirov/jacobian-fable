@@ -36,7 +36,7 @@ noncomputable section
 
 namespace RS.Abel
 
-variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 /-! ## Inverse-derivative units -/
 
@@ -232,8 +232,8 @@ def form : RS.Form01 X where
         fun h1 => hqe (by
           have := (D.mem_coeffSet_iff x hxT).mpr h1
           rwa [(chartAt ℂ x).left_inv hq'.1] at this)
-      rw [coeff, Set.indicator_of_notMem hmemy, coeff, Set.indicator_of_notMem hmemx,
-        mul_zero]
+      rw [coeff, Set.indicator_of_notMem hmemy, hqy, coeff,
+        Set.indicator_of_notMem hmemx, mul_zero]
 
 /-- The coefficient at an active chart center. -/
 theorem form_coeffAt_center {x : X} (hx : x ∈ D.e.source) :
@@ -260,7 +260,7 @@ end ChartSupportedData
 
 /-! ## Pairing localization -/
 
-variable [T2Space X] [CompactSpace X]
+variable [CompactSpace X]
 
 /-- **The localization lemma**: the global PoU pairing of a chart-supported `(0,1)`-form
 collapses to a single planar integral in the supporting chart. -/
@@ -368,7 +368,7 @@ theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 
       -- assemble
       rw [hG_def]
       dsimp only
-      rw [Set.indicator_of_mem ⟨q, hq, rfl⟩, hsymm_e, pairingTerm,
+      rw [Set.indicator_of_mem hwmem, hsymm_e, ← hτw, pairingTerm,
         Set.indicator_of_mem hτT, hcoeff, hsymm_i, hT2]
       rw [Complex.real_smul, Complex.real_smul, Complex.real_smul,
         ← Complex.mul_conj (deriv τ (D.e q))]
@@ -376,7 +376,7 @@ theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 
       have hconj_unit : (starRingEnd ℂ) (deriv τ (D.e q)) *
           (starRingEnd ℂ) (deriv (⇑D.e ∘ ⇑(PU.chart i).symm) (τ (D.e q))) = 1 := by
         rw [← map_mul, hunit, map_one]
-      linear_combination (((PU.ψ i q : ℝ) : ℂ) * D.h (D.e q) * deriv τ (D.e q) *
+      linear_combination (-((PU.ψ i q : ℝ) : ℂ) * D.h (D.e q) * deriv τ (D.e q) *
         RS.coeffIn (PU.chart i) θ (τ (D.e q))) * hconj_unit
   -- Step 2: sum the transported integrands
   have hstep2 : ∀ w, ∑ i, G i w = D.h w * RS.coeffIn D.e θ w := by
