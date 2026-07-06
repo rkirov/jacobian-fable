@@ -1,39 +1,41 @@
 import Jacobian.LaurentTail.Comparison
+import Jacobian.Finiteness
 
 /-!
-# The Riemann–Roch bridge (laurent-tails, design §4.4) — DEFERRED, gated on `finiteness-and-chi`
+# The Riemann–Roch bridge (laurent-tails, design §4.4) — DEFERRED, gated on `H1Tail.equiv` only
 
 Unit: laurent-tails (`docs/design/laurent-tails.md` §4.4, §0).
 
-**Status: this file is empty of content.** Everything the design doc's §4.4 lists (`g0`,
-`H1Tail.finiteDimensional`, `h1tail`, `h1tail_eq_h1`, `firstFormRR`, the tail-level six-term
-sequence restatement) is a **transport** of `finiteness-and-chi`'s χ ledger across the comparison
-`H1Tail.equiv` — genuinely no new mathematics, purely `Module.Finite.equiv`/`LinearEquiv.finrank_eq`
-one-liners once both inputs exist. Neither input is available as of this build:
+**Status update (FINISHER pass): one of the two original gates is now open.**
 
-1. **`Jacobian/Finiteness/Chi.lean` does not exist on disk** (confirmed: `Jacobian/Finiteness/`
-   contains only `Schwartz.lean`/`BddHolo.lean`/`CompactRestrict.lean`/`Chain.lean`;
-   `Jacobian/Finiteness.lean`'s own root docstring records `TradeBounded.lean`/`H1Finite.lean`/
-   `Chi.lean` as gated on `dolbeault-comparison`, itself still absent as a `Jacobian/
-   DolbeaultComparison/` directory beyond `Leray.lean`). So `RS.Finiteness.h1`/`RS.Finiteness.chi`/
-   `RS.Finiteness.chi_eq_chi_zero_add_degree`/`RS.Finiteness.finiteDimensional_H1` do not exist as
-   identifiers — there is nothing to state `g0`/`h1tail_eq_h1`/`firstFormRR` *against*, let alone
-   prove.
-2. **`Comparison.lean`'s `H1Tail.equiv` is itself deferred** (see that file's own file-end note):
-   `tailToH1 : T D →ₗ[ℂ] Cech.H1 D` is fully built, but `H1Tail.toH1`/injectivity/surjectivity/
-   `H1Tail.equiv` are not yet, gated on (a) a multi-point Mittag-Leffler combination lemma
-   (in-unit, fully scoped) and (b) `dolbeault-comparison`'s Leray surjectivity theorem (upstream,
-   soft dependency, not circular).
+1. **`Jacobian/Finiteness/Chi.lean` has landed** (confirmed: `Jacobian/Finiteness.lean`'s own root
+   docstring records "Unit COMPLETE: all 7 design files are written, zero sorries"). The exact
+   identifiers this file's completion recipe needs are all present and match the design doc's
+   §4.4 plan verbatim: `RS.Finiteness.h1 (D : RS.Divisor X) : ℕ` and
+   `RS.Finiteness.chi_eq_chi_zero_add_degree` (`Jacobian/Finiteness/Chi.lean`), plus
+   `RS.Finiteness.finiteDimensional_H1` (`Jacobian/Finiteness/H1Finite.lean`, a global instance —
+   registered there, so `H1Tail.finiteDimensional` below can cite it directly instead of
+   re-deriving finite-dimensionality). This import is now safe to add (no cycle: `Finiteness`
+   does not depend on `LaurentTail`).
+2. **`Comparison.lean`'s `H1Tail.equiv` remains deferred** — but *only* on surjectivity of
+   `tailToH1` now. This pass closed `tailToH1_alpha`, `H1Tail.toH1`, and
+   `H1Tail.toH1_injective` (all unconditional, zero sorries); the sole remaining piece is
+   `Function.Surjective (tailToH1 D)`, which `Comparison.lean`'s own file-end note now documents
+   as a **proven-hard** analytic fact (comparable to a Mittag-Leffler/Cousin-I existence theorem,
+   genuinely outside this unit's `Jacobian/LaurentTail/`-only edit surface — see that note for the
+   full risk writeup and recommended next steps), not a bookkeeping gap. `Comparison.lean` ships
+   a conditional `H1Tail.equiv_of_surjective : Function.Surjective (tailToH1 D) →
+   (H1Tail D ≃ₗ[ℂ] Cech.H1 D)` as an honest (non-vacuous, `CONVENTIONS.md` rule 3) placeholder for
+   this file's own bridge to key off once surjectivity lands.
 
-`RS.l` (`Jacobian/Meromorphic/LinearSystem.lean:98`) already exists, so `firstFormRR`'s statement
-*shape* is expressible the moment `RS.Finiteness.h1`/`chi_eq_chi_zero_add_degree` land — but with
-`H1Tail.equiv` itself gated, restating it here now would only add an unusable stub. Per
-`CONVENTIONS.md` rule 3 ("no vacuous instances", genuine explicit hypotheses only), this file is
-left with no declarations rather than a placeholder that cannot be verified to have the intended
-computational content.
+Since gate 2 is still closed, this file remains **empty of content** (a stub restating §4.4 now,
+keyed off `H1Tail.equiv_of_surjective` plus an unproved surjectivity hypothesis, would just move
+the same open hypothesis here without discharging it — no more usable than leaving it absent, and
+`CONVENTIONS.md` rule 3 prefers absence to a hypothesis-parametrized restatement that
+adds a layer of indirection for zero benefit here, since the true blocker is identical either way).
 
-**Completion recipe for whoever picks this up** (once both gates open): restate §4.4 of the design
-doc verbatim —
+**Completion recipe for whoever closes gate 2** (verbatim from the original design, still exactly
+right — Chi.lean's landed names slot in directly, no changes needed):
 ```lean
 noncomputable def g0 : ℕ := RS.Finiteness.h1 (0 : RS.Divisor X)
 instance H1Tail.finiteDimensional (D) : FiniteDimensional ℂ (H1Tail D) :=

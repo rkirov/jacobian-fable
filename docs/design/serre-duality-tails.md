@@ -924,3 +924,17 @@ Gated per protocol (`pgrep -cx lean` loop; 0 running), `lake env lean scratch_td
   fine — one adapter lemma isolates the citation either way.
 - DAG note to orchestrator: the `proper-map-degree` edge into this unit is unused by this design
   (§1.2) — no blueprint edit proposed, recorded for scheduling freedom.
+
+## Orchestrator addendum (2026-07-08): tail-level re-basing
+
+laurent-tails delivered `tailToH1` + `H1Tail.toH1_injective` UNCONDITIONAL and `H1Tail.equiv_of_surjective`
+conditional. Surjectivity of tailToH1 is classically Serre-circular (Cousin-I; cf. blueprint routing
+warning #2) and is NOT needed for the challenge. Therefore:
+- Finiteness of `H1Tail D` comes from `toH1_injective` + `Finiteness.finiteDimensional_H1` (injection
+  into a finite-dim space). Do NOT wait for/require the equiv.
+- Prove the TAIL-level six-term fragment + tail-chi ledger internally (Miranda 2.3/2.6, as §4 of this
+  design already plans): `chiT D := l D - dim H1Tail D`, `chiT (D+P) = chiT D + 1`, `chiT D = chiT 0 + deg D`.
+- State the duality obligation against the TAIL h¹: `i (-D) = finrank (H1Tail D)`; derive `h1_zero_eq_genus`
+  etc. at tail level. Čech-h¹ equalities are optional corollaries via `equiv_of_surjective` — do not block on them.
+- riemann-roch (#28) consumes chiT + tail duality; cech-h1-genus (#27) re-based to `finrank (H1Tail 0) = genus X`
+  (the Čech version stays open/documented). The challenge API is unaffected — it never mentions H¹.

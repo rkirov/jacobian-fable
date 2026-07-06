@@ -24,38 +24,49 @@ not a missing dependency). **NOT registered in `Jacobian.lean`** (orchestrator's
   `alpha_apply` (the pointwise-everywhere formula, not just on the witness `Finset`),
   `alpha_apply_eq_zero_iff`, `ker_alphaL_eq_linSys` (Miranda PDF 192: `L(D) = ker(α_D)`),
   `H1Tail D := T D ⧸ range(alphaL D)` + `H1Tail.mk`/`mk_surjective`/`mk_eq_zero_iff`.
-* **`Comparison.lean`** (CC8's deliverable — **partially built**, see that file's own detailed
-  file-end note for the exact account): `tailToH1 : T D →ₗ[ℂ] Cech.H1 D` **is fully constructed**
-  (zero sorries) via a from-scratch per-point Mittag-Leffler class `mlClassAt`/`mlClassAtOf`
-  (a 2-member-cover construction, proved independent of every choice via `mlClassAtOf_agree`) —
-  this was the unit's hardest genuinely-new mathematical content. **Deferred**: `tailToH1_alpha`
-  (gate: a new but fully-scoped multi-point combination lemma, generalizing this file's
-  `mlClassAt_add` from two points to a `Finset`), hence `H1Tail.toH1`/injectivity/`H1Tail.equiv`;
-  surjectivity additionally gated on `dolbeault-comparison`'s Leray theorem (not yet on disk,
-  soft/non-circular dependency). Reusable byproducts for any consumer building `LinearMap`s into
-  `Cech.H1 D`: a registered `AddCommGroup (Cech.H1 D)` instance (`instAddCommGroupH1`, needed
-  because plain `inferInstance` does not find it through the `Module.DirectLimit` `abbrev` — see
-  the file-end note), and `mlClass_congr` (transport `Cech.mlClass` along a cochain equality,
-  avoiding the `rw`/`erw` "motive is not type correct" failure on `mlClass`'s dependent argument).
-* **`RiemannRoch.lean`** (design §4.4 — **entirely deferred, empty of declarations**): gated on
-  `finiteness-and-chi`'s `Chi.lean` (confirmed absent: only `Schwartz.lean`/`BddHolo.lean`/
-  `CompactRestrict.lean`/`Chain.lean` exist in `Jacobian/Finiteness/`) *and* on `Comparison.lean`'s
-  own deferred `H1Tail.equiv`. Every export it would provide (`g0`, `h1tail`, `h1tail_eq_h1`,
-  `firstFormRR`, the tail-level six-term restatement) is a one-line transport once both gates
-  open — no new mathematics — per that file's own completion recipe.
+* **`Comparison.lean`** (CC8's deliverable — **three of four original deferrals now CLOSED**, see
+  that file's own detailed file-end note for the exact account). `tailToH1 : T D →ₗ[ℂ] Cech.H1 D`
+  is fully constructed (zero sorries) via a from-scratch per-point Mittag-Leffler class
+  `mlClassAt`/`mlClassAtOf` (a 2-member-cover construction, independent of every choice via
+  `mlClassAtOf_agree`). **`tailToH1_alpha`** (well-definedness on `alphaL`'s image, via a from-
+  scratch multi-point Mittag-Leffler combination specialized to one global function) and
+  **`H1Tail.toH1`/`H1Tail.toH1_injective`** (via a *second*, independent multi-point
+  construction for an arbitrary tail datum, landing on `Cech.mlClass_eq_zero_iff`'s `⇒` half,
+  Forster 12.4, confirmed landed) are now **fully proved, zero sorries, unconditional**.
+  **Still deferred**: surjectivity of `tailToH1` — per the file-end note's detailed risk writeup,
+  this is a *proven-hard* analytic fact (a Mittag-Leffler/Cousin-I-style existence theorem)
+  genuinely beyond this unit's own `Jacobian/LaurentTail/`-only edit surface, **not** a
+  bookkeeping gap despite `dolbeault-comparison`'s Leray theorem (`toH1_surjective_of_isGood`)
+  having landed in the interim — Leray gets a good-cover representative but does not by itself
+  collapse it to marked-point-supported Mittag-Leffler data. `H1Tail.equiv_of_surjective` ships
+  as an honest conditional equivalence (`Function.Surjective (tailToH1 D) → H1Tail D ≃ₗ[ℂ]
+  Cech.H1 D`), ready the moment surjectivity lands. Reusable byproducts: a registered
+  `AddCommGroup (Cech.H1 D)` instance (`instAddCommGroupH1`), `mlClass_congr` (dependent-argument
+  transport for `Cech.mlClass`), and a documented build-engineering gotcha (composing an
+  `Opens X`-level `≤` with a `Set X`-level `⊆` via bare `.trans` causes catastrophic `isDefEq`
+  slowdown; coerce to `Set`-level first) worth knowing for any future large proof in this style.
+* **`RiemannRoch.lean`** (design §4.4 — **still empty of declarations, but only one gate left**):
+  `finiteness-and-chi`'s `Chi.lean` has **landed** (that gate is open); the sole remaining gate is
+  `Comparison.lean`'s own `H1Tail.equiv` (blocked on surjectivity, see above). Every export it
+  would provide (`g0`, `h1tail`, `h1tail_eq_h1`, `firstFormRR`, the tail-level six-term
+  restatement) remains a one-line transport once that lands — no new mathematics — per that
+  file's own completion recipe (verbatim, unchanged).
 
 ## Consumer notes (for `serre-duality-tails` and downstream)
 
 The frozen bank this unit was asked to supply (`docs/design/serre-duality-tails.md` §0.1's own
 audit already reconciled against these exact names): `T D`, `TailAt p D`, `alphaL D`,
 `H1Tail D := T D ⧸ range(alphaL D)` are **all available now**, zero sorries, and match the frozen
-shapes exactly. `H1Tail.equiv : H1Tail D ≃ₗ[ℂ] Cech.H1 D` — the comparison `serre-duality-tails`
-needs to transport its residue-pairing dimension counts against `finiteness-and-chi`'s χ ledger —
-is **not yet available** (see `Comparison.lean`'s file-end note for the exact multi-point gate);
-`serre-duality-tails` should build everything that only needs `T D`/`TailAt p D`/`alphaL`/
-`H1Tail D` now (per its own design doc §4's build-wave note: "file 1 gates only on
-`TailSpace.lean`/`Truncation.lean` — NOT on `Comparison.lean`"), and revisit once `H1Tail.equiv`
-lands. `mulTail`/`mulTailEquiv` are deliberately not built (see `TailSpace.lean`'s note above);
-`serre-duality-tails`'s own `mulInto` supersedes them, already accounted for in that unit's design.
-`firstFormRR`/`g0` (riemann-roch's eventual consumer) remain gated on `finiteness-and-chi`.
+shapes exactly. `H1Tail.toH1 : H1Tail D →ₗ[ℂ] Cech.H1 D` is now **unconditionally injective**
+(`H1Tail.toH1_injective`, zero sorries) — only the full `H1Tail.equiv : H1Tail D ≃ₗ[ℂ] Cech.H1 D`
+(needing surjectivity too) remains gated; `Comparison.lean` ships the conditional
+`H1Tail.equiv_of_surjective` (an honest, non-vacuous, hypothesis-parametrized equivalence) in the
+meantime. `serre-duality-tails` should build everything that only needs `T D`/`TailAt p D`/
+`alphaL`/`H1Tail D` now (per its own design doc §4's build-wave note: "file 1 gates only on
+`TailSpace.lean`/`Truncation.lean` — NOT on `Comparison.lean`"), and revisit the full `H1Tail.equiv`
+once surjectivity lands (see `Comparison.lean`'s file-end note for the exact analytic obstruction
+and recommended next steps — this is now THE single blocking item for that unit's own
+dimension-counting endgame). `mulTail`/`mulTailEquiv` are deliberately not built (see
+`TailSpace.lean`'s note above); `serre-duality-tails`'s own `mulInto` supersedes them, already
+accounted for in that unit's design. `firstFormRR`/`g0` remain gated on `H1Tail.equiv` too.
 -/
