@@ -134,4 +134,51 @@ theorem indCocycle_mem_Z1 (i : Fin 𝒰.n) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱
   rw [e1, e2, e3]
   exact hkey
 
+/-! ### §5 step 2: member splitting via disk acyclicity -/
+
+variable [T2Space X] [CompactSpace X]
+
+/-- Step 2: each induced cocycle splits, since `𝒰.U i` is a chart disk (disk acyclicity). -/
+theorem exists_splitting (h𝒰 : 𝒰.IsGood) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱) :
+    ∃ gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i)),
+      ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f := by
+  choose gFam hgFam using fun i : Fin 𝒰.n =>
+    ((subsingleton_h1Cover_iff D (𝒱.induced (𝒰.U i))).mp
+      (subsingleton_h1Cover_of_isChartDisk (h𝒰 i) D (𝒱.induced (𝒰.U i)))) (indCocycle_mem_Z1 D i hf)
+  exact ⟨gFam, hgFam⟩
+
+/-- The pointwise splitting identity extracted from `exists_splitting`, at `LinSysOn`
+(submodule) level (used both for the cross-glue compatibility and for the final comparison,
+§5 steps 3/5). -/
+theorem splitting_eq {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
+    (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) (i : Fin 𝒰.n)
+    (α β : Fin 𝒱.n) :
+    LinSysOn.restrictL D
+        (inf_le_right : (𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ≤
+          (𝒱.induced (𝒰.U i)).U β) (gFam i β) -
+      LinSysOn.restrictL D
+        (inf_le_left : (𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ≤
+          (𝒱.induced (𝒰.U i)).U α) (gFam i α) =
+    indCocycle D i f (α, β) := by
+  have hd := congrFun (hgFam i) (α, β)
+  rw [d0_apply] at hd
+  exact hd
+
+/-- Raw `MeroGermOn`-level form of `splitting_eq`. -/
+theorem splitting_eq' {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
+    (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) (i : Fin 𝒰.n)
+    (α β : Fin 𝒱.n) :
+    (RS.MeroGermOn.restrict
+        (inf_le_right : (𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ≤
+          (𝒱.induced (𝒰.U i)).U β)
+        (gFam i β : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U β : Set X)) -
+      RS.MeroGermOn.restrict
+        (inf_le_left : (𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ≤
+          (𝒱.induced (𝒰.U i)).U α)
+        (gFam i α : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α : Set X)) :
+      RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β : Set X)) =
+    RS.MeroGermOn.restrict (inf_inf_inf_le (𝒰.U i) (𝒱.U α) (𝒱.U β))
+      (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) := by
+  exact congrArg Subtype.val (splitting_eq D hgFam i α β)
+
 end RS.Cech
