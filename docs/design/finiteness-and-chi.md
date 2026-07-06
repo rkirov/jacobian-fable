@@ -111,9 +111,14 @@ zero manifold content, buildable today.
 ### 1.2 Compact operators — `Analysis/Normed/Operator/Compact/Basic.lean`
 
 - `IsCompactOperator f := ∃ K, IsCompact K ∧ f ⁻¹' K ∈ 𝓝 0` (`:69`).
-- ★ `isCompactOperator_iff_isCompact_closure_image_closedBall (f) (hr : 0 < r) :
-  IsCompactOperator f ↔ IsCompact (closure (f '' Metric.closedBall 0 r))` (`:194`;
-  needs `[ContinuousConstSMul] [T2Space]` on the codomain — satisfied by normed spaces).
+- ★ `IsCompactOperator.isCompact_closure_image_closedBall (hf) (r : ℝ) :
+  IsCompact (closure (f '' Metric.closedBall 0 r))` (`:168`) — USE THIS forward form.
+  ⚠ Spike finding: the iff-form `isCompactOperator_iff_isCompact_closure_image_closedBall`
+  (`:194`) hits a deterministic `isDefEq` TIMEOUT when applied at `E →L[ℂ] F` — do not use
+  it. For the CONVERSE direction (producing `IsCompactOperator` from a compact ball-image
+  closure, §6.3.4) unfold the 3-line definition directly:
+  `⟨closure (f '' ball 0 1), hK, mem_of_superset (ball_mem_nhds 0 one_pos)
+  (fun x hx => subset_closure (mem_image_of_mem f hx))⟩`.
 - ★ `IsCompactOperator.comp_clm (hf) (g : M₁ →SL M₂) : IsCompactOperator (f ∘ g)` (`:274`);
   `IsCompactOperator.clm_comp (hf) (g : M₂ →SL M₃) : IsCompactOperator (g ∘ f)` (`:288`).
 
@@ -151,8 +156,12 @@ zero manifold content, buildable today.
   (`Analysis/Normed/Group/Submodule.lean:21/:42`); `Pi` normed group/space instances
   (`Analysis/Normed/Group/Constructions.lean`; `Pi.normedSpace`); `Prod` likewise.
 - ★ `IsClosed.completeSpace_coe` (closed subset of complete is complete);
-  `ContinuousLinearMap.isClosed_ker [T1Space M₂]` (`Topology/Algebra/Module/LinearMap.lean:659`);
-  `Submodule.subtypeL` (`:1245`).
+  `ContinuousLinearMap.ker` + `ContinuousLinearMap.isClosed_ker [T1Space M₂]`
+  (`Topology/Algebra/Module/LinearMap.lean:659`) + the INSTANCE
+  `ContinuousLinearMap.completeSpace_ker` (`:668` — `CompleteSpace ↥f.ker` automatic for
+  complete domain); `Submodule.subtypeL` (`:1245`). ⚠ Spike finding: `LinearMap.ker T`
+  does NOT elaborate for a CLM `T` at the pin — write `T.ker`
+  (`ContinuousLinearMap.ker`) everywhere.
 - `Subtype.isCompact_iff : IsCompact s ↔ IsCompact ((↑) '' s)`
   (`Topology/Compactness/Compact.lean:997`).
 - Uniform limits: `TendstoLocallyUniformlyOn.differentiableOn`,
@@ -387,8 +396,8 @@ noncomputable def resZ (T) (h) : NZ1 T P →L[ℂ] NZ1 T P'        -- restrictio
 /-- Forster's `L ⊆ Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` (14.6(b)). -/
 noncomputable def tradeSpace (T : ShrinkChain X) : Submodule ℂ
     (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) :=
-  LinearMap.ker (tradeDefect T)   -- tradeDefect := res_UW ∘ pr₁ − res_VW ∘ pr₂ − δ_W ∘ pr₃
-instance : CompleteSpace (tradeSpace T)                         -- isClosed_ker (★)
+  (tradeDefect T).ker   -- tradeDefect := res_UW ∘ pr₁ − res_VW ∘ pr₂ − δ_W ∘ pr₃ (CLM)
+-- CompleteSpace ↥(tradeSpace T) is AUTOMATIC: ContinuousLinearMap.completeSpace_ker (★)
 noncomputable def tradePi (T) : tradeSpace T →L[ℂ] NZ1 T T.V    -- π = pr₂ ∘ subtypeL
 noncomputable def tradeCompact (T) : tradeSpace T →L[ℂ] NZ1 T T.V  -- v = res_UV ∘ pr₁ ∘ subtypeL
 ```
@@ -493,8 +502,9 @@ proved here from the *qualitative* trade; the norm constant is then extracted in
    `tradeDefect : H →L NC1 T T.W := res_UW ∘L pr₁ − res_VW ∘L pr₂ − δ_W ∘L pr₃` where
    `res_UW/res_VW` are `resZ`-then-`subtypeL` composites and each `resNC1` is a
    `LinearMap.mkContinuous` with bound 1 (componentwise `restrictCLM`, sup over subset).
-   `L := ker tradeDefect`; `IsClosed` by `ContinuousLinearMap.isClosed_ker` (★);
-   `CompleteSpace ↥L` by `IsClosed.completeSpace_coe` (★). `π := pr₂ ∘L L.subtypeL`.
+   `L := (tradeDefect T).ker` (`ContinuousLinearMap.ker` — NOT `LinearMap.ker`, ★ spike);
+   `CompleteSpace ↥L` is the automatic instance `completeSpace_ker` (★);
+   `π := (fst ∘L snd) ∘L L.subtypeL` (nested-Prod projection composite, ★ spiked shape).
 2. **Membership unfolding lemma.** `mem_tradeSpace_iff : x ∈ L ↔ ∀ p : Fin n × Fin n,
    ∀ z ∈ W p.1 ⊓ W p.2, (x.1 (p) as fn) z = (x.2.1 p) z + ((x.2.2 p.2) z − (x.2.2 p.1) z)`
    — pointwise form used by both directions below (BCF `ext` + `Pi.ext` + `Prod.ext`).
@@ -560,7 +570,8 @@ Hypotheses: `u v : E →L[ℂ] F` Banach, `hu : Surjective u`, `hv : IsCompactOp
 1. `obtain ⟨C₀, hC₀, hpre⟩ := u.exists_preimage_norm_le hu`; set `C := max C₀ 1`
    (`hC : 0 < C`, `hC1 : 1 ≤ C`; `hpre` upgrades monotonically).
 2. `have hK : IsCompact (closure (v '' closedBall 0 C)) :=
-   (isCompactOperator_iff_isCompact_closure_image_closedBall v hC).mp hv`.
+   hv.isCompact_closure_image_closedBall C` (★ — forward form; the iff lemma times out,
+   §1.2 ⚠).
 3. `obtain ⟨t, hts, htf, htcov⟩ := finite_cover_balls_of_compact hK (by norm_num : (0:ℝ) < 2⁻¹)`
    — `t ⊆ closure (…)`, `t.Finite`, `closure (…) ⊆ ⋃ y ∈ t, ball y 2⁻¹`.
 4. `S := Submodule.span ℂ t`; `FiniteDimensional ℂ S := FiniteDimensional.span_of_finite ℂ htf`.
@@ -643,8 +654,8 @@ pattern), `K := e '' closure S'` (compact: continuous image; `⊆ Ω` by `hc`).
    `Ψ` continuous image of the step-2 compact is compact; it contains
    `val '' (restrictCLM '' ball)`; `BddHoloOn S'` is closed, so the trace on the subtype is
    compact (`Subtype.isCompact_iff`, image = that compact set ∩ submodule); then
-   `IsCompactOperator` via `isCompactOperator_iff_isCompact_closure_image_closedBall`
-   applied in the subtype (closure-in-subtype = trace of ambient closure on a closed set).
+   `IsCompactOperator` by unfolding the DEFINITION (§1.2 ⚠ — the iff lemma times out):
+   `⟨K₀, hK₀, mem_of_superset (ball_mem_nhds 0 one_pos) (subset into K₀)⟩`.
    (~35 lines of plumbing; flagged in risks R3.)
 5. Cocycle level: `resZ T h = (component-wise restrictCLM)` restricted to `NZ1`;
    `IsCompactOperator` for a finite `Pi` of compacts: image of ball ⊆ product of compacta;
@@ -804,34 +815,48 @@ a marked Compat section from `degree`'s definition (finite-support sum) and file
 `docs/requests/meromorphic-and-divisors.md`; if cech's `finrank_window` lands with a
 different `toNat` orientation, the ledger only needs the `0 ≤ D' − D` case where both agree.
 
-## 11. Spike record (run per protocol; results — honest)
+## 11. Spike record (run per protocol; results — honest, including the two failures)
 
-`scratch_finiteness.lean` (project root, 57 lines), gated
+`scratch_finiteness.lean` (project root, 59 lines), gated
 (`while [ "$(pgrep -cx lean)" -ge 3 ]; do sleep 30; done; lake env lean scratch_finiteness.lean`):
-**SUCCESS, exit 0, zero sorries, no warnings** (~40 s wall, cold imports). Verified by
-compilation (★ items in §1):
+**final run SUCCESS, exit 0, 7 s wall**, after two real findings on the way:
+
+- **Run 1 FAILED**: `import Mathlib.Data.Complex.Basic` does not provide `NormedField ℂ`;
+  the whole variable block collapsed. Fix: `import Mathlib.Analysis.Complex.Basic`.
+- **Run 2 FAILED twice**: (a) `(isCompactOperator_iff_isCompact_closure_image_closedBall v
+  one_pos).mp hv` — deterministic `isDefEq` TIMEOUT (200k heartbeats) at `E →L[ℂ] F`;
+  replaced by the forward lemma `hv.isCompact_closure_image_closedBall 1` (works
+  instantly); design updated to never use the iff (§1.2 ⚠, §6.1.2, §6.3.4).
+  (b) `LinearMap.ker T` for a CLM `T` fails elaboration ("expected `→ₛₗ`"); use
+  `T.ker` = `ContinuousLinearMap.ker` — which additionally carries the automatic
+  instance `completeSpace_ker`, simplifying `tradeSpace` (§4.2).
+
+Verified by the passing run (★ items in §1):
 1. `u.exists_preimage_norm_le hu` — exact invocation at `E →L[ℂ] F`, both `CompleteSpace`.
-2. `(isCompactOperator_iff_isCompact_closure_image_closedBall v one_pos).mp hv` and the
-   composition chain `(hv.clm_comp g).comp_clm w` — the exact §6.3.5 usage.
-3. `finite_cover_balls_of_compact hK (by norm_num : (0:ℝ) < 2⁻¹)`;
-   `FiniteDimensional.span_of_finite ℂ htf`; `Submodule.closed_of_finiteDimensional`.
-4. The full `tradeSpace` Banach stack: `L := LinearMap.ker (T : (E × F × G) →L[ℂ] G)`,
-   `IsClosed` via `ContinuousLinearMap.isClosed_ker`, `CompleteSpace ↥L` via
-   `IsClosed.completeSpace_coe`, `π := (fst ∘L snd-juggling) ∘L L.subtypeL` — with the
-   nested-`Prod` projection composite written explicitly.
-5. `FiniteDimensional.of_linearMap_ker_range` helper proved in 6 lines exactly as §7:
-   `quotKerEquivRange` + `Module.Finite.equiv` + `Module.Finite.of_submodule_quotient`
-   (instance-argument juggling: provide `Module.Finite ℂ (M ⧸ ker f)` by `haveI` before
-   the final call).
+2. `hv.isCompact_closure_image_closedBall 1` and the composition chain
+   `(hv.clm_comp g).comp_clm w` — the exact §6.3.5 usage.
+3. `finite_cover_balls_of_compact hs (by norm_num)` at radius `2⁻¹`;
+   `FiniteDimensional.span_of_finite ℂ ht`; `S.closed_of_finiteDimensional`.
+4. The full `tradeSpace` Banach stack: `L := T.ker` for
+   `T : (E × F × G) →L[ℂ] G`, `ContinuousLinearMap.isClosed_ker T`,
+   `CompleteSpace ↥L` by `inferInstance` (`completeSpace_ker`),
+   `π := ((fst ℂ F G).comp (snd ℂ E (F × G))).comp L.subtypeL` — the nested-`Prod`
+   projection composite typechecks and is continuous.
+5. `FiniteDimensional.of_linearMap_ker_range` helper proved in full exactly as §7:
+   `haveI : Module.Finite ℂ (M ⧸ LinearMap.ker f) := Module.Finite.equiv
+   f.quotKerEquivRange.symm` then `Module.Finite.of_submodule_quotient (LinearMap.ker f)`.
 6. Pi-of-submodules instances: for `p : Fin 3 → Submodule ℂ (α →ᵇ ℂ)`,
-   `NormedAddCommGroup (Π i, ↥(p i))` and `NormedSpace ℂ (Π i, ↥(p i))` resolve by
-   `inferInstance`; `CompleteSpace (Π i, ↥(p i))` resolves after
-   `haveI := fun i => (hp i).completeSpace_coe`.
-Notes for the builder: import list used —
-`Analysis.Normed.Operator.Banach`, `Analysis.Normed.Operator.Compact.Basic`,
-`Analysis.Normed.Module.FiniteDimension`, `RingTheory.Finiteness.Finsupp`,
-`LinearAlgebra.Isomorphisms`, `Topology.ContinuousMap.Bounded.Normed`,
-`Data.Complex.Basic`. Keep `scratch_finiteness.lean` as reference.
+   `NormedAddCommGroup`/`NormedSpace ℂ` on `Π i, ↥(p i)` resolve by `inferInstance`;
+   `CompleteSpace (Π i, ↥(p i))` resolves after
+   `haveI := fun i => (hp i).completeSpace_coe` (a separate probe confirmed it does NOT
+   resolve without it — the ∀-typed local instance is load-bearing; the `unusedVariables`
+   linter false-positives on `hp`, harmless).
+
+Import list that works: `Analysis.Normed.Operator.Banach`,
+`Analysis.Normed.Operator.Compact.Basic`, `Analysis.Normed.Module.FiniteDimension`,
+`RingTheory.Finiteness.Finsupp`, `LinearAlgebra.Isomorphisms`,
+`Topology.ContinuousMap.Bounded.Normed`, `Analysis.Complex.Basic`.
+Keep `scratch_finiteness.lean` as the builder's reference.
 
 ## 12. Downstream consumption map
 
