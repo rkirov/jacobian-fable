@@ -162,6 +162,110 @@ private theorem solveF_dbar_eq (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R
     (solveGcut_cs g c R hR n) w]
   exact solveGcut_eq g c R hR n hw
 
+/-! ### The corrected sequence: a Nat.rec into a Σ-type carrying invariants (i), (ii); the
+correction bound (iii) is proved once, as a property of the step function itself. -/
+
+private def SolveState (hR : 0 < R) (n : ℕ) : Type :=
+  {F : ℂ → ℂ // ContDiff ℝ ∞ F ∧ Set.EqOn (wirtingerDbar F) g (closedBall c (solveRho R (n + 1)))}
+
+private def solveState0 (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) : SolveState g c R hR 0 :=
+  ⟨solveF g c R hR hg 0, solveF_cd g c R hR hg 0, solveF_dbar_eq g c R hR hg 0⟩
+
+private theorem partialSum_eq_poly (p : FormalMultilinearSeries ℂ ℂ ℂ) (m : ℕ) (x : ℂ) :
+    p.partialSum m x = ∑ k ∈ Finset.range m, x ^ k * p.coeff k := by
+  unfold FormalMultilinearSeries.partialSum
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [p.apply_eq_pow_smul_coeff, smul_eq_mul]
+
+private theorem differentiable_partialSum (p : FormalMultilinearSeries ℂ ℂ ℂ) (m : ℕ) :
+    Differentiable ℂ (fun x => p.partialSum m x) := by
+  have heq : (fun x => p.partialSum m x) = fun x => ∑ k ∈ Finset.range m, x ^ k * p.coeff k :=
+    funext (partialSum_eq_poly p m)
+  rw [heq]
+  apply Differentiable.sum
+  intro k _
+  exact (differentiable_pow k).mul (differentiable_const (p.coeff k))
+
+/-- The recursive step: given a solution `Fn` valid up to `ρ (n+1)`, produce a corrected solution
+valid up to `ρ (n+2)`, within `(1/2)^(n+1)` of `Fn` on the smaller closed ball `closedBall c (ρ n)`
+(design §6 steps 1–3). -/
+private def solveStepData (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ)
+    (Dn : SolveState g c R hR n) :
+    {F : ℂ → ℂ // ContDiff ℝ ∞ F ∧
+        Set.EqOn (wirtingerDbar F) g (closedBall c (solveRho R (n + 2))) ∧
+        ∀ w ∈ closedBall c (solveRho R n), ‖F w - Dn.1 w‖ ≤ (1 / 2 : ℝ) ^ (n + 1)} := by
+  classical
+  obtain ⟨Fn, hFn_cd, hFn_dbar⟩ := Dn
+  have hfn1_cd : ContDiff ℝ ∞ (solveF g c R hR hg (n + 1)) := solveF_cd g c R hR hg (n + 1)
+  have hfn1_dbar : Set.EqOn (wirtingerDbar (solveF g c R hR hg (n + 1))) g
+      (closedBall c (solveRho R (n + 2))) := solveF_dbar_eq g c R hR hg (n + 1)
+  set fn1 := solveF g c R hR hg (n + 1) with hfn1_def
+  -- `d := f_{n+1} - F_n` is holomorphic on the open ball `ball c (ρ (n+1))`
+  have hd_diff : ∀ w, DifferentiableAt ℝ (fn1 - Fn) w := fun w =>
+    (hfn1_cd.differentiable (by norm_num) w).sub (hFn_cd.differentiable (by norm_num) w)
+  have hd_dbar0 : ∀ w ∈ ball c (solveRho R (n + 1)), wirtingerDbar (fn1 - Fn) w = 0 := by
+    intro w hw
+    have hw1 : w ∈ closedBall c (solveRho R (n + 2)) :=
+      closedBall_subset_closedBall (solveRho_lt_succ R hR (n + 1)).le (ball_subset_closedBall hw)
+    have hw2 : w ∈ closedBall c (solveRho R (n + 1)) := ball_subset_closedBall hw
+    rw [wirtingerDbar_sub fn1 Fn w (hfn1_cd.differentiable (by norm_num) w)
+      (hFn_cd.differentiable (by norm_num) w), hfn1_dbar hw1, hFn_dbar hw2, sub_self]
+  have hd_holo : DifferentiableOn ℂ (fn1 - Fn) (ball c (solveRho R (n + 1))) :=
+    differentiableOn_of_wirtingerDbar_eq_zero (fn1 - Fn) isOpen_ball (fun w _ => hd_diff w)
+      hd_dbar0
+  -- three nested radii strictly between `ρ n` and `ρ (n+1)`
+  set ρn : ℝ := solveRho R n with hρn_def
+  set ρn1 : ℝ := solveRho R (n + 1) with hρn1_def
+  have hρn_lt : ρn < ρn1 := solveRho_lt_succ R hR n
+  have hρn_pos : 0 < ρn := solveRho_pos R hR n
+  set ρmid : ℝ := (ρn + ρn1) / 2 with hρmid_def
+  set ρaux : ℝ := (ρn + ρmid) / 2 with hρaux_def
+  have hρn_lt_aux : ρn < ρaux := by rw [hρaux_def, hρmid_def]; linarith
+  have hρaux_lt_mid : ρaux < ρmid := by rw [hρaux_def, hρmid_def]; linarith
+  have hρmid_lt_n1 : ρmid < ρn1 := by rw [hρmid_def]; linarith
+  have hρmid_pos : 0 < ρmid := by rw [hρmid_def]; linarith
+  have hρaux_pos : 0 < ρaux := by rw [hρaux_def]; linarith
+  -- power series of `d` on the closed ball of radius `ρmid`
+  have hd_holo_mid : DifferentiableOn ℂ (fn1 - Fn) (closedBall c ρmid) :=
+    hd_holo.mono (closedBall_subset_ball hρmid_lt_n1)
+  set nnρmid : ℝ≥0 := ⟨ρmid, hρmid_pos.le⟩ with hnnρmid_def
+  have hnnρmid_pos : 0 < nnρmid := hρmid_pos
+  have hps : HasFPowerSeriesOnBall (fn1 - Fn) (cauchyPowerSeries (fn1 - Fn) c nnρmid) c nnρmid :=
+    hd_holo_mid.hasFPowerSeriesOnBall hnnρmid_pos
+  set p := cauchyPowerSeries (fn1 - Fn) c nnρmid with hp_def
+  set nnρaux : ℝ≥0 := ⟨ρaux, hρaux_pos.le⟩ with hnnρaux_def
+  have hnnρaux_lt : (nnρaux : ENNReal) < nnρmid := by
+    rw [ENNReal.coe_lt_coe]
+    exact_mod_cast hρaux_lt_mid
+  have htendsto : TendstoUniformlyOn (fun k y => p.partialSum k (y - c)) (fn1 - Fn) atTop
+      (ball c ρaux) := hps.tendstoUniformlyOn' hnnρaux_lt
+  -- extract a specific degree `m` with the required uniform bound
+  have hbound_ev : ∀ᶠ k in atTop, ∀ y ∈ ball c ρaux, dist ((fn1 - Fn) y) (p.partialSum k (y - c)) <
+      (1 / 2 : ℝ) ^ (n + 1) :=
+    (tendstoUniformlyOn_iff.1 htendsto) ((1 / 2 : ℝ) ^ (n + 1)) (by positivity)
+  obtain ⟨m, hm⟩ := eventually_atTop.1 hbound_ev
+  set Pm : ℂ → ℂ := fun w => p.partialSum m (w - c) with hPm_def
+  have hPm_diff : Differentiable ℂ Pm := by
+    have := differentiable_partialSum p m
+    exact this.comp (differentiable_id.sub_const c)
+  have hPm_cd : ContDiff ℝ ∞ Pm := by
+    have h1 : AnalyticOnNhd ℂ Pm Set.univ := hPm_diff.analyticOnNhd isOpen_univ
+    have h2 : ∀ w, AnalyticAt ℂ Pm w := fun w => h1 w (mem_univ w)
+    exact contDiff_iff_contDiffAt.2 fun w => ((h2 w).restrictScalars (𝕜 := ℝ)).contDiffAt
+  have hPm_dbar0 : ∀ w, wirtingerDbar Pm w = 0 := fun w =>
+    wirtingerDbar_eq_zero_of_differentiableAt Pm w (hPm_diff w)
+  refine ⟨fn1 - Pm, hfn1_cd.sub hPm_cd, ?_, ?_⟩
+  · intro w hw
+    rw [wirtingerDbar_sub fn1 Pm w (hfn1_cd.differentiable (by norm_num) w) (hPm_diff w).differentiableAt,
+      hfn1_dbar hw, hPm_dbar0, sub_zero]
+  · intro w hw
+    have hwaux : w ∈ ball c ρaux := closedBall_subset_ball hρn_lt_aux hw
+    have := hm m le_rfl w hwaux
+    rw [dist_eq_norm] at this
+    have heq : (fn1 - Pm) w - Fn w = (fn1 - Fn) w - Pm w := by simp [Pi.sub_apply]; ring
+    rw [heq]
+    exact this.le
+
 /-- Forster 13.2: Dolbeault's lemma on a finite open disk. -/
 theorem exists_dbar_solution_ball (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) :
     ∃ u : ℂ → ℂ, ContDiffOn ℝ ∞ u (ball c R) ∧

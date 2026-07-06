@@ -209,7 +209,7 @@ theorem h1CoverIncl_mk {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : Z
       H1Cover.mk D' 𝒰 (LinearMap.restrict (inclC1 D 𝒰 h) (fun _ hf => inclC1_mem_Z1 D h hf) f) :=
   Submodule.mapQ_apply _ _ _ f
 
-theorem inclC1_comp_resC1 {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
+theorem inclC1_comp_resC1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C1 D 𝒰) :
     inclC1 D 𝒱 h (resC1 D τ hτ f) = resC1 D' τ hτ (inclC1 D 𝒰 h f) := by
   funext p
@@ -218,7 +218,7 @@ theorem inclC1_comp_resC1 {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin �
   rw [resC1_apply, resC1_apply, inclC1_apply]
   exact inclusion_restrictL_comm D (inf_le_inf (hτ p.1) (hτ p.2)) h (f (τ p.1, τ p.2))
 
-theorem h1CoverIncl_resH1 {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
+theorem h1CoverIncl_resH1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (ξ : H1Cover D 𝒰) :
     h1CoverIncl D 𝒱 h (resH1 D τ hτ ξ) = resH1 D' τ hτ (h1CoverIncl D 𝒰 h ξ) := by
   obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 ξ
@@ -249,8 +249,6 @@ theorem H1Incl_id : H1Incl D (le_refl D) = LinearMap.id := by
     obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
     rw [h1CoverIncl_mk]
     congr 1
-    apply Subtype.ext
-    rw [LinearMap.restrict_coe_apply]
 
 set_option maxHeartbeats 1000000 in
 theorem H1Incl_comp {D'' : RS.Divisor X} (h : D ≤ D') (h' : D' ≤ D'') :
@@ -264,8 +262,6 @@ theorem H1Incl_comp {D'' : RS.Divisor X} (h : D ≤ D') (h' : D' ≤ D'') :
     obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
     rw [h1CoverIncl_mk, h1CoverIncl_mk, h1CoverIncl_mk]
     congr 1
-    apply Subtype.ext
-    rw [LinearMap.restrict_coe_apply, LinearMap.restrict_coe_apply, LinearMap.restrict_coe_apply]
 
 /-!
 ### Leray interface (recorded; proof owned by dolbeault-comparison / dbar-solvability)

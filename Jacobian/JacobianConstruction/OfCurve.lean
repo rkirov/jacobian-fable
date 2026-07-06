@@ -24,7 +24,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 /-- `Compat`: `X` is locally path-connected, via its charts into `ℂ` (a locally convex space).
 Filed as a request to surfaces-and-charts (`docs/requests/surfaces-and-charts.md`); carried here
 as a local instance since no upstream unit currently provides it. -/
-instance : LocPathConnectedSpace X := ChartedSpace.locPathConnectedSpace (H := ℂ)
+instance : LocPathConnectedSpace X := ChartedSpace.locPathConnectedSpace (H := ℂ) (M := X)
 
 /-- `Compat`: `X` is path-connected (`ConnectedSpace X` + `LocPathConnectedSpace X`). -/
 instance : PathConnectedSpace X := .of_locPathConnectedSpace
@@ -71,6 +71,7 @@ theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
   have heq : (fun i => RS.pathIntegral σ₀ (RS.basis X i)) - (fun i => RS.pathIntegral σ (RS.basis X i))
       = -RS.periodVector (RS.basis X) (σ.trans σ₀.symm) := by
     funext i
+    simp only [Pi.sub_apply, Pi.neg_apply]
     show _ = -(RS.pathIntegral (σ.trans σ₀.symm) (RS.basis X i))
     rw [RS.pathIntegral_trans, RS.pathIntegral_symm]
     ring
@@ -80,7 +81,11 @@ theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
 
 @[simp] theorem ofCurve_self (P : X) : ofCurve P P = 0 := by
   rw [ofCurve_eq_of_path P P (Path.refl P)]
-  simp [RS.pathIntegral_refl]
+  have hzero : (fun i => RS.pathIntegral (Path.refl P) (RS.basis X i)) = (0 : Fin (genus X) → ℂ) := by
+    funext i
+    exact RS.pathIntegral_refl P (RS.basis X i)
+  rw [hzero]
+  rfl
 
 end Jacobian
 
