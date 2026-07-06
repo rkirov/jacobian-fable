@@ -54,14 +54,13 @@ bridge). The definition is by chain continuation (Forster 10.9), not the univers
   `_trans/_symm/_refl` lemmas — the exact ingredients `jacobian-construction`'s
   `AddSubgroup.closure (Set.range (periodVector b))` recipe needs (CC9; the period subgroup
   itself is *not* defined here).
-* **Loop perturbation off a finite set** (`Path/Perturb.lean`) — **partial**:
-  `RS.nonempty_open_diff_finite` and `RS.exists_homotopic_avoiding_of_ball` (single-chart-ball
-  base case) are complete and sorry-free. `RS.exists_homotopic_avoiding` /
-  `RS.Loop.exists_homotopic_avoiding` (the general multi-chart statement) carry one `sorry`: the
-  `ChartChain`-length strong induction with breakpoint insertion (design risk R4,
-  `homotopic_truncate_trans`) was time-boxed out; see that file's module doc for the precise
-  reparametrization strategy worked out for a future pass. This gates only
-  `abel-weak-solutions`, not `jacobian-construction`/`monodromy`/`sphere-topology`.
+* **Loop perturbation off a finite set** (`Path/Perturb.lean`): `RS.nonempty_open_diff_finite`,
+  `RS.exists_homotopic_avoiding_of_ball` (single-chart-ball base case), and the general
+  multi-chart statements `RS.exists_homotopic_avoiding` / `RS.Loop.exists_homotopic_avoiding` —
+  a path (loop) with endpoints (basepoint) off a finite set `S` is homotopic rel endpoints to
+  one whose range avoids `S`. Proved by downward induction along a `ChartChain` with fresh
+  breakpoints inserted off `S` in chart-ball overlaps and the truncation-splitting
+  reparametrization homotopy (design risk R4, discharged).
 
 No `T2Space`/`CompactSpace`/`ConnectedSpace` anywhere in this unit (compactness of `[0,1]`/
 `[0,1]²` does all the work). No dependency on `Jacobian.Surface` (the `chartAt`-chart trick in

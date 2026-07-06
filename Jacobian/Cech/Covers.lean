@@ -22,7 +22,6 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.1, D2–D4, proof pl
 * `FinCover.IsAdapted`: adapted covers (Miranda IX Ex. 3.6), `exists_adapted_refinement`.
 -/
 
-open scoped ContDiff Manifold
 open Set Filter Topology TopologicalSpace
 
 namespace RS.Cech
@@ -118,14 +117,15 @@ theorem exists_chartDisk_basis {x : X} {W : Set X} (hW : W ∈ 𝓝 x) :
     hsub.trans (fun _ ⟨w, hw, hwe⟩ => hwe ▸ e.map_source (hOsub hw))
   set V0 : Set X := e.symm '' Metric.ball (e x) r with hV0_def
   have hV0open : IsOpen V0 := e.isOpen_image_symm_of_subset_target Metric.isOpen_ball htarget
-  refine ⟨⟨V0, hV0open⟩, ⟨x, r, hr, ?_, ?_, ?_⟩, ?_, ?_⟩
-  · show x ∈ V0
-    exact ⟨e x, Metric.mem_ball_self hr, e.left_inv hxs⟩
+  have hV0mem : x ∈ V0 := ⟨e x, Metric.mem_ball_self hr, e.left_inv hxs⟩
+  refine ⟨⟨V0, hV0open⟩, ⟨x, r, hr, ?_, ?_, ?_⟩, hV0mem, ?_⟩
+  · exact hV0mem
   · show V0 ⊆ e.source
     rw [hV0_def, e.symm_image_eq_source_inter_preimage htarget]
     exact inter_subset_left
   · show e '' V0 = Metric.ball (e x) r
-    rw [hV0_def, e.image_symm_image_of_subset_target htarget]
+    rw [hV0_def]
+    exact e.image_symm_image_of_subset_target htarget
   · show V0 ⊆ W
     intro y hy
     obtain ⟨z, hz, rfl⟩ := hy
@@ -161,7 +161,7 @@ theorem exists_chartDisk_closure_basis [T2Space X] {x : X} {W : Set X} (hW : W �
     (isCompact_closedBall (e x) (r / 2)).image_of_continuousOn
       (e.continuousOn_symm.mono htarget)
   have hKclosed : IsClosed K := hKcompact.isClosed
-  have hV0subK : V0 ⊆ K := image_subset _ Metric.ball_subset_closedBall
+  have hV0subK : V0 ⊆ K := Set.image_mono Metric.ball_subset_closedBall
   have hclosureV0 : closure V0 ⊆ K := hKclosed.closure_subset_iff.2 hV0subK
   have hKsubW : K ⊆ W := by
     intro y hy
@@ -169,22 +169,23 @@ theorem exists_chartDisk_closure_basis [T2Space X] {x : X} {W : Set X} (hW : W �
     obtain ⟨w, hw, rfl⟩ := hballsub hz
     rw [e.left_inv (hOsub hw)]
     exact interior_subset hw.2
-  refine ⟨⟨V0, hV0open⟩, ⟨x, r / 2, hr2, ?_, ?_, ?_⟩, ?_, ?_,
+  have hV0mem : x ∈ V0 := ⟨e x, Metric.mem_ball_self hr2, e.left_inv hxs⟩
+  refine ⟨⟨V0, hV0open⟩, ⟨x, r / 2, hr2, ?_, ?_, ?_⟩, hV0mem, ?_,
     hKcompact.of_isClosed_subset isClosed_closure hclosureV0⟩
-  · show x ∈ V0
-    exact ⟨e x, Metric.mem_ball_self hr2, e.left_inv hxs⟩
+  · exact hV0mem
   · show V0 ⊆ e.source
     rw [hV0_def, e.symm_image_eq_source_inter_preimage htarget']
     exact inter_subset_left
   · show e '' V0 = Metric.ball (e x) (r / 2)
-    rw [hV0_def, e.image_symm_image_of_subset_target htarget']
+    rw [hV0_def]
+    exact e.image_symm_image_of_subset_target htarget'
   · show closure V0 ⊆ W
     exact hclosureV0.trans hKsubW
 
 /-- Chart-disk covers are cofinal (§6.3): every cover of `X` admits a good refinement. -/
 theorem exists_good_refinement [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     ∃ 𝒱, 𝒰 ≤ 𝒱 ∧ 𝒱.IsGood := by
-  choose i hi using fun x : X => 𝒰.covers x (mem_top x)
+  choose i hi using fun x : X => 𝒰.covers x trivial
   choose V hVgood hVmem hVsub using
     fun x : X => exists_chartDisk_basis (x := x) (W := (𝒰.U (i x) : Set X))
       ((𝒰.U (i x)).2.mem_nhds (hi x))
@@ -204,9 +205,9 @@ theorem exists_good_refinement [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)
 /-- Compact-closure good refinement (§6.3) — the nested-cover input for finiteness-and-chi. -/
 theorem exists_good_refinement_closure [CompactSpace X] [T2Space X]
     (𝒰 : FinCover (⊤ : Opens X)) :
-    ∃ 𝒱 (τ : Fin 𝒱.n → Fin 𝒰.n), IsRefIdx 𝒰 𝒱 τ ∧ 𝒱.IsGood ∧
+    ∃ 𝒱 : FinCover (⊤ : Opens X), ∃ τ : Fin 𝒱.n → Fin 𝒰.n, IsRefIdx 𝒰 𝒱 τ ∧ 𝒱.IsGood ∧
       ∀ k, closure (𝒱.U k : Set X) ⊆ 𝒰.U (τ k) ∧ IsCompact (closure (𝒱.U k : Set X)) := by
-  choose i hi using fun x : X => 𝒰.covers x (mem_top x)
+  choose i hi using fun x : X => 𝒰.covers x trivial
   choose V hVgood hVmem hVclosure hVcompact using
     fun x : X => exists_chartDisk_closure_basis (x := x) (W := (𝒰.U (i x) : Set X))
       ((𝒰.U (i x)).2.mem_nhds (hi x))
@@ -217,7 +218,8 @@ theorem exists_good_refinement_closure [CompactSpace X] [T2Space X]
   classical
   set e := t.equivFin with he_def
   refine ⟨⟨t.card, fun k => V (e.symm k : X), fun k => le_top, fun x _ => ?_⟩,
-    fun k => i (e.symm k : X), fun k => hVsub (e.symm k : X),
+    fun k => i (e.symm k : X),
+    fun k => subset_closure.trans (hVclosure (e.symm k : X)),
     fun k => hVgood (e.symm k : X), fun k => ⟨hVclosure (e.symm k : X), hVcompact (e.symm k : X)⟩⟩
   have hxmem : x ∈ ⋃ y ∈ t, (V y : Set X) := ht (mem_univ x)
   simp only [Set.mem_iUnion] at hxmem
@@ -232,6 +234,7 @@ def FinCover.IsAdapted (𝒰 : FinCover Ω) (S : Finset X) : Prop := ∀ p ∈ S
 /-- The open complement of a finite set (`[T1Space X]`). -/
 def compOpens [T1Space X] (T : Finset X) : Opens X := ⟨(T : Set X)ᶜ, T.isClosed.isOpen_compl⟩
 
+omit [ChartedSpace ℂ X] in
 theorem mem_compOpens [T1Space X] {T : Finset X} {x : X} :
     x ∈ compOpens T ↔ x ∉ T := by
   show x ∈ ((T : Set X)ᶜ) ↔ x ∉ T
@@ -253,6 +256,9 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
   set idxEquiv : Fin 𝒰.n ⊕ (↥(S : Finset X)) ≃ Fin (𝒰.n + S.card) :=
     (Equiv.sumCongr (Equiv.refl _) S.equivFin).trans finSumFinEquiv with hidx_def
   set Ucov : Fin (𝒰.n + S.card) → Opens X := fun k => Sum.elim B A (idxEquiv.symm k) with hU_def
+  set τfun : Fin (𝒰.n + S.card) → Fin 𝒰.n :=
+    fun k => Sum.elim id (fun (q : ↥(S : Finset X)) => i (q : X) q.2) (idxEquiv.symm k)
+    with hτ_def
   have hAle : ∀ q : ↥(S : Finset X), A q ≤ 𝒰.U (i (q : X) q.2) :=
     fun q => le_trans inf_le_left inf_le_right
   have hBle : ∀ j : Fin 𝒰.n, B j ≤ 𝒰.U j := fun j => inf_le_left
@@ -268,16 +274,13 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
     intro j x
     show x ∈ 𝒰.U j ∧ x ∈ compOpens S ↔ _
     rw [mem_compOpens]
-  refine ⟨⟨𝒰.n + S.card, Ucov, ?_, ?_⟩, ⟨Sum.elim id (fun q => i (q : X) q.2) ∘ idxEquiv.symm,
-    ?_⟩, ?_, ?_⟩
+  refine ⟨⟨𝒰.n + S.card, Ucov, ?_, ?_⟩, ⟨τfun, ?_⟩, ?_, ?_⟩
   · -- le_base
     intro k
     rcases hcase : idxEquiv.symm k with j | q
-    · show Sum.elim B A (idxEquiv.symm k) ≤ Ω
-      rw [hcase]
+    · simp only [hU_def, hcase]
       exact le_trans (hBle j) (𝒰.le_base j)
-    · show Sum.elim B A (idxEquiv.symm k) ≤ Ω
-      rw [hcase]
+    · simp only [hU_def, hcase]
       exact le_trans (hAle q) (𝒰.le_base _)
   · -- covers
     intro x hx
@@ -297,10 +300,11 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
       exact ⟨hj, hxS⟩
   · -- IsRefIdx 𝒰 𝒱
     intro k
-    show Sum.elim B A (idxEquiv.symm k) ≤ 𝒰.U (Sum.elim id (fun q => i (q:X) q.2) (idxEquiv.symm k))
     rcases hcase : idxEquiv.symm k with j | q
-    · rw [hcase]; exact hBle j
-    · rw [hcase]; exact hAle q
+    · simp only [hU_def, hτ_def, hcase]
+      exact hBle j
+    · simp only [hU_def, hτ_def, hcase]
+      exact hAle q
   · -- IsAdapted
     intro p hp
     refine ⟨idxEquiv (Sum.inr ⟨p, hp⟩), ?_, ?_⟩
@@ -310,32 +314,33 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
       rw [hmemA]
       exact ⟨hO p hp, hi p hp, Finset.notMem_erase p S⟩
     · intro k hk
+      simp only [hU_def] at hk
       rcases hcase : idxEquiv.symm k with j | q
       · exfalso
-        have : p ∈ B j := by
-          show p ∈ Sum.elim B A (idxEquiv.symm k); rw [hcase]; exact hk
-        exact ((hmemB j p).1 this).2 hp
-      · have hpq : p ∈ A q := by
-          show p ∈ Sum.elim B A (idxEquiv.symm k); rw [hcase]; exact hk
+        simp only [hcase] at hk
+        have hkB : p ∈ B j := hk
+        exact ((hmemB j p).1 hkB).2 hp
+      · simp only [hcase] at hk
+        have hpq : p ∈ A q := hk
         have hqp : (q : X) = p := by
           by_contra hne
           exact ((hmemA q p).1 hpq).2.2 (Finset.mem_erase_of_ne_of_mem (Ne.symm hne) hp)
-        have : q = ⟨p, hp⟩ := Subtype.ext hqp
-        rw [← this, ← hcase, Equiv.apply_symm_apply]
+        have hqeq : q = ⟨p, hp⟩ := Subtype.ext hqp
+        rw [← hqeq, ← hcase, Equiv.apply_symm_apply]
   · -- the O-clause
     intro p hp k hk
+    simp only [hU_def] at hk
     rcases hcase : idxEquiv.symm k with j | q
     · exfalso
-      have : p ∈ B j := by
-        show p ∈ Sum.elim B A (idxEquiv.symm k); rw [hcase]; exact hk
-      exact ((hmemB j p).1 this).2 hp
-    · have hpq : p ∈ A q := by
-        show p ∈ Sum.elim B A (idxEquiv.symm k); rw [hcase]; exact hk
+      simp only [hcase] at hk
+      have hkB : p ∈ B j := hk
+      exact ((hmemB j p).1 hkB).2 hp
+    · simp only [hcase] at hk
+      have hpq : p ∈ A q := hk
       have hqp : (q : X) = p := by
         by_contra hne
         exact ((hmemA q p).1 hpq).2.2 (Finset.mem_erase_of_ne_of_mem (Ne.symm hne) hp)
-      show Sum.elim B A (idxEquiv.symm k) ≤ O p
-      rw [hcase, ← hqp]
+      simp only [hU_def, hcase, ← hqp]
       exact hAleO q
 
 /-- If `𝒰` is adapted to `S`, distinct members meet `S` in at most disjoint points: no member
@@ -345,6 +350,6 @@ theorem FinCover.IsAdapted.not_mem_inf {𝒰 : FinCover Ω} {S : Finset X} (h�
     (hp : p ∈ S) {i j : Fin 𝒰.n} (hij : i ≠ j) : p ∉ 𝒰.U i ⊓ 𝒰.U j := by
   rintro ⟨hi, hj⟩
   obtain ⟨k, -, hk⟩ := h𝒰 p hp
-  exact hij ((hk i hi).symm.trans (hk j hj))
+  exact hij ((hk i hi).trans (hk j hj).symm)
 
 end RS.Cech
