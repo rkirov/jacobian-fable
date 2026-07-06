@@ -75,14 +75,14 @@ noncomputable def invChart : OpenPartialHomeomorph (OnePoint ℂ) ℂ where
   right_inv' w _ := by
     show coeChart (inversion (inversion (w : OnePoint ℂ))) = w
     rw [inversion_involutive]
+    rfl
   open_source := isClosed_singleton.isOpen_compl
   open_target := isOpen_univ
   continuousOn_toFun := by
     have hmaps : MapsTo inversion {((0 : ℂ) : OnePoint ℂ)}ᶜ coeChart.source := by
       intro p hp
       show inversion p ≠ (∞ : OnePoint ℂ)
-      rw [inversion_eq_infty_iff]
-      exact hp
+      exact fun h => hp (inversion_eq_infty_iff.mp h)
     exact coeChart.continuousOn.comp continuous_inversion.continuousOn hmaps
   continuousOn_invFun :=
     (continuous_inversion.comp continuous_coe).continuousOn
@@ -105,6 +105,18 @@ noncomputable def invChart : OpenPartialHomeomorph (OnePoint ℂ) ℂ where
 theorem invChart_comp_coe : ⇑invChart ∘ ((↑) : ℂ → OnePoint ℂ) = Inv.inv := by
   funext z
   simp [Function.comp_apply]
+
+/-- `inversion` read through `coeChart` on both ends is inversion itself (unconditional). -/
+theorem coeChart_inversion_coe (z : ℂ) : coeChart (inversion (z : OnePoint ℂ)) = z⁻¹ := by
+  by_cases hz : z = 0
+  · subst hz; simp
+  · rw [inversion_coe hz, coeChart_apply_coe]
+
+/-- `inversion` read through `invChart` on both ends is the identity (unconditional;
+this is `invChart.right_inv` unfolded through `invChart_symm_apply`). -/
+theorem invChart_inversion_coe (z : ℂ) : invChart (inversion (z : OnePoint ℂ)) = z := by
+  have h := invChart.right_inv (x := z) (Set.mem_univ z)
+  rwa [invChart_symm_apply] at h
 
 /-- The generating chart family (`false ↦ coeChart`, `true ↦ invChart`). -/
 noncomputable def chartFamily : Bool → OpenPartialHomeomorph (OnePoint ℂ) ℂ
@@ -153,13 +165,15 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- false, false : id
     have hfun : (⇑((chartFamily false).symm ≫ₕ chartFamily false) : ℂ → ℂ) = id := by
       funext z
-      simp [OpenPartialHomeomorph.trans_apply]
+      show coeChart (coeChart.symm z) = z
+      exact coeChart.right_inv (Set.mem_univ z)
     rw [hfun]
     exact fun z _ => analyticAt_id
   · -- false, true : Inv.inv
     have hfun : (⇑((chartFamily false).symm ≫ₕ chartFamily true) : ℂ → ℂ) = Inv.inv := by
       funext z
-      simp [OpenPartialHomeomorph.trans_apply]
+      show invChart (coeChart.symm z) = z⁻¹
+      rw [coeChart_symm_apply, invChart_apply_coe]
     have hsub : ((chartFamily false).symm ≫ₕ chartFamily true).source ⊆ {z : ℂ | z ≠ 0} := by
       intro z hz
       rw [OpenPartialHomeomorph.trans_source] at hz
@@ -172,7 +186,7 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- true, false : Inv.inv
     have hfun : (⇑((chartFamily true).symm ≫ₕ chartFamily false) : ℂ → ℂ) = Inv.inv := by
       funext z
-      show coeChart (inversion (invChart.symm z)) = z⁻¹
+      show coeChart (invChart.symm z) = z⁻¹
       rw [invChart_symm_apply]
       by_cases hz : z = 0
       · subst hz; simp
@@ -190,8 +204,8 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- true, true : id
     have hfun : (⇑((chartFamily true).symm ≫ₕ chartFamily true) : ℂ → ℂ) = id := by
       funext z
-      show invChart (inversion (invChart.symm z)) = z
-      rw [invChart_symm_apply, inversion_involutive]
+      show invChart (invChart.symm z) = z
+      exact invChart.right_inv (Set.mem_univ z)
     rw [hfun]
     exact fun z _ => analyticAt_id
 
