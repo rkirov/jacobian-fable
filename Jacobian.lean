@@ -13,3 +13,4 @@ import Jacobian.SphereTopology
 import Jacobian.MeromorphicTrace
 import Jacobian.ProperDegree
 import Jacobian.JacobianConstruction
+import Jacobian.Cech

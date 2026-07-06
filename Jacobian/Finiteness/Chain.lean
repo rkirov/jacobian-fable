@@ -261,4 +261,67 @@ noncomputable def resZ (h : ∀ i, P' i ≤ P i) : NZ1 T P →L[ℂ] NZ1 T P' :=
   ((resNC1 T P P' h).comp (NZ1 T P).subtypeL).codRestrict (NZ1 T P')
     (fun f => resNC1_mapsTo_NZ1 T P P' h f.2)
 
+example : True := by
+  haveI : IsTopologicalAddGroup (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) := inferInstance
+  trivial
+
+example (p : Fin T.n × Fin T.n) : True := by
+  haveI : IsTopologicalAddGroup (BddHoloOn (T.W p.1 ⊓ T.W p.2)) := inferInstance
+  trivial
+
+example (p : Fin T.n × Fin T.n) : True := by
+  haveI : Sub (NZ1 T T.U × NZ1 T T.V × NC0 T T.W →L[ℂ] BddHoloOn (T.W p.1 ⊓ T.W p.2)) :=
+    inferInstance
+  trivial
+
+/-! ### Forster's 14.6(b) subspace `L` (`tradeSpace`) and its two projections -/
+
+variable {T}
+
+theorem hUV : ∀ i, T.V i ≤ T.U i := T.V_subset_U
+theorem hVW : ∀ i, T.W i ≤ T.V i := T.W_subset_V
+theorem hUW : ∀ i, T.W i ≤ T.U i := fun i => (T.W_subset_V i).trans (T.V_subset_U i)
+
+set_option synthInstance.maxHeartbeats 4000000 in
+/-- The defect map `res_UW ∘ pr₁ − res_VW ∘ pr₂ − δ_W ∘ pr₃` (Forster's 14.6(b) subspace `L` is
+its kernel). Built component-wise (`ContinuousLinearMap.pi`), matching the working pattern of
+`deltaCLM`/`d1NC` — subtracting whole `NC1`-(Pi-)valued `CLM`s directly hits a slow/failing
+`IsTopologicalAddGroup`/`Sub` instance search on the big Pi codomain; subtracting at the single
+`BddHoloOn` (leaf) codomain, as here, does not. -/
+noncomputable def tradeDefect :
+    (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) →L[ℂ] NC1 T T.W :=
+  ContinuousLinearMap.pi fun p : Fin T.n × Fin T.n =>
+    (ContinuousLinearMap.proj p).comp
+        (((NZ1 T T.W).subtypeL.comp (resZ T T.U T.W hUW)).comp
+          (ContinuousLinearMap.fst ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W)))
+    - (ContinuousLinearMap.proj p).comp
+        (((NZ1 T T.W).subtypeL.comp (resZ T T.V T.W hVW)).comp
+          ((ContinuousLinearMap.fst ℂ (NZ1 T T.V) (NC0 T T.W)).comp
+            (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))))
+    - (ContinuousLinearMap.proj p).comp
+        ((deltaCLM T T.W).comp
+          ((ContinuousLinearMap.snd ℂ (NZ1 T T.V) (NC0 T T.W)).comp
+            (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))))
+
+/-- Forster's `L ⊆ Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` (14.6(b)): a *closed* submodule
+(`ContinuousLinearMap.ker`), Banach for free. -/
+noncomputable def tradeSpace : Submodule ℂ (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) :=
+  tradeDefect.ker
+
+set_option synthInstance.maxHeartbeats 800000 in
+instance : CompleteSpace (tradeSpace (T := T)) := ContinuousLinearMap.completeSpace_ker tradeDefect
+
+/-- `π`: the projection of `L` onto the `𝔙`-level cocycle (the Schwartz cospan's `u`). -/
+noncomputable def tradePi : tradeSpace (T := T) →L[ℂ] NZ1 T T.V :=
+  ((ContinuousLinearMap.fst ℂ (NZ1 T T.V) (NC0 T T.W)).comp
+    (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))).comp
+    (tradeSpace (T := T)).subtypeL
+
+/-- `v`: the Montel-compact restriction of `L`'s `𝔘`-level component down to `𝔙` (the Schwartz
+cospan's `v`). -/
+noncomputable def tradeCompact : tradeSpace (T := T) →L[ℂ] NZ1 T T.V :=
+  (resZ T T.U T.V hUV).comp
+    ((ContinuousLinearMap.fst ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W)).comp
+      (tradeSpace (T := T)).subtypeL)
+
 end RS.Finiteness

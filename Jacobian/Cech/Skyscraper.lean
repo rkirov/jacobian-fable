@@ -52,10 +52,7 @@ theorem C1.retype_mem_Z1 {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D) :
   have hcoe : (d1 D 𝒰 (C1.retype (d0 D' 𝒰 g) hg) t :
         RS.MeroGermOn X ((𝒰.U t.1 ⊓ 𝒰.U t.2.1 ⊓ 𝒰.U t.2.2 : Opens X) : Set X)) =
       (d1 D' 𝒰 (d0 D' 𝒰 g) t :
-        RS.MeroGermOn X ((𝒰.U t.1 ⊓ 𝒰.U t.2.1 ⊓ 𝒰.U t.2.2 : Opens X) : Set X)) := by
-    obtain ⟨i, j, k⟩ := t
-    rw [d1_apply, d1_apply]
-    simp [restrictL_apply_coe, C1.retype_apply_coe]
+        RS.MeroGermOn X ((𝒰.U t.1 ⊓ 𝒰.U t.2.1 ⊓ 𝒰.U t.2.2 : Opens X) : Set X)) := rfl
   rw [hcoe, (mem_Z1_iff D' 𝒰 (d0 D' 𝒰 g)).1 (B1_le_Z1 D' 𝒰 ⟨g, rfl⟩) t]
   simp
 
@@ -69,6 +66,7 @@ noncomputable def mlClass (𝒰 : FinCover (⊤ : Opens X)) (g : C0 D' 𝒰)
     (hg : (d0 D' 𝒰 g).MemLD D) : H1 D :=
   toH1 D 𝒰 (H1Cover.mk D 𝒰 ⟨C1.retype (d0 D' 𝒰 g) hg, C1.retype_mem_Z1 hg⟩)
 
+set_option maxHeartbeats 1000000 in
 theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0 D' 𝒰 g').MemLD D)
     (hgg' : (d0 D' 𝒰 (g + g')).MemLD D) :
     mlClass 𝒰 (g + g') hgg' = mlClass 𝒰 g hg + mlClass 𝒰 g' hg' := by
@@ -81,12 +79,20 @@ theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0
       (C1.retype (d0 D' 𝒰 g) hg p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) +
         (C1.retype (d0 D' 𝒰 g') hg' p :
           RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
-    rw [C1.retype_apply_coe, C1.retype_apply_coe, C1.retype_apply_coe]
-    simp
+    show RS.MeroGermOn.restrict inf_le_right
+          ((g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) + (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X))) -
+        RS.MeroGermOn.restrict inf_le_left
+          ((g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)) + (g' p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) =
+      (RS.MeroGermOn.restrict inf_le_right (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
+          RS.MeroGermOn.restrict inf_le_left (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) +
+        (RS.MeroGermOn.restrict inf_le_right (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
+          RS.MeroGermOn.restrict inf_le_left (g' p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)))
+    simp only [map_add]
+    abel
   rw [mlClass, mlClass, mlClass, ← map_add, ← map_add]
-  congr 1
-  exact Subtype.ext hval
+  exact congrArg (toH1 D 𝒰) (congrArg (H1Cover.mk D 𝒰) (Subtype.ext hval))
 
+set_option maxHeartbeats 1000000 in
 theorem mlClass_smul (a : ℂ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     (hag : (d0 D' 𝒰 (a • g)).MemLD D) :
     mlClass 𝒰 (a • g) hag = a • mlClass 𝒰 g hg := by
@@ -96,11 +102,13 @@ theorem mlClass_smul (a : ℂ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     show (C1.retype (d0 D' 𝒰 (a • g)) hag p :
         RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) =
       a • (C1.retype (d0 D' 𝒰 g) hg p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
-    rw [C1.retype_apply_coe, C1.retype_apply_coe]
-    simp
+    show RS.MeroGermOn.restrict inf_le_right (a • (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X))) -
+        RS.MeroGermOn.restrict inf_le_left (a • (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) =
+      a • (RS.MeroGermOn.restrict inf_le_right (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
+        RS.MeroGermOn.restrict inf_le_left (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)))
+    simp only [map_smul, smul_sub]
   rw [mlClass, mlClass, ← map_smul]
-  congr 1
-  exact Subtype.ext hval
+  exact congrArg (toH1 D 𝒰) (congrArg (H1Cover.mk D 𝒰) (Subtype.ext hval))
 
 theorem H1Incl_mlClass (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) :
     H1Incl D h (mlClass 𝒰 g hg) = 0 := by
