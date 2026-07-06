@@ -77,6 +77,86 @@ theorem IsWeakSolutionAt.contMDiffAt_and_ne_zero_of_zero {f : X → ℂ} {a : X}
   have hfa : f a = ψ (e a) := heq.self_of_nhds
   exact ⟨hcm.congr_of_eventuallyEq heq, hfa ▸ hψne.self_of_nhds⟩
 
+omit [T2Space X] in
+/-- Two-factor product bridge (Compat, mirroring `contMDiffAt_finsetProd_real`: no
+`ContMDiffMul 𝓘(ℝ, ℂ) ∞ ℂ` instance is registered, so this routes through `ContDiffAt ℝ` in the
+chart `extChartAt 𝓘(ℂ) x`). -/
+private theorem contMDiffAt_mul_real {f g : X → ℂ} {x : X}
+    (hf : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f x) (hg : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g x) :
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun y => f y * g y) x := by
+  rw [RS.contMDiffAt_real_iff_contDiffAt] at hf hg ⊢
+  exact hf.mul hg
+
+/-- A nonnegative order (`k ≥ 0`, i.e. a genuine zero, `k > 0`, or the order-`0` case) unfolds to
+genuine smoothness (no `≠ 0` conclusion — a zero really does vanish there). -/
+theorem IsWeakSolutionAt.contMDiffAt_of_nonneg {f : X → ℂ} {a : X} {k : ℤ}
+    (hf : IsWeakSolutionAt f a k) (hk : 0 ≤ k) : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f a := by
+  obtain ⟨e, he, ha, ψ, hψne, hψdiff, hfeq⟩ := hf
+  lift k to ℕ using hk with n
+  have heq : f =ᶠ[𝓝 a] fun x => ψ (e x) * (e x - e a) ^ n := by
+    filter_upwards [hfeq] with x hx; rw [hx, zpow_natCast]
+  have hecm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑e) a :=
+    RS.contMDiffAt_real_of_holomorphicAt (contMDiffAt_of_mem_maximalAtlas he ha)
+  have hesub : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun x => e x - e a) a := hecm.sub contMDiffAt_const
+  have hepow : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun x => (e x - e a) ^ n) a := by
+    have hprod := contMDiffAt_finsetProd_real (ι := Fin n) (t := Finset.univ)
+      (f := fun _ : Fin n => fun x => e x - e a) (fun i _ => hesub)
+    simpa using hprod
+  have hψe : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun x => ψ (e x)) a :=
+    contMDiffAt_comp_of_contDiffAt he ha hψdiff
+  exact (contMDiffAt_mul_real hψe hepow).congr_of_eventuallyEq heq
+
+/-- The shared "finish" step of the chain induction: given the invariant data at level `m`
+(base `f`, exclusion point `p`, current endpoint `q`) and a fresh `SingleChart` piece's raw data
+(`g`, exclusion point `q`, new endpoint `r`), TOGETHER WITH the already-assembled merged function
+`h` (agreeing with `f * g` off `{p, q, r}`, with tracked facts at `p`, `q` (order `0`), and `r`),
+produce the invariant data at level `m + 1` (exclusion point still `p`, new current endpoint `r`).
+-/
+private theorem chainFinish {f g h : X → ℂ} {p q r : X} {U V : Set X} {k0 k1 : ℤ}
+    (hUopen : IsOpen U) (hUcompact : IsCompact (closure U))
+    (hoff : ∀ x ∉ U, x ≠ p → f x = 1)
+    (hcm : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {p}ᶜ)
+    (hne : ∀ x, x ≠ p → x ≠ q → f x ≠ 0)
+    (hVopen : IsOpen V) (hVcompact : IsCompact (closure V))
+    (hqV : q ∈ V) (hrV : r ∈ V) (hg1 : ∀ x ∉ V, g x = 1)
+    (hgcm : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g {q}ᶜ) (hgne : ∀ x, x ≠ r → x ≠ q → g x ≠ 0)
+    (hh0 : IsWeakSolutionAt h p k0) (hh1 : IsWeakSolutionAt h r k1)
+    (hhq : IsWeakSolutionAt h q 0) (hk1 : 0 ≤ k1)
+    (hheq : ∀ x, x ≠ p → x ≠ q → x ≠ r → h x = f x * g x) :
+    ∃ (f' : X → ℂ) (U' : Set X), IsOpen U' ∧ IsCompact (closure U') ∧
+      (∀ x ∉ U', x ≠ p → f' x = 1) ∧
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f' {p}ᶜ ∧
+      (∀ x, x ≠ p → x ≠ r → f' x ≠ 0) ∧
+      IsWeakSolutionAt f' p k0 ∧ IsWeakSolutionAt f' r k1 := by
+  refine ⟨h, U ∪ V, hUopen.union hVopen, ?_, ?_, ?_, ?_, hh0, hh1⟩
+  · rw [closure_union]; exact hUcompact.union hVcompact
+  · intro x hx hxp
+    have hxU : x ∉ U := fun hu => hx (Or.inl hu)
+    have hxV : x ∉ V := fun hv => hx (Or.inr hv)
+    have hxq : x ≠ q := fun heqx => hxV (heqx ▸ hqV)
+    have hxr : x ≠ r := fun heqx => hxV (heqx ▸ hrV)
+    rw [hheq x hxp hxq hxr, hoff x hxU hxp, hg1 x hxV]; ring
+  · intro x hxp
+    by_cases hxq : x = q
+    · rw [hxq]; exact hhq.contMDiffAt_and_ne_zero_of_zero.1.contMDiffWithinAt
+    · by_cases hxr : x = r
+      · rw [hxr]; exact (hh1.contMDiffAt_of_nonneg hk1).contMDiffWithinAt
+      · have heqx : h =ᶠ[𝓝 x] (fun y => f y * g y) := by
+          filter_upwards [isOpen_compl_singleton.mem_nhds hxp,
+            isOpen_compl_singleton.mem_nhds hxq, isOpen_compl_singleton.mem_nhds hxr]
+            with y hyp hyq hyr
+          exact hheq y hyp hyq hyr
+        have hfcm : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f x :=
+          hcm.contMDiffAt (isOpen_compl_singleton.mem_nhds hxp)
+        have hgcm' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g x :=
+          hgcm.contMDiffAt (isOpen_compl_singleton.mem_nhds hxq)
+        exact ((contMDiffAt_mul_real hfcm hgcm').congr_of_eventuallyEq heqx).contMDiffWithinAt
+  · intro x hxp hxr
+    by_cases hxq : x = q
+    · rw [hxq]; exact hhq.contMDiffAt_and_ne_zero_of_zero.2
+    · rw [hheq x hxp hxq hxr]
+      exact mul_ne_zero (hne x hxp hxq) (hgne x hxr hxq)
+
 /-! ## The general chain induction -/
 
 omit [IsManifold 𝓘(ℂ) ω X] in
@@ -236,7 +316,7 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
           · by_cases hym : y = M m
             · rw [hym]; exact hwpm
             · have hzero : ordAt m y = 0 := by
-                simp only [hordAt_def]; rw [if_neg hy0, if_neg hym]
+                simp only [hordAt_def]; rw [if_neg hy0, if_neg hym]; ring
               rw [hzero]; exact isWeakSolutionAt_zero_of_ne hcm hne hy0 hym
         have hgAt : ∀ y, IsWeakSolutionAt g y
             ((if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)) := by
@@ -244,16 +324,16 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
           by_cases hy1 : y = M (m + 1)
           · have hval : (if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
                 = 1 := by
-              rw [if_pos hy1, if_neg (hy1 ▸ hdeg : y ≠ M m)]
+              rw [if_pos hy1, if_neg (hy1 ▸ hdeg : y ≠ M m)]; ring
             rw [hval, hy1]; exact hg.weakAt_P
           · by_cases hym : y = M m
             · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
                   + (if y = M m then (-1 : ℤ) else 0) = -1 := by
-                rw [if_neg hy1, if_pos hym]
+                rw [if_neg hy1, if_pos hym]; ring
               rw [hval, hym]; exact hg.weakAt_Q
             · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
                   + (if y = M m then (-1 : ℤ) else 0) = 0 := by
-                rw [if_neg hy1, if_neg hym]
+                rw [if_neg hy1, if_neg hym]; ring
               rw [hval]
               exact isWeakSolutionAt_zero_of_ne hg.contMDiffOn
                 (fun z h1 h2 => hg.ne_zero_off z h2 h1) hym hy1
@@ -262,8 +342,9 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
               = ordAt (m + 1) y := by
           intro y
           simp only [hordAt_def]
-          by_cases h0 : y = M 0 <;> by_cases h1 : y = M (m + 1) <;> by_cases hmm : y = M m <;>
-            simp [h0, h1, hmm]
+          have hcancel : (if y = M m then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
+              = 0 := by by_cases h : y = M m <;> simp [h]
+          linarith [hcancel]
         obtain ⟨hMm, hMm_ord0, hMm_eq0⟩ := (hfAt (M m)).mul (hgAt (M m))
         obtain ⟨hMm1, hMm1_ord0, hMm1_eq0⟩ := (hfAt (M (m + 1))).mul (hgAt (M (m + 1)))
         have hMm_ord : IsWeakSolutionAt hMm (M m) (ordAt (m + 1) (M m)) := hsum (M m) ▸ hMm_ord0

@@ -1463,3 +1463,128 @@
     available but the Miranda-tails route remains the frozen path for that unit (no drift).
   - **Nobody else** consumes `H^{0,1}` twisted variants or an `Ω`-sheaf comparison (unchanged from
     the design's §0.2/§7 non-goals).
+- [resthm] HEADLINE CLOSED. `Jacobian/ResidueTheorem/` completed against the §6 trace-route
+  primary (orchestrator addendum); `scripts/check.sh Jacobian/ResidueTheorem` passes, zero
+  sorries across 5 files + root (1692 lines). New files: `MFormCompat.lean` (61 lines —
+  `MForm.resAt_eq_zero_of_ord_nonneg`, `MForm.finite_setOf_ord_neg`,
+  `MForm.finite_support_resAt`; Compat, upstream candidates for canonical-forms),
+  `Calibrated.lean` (303 — `exists_adaptedChartsAt_translated`/`exists_fiberStack_translated`:
+  the LocalMultiplicity/MappingDegree existence proofs re-run with the construction-inherent
+  "target chart = recentered `chartAt`" conclusion exposed, discharging
+  `resAtP1_trace_eq_sum`'s `hcal` calibration hypothesis verbatim), `P1Assembly.lean` (374 —
+  **Gap 1 closed**: `RS.P1.sum_resAt_eq_zero (Θ : MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y = 0`,
+  UNCONDITIONAL; the junk-value blocker was repaired via mathlib's `toMeromorphicNFOn`
+  (`exists_differentiable_of_ord_nonneg`: entire representative of the principal-part
+  remainder, honest near ∞ by the pointwise two-chart `compat` identity `coeffAt_infty_eq`) —
+  NOT the weakened-radius variant previously sketched), `Reduction.lean` (541 — **Gap 2
+  closed**: NO `MForm.ofPullback` needed; the `d f`-vs-`resAtX` convention mismatch at poles
+  IS the `dz = -(w²)⁻¹dw` target transition, handled by pushing TWO trace coefficients
+  (`h.holoRepr` over finite fibres, `-(φ.holoRepr)²·h.holoRepr` over the ∞ fibre) along
+  `F := toP1 φ.holoRepr`, bridged per fibre point by `resAtX_toP1_eq_of_ord_nonneg`/`_neg`
+  and glued on ℙ¹ by `formOfCoeFn` + `trace_const_mul_pullback`; plus `MForm.d_ne_zero`
+  (nonconstant ⟹ dφ ≠ 0, identity-theorem dichotomy) feeding D8's `θ = h • d φ`).
+  **Exports**: `RS.residue_sum_eq_zero_of_exists_nonconstant (hex : ∃ f : ℳ X, ∀ c : ℂ,
+  f ≠ algebraMap ℂ (ℳ X) c) (θ : MForm X) : ∑ᶠ x, θ.resAt x = 0` (THE theorem; `hex` is
+  EXACTLY canonical-forms D9's frozen `exists_nonconstant_mero` shape — `Existence.lean` is
+  still not on disk (Chi.lean landed, D9 export has not), so the unconditional wrapper is the
+  one-liner `residue_sum_eq_zero_of_exists_nonconstant exists_nonconstant_mero θ` for whoever
+  lands D9 — orchestrator: consider having canonical-forms add it, or file back here);
+  **for serre-duality-tails** (`pairT_alpha`, its design §6 P3):
+  `RS.MForm.sum_resAt_eq_zero_of_exists_nonconstant (hex) (f : ℳ X) (θ : MForm X) :
+  ∑ᶠ x, (f • θ).resAt x = 0` — the exact `docs/requests/residue-theorem.md` finsum shape;
+  also `RS.residueTheorem_of_exists_nonconstant` (Finset-flexible form). NOT registered in
+  `Jacobian.lean` per task hard rule.
+- [finiteness] Jacobian/Finiteness/TradeBounded.lean OK (607 lines) — the gated centerpiece of
+  finiteness-and-chi, unblocked once cech's `SixTerm`/`WindowRank` and dolbeault's
+  `Leray.lean` landed. Delivers: (1) §4.4's leftover finite-`Pi` Montel assembly
+  `isCompactOperator_resZ_UV`/`isCompactOperator_tradeCompact` (a generic
+  `isCompactOperator_pi` lemma for finite index types, via `isCompact_univ_pi` +
+  `Filter.iInter_mem`, composed with `Chain.lean`'s single-chart `isCompactOperator_restrictCLM`);
+  (2) the Banach↔Čech germ bridges `toGermSub`/`toGermC1`/`toGermZ1`/`boundZ1`/`boundZ1C0`
+  (D5), landing in a **generic `coverOfP T P hcov` construction** rather than `T.coverU`/
+  `T.coverV`/`T.coverW` directly (needed since those are indexed by an ABSTRACT `𝒰 : FinCover ⊤`
+  in a naive formulation, which fails to typecheck: `NZ1 T 𝒰.U` requires `𝒰.n = T.n`
+  definitionally, false for a free `𝒰` variable); (3) `trade_evalAt`/`Z1.rel_res_evalAt`
+  (the "repr_cocycle" pattern: evaluate a `Z1`-cocycle relation or the trade equation
+  pointwise via `MeroGermOn.evalAt`, needed Compat lemmas `MeroGermOn.evalAt_neg/_sub/_zero`
+  and `LinSysOn.ord_nonneg`); (4) **`tradePi_surjective`** (Forster 14.6(a) upgraded to the
+  Banach layer, §5 steps 1-6, consuming dolbeault's `exists_trade` at the good cover
+  `T.coverStar`); (5) `classMap`/`classMap_tradeDiff_eq_zero`/`classMap_surjective` (§5 steps
+  8-9, the two Schwartz-consumer properties, the second via a second `exists_trade`
+  application at `T.coverW` plus the germ-roundtrip lemma `toGermZ1W_boundZ1`). Zero sorries.
+  **The load-bearing gotcha, discovered and worked around repeatedly** (flagged for ANY future
+  unit manipulating `Z1 D 𝒰`/`LinSysOn`/`MeroGermOn` values across *definitionally-but-not-
+  syntactically* equal `FinCover`/`Opens` arguments): a DOUBLY-NESTED type ascription
+  `((e : A) : B)` where `e`'s natural type needs TWO coercion/defeq steps to reach `B` (e.g.
+  `Z1 D 𝒰 → C1 D 𝒰 → (ascribe LinSysOn at a different-but-equal domain) → (ascribe further to
+  MeroGermOn)`) triggers either a hard `isDefEq` REJECTION or a multi-minute stall, even though
+  EACH INDIVIDUAL step, done as a SEPARATE named `def`/`have` (forcing full elaboration to a
+  concrete intermediate type before the next coercion), is instant. Fix pattern used throughout
+  (`starPairMem`/`starPairGerm`, `cC1`/`cCompMem`/`cComp`, `vMem`/`vGerm`, `wPairMem`/`wPairGerm`):
+  split into TWO one-step named `def`s, never write the combined ascription inline. A second,
+  unrelated gotcha: `exists_trade`/`resZ1`/`resH1` calls with `τ := id` positioned BEFORE the
+  `hτ : IsRefIdx 𝒰 𝒱 τ` argument (in the natural left-to-right call order) let Lean's elaborator
+  prematurely unify `𝒱 := 𝒰` from `id`'s domain/codomain equality *before* `hτ` is even looked
+  at, silently producing the WRONG cover; fix: name `𝒰`/`𝒱` (and often `D`) explicitly via
+  `(𝒰 := ...) (𝒱 := ...)` at the call site, e.g. `exists_trade (𝒰 := T.coverStar)
+  (𝒱 := T.coverW) (D := ...) (h𝒰 := ...) (hτ := ...) (τ := id) (f := ...)`.
+- [finiteness] Jacobian/Finiteness/H1Finite.lean OK (82 lines) — `toH1_coverW_surjective`
+  (push Leray's `T.coverStar`-level surjectivity down along `T.ref_star_W`),
+  `finiteDimensional_h1Cover_W` (the Schwartz cospan assembly, one line combining
+  `TradeBounded.lean`'s five exports), **`finiteDimensional_H1_zero`** (the unit's headline
+  instance), **`finiteDimensional_H1`** (all-`D`, via cech's six-term fragment — `D' := D ⊔ 0`,
+  `H1Incl_surjective` caps `H1 D'`, `ker(H1Incl D h) = range(windowConnect h)` via
+  `LinearMap.exact_iff` caps the gap). Zero sorries. **Gotcha, confirmed and resolved** (cech's
+  own build-log flagged this but left it unresolved): `AddCommGroup (H1 D)` genuinely does NOT
+  resolve via `inferInstance`/`infer_instance` at ANY heartbeat budget (not a timeout — a
+  real "can't find" failure, root-caused to the `∀ 𝒰, AddCommGroup (H1Cover D 𝒰)` hypothesis
+  `Module.DirectLimit.addCommGroup` needs, which typeclass search can't discharge automatically
+  even when the pointwise fact is separately provided as a local `haveI`). Fix: register
+  `addCommGroup_H1 (D) : AddCommGroup (H1 D) := Module.DirectLimit.addCommGroup (fun 𝒰 => ...)
+  (fun _ _ h => resH1' D h)` as a **global `noncomputable instance`** (a `def`/local `haveI`
+  is NOT enough — the `FiniteDimensional`/`Module.Finite` abbrevs need the instance findable
+  at the TYPE-elaboration stage of the theorem *statement* itself, before any tactic runs).
+  Once registered globally, its `.toAddCommMonoid` IS `rfl`-defeq to the `Module.DirectLimit.
+  addCommMonoid` instance already baked into `H1Incl`'s type (verified directly) — so
+  `FiniteDimensional.of_linearMap_ker_range (H1Incl D h)` typechecks with NO further diamond,
+  *provided* no competing local `haveI` for the same instance shadows the global one (a local
+  `haveI := addCommGroup_H1 D` inside a proof that ALSO has the global instance in scope causes
+  a spurious "synthesized instance is not definitionally equal" error — drop the redundant
+  local `haveI` once the global instance is registered).
+- [finiteness] Jacobian/Finiteness/Chi.lean OK (205 lines) — `finiteDimensional_linSys` (all-`D`
+  finiteness of `L(D)`, same six-term recipe as `H1Finite.lean` applied to `windowMap` instead
+  of `H1Incl`), the χ ledger `h1`/`chi`, `sixterm_ranks` (the shared rank-nullity bookkeeping,
+  split into three independent private lemmas `sixterm_rank1/2/3` — bundling them into one
+  `refine ⟨p, q, ?_, ?_, ?_⟩` with `p`/`q` as `set`-bound locals caused HYPOTHESES from one
+  bullet's `set ... with h_def` to leak into sibling bullets' `omega` calls as spurious extra
+  atoms, once via cross-bullet contamination that took several iterations to diagnose; three
+  fully separate top-level lemmas sidestep it entirely), `chi_of_le`/`chi_single_add`
+  (needs a `degree_single` Compat lemma, `Function.locallyFinsuppWithin.single` not upstreamed
+  with a degree fact)/`chi_eq_chi_zero_add_degree`, **`chi_zero_add_degree_le_l`** and
+  **`exists_ne_zero_mem_linSys`** (canonical-forms' §D9 Existence-gate names, verified against
+  `docs/design/canonical-forms.md` §1.5's frozen quote — exact match), `l_mono`/
+  `l_le_l_add_degree`/`h1_le_of_le`/`h1_le_h1_add_degree`. Zero sorries. Needs `[ConnectedSpace X]`
+  on `finiteDimensional_linSys`/`sixterm_rank1`/`sixterm_rank2`/`chi`/`chi_of_le` and everything
+  downstream (Liouville, via `L(0) = span{1}`, is the base case for `L(D')`'s finiteness) —
+  `sixterm_rank3`/`h1_le_of_le`-style h1-only facts do NOT need it (H1's finiteness is
+  unconditional per `H1Finite.lean`). Small gotcha: `Module.finrank_top`'s actual name is
+  bare root-level `finrank_top` (not `Module.finrank_top`), despite living in a file that
+  mostly uses the `Module.` prefix convention.
+- [finiteness] Jacobian/Finiteness.lean (unit root) OK — `scripts/check.sh Jacobian/Finiteness`
+  passes: builds clean, **zero sorries** across all 7 files + root (1964 lines total:
+  Schwartz 213/BddHolo 330/CompactRestrict 126/Chain 401/TradeBounded 607/H1Finite 82/Chi 205).
+  **Unit COMPLETE** — both gates (cech six-term, dolbeault `Leray.lean`) closed during this
+  pass. NOT registered in `Jacobian.lean` per task hard rule (already imported there from a
+  prior session, unchanged). **Notes for canonical-forms**: the Existence gate is now OPEN —
+  `chi_zero_add_degree_le_l (D : RS.Divisor X) [ConnectedSpace X] : chi (0:RS.Divisor X) +
+  D.degree ≤ (RS.l D : ℤ)` and `exists_ne_zero_mem_linSys [ConnectedSpace X] {D}
+  (h : 0 < chi (0:RS.Divisor X) + D.degree) : ∃ f ∈ RS.LinSys D, f ≠ 0` exist at EXACTLY the
+  names/shapes `docs/design/canonical-forms.md` §1.5/§D9 record (frozen quote verified against
+  source at write time); `finiteDimensional_linSys`/`l_mono` also ready. **Notes for
+  riemann-roch**: `chi_eq_chi_zero_add_degree (D) : chi D = chi (0:RS.Divisor X) + D.degree`
+  is the frozen shape (their RR statement is this plus tail-Serre's `h1 D = l(K-D)` and
+  cech-h1-genus's `h1 0 = g`); `h1`/`chi` definitions frozen as `chi D := (l D:ℤ) - (h1 D:ℤ)`.
+  **Notes for laurent-tails**: `finiteDimensional_H1 D` (instance, unconditional — no
+  `ConnectedSpace` needed), `h1`, `h1_le_of_le`. **Notes for tail-duality/serre-duality-cech**:
+  `finiteDimensional_H1 D` discharges their pairing-nondegeneracy finiteness hypothesis
+  directly as an instance (no extra argument needed at call sites).
