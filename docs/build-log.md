@@ -507,3 +507,51 @@
   unit. Any consumer needing the FULL (non-chart-disk) `H¹(X, 𝒪_D) = 0` Čech-cohomological
   vanishing for GENERAL divisors `D` on general covers still needs the deferred
   `subsingleton_h1Cover_of_isChartDisk` (general-divisor twist) — not delivered.
+- [mono] Jacobian/Monodromy/OpenLocus.lean OK (88 lines, ~5s) — the open pole/zero-free locus
+  relativization engine: `openLocus`/`openLocusOfFinite` (closed/finite bad set ↦ `Opens X`),
+  `Path.liftOpenLocus`/`.liftOpenLocus_extend`. Confirms design's central risk resolved for free:
+  `ChartedSpace ℂ`/`IsManifold 𝓘(ℂ) ω` on an `Opens X` resolve by bare `inferInstance`
+  (`TopologicalSpace.Opens.instChartedSpace` + its derived `IsManifold` instance), so `Path/`'s
+  entire per-path API (`IsPrimitiveAlong`, `exists_isPrimitiveAlong`, `pathIntegral`, …) applies to
+  the locus by direct instantiation — matches `scratch_mono.lean`'s spike, no wrapper layer needed.
+  Gotcha (Lean, not math): `Path.foo` declared inside `namespace RS.Monodromy` is NOT found by dot
+  notation (`γ.foo`) since `Path` is a mathlib root-namespace type and dot-notation resolves the
+  literal declared namespace of the type's head symbol, not the caller's enclosing namespace
+  (unlike plain identifier resolution, which does search ancestor namespaces) — call these by the
+  qualified name `Path.foo γ ...` instead. Zero sorries.
+- [mono] Jacobian/Monodromy/LogContinuation.lean OK (302 lines, ~9s) — the DAG-critical
+  deliverable: `poleZeroLocus f` (pole/zero-free open locus of `f : ℳ X`), `dlogForm f hf : Form1
+  (poleZeroLocus f)` (the `df/f` logarithmic-derivative 1-form), `exp_eq_holoRepr_of_isPrimitiveAlong`
+  (any primitive of `dlogForm`, normalized at the start, is an honest continuous branch of `log f`:
+  `exp (F t) = f.holoRepr (γ.extend t)`), `exists_logBranchAlong`/`logBranchAlong_unique`
+  (existence with prescribed initial value / uniqueness, both citations of `Path`'s own
+  existence/`sub_eq_sub` API). DEVIATION from the design doc's literal proof plan: `dlogForm` is
+  built by *reusing* `Jacobian/Forms/MDifferential.lean`'s `RS.mdifferential`/`RS.Form1.smulFun`
+  (both already proved generically over any surface satisfying the standing hypotheses),
+  instantiated with `X := poleZeroLocus f`, rather than hand-rolling a `Form1CoeffData` with
+  shrunk-ball charts + a manual chart-transition/`subtypeRestr` compat computation as the design
+  sketched — `f.holoRepr` restricted to the locus is `ContMDiff` (mathlib's `contMDiffAt_subtype_iff`,
+  a per-point statement — smoothness of an open-submanifold restriction needs no shrinking) and
+  nonvanishing everywhere on the locus BY CONSTRUCTION (no continuity-propagation/ball-shrinking
+  argument needed either), so the whole `Form1CoeffData` route (and its `dlogCoeffAt`/chart-overlap
+  compat lemma) turned out to be unnecessary; `ContMDiff.inv₀` (`Mathlib.Geometry.Manifold.Algebra
+  .LieGroup`, needs a `ContMDiffInv₀` instance for `ℂ` — present generically for any
+  `NontriviallyNormedField`) gives the inverse's smoothness for `Form1.smulFun`. Result: shorter,
+  and it sidesteps the design's flagged R2 risk (order-zero-iff-nonvanishing lemma name) by a
+  different, self-contained route (`AnalyticAt.meromorphicNFAt` +
+  `MeromorphicNFAt.meromorphicOrderAt_eq_zero_iff`, `Mathlib.Analysis.Meromorphic.NormalForm`).
+  GOTCHA (real Lean elaboration hazard, cost ~1hr): using `Path.liftOpenLocus (finite_support_divisor
+  f).isClosed γ hγ` directly (typed in `openLocusOfFinite (finite_support_divisor f)`) alongside
+  `dlogForm f hf : Form1 (poleZeroLocus f)` in the SAME theorem signature causes a `synthInstance`
+  failure for `IsManifold … ↥(openLocus ⋯)` — even though each half resolves fine in isolation, and
+  even marking `poleZeroLocus` `@[reducible]` does not help (confirmed by `trace.Meta.synthInstance`:
+  the ChartedSpace instance candidate gets built against the WRONG (defeq but syntactically
+  different) locus expression). FIX: a thin dedicated `Path.liftPoleZeroLocus`/`_extend` (not
+  routed through `Path.liftOpenLocus` at all) landing directly in `poleZeroLocus f` syntactically —
+  once the two occurrences of "the locus" in a signature are the SAME term, the problem disappears.
+  Record this pattern for any future unit combining a `def`-wrapped `Opens X` with a
+  path-lifting/subtype-construction helper of a MORE GENERAL underlying tool. Zero sorries.
+- [mono] Jacobian/Monodromy.lean (unit root) OK (67 lines, ~4s; `scripts/check.sh
+  Jacobian/Monodromy` passes, zero sorries — unit COMPLETE). NB: `Jacobian.lean` was NOT touched
+  (out of scope per this builder's hard rules) — the root import registration is left for
+  whoever assembles `Jacobian/Challenge.lean` / integrates units, or a future pass.

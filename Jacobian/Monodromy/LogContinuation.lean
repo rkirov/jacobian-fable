@@ -65,6 +65,45 @@ theorem mem_poleZeroLocus_iff {f : ℳ X} (hf : f ≠ 0) {x : X} :
     · exact absurd h (RS.Mero.ord_ne_top hf x)
   · exact Or.inl
 
+/-- Lift a path avoiding `f`'s zeros/poles into `poleZeroLocus f`.
+
+NB: this is a thin specialization of `Path.liftOpenLocus` (`OpenLocus.lean`) landing *directly* in
+`poleZeroLocus f` rather than in the definitionally-equal-but-syntactically-different
+`openLocusOfFinite (finite_support_divisor f)`. This is not cosmetic: with the general
+`Path.liftOpenLocus (finite_support_divisor f).isClosed γ hγ` spelling, `X`'s `ChartedSpace`/
+`IsManifold` instance search for `RS.IsPrimitiveAlong`/`RS.Form1` gets confused whenever both that
+term's type and a separately-mentioned `poleZeroLocus f` (from `dlogForm f hf`) occur in the same
+elaboration problem — Lean's instance cache keys on the syntactic form, and the two (defeq) forms
+of the locus type produce inconsistent cached instance terms, a `synthInstance` failure with no
+direct paper-mathematics content (confirmed by direct trace inspection: `Opens.instChartedSpace`
+resolves correctly for either form in isolation, but not when both appear together). Landing
+`liftPoleZeroLocus`'s output type in `poleZeroLocus f` syntactically, once and for all, sidesteps
+the issue for every downstream use. -/
+def Path.liftPoleZeroLocus {f : ℳ X} {x y : X} (γ : Path x y)
+    (hγ : ∀ t : ↥unitInterval, γ t ∉ (RS.divisor f).support) :
+    Path (⟨x, (mem_openLocusOfFinite (RS.finite_support_divisor f)).mpr (γ.source ▸ hγ 0)⟩
+        : poleZeroLocus f)
+      (⟨y, (mem_openLocusOfFinite (RS.finite_support_divisor f)).mpr (γ.target ▸ hγ 1)⟩
+        : poleZeroLocus f) where
+  toFun t := ⟨γ t, (mem_openLocusOfFinite (RS.finite_support_divisor f)).mpr (hγ t)⟩
+  continuous_toFun := by fun_prop
+  source' := by simp [γ.source]
+  target' := by simp [γ.target]
+
+omit [ConnectedSpace X] in
+/-- The lift's `extend` recovers `γ.extend` pointwise. -/
+theorem Path.liftPoleZeroLocus_extend {f : ℳ X} {x y : X} (γ : Path x y)
+    (hγ : ∀ t : ↥unitInterval, γ t ∉ (RS.divisor f).support) (t : ℝ) :
+    ((Path.liftPoleZeroLocus γ hγ).extend t : X) = γ.extend t := by
+  by_cases ht : t ≤ 0
+  · rw [(Path.liftPoleZeroLocus γ hγ).extend_of_le_zero ht, γ.extend_of_le_zero ht]
+  · rw [not_le] at ht
+    by_cases ht1 : t ≤ 1
+    · rw [(Path.liftPoleZeroLocus γ hγ).extend_apply ⟨ht.le, ht1⟩, γ.extend_apply ⟨ht.le, ht1⟩]
+      rfl
+    · rw [not_le] at ht1
+      rw [(Path.liftPoleZeroLocus γ hγ).extend_of_one_le ht1.le, γ.extend_of_one_le ht1.le]
+
 /-! ### `f.holoRepr` restricted to the locus is a nonvanishing holomorphic function -/
 
 theorem contMDiff_holoRepr_poleZeroLocus (f : ℳ X) (hf : f ≠ 0) :
@@ -138,11 +177,11 @@ normalized so that `exp (F 0) = f.holoRepr x`: `exp (F t) = f.holoRepr (γ.exten
 branch-cut case analysis on `Complex.log`/`Complex.arg` anywhere. -/
 theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X} {γ : Path x y}
     (hγ : ∀ t : ↥unitInterval, γ t ∉ (RS.divisor f).support) {F : ℝ → ℂ}
-    (hF : RS.IsPrimitiveAlong (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ)
+    (hF : RS.IsPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf) F)
     (hc₀ : Complex.exp (F 0) = f.holoRepr x) :
     ∀ t : ℝ, Complex.exp (F t) = f.holoRepr (γ.extend t) := by
-  set γ' := Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ with hγ'_def
+  set γ' := Path.liftPoleZeroLocus γ hγ with hγ'_def
   set H : ℝ → ℂ := fun t => f.holoRepr (γ.extend t) * Complex.exp (-(F t)) with hH_def
   have hlc : IsLocallyConstant H := by
     rw [IsLocallyConstant.iff_eventually_eq]
@@ -152,6 +191,7 @@ theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X}
     obtain ⟨g', hg', hFeq'⟩ := hF.rechart (mem_univ t₀)
       γ'.continuous_extend.continuousWithinAt
       (IsManifold.chart_mem_maximalAtlas p₀) (mem_chart_source ℂ p₀)
+    rw [nhdsWithin_univ] at hFeq'
     -- restrict the local-primitive data to the (open) chart target, where `coeffIn_dlogForm`
     -- gives the explicit `(f'/f)`-shaped coefficient formula
     have hg'' : ∀ᶠ z in 𝓝 (e p₀), HasDerivAt g'
@@ -189,10 +229,9 @@ theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X}
               -((f.holoRepr ((e.symm z : X)))⁻¹ *
                   deriv ((fun p : poleZeroLocus f => f.holoRepr (p : X)) ∘ ⇑e.symm) z)) = 0 := by
         have hcancel := mul_inv_cancel₀ hne
-        field_simp
         linear_combination
-          (deriv ((fun p : poleZeroLocus f => f.holoRepr (p : X)) ∘ ⇑e.symm) z *
-            Complex.exp (-(g' z))) * hcancel
+          (-(deriv ((fun p : poleZeroLocus f => f.holoRepr (p : X)) ∘ ⇑e.symm) z *
+            Complex.exp (-(g' z)))) * hcancel
       rwa [hval] at hprod
     have hφconst : φ =ᶠ[𝓝 (e p₀)] fun _ => φ (e p₀) :=
       RS.eventuallyEq_of_hasDerivAt_eq hφderiv
@@ -200,25 +239,29 @@ theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X}
     -- transport back along `t ↦ e (γ'.extend t)`, continuous at `t₀` with value `e p₀`
     have hktendsto : Tendsto (fun t => e (γ'.extend t)) (𝓝 t₀) (𝓝 (e p₀)) :=
       (e.continuousAt (mem_chart_source ℂ p₀)).comp γ'.continuous_extend.continuousAt
-    have hHeq : ∀ᶠ t in 𝓝 t₀, H t = φ (e (γ'.extend t)) := by
-      rw [← nhdsWithin_univ]
-      filter_upwards [hFeq'] with t ht
+    have hHeq_of : ∀ {t : ℝ}, γ'.extend t ∈ e.source ∧ F t = g' (e (γ'.extend t)) →
+        H t = φ (e (γ'.extend t)) := by
+      intro t ht
       show f.holoRepr (γ.extend t) * Complex.exp (-(F t)) =
         f.holoRepr ((e.symm (e (γ'.extend t)) : X)) * Complex.exp (-(g' (e (γ'.extend t))))
-      rw [e.left_inv ht.1, ← ht.2, Path.liftOpenLocus_extend]
+      rw [e.left_inv ht.1, ← ht.2, Path.liftPoleZeroLocus_extend]
+    have hHeq : ∀ᶠ t in 𝓝 t₀, H t = φ (e (γ'.extend t)) := hFeq'.mono fun t ht => hHeq_of ht
+    have hHt₀ : H t₀ = φ (e p₀) := hHeq_of hFeq'.self_of_nhds
     filter_upwards [hHeq, hktendsto.eventually hφconst] with t ht1 ht2
-    rw [ht1, ht2]
+    rw [ht1, ht2, hHt₀]
   have h0 : H 0 = 1 := by
     show f.holoRepr (γ.extend 0) * Complex.exp (-(F 0)) = 1
-    rw [γ.extend_zero, ← hc₀, ← Complex.exp_neg, ← Complex.exp_add, neg_add_cancel,
-      Complex.exp_zero]
+    rw [γ.extend_zero, ← hc₀, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
   intro t
   have hHt : H t = H 0 := hlc.apply_eq_of_preconnectedSpace t 0
   rw [h0] at hHt
-  have key : f.holoRepr (γ.extend t) * Complex.exp (-(F t)) * Complex.exp (F t) =
-      1 * Complex.exp (F t) := by rw [hHt]
-  rwa [mul_assoc, ← Complex.exp_add, neg_add_cancel, Complex.exp_zero, mul_one, one_mul,
-    eq_comm] at key
+  have hexpand : H t * Complex.exp (F t) = f.holoRepr (γ.extend t) := by
+    show f.holoRepr (γ.extend t) * Complex.exp (-(F t)) * Complex.exp (F t) =
+      f.holoRepr (γ.extend t)
+    rw [mul_assoc, ← Complex.exp_add, neg_add_cancel, Complex.exp_zero, mul_one]
+  calc Complex.exp (F t) = 1 * Complex.exp (F t) := (one_mul _).symm
+    _ = H t * Complex.exp (F t) := by rw [hHt]
+    _ = f.holoRepr (γ.extend t) := hexpand
 
 /-! ### Existence and uniqueness of a log branch with a prescribed initial value -/
 
@@ -227,13 +270,14 @@ any path avoiding the zeros/poles of `f`, starting at a chosen `c₀` with `exp 
 theorem exists_logBranchAlong {f : ℳ X} (hf : f ≠ 0) {x y : X} (γ : Path x y)
     (hγ : ∀ t : ↥unitInterval, γ t ∉ (RS.divisor f).support) {c₀ : ℂ}
     (hc₀ : Complex.exp c₀ = f.holoRepr x) :
-    ∃ F : ℝ → ℂ, RS.IsPrimitiveAlong (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ)
+    ∃ F : ℝ → ℂ, RS.IsPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf) F ∧ F 0 = c₀ ∧ ∀ t : ℝ, Complex.exp (F t) = f.holoRepr (γ.extend t) := by
   obtain ⟨F₀, hF₀, hF₀0⟩ :=
-    RS.exists_isPrimitiveAlong (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ)
+    RS.exists_isPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf)
-  refine ⟨fun t => F₀ t + c₀, hF₀.add_const c₀, by rw [hF₀0, zero_add], ?_⟩
+  refine ⟨fun t => F₀ t + c₀, hF₀.add_const c₀, by show F₀ 0 + c₀ = c₀; rw [hF₀0, zero_add], ?_⟩
   refine exp_eq_holoRepr_of_isPrimitiveAlong hf hγ (hF₀.add_const c₀) ?_
+  show Complex.exp (F₀ 0 + c₀) = f.holoRepr x
   rw [hF₀0, zero_add]
   exact hc₀
 
@@ -241,14 +285,14 @@ theorem exists_logBranchAlong {f : ℳ X} (hf : f ≠ 0) {x y : X} (γ : Path x 
 everywhere — no new proof, a direct instantiation over the open locus. -/
 theorem logBranchAlong_unique {f : ℳ X} (hf : f ≠ 0) {x y : X} {γ : Path x y}
     {hγ : ∀ t : ↥unitInterval, γ t ∉ (RS.divisor f).support} {F F' : ℝ → ℂ}
-    (hF : RS.IsPrimitiveAlong (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ)
+    (hF : RS.IsPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf) F)
-    (hF' : RS.IsPrimitiveAlong (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ)
+    (hF' : RS.IsPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf) F')
     (h0 : F 0 = F' 0) : F = F' := by
   funext t
   have h := hF.sub_eq_sub isPreconnected_univ
-    (Path.liftOpenLocus (RS.finite_support_divisor f).isClosed γ hγ).continuous_extend.continuousOn
+    (Path.liftPoleZeroLocus γ hγ).continuous_extend.continuousOn
     hF' (mem_univ (0 : ℝ)) (mem_univ t)
   rw [h0, sub_self] at h
   exact sub_eq_zero.mp h
