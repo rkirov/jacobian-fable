@@ -474,6 +474,35 @@ theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
     exact hw
   exact (hAnalytic.congr hgoal_eq.symm).contDiffAt
 
+/-! ### Functoriality of `inducedHom` (requested by jacobian-functoriality,
+`docs/requests/jacobian-construction.md`) -/
+
+/-- `inducedHom` at the identity is the identity (`QuotientAddGroup.map` functoriality). -/
+theorem inducedHom_id [FiniteDimensional ℂ V] [CompleteSpace V] (L : AddSubgroup V)
+    (hT : L ≤ L.comap (LinearMap.id (R := ℂ) (M := V)).toAddMonoidHom) :
+    inducedHom L L LinearMap.id hT = ContinuousAddMonoidHom.id (V ⧸ L) := by
+  ext q
+  refine QuotientAddGroup.induction_on q fun v => ?_
+  show inducedHom L L LinearMap.id hT (QuotientAddGroup.mk v) = QuotientAddGroup.mk v
+  rw [inducedHom_apply_mk]
+  rfl
+
+/-- `inducedHom` is compositional (`QuotientAddGroup.map` functoriality). -/
+theorem inducedHom_comp {V'' : Type*} [NormedAddCommGroup V''] [NormedSpace ℂ V'']
+    [CompleteSpace V''] [FiniteDimensional ℂ V''] [CompleteSpace V']
+    (L : AddSubgroup V) (L' : AddSubgroup V') (L'' : AddSubgroup V'')
+    (T : V →ₗ[ℂ] V') (T' : V' →ₗ[ℂ] V'')
+    (hT : L ≤ L'.comap T.toAddMonoidHom) (hT' : L' ≤ L''.comap T'.toAddMonoidHom)
+    (hTT' : L ≤ L''.comap (T'.comp T).toAddMonoidHom) :
+    (inducedHom L' L'' T' hT').comp (inducedHom L L' T hT)
+      = inducedHom L L'' (T'.comp T) hTT' := by
+  ext q
+  refine QuotientAddGroup.induction_on q fun v => ?_
+  show inducedHom L' L'' T' hT' (inducedHom L L' T hT (QuotientAddGroup.mk v))
+    = inducedHom L L'' (T'.comp T) hTT' (QuotientAddGroup.mk v)
+  rw [inducedHom_apply_mk, inducedHom_apply_mk, inducedHom_apply_mk]
+  rfl
+
 end InducedHom
 
 end RS
