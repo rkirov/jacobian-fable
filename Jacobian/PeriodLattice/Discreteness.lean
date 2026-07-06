@@ -257,16 +257,19 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
     intro j
     by_cases hj : x j = a j
     · rw [if_pos hj]
+      have hjnS : j ∉ S := fun hjS => (hSmem.mp hjS) hj
+      have hij_ne : ∀ i : (↥S : Type), (i : Fin (genus X)) ≠ j := by
+        intro i hij
+        exact hjnS (by rw [← hij]; exact i.2)
       apply hFord0
-      · intro i
-        by_contra heq
-        exact (hVdisj (Subtype.coe_ne_coe.mpr (fun h => (i:Fin (genus X)).2 ▸ h ▸
-          (hSmem.mp i.2) rfl))).le_bot ⟨haV j, heq ▸ haV i.1⟩
-      · intro i
-        by_contra heq
-        rcases eq_or_ne j (i:Fin (genus X)) with hji | hji
-        · exact (hSmem.mp i.2) (hji ▸ hj)
-        · exact (hVdisj hji).le_bot ⟨haV j, heq ▸ hVj i.1⟩
+      · intro i heq
+        have heq' : a j = a (i : Fin (genus X)) := heq
+        have hmem2 : a j ∈ V (i : Fin (genus X)) := by rw [heq']; exact haV i.1
+        exact Set.disjoint_left.mp (hVdisj (hij_ne i).symm) (haV j) hmem2
+      · intro i heq
+        have heq' : a j = x (i : Fin (genus X)) := heq
+        have hmem2 : a j ∈ V (i : Fin (genus X)) := by rw [heq']; exact hVj i.1
+        exact Set.disjoint_left.mp (hVdisj (hij_ne i).symm) (haV j) hmem2
     · rw [if_neg hj]
       exact hForda ⟨j, hSmem.mpr hj⟩
   have hΘres : ∀ k j, (Θ k).resAt (a j) = A k j * c j := by
@@ -281,13 +284,16 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
         (c₀ j) = RS.resAt (fun z => F.holoRepr ((e j).symm z) * coeffIn (e j) (basis X k) z)
           (c₀ j) := resAt_congr (hcoeffAt.filter_mono nhdsWithin_le_nhds)
     have hmerF : MeromorphicAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) :=
-      MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F ((e j).symm (c₀ j)) (mem_univ _)
+      (meromorphicAtX_iff_of_mem_source (he j) (mem_chart_source ℂ (a j))).mp
+        (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j) (mem_univ _))
     have hordF : (-1 : WithTop ℤ) ≤ meromorphicOrderAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) := by
       have := Mero.ord_eq_meromorphicOrderAt_holoRepr F (a j)
       rw [hc₀_def]
       show ((-1 : ℤ) : WithTop ℤ) ≤ meromorphicOrderAt (F.holoRepr ∘ ⇑(e j).symm) (e j (a j))
       rw [← this, hFordAll j]
-      split_ifs <;> norm_num
+      split_ifs with hcase
+      · decide
+      · decide
     have hanalytic : AnalyticAt ℂ (coeffIn (e j) (basis X k)) (c₀ j) :=
       (basis X k).analyticAt_coeffAt (a j)
     have hmul := resAt_analyticAt_mul hanalytic hmerF hordF
@@ -296,24 +302,22 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       funext z; show F.holoRepr ((e j).symm z) * _ = _ * F.holoRepr ((e j).symm z); ring
     show RS.resAt ((MFormData.smul F (MFormData.ofForm1 (basis X k))).coeffAt (a j)) (c₀ j) = _
     rw [hresrw, hfun, hmul]
-    have : Finset.Icc (-1 : ℤ) (-1) = {-1} := rfl
-    rw [this, Finset.sum_singleton]
+    have hIcc : Finset.Icc (-1 : ℤ) (-1) = {-1} := rfl
+    rw [hIcc, Finset.sum_singleton]
     show taylorCoeffAt (coeffIn (e j) (basis X k)) (c₀ j) (-1 - (-1)).toNat
       * laurentCoeffAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) (-1) = A k j * c j
     norm_num
-    rw [taylorCoeffAt_zero_apply]
-    show coeffIn (e j) (basis X k) (c₀ j) * RS.resAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) = A k j * c j
-    rw [hAij k j]
+    rw [hAij k j, hc_def]
+    rfl
   have hcS : c j₀ ≠ 0 := by
     have hordj₀ : F.ord (a j₀) = -1 := by rw [hFordAll]; simp [hj₀]
     have hordeq : meromorphicOrderAt (F.holoRepr ∘ ⇑(e j₀).symm) (c₀ j₀) = -1 := by
       rw [← Mero.ord_eq_meromorphicOrderAt_holoRepr, hordj₀]
     have hmerF : MeromorphicAt (F.holoRepr ∘ ⇑(e j₀).symm) (c₀ j₀) :=
-      MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F ((e j₀).symm (c₀ j₀)) (mem_univ _)
+      (meromorphicAtX_iff_of_mem_source (he j₀) (mem_chart_source ℂ (a j₀))).mp
+        (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j₀) (mem_univ _))
     have := laurentCoeffAt_order_ne_zero hmerF (by rw [hordeq]; simp)
     rwa [hordeq] at this
-  have hpole_confined : ∀ k x, x ∉ (Finset.univ.image a : Set (Fin (genus X))) → False → True := by
-    intros; trivial
   have hressum : ∀ k, ∀ x' ∉ (Finset.univ.image a : Set X), (Θ k).resAt x' = 0 := by
     intro k y hy
     have hordΘ : 0 ≤ (Θ k).ord y := by
@@ -322,18 +326,17 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       rw [MForm.ord_smul_mero]
       by_cases hyx : ∃ i : (↥S : Type), y = x' i
       · obtain ⟨i, hi⟩ := hyx
-        have : F.ord y = 1 := hi ▸ hFordx i
-        rw [this]
-        have := MForm.ofForm1_ord_nonneg (basis X k) y
-        exact le_trans (by norm_num) (add_le_add_left this 1)
+        have hFy : F.ord y = 1 := hi ▸ hFordx i
+        rw [hFy]
+        exact add_nonneg (by decide) (MForm.ofForm1_ord_nonneg (basis X k) y)
       · push_neg at hyx
         have hya : ∀ i : (↥S : Type), y ≠ a' i := by
           intro i hcon
           exact hy (Finset.mem_coe.mpr (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, hcon.symm⟩))
-        have : F.ord y = 0 := hFord0 y hya hyx
-        rw [this]
+        have hFy : F.ord y = 0 := hFord0 y hya hyx
+        rw [hFy]
         simpa using MForm.ofForm1_ord_nonneg (basis X k) y
-    exact resAt_eq_zero_of_ord_nonneg hordΘ
+    exact MForm.resAt_eq_zero_of_ord_nonneg hordΘ
   have hsupp : ∀ k, Function.support (fun x => (Θ k).resAt x) ⊆
       (Finset.univ.image a : Set X) := by
     intro k y hy
@@ -346,12 +349,12 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
     simp only [hΘres] at hthm
     exact hthm
   have hcne : c ≠ 0 := fun h => hcS (by rw [h]; rfl)
-  have : ∃ v : Fin (genus X) → ℂ, v ≠ 0 ∧ A *ᵥ v = 0 := by
+  have hex : ∃ v : Fin (genus X) → ℂ, v ≠ 0 ∧ Matrix.mulVec A v = 0 := by
     refine ⟨c, hcne, ?_⟩
     funext k
     show ∑ j, A k j * c j = 0
     exact hsum0 k
-  exact hAdet (Matrix.exists_mulVec_eq_zero_iff.mp this)
+  exact hAdet (Matrix.exists_mulVec_eq_zero_iff.mp hex)
 
 /-- **Discreteness discharge**: `genus X = 0` handled by the subsingleton argument; `genus X ≥ 1`
 via `exists_isolating_nhds_periodSubgroup`. -/

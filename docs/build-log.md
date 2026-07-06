@@ -2040,3 +2040,72 @@
   `Jacobian/Abel/Sufficiency.lean`, `Jacobian/Abel/OfCurveInj.lean`, `Jacobian/Abel.lean`
   (imports + docstring), `docs/build-log.md` (this entry). `Jacobian.lean` (root orchestrator) NOT
   touched, per task hard rule; `Jacobian/Abel` is still not registered there (orchestrator's job).
+- [plr] `Jacobian/PeriodLattice/` OK — period-lattice-rank (#31), the final deep analytic unit,
+  built to the design's exact §6 file plan (`Membership.lean`, `GenericPoints.lean`, `Segment.lean`
+  (new, not in the original 5-file plan — the in-chart segment-path + its `pathIntegral` formula,
+  factored out once since both `Discreteness.lean` Stage C and `Nondegeneracy.lean` step 2 need the
+  identical construction), `FormIdentity.lean`, `Nondegeneracy.lean`, `Discreteness.lean`,
+  `FullRank.lean`) + root `Jacobian/PeriodLattice.lean`. **`scripts/check.sh
+  Jacobian/PeriodLattice` passes, ZERO sorries** (3279 jobs).
+  * **Discreteness (Forster 21.3–21.4(a)(b)) — the unit's centerpiece, GATED**: `GenericPoints.lean`
+    proves `exists_genericPoints`/`det_genericMatrix_ne_zero` (§21.3, a strict-descending-finrank
+    induction over `genericKernel`, using T2 avoidance `nonempty_open_diff_finite` and a linear
+    map/matrix argument via `Fintype.linearIndependent_iff`/`Matrix.exists_vecMul_eq_zero_iff`).
+    `Discreteness.lean`'s `exists_isolating_nhds_periodSubgroup` builds Stage A (pairwise disjoint
+    chart-ball images via `Set.Finite.t2_separation`, shrinking radii by two nested
+    `Metric.isOpen_iff` extractions), Stage B (the local Jacobi map `𝔉 : ℂ^g → ℂ^g`, its
+    `HasStrictFDerivAt` built by hand via `HasDerivAt.comp_hasStrictFDerivAt` +
+    `hasStrictFDerivAt_apply` + `HasStrictFDerivAt.sum` + `hasStrictFDerivAt_pi`, identified with
+    the matrix CLM `(Matrix.mulVecLin A).toContinuousLinearMap` via `ContinuousLinearMap.ext`, det
+    transported via `LinearMap.det_toLin'` + `Matrix.toLin'_apply'`, then
+    `ContinuousLinearMap.toContinuousLinearEquivOfDetNeZero` +
+    `HasStrictFDerivAt.map_nhds_eq_of_equiv` give the isolating neighborhood), and Stage C (given
+    a nonzero period `t = 𝔉 w` in that neighborhood, the moved-coordinate index set
+    `S := {j | x j ≠ a j}` is nonempty; **`RS.Abel.exists_mero_of_periodVector_mem`, instantiated
+    at `ι := ↥S`, GATED on `RS.Abel.WeakSolutionUpgradeFinset X ↥S`**, produces `F : RS.Mero X`
+    with prescribed simple zeros/poles; `F • MForm.ofForm1 (basis X k)`'s residues at each `a j`
+    are computed via `resAt_analyticAt_mul` + `Mero.ord_eq_meromorphicOrderAt_holoRepr`, and
+    `RS.residueTheorem` (now UNCONDITIONAL, per residue-theorem's own landed unit — no separate
+    gate needed there, a finding that simplifies the design's original two-gate expectation to
+    one) forces `A.mulVec c = 0` for `c ≠ 0`, contradicting `det_genericMatrix_ne_zero`).
+    Universe gotcha inherited from `Jacobian/Abel`: `WeakSolutionUpgradeFinset X ι` needs `ι`
+    explicit, so the gate is threaded as `RS.DiscretenessHyp X := ∀ S : Finset (Fin (genus X)),
+    RS.Abel.WeakSolutionUpgradeFinset X (↥S : Type)`, and every discreteness-adjacent theorem
+    (`discreteTopology_periodSubgroup`, `periodSubgroup_topologicalClosure_eq`,
+    `discreteTopology_periodSubgroup_topologicalClosure`, `FullRank.lean`'s
+    `isZLattice_periodSubgroup_topologicalClosure`/`finrank_int_periodSubgroup`) takes it
+    explicitly — exactly Abel's own hypothesis-parameterized idiom, per the task's instruction.
+    One extra Lean gotcha: `IsZLattice ℝ L`'s class carries `[DiscreteTopology L]` as a genuine
+    instance argument of the *type itself*, so a theorem concluding `IsZLattice ℝ (…).
+    toIntSubmodule` cannot discharge that via an internal `haveI` (too late — the type is
+    elaborated before the tactic block runs); the fix is a `haveI := discreteTopology_… hupgrade;
+    IsZLattice …` **inside the theorem's own type**, a documented but easy-to-miss Lean 4 idiom
+    for instance-dependent conclusions.
+  * **Nondegeneracy (Forster 21.4(c)) — UNGATED, the design's own routing call vindicated**: the
+    maximum-principle route (`Nondegeneracy.lean`'s `form1_eq_zero_of_re_period_eq_zero`) needed no
+    Hodge/de Rham/dissection/2-form integral, exactly as designed: a real primitive `F` (built from
+    `PathConnectedSpace.somePath`, reusing jaccon's `OfCurve.lean` `Compat` instance) attains a max
+    on compact `X`; `AnalyticAt.eventually_constant_or_nhds_le_map_nhds` (mathlib's local open
+    mapping theorem) forces the local holomorphic primitive `g` locally constant there (the
+    non-constant branch contradicts the max via an explicit `g(e p) + δ/2` witness outside the
+    local-max half-plane); `FormIdentity.lean`'s clopen identity-theorem propagation
+    (`AnalyticOnNhd.eqOn_zero_of_preconnected_of_eventuallyEq_zero` on a chart ball) finishes.
+    `FullRank.lean`'s `span_real_periodSubgroup` (also ungated) is the linear-algebra shell:
+    `Submodule.exists_dual_map_eq_bot_of_lt_top` (vector spaces over a field are projective by
+    `inferInstance`) gives a nonzero real functional vanishing on `Λ`; complexifying it against the
+    `{Pi.single i 1, Pi.single i I}` "basis" (via `Finset.univ_sum_single` + `Pi.single_add`/
+    `_smul`) produces a nonzero form with vanishing real periods, contradicting nondegeneracy.
+  * **Segment.lean** (shared helper, ungated): `RS.segmentPath` (the in-chart straight-line path,
+    continuity via `ContinuousOn.comp_continuous` + `Convex.lineMap_mem`) and
+    `RS.pathIntegral_segmentPath` (its integral is the primitive's value-difference, via
+    `isPrimitiveAlongMap_of_ball` + `IsPrimitiveAlong.pathIntegral_eq`).
+  * **Final-assembly discharge shape** (recorded in the root docstring): once a sibling pass proves
+    `hproof : RS.DiscretenessHyp X` unconditionally, `instance : DiscreteTopology (RS.periodSubgroup
+    X).topologicalClosure := RS.discreteTopology_periodSubgroup_topologicalClosure hproof` and
+    `instance : IsZLattice ℝ (RS.periodSubgroup X).topologicalClosure.toIntSubmodule :=
+    RS.isZLattice_periodSubgroup_topologicalClosure hproof` are the only two lines final assembly
+    needs; `jacobian-construction`'s `Jacobian.instChartedSpace`/`instIsManifold`/`instLieAddGroup`/
+    `instCompactSpace` (`docs/Jacobian_challenge.lean:78-89`) then fire by instance search alone.
+  Files: `Jacobian/PeriodLattice/{Membership,GenericPoints,Segment,FormIdentity,Nondegeneracy,
+  Discreteness,FullRank}.lean` (all new) + `Jacobian/PeriodLattice.lean` (new, unit root/API
+  docstring). `Jacobian.lean` (root orchestrator) NOT touched, per task hard rule.

@@ -31,3 +31,4 @@ import Jacobian.TailDuality
 import Jacobian.H1Genus
 import Jacobian.RiemannRoch
 import Jacobian.GenusSphereHeadline
+import Jacobian.PeriodLattice
