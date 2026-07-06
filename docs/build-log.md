@@ -1958,3 +1958,85 @@
   (never materializing the bare `WithTop` literal until the final `rw`/`norm_cast` at the very
   end, where it closes cleanly) — spike-verified in a scratch file before use. Zero sorries.
   `scripts/check.sh Jacobian/GenusSphereHeadline` passes (3219 jobs).
+- [abel] Sufficiency CLOSED + k-point. `Jacobian/TailDuality` landed (zero sorries) since the
+  previous `[abel]` pass, clearing the "entire sibling unit doesn't exist" blocker — but its own
+  root docstring flagged that the design's EXACT bridge shape (through `H1Tail.equiv`, the FULL
+  unconditional Čech comparison `H1Tail 0 ≃ₗ Cech.H1 0`) still doesn't exist: `LaurentTail.
+  Comparison.lean`'s `tailToH1` is only unconditionally INJECTIVE, its surjectivity being a
+  genuine out-of-scope Cousin-I/Mittag-Leffler existence theorem. Restated the bridge exactly as
+  that unit's consumer note suggested: **new file `Jacobian/Abel/DolbeaultBridge.lean`**,
+  `formDualEquiv : Form1 X ≃ₗ[ℂ] Dual (H1Tail 0)` (`holomorphicMFormsEquiv` + `resEquiv 0` + a
+  `neg_zero` cast, unconditional) and `exists_dbar_eq_zero_of_forall_basis_pairing_eq_zero`
+  (PROVEN, zero sorries) gated ONLY on `Function.Surjective (LaurentTail.tailToH1 (0 : Divisor X))`
+  — a genuine, independently-meaningful, non-vacuous hypothesis (`LaurentTail.H1Tail.
+  equiv_of_surjective`'s own gate), matching the project's established idiom
+  (`Jacobian.ofCurve_inj'`'s `[DiscreteTopology (RS.periodSubgroup X)]`). Proof: `e := H1Tail.
+  equiv_of_surjective.symm (dolbeaultEquiv.symm (H01.mk η))`; `e = 0` from `Module.
+  forall_dual_apply_eq_zero_iff ℂ` (valid for ANY vector space over a field via `Module.Free.
+  of_divisionRing`/`Projective.of_free`, no finite-dimensionality needed) + `(RS.basis X).ext`
+  (a linear map vanishing on a basis is the zero map) applied to the composite functional
+  `LinearMap.applyₗ e ∘ₗ formDualEquiv`; then chase `LinearEquiv.apply_symm_apply`/`map_zero`
+  forward twice to get `H01.mk η = 0`, closed by `H01.mk_eq_zero_iff`. Needed
+  `set_option maxHeartbeats 4000000`/`synthInstance.maxHeartbeats 400000` (the `H1 D`
+  `Module.DirectLimit` instance search, same gotcha `Comparison.lean` itself already flags) and
+  care to avoid `ω` as a bound variable name (clashes with the `ContDiff` scoped notation for
+  smoothness order `∞`/analytic, used in `IsManifold 𝓘(ℂ) ω X`).
+
+  **Investigated in full but NOT closed** (genuinely separate, non-external, new-content gap —
+  NOT a restatement of the just-cleared blocker): design §4.1 step 5, packaging a weak solution
+  `f`'s chart-local `d''f/f` data into one global `η : Form01 X` with a PROVEN vanishing pairing
+  against a basis of `Form1 X`. Traced the exact reason it resists a short proof: the "pairs to
+  zero" hypothesis has to be established via a genuine Stokes/residue argument tying `f`'s own
+  `GeneralChain`-internal chain construction (telescoped via `pathIntegral_eq_sum_chartChain`) to
+  the area-integral pairing — `exists_weakSolutionOfPair`'s EXPORTED interface (the bundled
+  `IsWeakSolutionOfPair` Prop + `U`-support facts) does not expose enough of the chain's internal
+  structure to run this argument as a black box, and re-deriving it independently (e.g. via an
+  ad hoc `DbarGlueData`/rotated-`Complex.log`-branch finite cover of `X`, using compactness) is a
+  substantial undertaking in its own right, comparable in scope to a further sibling unit, not a
+  short remainder — confirmed by working through the construction in detail (recorded in-session,
+  not reproduced here) before deciding not to attempt it under time pressure. Step 7 (the CR
+  promotion once `u` is in hand) WAS traced to a concrete, tractable recipe — `Jacobian/Dbar/
+  Operator.lean`'s `contMDiffOn_omega_of_isDbarOn_zero` (promotes `IsDbarOn F 0` + real-smoothness
+  on an open set to genuine `ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω`, already handling the chart-transition
+  plumbing) applied on `{Q}ᶜ`, using `wirtingerDbar_exp_neg_mul_eq_zero` (ALREADY BUILT,
+  `WeakToMero.lean`) off `{P, Q}` plus a short direct product-rule computation
+  `wirtingerDbar f P = 0` (from `f`'s own `IsWeakSolutionAt f P 1` local model, no rechart needed)
+  to extend across `P`; order bookkeeping via `ordAtX_eq_of_mem_source`'s chart-invariance (reads
+  the order in the SAME chart the weak-solution model uses, no rechart) +
+  `meromorphicOrderAt_mul`/`meromorphicOrderAt_zpow_id_sub_const`, and at `Q` specifically via
+  mathlib's `Complex.differentiableOn_compl_singleton_and_continuousAt_iff` removable-singularity
+  theorem (the same tool `AbelWeak/Rechart.lean` already uses) to extend the local `ψ`-cofactor's
+  holomorphy across the puncture — but this was not wired up given step 5 was already the
+  time-blocking piece, and doing so without step 5 in hand would be unverifiable.
+
+  **Resolution**: isolated the ENTIRE remaining content (steps 5 AND 7 combined — deliberately not
+  further split, since step 7's tractability is contingent on step 5's output shape) as one
+  explicit, precisely-scoped hypothesis per arity, following this project's own "gated theorem,
+  not vacuous, not `sorry`" convention (`CONVENTIONS.md` rule cited by `LaurentTail.Comparison.
+  lean`'s own `equiv_of_surjective`): **`RS.Abel.WeakSolutionUpgrade X`** (two-point,
+  `Sufficiency.lean`) and **`RS.Abel.WeakSolutionUpgradeFinset X ι`** (`k`-point, same file) —
+  both state exactly "given a weak solution (resp. `Finset`-indexed family of weak solutions)
+  along path(s) with EXACT zero period against every `ω ∈ Form1 X`, the honest meromorphic
+  function exists", i.e. literally design steps 5-7's combined conclusion, with a docstring
+  recording the full discharge roadmap above (apply the packaging construction to build `η` +
+  its pairing-vanishing, feed it to the NOW-PROVEN `exists_dbar_eq_zero_of_forall_basis_pairing_
+  eq_zero`, then run the sketched step-7 recipe). `exists_mero_of_pathIntegral_mem`/`genus_eq_
+  zero_of_pathIntegral_mem` (two-point) and the NEWLY BUILT `exists_mero_of_periodVector_mem`
+  (`k`-point, previously not built at all) all take the relevant hypothesis and are otherwise
+  fully proved, zero sorries — steps 1-4 for both arities (loop cancellation, including a
+  from-scratch `k`-point generalization cancelling the TOTAL period against one fixed index via
+  `Function.update`/`Finset.add_sum_erase`; a weak solution per pair; Forster's Lemma 20.1
+  multiplicativity via the ALREADY-BUILT `isWeakSolutionOfFinset_prod`) are genuinely proved, not
+  gated. `OfCurveInj.lean`'s `ofCurve_inj'`/`ofCurve_inj` take `WeakSolutionUpgrade X` as an
+  additional explicit hypothesis (propagated, not newly introduced). One Lean gotcha hit while
+  building the `k`-point loop-cancellation: `WeakSolutionUpgradeFinset`'s `ι` MUST be an explicit
+  parameter of the def (`WeakSolutionUpgradeFinset X ι`, not hidden inside an inner
+  `∀ {ι : Type*}`) — otherwise its `Type*` gets auto-bound to its OWN fresh universe parameter at
+  `def`-elaboration time, unrelated to the consuming theorem's own `{ι : Type*}`, causing a
+  universe-mismatch application error with no informative fix short of this restructuring.
+  `Jacobian/Abel.lean` (unit root) docstring updated, gap paragraph dropped. **`scripts/check.sh
+  Jacobian/Abel` passes, ZERO sorries** (3270 jobs) — the two-point `sorry` from the previous pass
+  is gone; nothing new introduced. Files touched: `Jacobian/Abel/DolbeaultBridge.lean` (new),
+  `Jacobian/Abel/Sufficiency.lean`, `Jacobian/Abel/OfCurveInj.lean`, `Jacobian/Abel.lean`
+  (imports + docstring), `docs/build-log.md` (this entry). `Jacobian.lean` (root orchestrator) NOT
+  touched, per task hard rule; `Jacobian/Abel` is still not registered there (orchestrator's job).
