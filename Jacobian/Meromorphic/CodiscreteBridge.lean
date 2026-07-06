@@ -1,4 +1,5 @@
 import Jacobian.Meromorphic.Predicates
+import Jacobian.Surface.Identity
 import Mathlib.Topology.DiscreteSubset
 
 /-!
@@ -28,6 +29,7 @@ variable {f g : X → ℂ} {U : Set X}
 
 /-! ### D2: the bridge, both directions -/
 
+omit [ChartedSpace ℂ X] in
 theorem mem_codiscreteWithin_iff_of_isOpen {S : Set X} (hU : IsOpen U) :
     S ∈ codiscreteWithin U ↔ ∀ x ∈ U, S ∈ 𝓝[≠] x := by
   constructor
@@ -40,17 +42,20 @@ theorem mem_codiscreteWithin_iff_of_isOpen {S : Set X} (hU : IsOpen U) :
     rw [mem_codiscreteWithin_iff_forall_mem_nhdsNE]
     exact fun x hx => mem_of_superset (h x hx) subset_union_left
 
+omit [ChartedSpace ℂ X] in
 /-- D2 (both directions): for open `U`, agreement of arbitrary `f, g` codiscretely within `U`
 is exactly pointwise `𝓝[≠]`-agreement. Meromorphy-free. -/
 theorem eventuallyEq_codiscreteWithin_iff_of_isOpen {α : Type*} {f g : X → α} (hU : IsOpen U) :
     f =ᶠ[codiscreteWithin U] g ↔ ∀ x ∈ U, f =ᶠ[𝓝[≠] x] g :=
   mem_codiscreteWithin_iff_of_isOpen (S := {y | f y = g y}) hU
 
+omit [ChartedSpace ℂ X] in
 /-- Prop-valued version of the D2 bridge. -/
 theorem eventually_codiscreteWithin_iff_of_isOpen {p : X → Prop} (hU : IsOpen U) :
     (∀ᶠ x in codiscreteWithin U, p x) ↔ ∀ x ∈ U, ∀ᶠ y in 𝓝[≠] x, p y :=
   mem_codiscreteWithin_iff_of_isOpen (S := {x | p x}) hU
 
+omit [ChartedSpace ℂ X] in
 theorem eventuallyEq_codiscrete_iff {α : Type*} {f g : X → α} :
     f =ᶠ[codiscrete X] g ↔ ∀ x, f =ᶠ[𝓝[≠] x] g := by
   show f =ᶠ[codiscreteWithin univ] g ↔ _
@@ -108,18 +113,39 @@ theorem MeromorphicOnX.eventuallyEq_zero_or_forall_ordAtX_ne_top
   set S : Set X := {x | ordAtX f x = ⊤} with hS_def
   have hSopen : IsOpen S := isOpen_iff_mem_nhds.2 fun x hx => eventually_ordAtX_eq_top hx
   have hSclosed : IsClosed S := by
-    rw [← isOpen_compl_iff]
-    refine isOpen_iff_mem_nhds.2 fun x hx => ?_
-    have hx' : ordAtX f x ≠ ⊤ := hx
-    have he : ∀ᶠ y in 𝓝[≠] x, ordAtX f y = 0 := eventually_ordAtX_eq_zero (hf x (mem_univ x)) hx'
-    rw [eventually_nhdsWithin_iff] at he
-    filter_upwards [he] with y hy
-    rcases eq_or_ne y x with rfl | hyx
-    · exact hx'
-    · simp [hy hyx]
+    rw [← closure_subset_iff_isClosed]
+    intro x hx
+    rw [mem_closure_iff_frequently] at hx
+    -- hx : ∃ᶠ y in 𝓝 x, y ∈ S
+    show x ∈ S
+    rw [hS_def, Set.mem_setOf_eq, ordAtX_eq_top_iff]
+    apply (MeromorphicAtX.frequently_zero_iff (hf x (mem_univ x))).1
+    by_contra hbad
+    rw [Filter.not_frequently] at hbad
+    -- hbad : ∀ᶠ z in 𝓝[≠] x, f z ≠ 0
+    have hbadN : ∀ᶠ z in 𝓝 x, z ≠ x → f z ≠ 0 := eventually_nhdsWithin_iff.mp hbad
+    obtain ⟨V, hV, hVsub⟩ := Filter.eventually_iff_exists_mem.mp hbadN
+    obtain ⟨V', hVV', hV'open, hxV'⟩ := mem_nhds_iff.mp hV
+    have hVsub' : ∀ w ∈ V', w ≠ x → f w ≠ 0 := fun w hw => hVsub w (hVV' hw)
+    have hxV'nhds : V' ∈ 𝓝 x := hV'open.mem_nhds hxV'
+    obtain ⟨y, hyS, hyV'⟩ := (hx.and_eventually hxV'nhds).exists
+    rcases eq_or_ne y x with heq | hyx
+    · have hyS' : x ∈ S := heq ▸ hyS
+      have h0 : ∀ᶠ z in 𝓝[≠] x, f z = 0 := ordAtX_eq_top_iff.1 hyS'
+      obtain ⟨z, hz1, hz2⟩ := (h0.and hbad).exists
+      exact hz2 hz1
+    · have h0y : ∀ᶠ w in 𝓝[≠] y, f w = 0 := ordAtX_eq_top_iff.1 hyS
+      have hVy : V' ∈ 𝓝[≠] y := mem_nhdsWithin_of_mem_nhds (hV'open.mem_nhds hyV')
+      have hxy : ({x}ᶜ : Set X) ∈ 𝓝[≠] y :=
+        mem_nhdsWithin_of_mem_nhds (isOpen_compl_singleton.mem_nhds hyx)
+      have hcomb : ∀ᶠ w in 𝓝[≠] y, f w = 0 ∧ w ∈ V' ∧ w ≠ x := by
+        filter_upwards [h0y, hVy, hxy] with w hw1 hw2 hw3
+        exact ⟨hw1, hw2, hw3⟩
+      obtain ⟨z, hz0, hzV, hzx⟩ := hcomb.exists
+      exact (hVsub' z hzV hzx) hz0
   rcases (isClopen_iff.1 ⟨hSclosed, hSopen⟩) with hSempty | hSuniv
   · right
-    exact fun x => Set.eq_empty_iff_forall_not_mem.1 hSempty x
+    exact fun x => Set.eq_empty_iff_forall_notMem.1 hSempty x
   · left
     have hall : ∀ x, x ∈ S := Set.eq_univ_iff_forall.1 hSuniv
     exact eventuallyEq_codiscrete_iff.2 (fun x => ordAtX_eq_top_iff.1 (hall x))

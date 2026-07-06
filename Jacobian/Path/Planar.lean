@@ -135,10 +135,6 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
     at htnotin
   set z : ℂ := c + t • y with hz_def
   have hzs : z ∈ s := hzmem t ht_mem
-  have hzT : z ∉ T := by
-    intro hzT
-    apply htnotin.2
-    exact ⟨z, ⟨(right_mem_segment ℝ _ _), hzT⟩⟩
   have JA : JoinedIn (s \ T) a z := by
     apply JoinedIn.of_segment_subset
     rw [subset_diff]
@@ -174,12 +170,14 @@ theorem exists_homotopy_range_subset_of_convex {a b : ℂ} {s : Set ℂ} (hs : C
             map_one_left := fun u => by simp
             prop' := fun t x hx => ?_ }, fun z => hmem z⟩
   rcases hx with hx | hx
-  · subst hx
-    simp only [p.source, q.source]
+  · rw [hx]
+    show (1 - ((t : ℝ))) • p 0 + (t : ℝ) • q 0 = p 0
+    rw [p.source, q.source]
     module
   · rw [Set.mem_singleton_iff] at hx
-    subst hx
-    simp only [p.target, q.target]
+    rw [hx]
+    show (1 - ((t : ℝ))) • p 1 + (t : ℝ) • q 1 = p 1
+    rw [p.target, q.target]
     module
 
 end RS
