@@ -2285,3 +2285,36 @@ Quot.sound]` only. Files: `Jacobian/CechCount/{Mul,Surjective,Count,Final}.lean`
 touched (registration pending, one line).
 
 - [cechcount] FINAL GATE CLOSED
+
+## final-assembly: `Jacobian/Challenge.lean` — the challenge API, complete
+
+- [final] `Jacobian/Challenge.lean` NEW (built on top of the registered `Jacobian` root import).
+  Contains ONLY the gist names that did not yet exist: the root-level functorial API
+  `Jacobian.pushforward`, `Jacobian.pushforward_contMDiff`, `Jacobian.pushforward_id_apply`,
+  `Jacobian.pushforward_comp_apply`, `Jacobian.pullback`, `Jacobian.pullback_contMDiff`,
+  `Jacobian.pullback_id_apply`, `Jacobian.pullback_comp_apply`, `Jacobian.pushforward_pullback`
+  — one-line wrappers of the built `RS.Jacobian.*` (JacFunctorial). The contMDiff wrappers are
+  stated UNGATED: the discreteness gates are global instances since `Jacobian/CechCount/Final.lean`.
+  Everything else already lives at its gist name: `genus` (Forms/Genus), `genus_eq_zero_iff_homeo`
+  (GenusSphereHeadline), `Jacobian` + the 7 instances (JacobianConstruction/Basic, gates global),
+  `Jacobian.ofCurve`/`ofCurve_self`/`ofCurve_contMDiff` (JacobianConstruction/OfCurve),
+  `ContMDiff.degree` (ProperDegree/ChallengeDegree). A final self-auditing `GistCheck` section
+  witnesses all 24 gist items as `example`s in the gist's own shapes.
+- [final] **Universe deviation (the only one, sanctioned by the JacFunctorial LEDGER)**: the
+  functorial declarations state `{X Y Z : Type u}` in ONE shared universe instead of the gist's
+  independent `Type*`s. Re-verified during assembly: the gist-verbatim distinct-universe wrapper
+  does not fail cleanly but dies in the documented `ULift`/quotient defeq grind
+  (`(deterministic) timeout at whnf`, 54s to heartbeat limit).
+- [final] **Name deviation**: the gist-signature `ofCurve_inj` is `Jacobian.ofCurve_inj_final`
+  (CechCount/Final) — the literal name `Jacobian.ofCurve_inj` was claimed by abel-theorem's gated
+  variant (extra explicit `RS.Abel.WeakSolutionUpgrade X` argument) and cannot be redeclared.
+  `Jacobian.ofCurve_contMDiff` carries one extra instance-implicit `[DiscreteTopology …]`
+  argument, globally discharged — gist-shaped uses elaborate verbatim.
+- [final] **Acceptance test** `scratch_gist_check.lean` (project root): `import Jacobian` +
+  `import Jacobian.Challenge`, all 24 gist items stated verbatim as `example`s and proved by the
+  providing names — `lake env lean scratch_gist_check.lean` clean (7.6s). `#print axioms` on
+  `genus`, `Jacobian`, `Jacobian.ofCurve_inj_final`, `genus_eq_zero_iff_homeo`,
+  `Jacobian.pushforward_pullback`, `ContMDiff.degree`: all
+  `[propext, Classical.choice, Quot.sound]` only.
+- [final] `scripts/check.sh Jacobian/Challenge` — Build completed successfully (3319 jobs), zero
+  sorries. `Jacobian.lean` NOT touched (orchestrator to register `import Jacobian.Challenge`).

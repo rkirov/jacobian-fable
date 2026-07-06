@@ -71,7 +71,7 @@ theorem ofCurve_inj' (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 <
 moment `period-lattice-rank` registers `instance : DiscreteTopology (RS.periodSubgroup X)` for
 the real period subgroup (Forster 21.4(i)) AND `RS.Abel.WeakSolutionUpgrade X` is proved. A
 one-line wrapper, not new mathematics. -/
-theorem ofCurve_inj (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 < genus X)
+theorem ofCurve_inj_of_upgrade (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 < genus X)
     [DiscreteTopology (RS.periodSubgroup X)] :
     Function.Injective (ofCurve P) :=
   ofCurve_inj' hupgrade P h

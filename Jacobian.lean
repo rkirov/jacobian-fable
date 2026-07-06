@@ -33,3 +33,4 @@ import Jacobian.RiemannRoch
 import Jacobian.GenusSphereHeadline
 import Jacobian.PeriodLattice
 import Jacobian.CechCount
+import Jacobian.Challenge
