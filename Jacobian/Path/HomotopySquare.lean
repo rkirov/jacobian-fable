@@ -1,4 +1,5 @@
 import Jacobian.Path.Continuation
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 
 /-!
 # Homotopy invariance: the 2D grid argument (CC6)
@@ -34,6 +35,7 @@ variable {x y z : X}
 def gridK (H : C(↥unitInterval × ↥unitInterval, X)) (p : ℝ × ℝ) : X :=
   H (projIcc 0 1 zero_le_one p.1, projIcc 0 1 zero_le_one p.2)
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
 theorem continuous_gridK (H : C(↥unitInterval × ↥unitInterval, X)) : Continuous (gridK H) :=
   H.continuous.comp ((continuous_projIcc.comp continuous_fst).prodMk
     (continuous_projIcc.comp continuous_snd))
@@ -221,6 +223,239 @@ private theorem exists_row {H : C(↥unitInterval × ↥unitInterval, X)} (C : G
       (fun p => g (C.e j k (gridK H p)) +
         (F (C.t j, C.t k) - g (C.e j k (gridK H (C.t j, C.t k))))) ⟨hjmem, h0mem⟩]
     exact hF0
+
+/-- `projIcc` is invariant under clamping its argument into `[0,1]` first (2D upgrade helper). -/
+private theorem projIcc_clampI (u : ℝ) :
+    projIcc (0:ℝ) 1 zero_le_one (clampI u) = projIcc 0 1 zero_le_one u := by
+  by_cases h0 : u ≤ 0
+  · have hc : clampI u = 0 := by
+      unfold clampI; rw [min_eq_left (h0.trans zero_le_one), max_eq_left h0]
+    rw [hc, projIcc_of_le_left zero_le_one (le_refl (0:ℝ)), projIcc_of_le_left zero_le_one h0]
+  · replace h0 := not_le.mp h0
+    by_cases h1 : u ≤ 1
+    · have hc : clampI u = u := by unfold clampI; rw [min_eq_left h1, max_eq_right h0.le]
+      rw [hc]
+    · replace h1 := not_le.mp h1
+      have hc : clampI u = 1 := by
+        unfold clampI; rw [min_eq_right h1.le, max_eq_right zero_le_one]
+      rw [hc, projIcc_of_right_le zero_le_one (le_refl (1:ℝ)), projIcc_of_right_le zero_le_one h1.le]
+
+/-! ### Column stacking (outer induction) and the square theorem -/
+
+/-- A primitive of `η` along a continuous square `H : C(I × I, X)` exists (along the clamped
+map on all of `ℝ × ℝ`). -/
+theorem exists_primitive_along_square {H : C(↥unitInterval × ↥unitInterval, X)} (η : Form1 X) :
+    ∃ F : ℝ × ℝ → ℂ, IsPrimitiveAlongMap (gridK H) η F Set.univ := by
+  obtain ⟨C⟩ := exists_gridChain H
+  suffices h : ∀ j : ℕ, ∃ F : ℝ × ℝ → ℂ,
+      IsPrimitiveAlongMap (gridK H) η F (Icc (0:ℝ) (C.t j) ×ˢ Icc (0:ℝ) 1) ∧ F (0, 0) = 0 by
+    obtain ⟨F, hF, hF0⟩ := h C.m
+    rw [C.ht1 C.m le_rfl] at hF
+    have hcontclamp : Continuous (fun p : ℝ × ℝ => (clampI p.1, clampI p.2)) :=
+      (continuous_clampI.comp continuous_fst).prodMk (continuous_clampI.comp continuous_snd)
+    have hmapsto : MapsTo (fun p : ℝ × ℝ => (clampI p.1, clampI p.2)) Set.univ
+        (Icc (0:ℝ) 1 ×ˢ Icc (0:ℝ) 1) := fun p _ => ⟨clampI_mem p.1, clampI_mem p.2⟩
+    have hKeq : Set.EqOn (gridK H ∘ (fun p : ℝ × ℝ => (clampI p.1, clampI p.2))) (gridK H)
+        Set.univ := by
+      intro p _
+      show gridK H (clampI p.1, clampI p.2) = gridK H p
+      show H (projIcc 0 1 zero_le_one (clampI p.1), projIcc 0 1 zero_le_one (clampI p.2)) =
+        H (projIcc 0 1 zero_le_one p.1, projIcc 0 1 zero_le_one p.2)
+      rw [projIcc_clampI, projIcc_clampI]
+    have hcomp := hF.comp (φ := fun p : ℝ × ℝ => (clampI p.1, clampI p.2)) (t := Set.univ)
+      hcontclamp.continuousOn hmapsto
+    exact ⟨_, hcomp.congr_map hKeq⟩
+  intro j
+  induction j with
+  | zero =>
+    obtain ⟨F, hF, hF0⟩ := exists_row C η 0 C.m
+    rw [C.ht1 C.m le_rfl] at hF
+    refine ⟨F, ?_, ?_⟩
+    · apply hF.mono
+      intro p hp
+      obtain ⟨hp1, hp2⟩ := hp
+      exact ⟨⟨C.ht0.le.trans hp1.1, hp1.2.trans (C.mono (Nat.zero_le 1))⟩, hp2⟩
+    · rwa [C.ht0] at hF0
+  | succ j ih =>
+    obtain ⟨G, hG, hG0⟩ := ih
+    obtain ⟨F, hF, hF0⟩ := exists_row C η j C.m
+    rw [C.ht1 C.m le_rfl] at hF
+    have hF' : IsPrimitiveAlongMap (gridK H) η (fun p => F p + (G (C.t j, 0) - F (C.t j, 0)))
+        (Icc (C.t j) (C.t (j+1)) ×ˢ Icc (0:ℝ) 1) := hF.add_const _
+    have hval : G (C.t j, 0) = F (C.t j, 0) + (G (C.t j, 0) - F (C.t j, 0)) := by ring
+    have h0j : (0:ℝ) ≤ C.t j := C.ht0 ▸ C.mono (Nat.zero_le j)
+    have hmonoj : C.t j ≤ C.t (j+1) := C.mono (Nat.le_succ j)
+    have hB : IsPreconnected (Icc (0:ℝ) 1 : Set ℝ) := isPreconnected_Icc
+    have hcont : ContinuousOn (gridK H) (Icc (0:ℝ) (C.t j) ×ˢ Icc (0:ℝ) 1 ∪
+        Icc (C.t j) (C.t (j+1)) ×ˢ Icc (0:ℝ) 1) := (continuous_gridK H).continuousOn
+    have hL := isPreconnected_prod_fst_inter hB h0j hmonoj
+    have ha0 : (C.t j, 0) ∈ (Icc (0:ℝ) (C.t j) ×ˢ Icc (0:ℝ) 1) ∩
+        (Icc (C.t j) (C.t (j+1)) ×ˢ Icc (0:ℝ) 1) :=
+      ⟨⟨⟨h0j, le_rfl⟩, ⟨le_rfl, zero_le_one⟩⟩, ⟨⟨le_rfl, hmonoj⟩, ⟨le_rfl, zero_le_one⟩⟩⟩
+    have hcov := hcov_prod_fst (B := Icc (0:ℝ) 1) h0j hmonoj
+    have hglue := hG.glue hcont hF' hL ha0 hval hcov
+    rw [← Set.union_prod, Icc_union_Icc_eq_Icc h0j hmonoj] at hglue
+    refine ⟨_, hglue, ?_⟩
+    have h0mem : (0:ℝ) ∈ Icc (0:ℝ) (C.t j) := ⟨le_rfl, h0j⟩
+    rw [Set.piecewise_eq_of_mem (Icc 0 (C.t j) ×ˢ Icc (0:ℝ) 1) G
+      (fun p => F p + (G (C.t j, 0) - F (C.t j, 0))) ⟨h0mem, le_rfl, zero_le_one⟩]
+    exact hG0
+
+/-! ### Consequences: homotopy invariance of `pathIntegral` -/
+
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+/-- Restricting `gridK H` to the edge `{c} × ℝ` (fixed first coordinate) recovers `γ.extend`,
+given `H (c, ·) = γ` on `↥unitInterval`. -/
+private theorem gridK_edge_fst (H : C(↥unitInterval × ↥unitInterval, X)) (c : ↥unitInterval)
+    {x' y' : X} (γ : Path x' y') (hev : ∀ u : ↥unitInterval, H (c, u) = γ u) (v : ℝ) :
+    gridK H ((c : ℝ), v) = γ.extend v := by
+  show H (projIcc 0 1 zero_le_one (c : ℝ), projIcc 0 1 zero_le_one v) = γ.extend v
+  rw [show projIcc (0:ℝ) 1 zero_le_one (c : ℝ) = c from projIcc_of_mem zero_le_one c.2]
+  by_cases hv : v ≤ 0
+  · rw [show projIcc (0:ℝ) 1 zero_le_one v = 0 from projIcc_of_le_left zero_le_one hv,
+      γ.extend_of_le_zero hv]
+    exact (hev 0).trans γ.source
+  · replace hv := not_le.mp hv
+    by_cases hv1 : v ≤ 1
+    · rw [show projIcc (0:ℝ) 1 zero_le_one v = ⟨v, ⟨hv.le, hv1⟩⟩ from
+        projIcc_of_mem zero_le_one ⟨hv.le, hv1⟩, γ.extend_apply ⟨hv.le, hv1⟩]
+      exact hev ⟨v, ⟨hv.le, hv1⟩⟩
+    · replace hv1 := not_le.mp hv1
+      rw [show projIcc (0:ℝ) 1 zero_le_one v = 1 from projIcc_of_right_le zero_le_one hv1.le,
+        γ.extend_of_one_le hv1.le]
+      exact (hev 1).trans γ.target
+
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] in
+/-- Restricting `gridK H` to the edge `ℝ × {c}` (fixed second coordinate) recovers `γ.extend`,
+given `H (·, c) = γ` on `↥unitInterval`. -/
+private theorem gridK_edge_snd (H : C(↥unitInterval × ↥unitInterval, X)) (c : ↥unitInterval)
+    {x' y' : X} (γ : Path x' y') (hev : ∀ t : ↥unitInterval, H (t, c) = γ t) (v : ℝ) :
+    gridK H (v, (c : ℝ)) = γ.extend v := by
+  show H (projIcc 0 1 zero_le_one v, projIcc 0 1 zero_le_one (c : ℝ)) = γ.extend v
+  rw [show projIcc (0:ℝ) 1 zero_le_one (c : ℝ) = c from projIcc_of_mem zero_le_one c.2]
+  by_cases hv : v ≤ 0
+  · rw [show projIcc (0:ℝ) 1 zero_le_one v = 0 from projIcc_of_le_left zero_le_one hv,
+      γ.extend_of_le_zero hv]
+    exact (hev 0).trans γ.source
+  · replace hv := not_le.mp hv
+    by_cases hv1 : v ≤ 1
+    · rw [show projIcc (0:ℝ) 1 zero_le_one v = ⟨v, ⟨hv.le, hv1⟩⟩ from
+        projIcc_of_mem zero_le_one ⟨hv.le, hv1⟩, γ.extend_apply ⟨hv.le, hv1⟩]
+      exact hev ⟨v, ⟨hv.le, hv1⟩⟩
+    · replace hv1 := not_le.mp hv1
+      rw [show projIcc (0:ℝ) 1 zero_le_one v = 1 from projIcc_of_right_le zero_le_one hv1.le,
+        γ.extend_of_one_le hv1.le]
+      exact (hev 1).trans γ.target
+
+theorem pathIntegral_congr_homotopic {γ₀ γ₁ : Path x y} (h : γ₀.Homotopic γ₁) (η : Form1 X) :
+    pathIntegral γ₀ η = pathIntegral γ₁ η := by
+  obtain ⟨Hh⟩ := h
+  set H : C(↥unitInterval × ↥unitInterval, X) := Hh.toContinuousMap with hH_def
+  obtain ⟨F, hF⟩ := exists_primitive_along_square (H := H) η
+  have hev0 : ∀ u, H (0, u) = γ₀ u := fun u => by
+    have h1 : (Hh.eval 0) u = H (0, u) := rfl
+    rw [Hh.eval_zero] at h1; exact h1.symm
+  have hev1 : ∀ u, H (1, u) = γ₁ u := fun u => by
+    have h1 : (Hh.eval 1) u = H (1, u) := rfl
+    rw [Hh.eval_one] at h1; exact h1.symm
+  have hbot : IsPrimitiveAlong γ₀ η (fun v => F ((0:ℝ), v)) := by
+    have h1 := hF.comp (φ := fun v : ℝ => ((0:ℝ), v)) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_fst H 0 γ₀ hev0 v)
+  have htop : IsPrimitiveAlong γ₁ η (fun v => F ((1:ℝ), v)) := by
+    have h1 := hF.comp (φ := fun v : ℝ => ((1:ℝ), v)) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_fst H 1 γ₁ hev1 v)
+  have hleft : IsPrimitiveAlong (Path.refl x) η (fun v => F (v, (0:ℝ))) := by
+    have h1 := hF.comp (φ := fun v : ℝ => (v, (0:ℝ))) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    refine h1.congr_map (fun v _ => gridK_edge_snd H 0 (Path.refl x) (fun t => ?_) v)
+    show H (t, 0) = x
+    rw [show H (t, (0:↥unitInterval)) = γ₀.toContinuousMap 0 from Hh.eq_fst t (by simp)]
+    exact γ₀.source
+  have hright : IsPrimitiveAlong (Path.refl y) η (fun v => F (v, (1:ℝ))) := by
+    have h1 := hF.comp (φ := fun v : ℝ => (v, (1:ℝ))) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    refine h1.congr_map (fun v _ => gridK_edge_snd H 1 (Path.refl y) (fun t => ?_) v)
+    show H (t, 1) = y
+    rw [show H (t, (1:↥unitInterval)) = γ₀.toContinuousMap 1 from Hh.eq_fst t (by simp)]
+    exact γ₀.target
+  rw [hbot.pathIntegral_eq, htop.pathIntegral_eq]
+  have e1 : (fun v => F (v, (0:ℝ))) 1 - (fun v => F (v, (0:ℝ))) 0 = 0 := by
+    rw [← hleft.pathIntegral_eq]; exact pathIntegral_refl x η
+  have e2 : (fun v => F (v, (1:ℝ))) 1 - (fun v => F (v, (1:ℝ))) 0 = 0 := by
+    rw [← hright.pathIntegral_eq]; exact pathIntegral_refl y η
+  simp only at e1 e2
+  linear_combination e1 - e2
+
+/-- Descent of the integral to homotopy classes. -/
+noncomputable def pathIntegralQ (η : Form1 X) (q : Path.Homotopic.Quotient x y) : ℂ :=
+  Quotient.liftOn q (pathIntegral · η) fun _ _ h => pathIntegral_congr_homotopic h η
+
+@[simp] theorem pathIntegralQ_mk (γ : Path x y) (η : Form1 X) :
+    pathIntegralQ η (Path.Homotopic.Quotient.mk γ) = pathIntegral γ η := rfl
+
+theorem pathIntegralQ_trans (p : Path.Homotopic.Quotient x y) (q : Path.Homotopic.Quotient y z)
+    (η : Form1 X) : pathIntegralQ η (p.trans q) = pathIntegralQ η p + pathIntegralQ η q := by
+  induction p using Path.Homotopic.Quotient.ind with
+  | mk p => induction q using Path.Homotopic.Quotient.ind with
+    | mk q =>
+      rw [← Path.Homotopic.Quotient.mk_trans]
+      simp only [pathIntegralQ_mk]
+      exact pathIntegral_trans p q η
+
+/-- Free homotopy of loops (moving basepoint) preserves periods. -/
+theorem pathIntegral_congr_freeHomotopic {x₀ x₁ : X} {γ₀ : Path x₀ x₀} {γ₁ : Path x₁ x₁}
+    (H : ContinuousMap.Homotopy γ₀.toContinuousMap γ₁.toContinuousMap)
+    (hloop : ∀ s : ↥unitInterval, H (s, 0) = H (s, 1)) (η : Form1 X) :
+    pathIntegral γ₀ η = pathIntegral γ₁ η := by
+  obtain ⟨F, hF⟩ := exists_primitive_along_square (H := H.toContinuousMap) η
+  have hev0 : ∀ u, H.toContinuousMap (0, u) = γ₀ u := fun u => H.apply_zero u
+  have hev1 : ∀ u, H.toContinuousMap (1, u) = γ₁ u := fun u => H.apply_one u
+  have hbot : IsPrimitiveAlong γ₀ η (fun v => F ((0:ℝ), v)) := by
+    have h1 := hF.comp (φ := fun v : ℝ => ((0:ℝ), v)) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_fst H.toContinuousMap 0 γ₀ hev0 v)
+  have htop : IsPrimitiveAlong γ₁ η (fun v => F ((1:ℝ), v)) := by
+    have h1 := hF.comp (φ := fun v : ℝ => ((1:ℝ), v)) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_fst H.toContinuousMap 1 γ₁ hev1 v)
+  have hbpsrc : H.toContinuousMap (0, 0) = x₀ := (hev0 0).trans γ₀.source
+  have hbptgt : H.toContinuousMap (1, 0) = x₁ := (hev1 0).trans γ₁.source
+  set bp : Path x₀ x₁ := ⟨⟨fun t => H (t, 0), by fun_prop⟩, hbpsrc, hbptgt⟩ with hbp_def
+  have hleft : IsPrimitiveAlong bp η (fun v => F (v, (0:ℝ))) := by
+    have h1 := hF.comp (φ := fun v : ℝ => (v, (0:ℝ))) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_snd H.toContinuousMap 0 bp (fun t => rfl) v)
+  have hbp'src : H.toContinuousMap (0, 1) = x₀ := by
+    show H (0, (1:↥unitInterval)) = x₀
+    rw [← hloop 0]; exact hbpsrc
+  have hbp'tgt : H.toContinuousMap (1, 1) = x₁ := by
+    show H (1, (1:↥unitInterval)) = x₁
+    rw [← hloop 1]; exact hbptgt
+  set bp' : Path x₀ x₁ := ⟨⟨fun t => H (t, 1), by fun_prop⟩, hbp'src, hbp'tgt⟩ with hbp'_def
+  have hright : IsPrimitiveAlong bp' η (fun v => F (v, (1:ℝ))) := by
+    have h1 := hF.comp (φ := fun v : ℝ => (v, (1:ℝ))) (t := Set.univ)
+      (by fun_prop) (mapsTo_univ _ _)
+    exact h1.congr_map (fun v _ => gridK_edge_snd H.toContinuousMap 1 bp' (fun t => rfl) v)
+  have hbpeq : bp = bp' := by
+    apply Path.ext
+    funext t
+    show H (t, 0) = H (t, 1)
+    exact hloop t
+  rw [hbot.pathIntegral_eq, htop.pathIntegral_eq]
+  have e1 := hleft.pathIntegral_eq
+  have e2 := hright.pathIntegral_eq
+  rw [hbpeq] at e1
+  linear_combination e2 - e1
+
+theorem pathIntegral_eq_of_simplyConnected [SimplyConnectedSpace X] (γ₀ γ₁ : Path x y)
+    (η : Form1 X) : pathIntegral γ₀ η = pathIntegral γ₁ η :=
+  pathIntegral_congr_homotopic (SimplyConnectedSpace.paths_homotopic γ₀ γ₁) η
+
+theorem period_eq_zero_of_homotopic_refl {γ : Path x x} (h : γ.Homotopic (Path.refl x))
+    (η : Form1 X) : pathIntegral γ η = 0 := by
+  rw [pathIntegral_congr_homotopic h η, pathIntegral_refl]
 
 end RS
 
