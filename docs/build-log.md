@@ -1756,3 +1756,102 @@
   updated to match. `Jacobian.lean` not touched (already importing `Jacobian.LaurentTail` from
   before this pass). Full project (`lake build Jacobian`, 3283 jobs) reverified green after the
   change.
+- [jfun] Jacobian/JacFunctorial/TraceCoeff.lean OK (195 lines) — continuation build (the
+  trace/pullback half; the previous builder's precisely-diagnosed blocker, now closed). The
+  REPAIRED planar trace coefficient `RS.traceCoeff h k := toMeromorphicNFAt (traceZkForm h k) 0`
+  (mathlib's meromorphic normal form supplies the `Function.update`-style repair for free, plus
+  `eqOn_compl_singleton_toMeromorphicNFAt`: the repair agrees with `traceZkForm h k` at EVERY
+  `w ≠ 0`, not just eventually). Branch-point analyticity by the design's route (a): `h` analytic
+  at `0` ⟹ all negative Laurent coefficients of `traceZkForm h k` vanish
+  (`laurentCoeffAt_traceZkForm` + `laurentCoeffAt_of_analyticAt`) ⟹ meromorphic order ≥ 0
+  (`forall_neg_laurentCoeffAt_eq_zero_iff`, residue-calculus already had the bridge — R2's
+  "to-be-confirmed" lemma existed) ⟹ analytic (`MeromorphicNFAt.meromorphicOrderAt_nonneg_iff_analyticAt`).
+  Master lemma `analyticOnNhd_traceCoeff : AnalyticOnNhd ℂ (traceCoeff h k) (ball 0 (ρ^k))` from
+  `AnalyticOnNhd ℂ h (ball 0 ρ)`. Plus `traceCoeff_one` (k = 1 repair is literally `h`, via
+  `toMeromorphicNFAt_eq_self`) and ℂ-linearity in `h` (off `0` by `traceZk` linearity, AT `0` by
+  uniqueness of limits between analytic repairs). Zero sorries.
+- [jfun] Jacobian/JacFunctorial/Trace.lean OK (662 lines) — **`RS.Form1.trace (f : X → Y) (hf) :
+  Form1 X →ₗ[ℂ] Form1 Y` BUILT** (zero map for constant `f` via a `Classical.dec` dite, matching
+  the gist's pullback convention). Coefficient data over `ι := Y`: preferred charts RESTRICTED to
+  the canonical stack neighborhoods (`traceChart y := (chartAt ℂ y).restr (stackAt hf hne y).V`,
+  `restr_mem_maximalAtlas`), coefficient `traceCoeffFun = ∑ᵢ deriv ψᵢ · traceCoeff(coeffIn (S.A i).e η, kᵢ) ∘ ψᵢ`
+  (ψᵢ the branch-target transition). Analyticity on the whole restricted target from
+  `analyticOnNhd_traceCoeff` — no case split at branch points. Well-definedness via the CANONICAL
+  stack-free coefficient `qCoeff f η e₀ x := (deriv (e₀ ∘ f ∘ (chartAt x).symm))⁻¹ · coeffAt x η`:
+  `traceCoeffFun_eq_qSum` (defining coefficient = `∑ᶠ x ∈ f⁻¹{ŷ}, qCoeff` at `ŷ ≠` chart center;
+  root-sum reindexed through mtrace's PUBLIC `sum_traceZk_stack` — no private `bijOn` reproof
+  needed) and `qSum_trans` (chart transition, valid at ramified fibre points too since ℂ's
+  junk-inverse conventions cancel on both sides); `compat` then holds on the overlap minus two
+  chart centers and extends by continuity (`ContinuousOn.eqOn_of_subset_closure` + a new
+  `open_subset_closure_diff`). Linearity is POINTWISE at the coefficient level (traceCoeff
+  linearity) — no density needed. Key exports: `coeffAt_traceForm`,
+  `coeffAt_traceForm_of_isRegularValue` (the regular-value formula), `qCoeff_eq_branch_term`,
+  `deriv_chartRead_eq_of_adapted` (chart-derivative factorization through adapted charts),
+  `deriv_transition_mul` (inverse-transition product). GOTCHA recorded: `multiplicity f (S.pt i)`
+  occurs in the TYPE of `(S.A i)` (AdaptedChartsAt's index), so `rw [hm : multiplicity … = 1]`
+  hits "motive is not type correct" — worked around throughout via `generalize`-then-rewrite,
+  composite-pattern rewrites (`Nat.cast`, exponent-only), or `k = 1`-hypothesis lemmas that
+  `subst` a fresh variable (`traceCoeff_eq_of_eq_one`). Zero sorries.
+- [jfun] Jacobian/JacFunctorial/TraceLaws.lean OK (295 lines) — `Form1.trace_id` (dense-set
+  argument on `univ`; nonconstancy of `id` from `RS.nhdsNE_neBot`), `Form1.trace_comp`
+  (`Tr_{g∘f} = Tr_g ∘ Tr_f`; constant cases dispatch through the dite; main case by density on
+  the cofinite set avoiding `branchLocus (g∘f) ∪ branchLocus g ∪ g '' branchLocus f`, with
+  `qCoeff_comp` chain rule — unconditional thanks to `mul_inv` in ℂ — and `finsum_mem_biUnion`
+  fibre regrouping), and **`Form1.trace_pullback`: `Tr_f (f^* η) = (ContMDiff.degree f hf : ℂ) • η`**
+  (the projection formula; per-point `qCoeff_pullback` cancellation needs `deriv_chartRead_ne_zero`
+  at unramified points, then `ncard_fiber_of_isRegularValue` + density; constant case gives `0 = 0•η`).
+  Zero sorries.
+- [jfun] Jacobian/JacFunctorial/TraceIntegral.lean OK (479 lines) — the trace–period relation,
+  built at the PERIOD level (the design §7's own fallback, evaluated and chosen: it avoids the
+  full `FiberChain`/monodromy-cycle machinery entirely). Local sections `sectionAt S i` of `f`
+  over regular stacks (all-multiplicity-1: `e' y ∈ e.target`, `f ∘ section = id`, uniqueness,
+  `ContinuousOn`); fibre-sum enumeration `finsum_mem_fiber_eq_sum_sectionAt` (5 lines — reuses
+  `sum_traceZk_stack` + `traceZk_one` instead of reproving the fibre bijection). **Segment
+  lemma** `pathIntegral_traceForm_segment`: over one trace chart the summed per-sheet DISC
+  primitives (`exists_hasDerivAt_ball` on the full adapted-chart ball) form a primitive of the
+  trace — its `coeffIn` is literally `∑ᵢ (coeffIn η ∘ ψᵢ) · ψᵢ'` at regular centers
+  (`traceCoeff_one`), so `isPrimitiveAlongMap_of_ball` + one hand-rolled
+  `IsPrimitiveAlongMap` witness give `∫ Tr_f η = ∑ᵢ ∫ (sectionᵢ ∘ p) η`. `TraceChain`
+  (Lebesgue subdivision through regular values, mirroring `exists_chartChain`) + `Path.segMap`
+  (affine segment reparametrization) + `pathIntegral_segMap` (segment integral via a fixed
+  primitive) telescope the loop. **The monodromy-free loop closing** (the build's key
+  simplification over the design): conjugate each lifted sheet by FIXED connecting paths
+  `PathConnectedSpace.somePath x₀ ·`; the correction terms are fibre sums AS SETS (independent
+  of the enumerating stack — the two adjacent stacks enumerate the same fibre), so they
+  telescope to `0` around the loop; no cycle decomposition, no `Path.trans` chains, no
+  `Path.cast` bookkeeping. Result: `pathIntegral_traceForm_eq_sum_loops` (η-independent based
+  loops) and **`periodVector_traceForm_mem`** (EXACT membership in `periodSubgroup X`). Zero
+  sorries.
+- [jfun] Jacobian/JacFunctorial/PullbackMaps.lean OK (121 lines) — `RS.pullbackT`
+  (dual of `Form1.trace` through `periodCoordEquiv`), `pullbackT_periodVector`,
+  `periodSubgroup_le_comap_pullbackT` (`hT`: constant case is the zero map; nonconstant case
+  conjugates the generator loop to a regular basepoint (`period_conj` + `exists_isRegularValue`),
+  perturbs off the finite branch locus (`Loop.exists_homotopic_avoiding` +
+  `period_congr_homotopic`), then `periodVector_traceForm_mem` — exact membership, closure only
+  used at the very end), and **`Jacobian.pullback : Jacobian Y →ₜ+ Jacobian X`** via
+  `Jacobian.inducedHom` (same-universe convention per the recorded gotcha). Zero sorries.
+- [jfun] Jacobian/JacFunctorial/ChallengeLaws.lean OK (193 lines) — **`Jacobian.pullback_contMDiff`**
+  (inheriting the `[DiscreteTopology (periodSubgroup _).topologicalClosure]` gate transparently,
+  like the pushforward), representative-level computation (`Jacobian.exists_rep`,
+  `Jacobian.inducedHom_apply_up_mk`), `pushforwardT_id/comp`, `pullbackT_id/comp` (from
+  `Form1.pullback_id/comp`, `Form1.trace_id/comp` through `LinearMap.dualMap_id`/
+  `dualMap_comp_dualMap`), `pushforwardT_pullbackT_apply` (T-level projection formula from
+  `Form1.trace_pullback`), and the four challenge laws + projection formula:
+  **`Jacobian.pushforward_id_apply`**, **`Jacobian.pushforward_comp_apply`**,
+  **`Jacobian.pullback_id_apply`**, **`Jacobian.pullback_comp_apply`**,
+  **`Jacobian.pushforward_pullback`** (`= (ContMDiff.degree f hf) • P`, ℕ-smul transported
+  through `mk'`/`uliftUpHom` by `map_nsmul`). Zero sorries.
+- [jfun] Jacobian/JacobianConstruction/Torus.lean EDITED (+30 lines, authorized addition per the
+  filed request, now marked FULFILLED in docs/requests/jacobian-construction.md) —
+  `RS.inducedHom_id`, `RS.inducedHom_comp` (functoriality of the abstract `V ⧸ L →ₜ+ V' ⧸ L'`
+  substrate; `ext` + `QuotientAddGroup.induction_on` + `inducedHom_apply_mk`, as the request
+  predicted). `scripts/check.sh Jacobian/JacobianConstruction` re-verified (2890 jobs, zero
+  sorries, no regressions).
+- [jfun] Jacobian/JacFunctorial.lean (unit root) — imports all 11 files, LEDGER REWRITTEN: the
+  unit is now COMPLETE (both halves). **`scripts/check.sh Jacobian/JacFunctorial` PASSES**
+  (3134 jobs, zero sorries across all files). Full challenge surface delivered:
+  `Jacobian.pushforward`(+`_contMDiff`,`_id_apply`,`_comp_apply`), `Jacobian.pullback`
+  (+`_contMDiff`,`_id_apply`,`_comp_apply`), `Jacobian.pushforward_pullback` — everything
+  `docs/Jacobian_challenge.lean:104-153` demands, modulo the standing
+  `[DiscreteTopology (periodSubgroup _).topologicalClosure]` gate on the two `contMDiff`
+  statements only (inherited, no new gate). NOT registered in `Jacobian.lean` per task hard rule.

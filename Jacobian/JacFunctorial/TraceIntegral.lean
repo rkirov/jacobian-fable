@@ -307,7 +307,7 @@ theorem exists_traceChain {a b : Y} (δ : Path a b)
     · exact ((δ.continuous_extend.comp continuous_subtype_val).isOpen_preimage _
         (traceChart hf hne (δ τ)).open_source)
     · show δ.extend (τ : ℝ) ∈ (traceChart hf hne (δ τ)).source
-      rw [δ.extend_extends τ.2]  -- deprecated alias kept: `Path.extend_apply` (same statement)
+      rw [δ.extend_apply τ.2]
       exact mem_traceChart_source_self hf hne (δ τ)
   choose V hVopen hτV y hyreg hmaps using hnhds
   obtain ⟨t, ht0, hmono, ⟨n, htn⟩, hsub⟩ :=

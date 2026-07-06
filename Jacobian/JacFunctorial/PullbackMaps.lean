@@ -87,12 +87,16 @@ theorem periodSubgroup_le_comap_pullbackT (f : X → Y) (hf : ContMDiff 𝓘(ℂ
     have heq : (fun i => pathIntegral γ (Form1.trace f hf (basis X i)))
         = fun i => pathIntegral γ₂ (traceForm hf hc (basis X i)) := by
       funext i
-      rw [← Form1.trace_apply hf hc (basis X i),
-        ← period_congr_homotopic hhom (Form1.trace f hf (basis X i))]
-      exact (period_conj σ γ (Form1.trace f hf (basis X i))).symm
+      have h2 : pathIntegral γ₁ (Form1.trace f hf (basis X i))
+          = pathIntegral γ₂ (Form1.trace f hf (basis X i)) :=
+        period_congr_homotopic hhom _
+      have h1 : pathIntegral γ₁ (Form1.trace f hf (basis X i))
+          = pathIntegral γ (Form1.trace f hf (basis X i)) :=
+        period_conj σ γ _
+      rw [← Form1.trace_apply hf hc (basis X i), ← h2, h1]
     rw [heq]
     exact AddSubgroup.le_topologicalClosure _
-      (periodVector_traceForm_mem hf hc γ₂ hreg)
+      (periodVector_traceForm_mem (hf := hf) (hne := hc) γ₂ hreg)
 
 section SameUniverse
 

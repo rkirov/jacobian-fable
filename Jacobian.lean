@@ -25,3 +25,5 @@ import Jacobian.DolbeaultComparison
 import Jacobian.ResidueTheorem
 import Jacobian.CanonicalForms
 import Jacobian.LaurentTail
+import Jacobian.JacFunctorial
+import Jacobian.Abel
