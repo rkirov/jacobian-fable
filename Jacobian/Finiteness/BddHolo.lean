@@ -1,0 +1,303 @@
+import Jacobian.Meromorphic
+import Jacobian.Surface.Bridges
+import Mathlib.Topology.Sets.Opens
+import Mathlib.Topology.ContinuousMap.Bounded.Normed
+import Mathlib.Analysis.Complex.LocallyUniformLimit
+import Mathlib.Analysis.Complex.CauchyIntegral
+
+/-!
+# `BddHoloOn`: bounded-holomorphic Banach spaces, and the germ bridges (`finiteness-and-chi`)
+
+Unit: finiteness-and-chi (`docs/design/finiteness-and-chi.md` D1, D5, §4.1).
+
+The norm-layer carrier: `BddHoloOn S`, bounded-continuous functions on the open subtype `↥S`
+that agree on `S` with some `ContMDiffOn ω` (holomorphic) function. Sup-norm, chart-free
+(deviation (D-a) from Forster's `L²` norms — see the design doc §0). This file provides:
+
+* `BddHoloOn S : Submodule ℂ (↥S →ᵇ ℂ)`, `isClosed_bddHoloOn` (uniform limits of holomorphic
+  functions are holomorphic, proved chart-locally via `Surface.Bridges` +
+  `TendstoLocallyUniformlyOn.differentiableOn`), hence `CompleteSpace (BddHoloOn S)`.
+* `restrictCLM`: restriction between nested `BddHoloOn`s, norm `≤ 1`.
+* `toGerm`/`evalAt_toGerm`/`toGerm_restrict_comm`: germification into `LinSysOn 0` (D5).
+* `restrictGerm`/`toGerm_restrictGerm`/`restrictGerm_toGerm`: de-germification onto a
+  compactly-contained smaller open via `holoRepr` (`[T2Space X] [CompactSpace X]`).
+
+D5 (Čech/Banach interface localized here): all germ-vs-function traffic goes through these
+three named maps; the Banach files (`Chain.lean`, `CompactRestrict.lean`) never touch
+`MeroGermOn` internals directly, and the germ files never touch `→ᵇ` internals.
+-/
+
+open scoped ContDiff Manifold BoundedContinuousFunction
+open Set Filter Topology TopologicalSpace Metric
+
+namespace RS.Finiteness
+
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-! ### `BddHoloOn` -/
+
+/-- Bounded-holomorphic elements: BCF on the open subtype agreeing with a holomorphic function
+on `S`. -/
+noncomputable def BddHoloOn (S : Opens X) : Submodule ℂ (↥(S : Set X) →ᵇ ℂ) where
+  carrier := {f | ∃ g : X → ℂ, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g (S : Set X) ∧ ∀ z : ↥(S : Set X), f z = g z}
+  zero_mem' := ⟨fun _ => 0, contMDiffOn_const, fun _ => rfl⟩
+  add_mem' := by
+    rintro f₁ f₂ ⟨g₁, hg₁, hfg₁⟩ ⟨g₂, hg₂, hfg₂⟩
+    refine ⟨g₁ + g₂, ?_, fun z => by
+      show (f₁ + f₂) z = g₁ z + g₂ z
+      rw [BoundedContinuousFunction.add_apply, hfg₁, hfg₂]⟩
+    intro x hx
+    have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₁ x := hg₁.contMDiffAt (S.2.mem_nhds hx)
+    have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₂ x := hg₂.contMDiffAt (S.2.mem_nhds hx)
+    have heq : (g₁ + g₂) ∘ (extChartAt 𝓘(ℂ) x).symm =
+        (fun z => (g₁ ∘ (extChartAt 𝓘(ℂ) x).symm) z + (g₂ ∘ (extChartAt 𝓘(ℂ) x).symm) z) := rfl
+    refine ((RS.contMDiffAt_iff_analyticAt).2 ?_).contMDiffWithinAt
+    rw [heq]
+    exact ((RS.contMDiffAt_iff_analyticAt).1 h1).add ((RS.contMDiffAt_iff_analyticAt).1 h2)
+  smul_mem' := by
+    rintro c f ⟨g, hg, hfg⟩
+    refine ⟨c • g, ?_, fun z => by
+      show (c • f) z = c • g z
+      rw [BoundedContinuousFunction.coe_smul, Pi.smul_apply, hfg]⟩
+    intro x hx
+    have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g x := hg.contMDiffAt (S.2.mem_nhds hx)
+    have heq : (c • g) ∘ (extChartAt 𝓘(ℂ) x).symm =
+        (fun z => c • (g ∘ (extChartAt 𝓘(ℂ) x).symm) z) := rfl
+    refine ((RS.contMDiffAt_iff_analyticAt).2 ?_).contMDiffWithinAt
+    rw [heq]
+    exact ((RS.contMDiffAt_iff_analyticAt).1 h1).const_smul
+
+theorem mem_bddHoloOn_iff {S : Opens X} {f : ↥(S : Set X) →ᵇ ℂ} :
+    f ∈ BddHoloOn S ↔ ∃ g : X → ℂ, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g (S : Set X) ∧
+      ∀ z : ↥(S : Set X), f z = g z := Iff.rfl
+
+/-- Uniform limits of holomorphic functions are holomorphic (chart-local, via `Surface.Bridges`
++ `TendstoLocallyUniformlyOn.differentiableOn`): `BddHoloOn S` is closed. -/
+theorem isClosed_bddHoloOn (S : Opens X) :
+    IsClosed ((BddHoloOn S : Submodule ℂ (↥(S : Set X) →ᵇ ℂ)) : Set (↥(S : Set X) →ᵇ ℂ)) := by
+  apply isClosed_of_closure_subset
+  intro f hf
+  obtain ⟨Fb, hFbmem, hFbtend⟩ := mem_closure_iff_seq_limit.1 hf
+  choose g hgc hgeq using hFbmem
+  set gLim : X → ℂ := fun x => if hx : x ∈ S then f ⟨x, hx⟩ else 0 with hgLim_def
+  have hunif : ∀ ε > 0, ∀ᶠ n in (atTop : Filter ℕ), ∀ z : ↥(S : Set X), dist (f z) (Fb n z) < ε := by
+    have := BoundedContinuousFunction.tendsto_iff_tendstoUniformly.1 hFbtend
+    rwa [tendstoUniformly_iff] at this
+  refine ⟨gLim, ?_, fun z => by simp [hgLim_def, z.2]⟩
+  intro x hx
+  set e := chartAt ℂ x with he_def
+  set V : Opens X := S ⊓ ⟨e.source, e.open_source⟩ with hV_def
+  have hxV : x ∈ V := ⟨hx, mem_chart_source ℂ x⟩
+  have hVsub : (V : Set X) ⊆ e.source := fun _ hy => hy.2
+  have hVS : (V : Set X) ⊆ (S : Set X) := fun _ hy => hy.1
+  have huc : TendstoUniformlyOn (fun n => (g n) ∘ e.symm) (gLim ∘ e.symm) atTop (e '' (V : Set X)) := by
+    rw [tendstoUniformlyOn_iff]
+    intro ε hε
+    filter_upwards [hunif ε hε] with n hn
+    rintro w ⟨y, hyV, rfl⟩
+    have hys : y ∈ (S : Set X) := hyV.1
+    have hey : e.symm (e y) = y := e.left_inv hyV.2
+    show dist (gLim (e.symm (e y))) ((g n) (e.symm (e y))) < ε
+    rw [hey]
+    have h1 : gLim y = f ⟨y, hys⟩ := by simp [hgLim_def, hys]
+    have h2 : g n y = Fb n ⟨y, hys⟩ := (hgeq n ⟨y, hys⟩).symm
+    rw [h1, h2]
+    exact hn ⟨y, hys⟩
+  have hdiff : ∀ᶠ n in (atTop : Filter ℕ),
+      DifferentiableOn ℂ ((g n) ∘ e.symm) (e '' (V : Set X)) := by
+    refine Filter.Eventually.of_forall (fun n => ?_)
+    have hgV : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (g n) (V : Set X) := (hgc n).mono hVS
+    exact ((RS.contMDiffOn_iff_analyticOnNhd_of_subset_source (chart_mem_atlas ℂ x) hVsub
+      V.2).1 hgV).differentiableOn
+  have hUopen : IsOpen (e '' (V : Set X)) := e.isOpen_image_of_subset_source V.2 hVsub
+  have hDiffOn : DifferentiableOn ℂ (gLim ∘ e.symm) (e '' (V : Set X)) :=
+    huc.tendstoLocallyUniformlyOn.differentiableOn hdiff hUopen
+  have hAnalytic : AnalyticOnNhd ℂ (gLim ∘ e.symm) (e '' (V : Set X)) := hDiffOn.analyticOnNhd hUopen
+  have hCV : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω gLim (V : Set X) :=
+    (RS.contMDiffOn_iff_analyticOnNhd_of_subset_source (chart_mem_atlas ℂ x) hVsub V.2).2 hAnalytic
+  exact (hCV.contMDiffAt (V.2.mem_nhds hxV)).contMDiffWithinAt
+
+instance instCompleteSpaceBddHoloOn (S : Opens X) : CompleteSpace (BddHoloOn S) :=
+  (isClosed_bddHoloOn S).completeSpace_coe
+
+/-! ### `restrictCLM` -/
+
+/-- The underlying restricted bounded continuous function. -/
+noncomputable def restrictFun {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
+    ↥(S' : Set X) →ᵇ ℂ :=
+  BoundedContinuousFunction.ofNormedAddCommGroup
+    (fun z => (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z))
+    ((f : ↥(S : Set X) →ᵇ ℂ).continuous.comp (continuous_inclusion h))
+    ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
+    (fun z => BoundedContinuousFunction.norm_coe_le_norm _ _)
+
+theorem restrictFun_mem {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
+    restrictFun h f ∈ BddHoloOn S' :=
+  ⟨f.2.choose, f.2.choose_spec.1.mono h, fun z => f.2.choose_spec.2 ⟨z.1, h z.2⟩⟩
+
+theorem restrictFun_add {S' S : Opens X} (h : S' ≤ S) (f₁ f₂ : BddHoloOn S) :
+    restrictFun h (f₁ + f₂) = restrictFun h f₁ + restrictFun h f₂ := by
+  apply BoundedContinuousFunction.ext
+  intro z
+  show (f₁ + f₂ : BddHoloOn S).val (Set.inclusion h z)
+    = (f₁ : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z) + (f₂ : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z)
+  rfl
+
+theorem restrictFun_smul {S' S : Opens X} (h : S' ≤ S) (c : ℂ) (f : BddHoloOn S) :
+    restrictFun h (c • f) = c • restrictFun h f := by
+  apply BoundedContinuousFunction.ext
+  intro z
+  show (c • f : BddHoloOn S).val (Set.inclusion h z) = c • (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z)
+  rfl
+
+/-- Restriction, norm `≤ 1`. -/
+noncomputable def restrictCLM {S' S : Opens X} (h : S' ≤ S) : BddHoloOn S →L[ℂ] BddHoloOn S' :=
+  LinearMap.mkContinuous
+    { toFun := fun f => ⟨restrictFun h f, restrictFun_mem h f⟩
+      map_add' := fun f₁ f₂ => Subtype.ext (restrictFun_add h f₁ f₂)
+      map_smul' := fun c f => Subtype.ext (restrictFun_smul h c f) }
+    1 (fun f => by
+      rw [one_mul]
+      show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
+      exact BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ (norm_nonneg _) _)
+
+@[simp] theorem restrictCLM_apply_coe {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S)
+    (z : ↥(S' : Set X)) :
+    (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) z = (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z) := rfl
+
+theorem norm_restrictCLM_apply_le {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
+    ‖restrictCLM h f‖ ≤ ‖f‖ := by
+  have := (restrictCLM h).le_of_opNorm_le (C := 1) ?_ f
+  · simpa using this
+  · exact LinearMap.mkContinuous_norm_le _ zero_le_one _
+
+/-! ### `toGerm`: germification (D5) -/
+
+variable [T1Space X]
+
+/-- If two meromorphic functions agree pointwise on an open set `U`, their germ classes on `U`
+agree (Compat: the everywhere-on-`U` case of `mk_eq_mk`, used throughout this file's
+well-definedness proofs since `Exists.choose` is otherwise opaque). -/
+theorem mk_eq_mk_of_eqOn {U : Set X} (hU : IsOpen U) {f g : X → ℂ} (hf : MeromorphicOnX f U)
+    (hg : MeromorphicOnX g U) (h : Set.EqOn f g U) : MeroGermOn.mk f hf = MeroGermOn.mk g hg := by
+  rw [MeroGermOn.mk_eq_mk, eventuallyEq_codiscreteWithin_iff_of_isOpen hU]
+  intro x hx
+  filter_upwards [eventually_nhdsWithin_of_eventually_nhds (hU.mem_nhds hx)] with y hy
+  exact h hy
+
+/-- Germification (lands in `LinSysOn 0`). -/
+noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S : Set X) where
+  toFun f := MeroGermOn.mk f.2.choose
+    (fun x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx)))
+  map_add' f₁ f₂ := by
+    apply mk_eq_mk_of_eqOn S.2
+    intro x hx
+    show (f₁ + f₂ : BddHoloOn S).2.choose x = f₁.2.choose x + f₂.2.choose x
+    have e12 := (f₁ + f₂ : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
+    have e1 := f₁.2.choose_spec.2 ⟨x, hx⟩
+    have e2 := f₂.2.choose_spec.2 ⟨x, hx⟩
+    have : (f₁ + f₂ : BddHoloOn S).val ⟨x, hx⟩
+        = (f₁ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ + (f₂ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
+    rw [← e12, this, e1, e2]
+  map_smul' c f := by
+    apply mk_eq_mk_of_eqOn S.2
+    intro x hx
+    show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
+    have ecf := (c • f : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
+    have ef := f.2.choose_spec.2 ⟨x, hx⟩
+    have : (c • f : BddHoloOn S).val ⟨x, hx⟩ = c • (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
+    rw [← ecf, this, ef]
+    rfl
+
+theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
+    toGerm S f ∈ RS.LinSysOn (0 : RS.Divisor X) (S : Set X) := by
+  rw [RS.mem_linSysOn_iff_of_isOpen S.2]
+  intro x hx
+  have h0 : (0 : RS.Divisor X) x = 0 := by
+    show (0 : RS.Divisor X) x = 0
+    simp [Function.locallyFinsuppWithin.coe_zero]
+  show ((-(0 : RS.Divisor X) x : ℤ) : WithTop ℤ) ≤ (toGerm S f).ord x
+  rw [h0]
+  show ((0 : ℤ) : WithTop ℤ) ≤ (MeroGermOn.mk f.2.choose _).ord x
+  rw [RS.MeroGermOn.ord_mk S.2 hx]
+  simpa using RS.ContMDiffAt.ordAtX_nonneg (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
+
+theorem evalAt_toGerm {S : Opens X} (f : BddHoloOn S) {x : X} (hx : x ∈ S) :
+    (toGerm S f).evalAt x = f ⟨x, hx⟩ := by
+  show (MeroGermOn.mk f.2.choose _).evalAt x = f ⟨x, hx⟩
+  rw [RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
+    (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))]
+  exact (f.2.choose_spec.2 ⟨x, hx⟩).symm
+
+theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
+    toGerm S' (restrictCLM h f) = RS.MeroGermOn.restrict h (toGerm S f) := by
+  apply mk_eq_mk_of_eqOn S'.2
+  intro x hx
+  show (restrictCLM h f).2.choose x = f.2.choose x
+  have e1 := (restrictCLM h f).2.choose_spec.2 (⟨x, hx⟩ : ↥(S' : Set X))
+  have e2 : (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) ⟨x, hx⟩ = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, h hx⟩ := rfl
+  have e3 := f.2.choose_spec.2 (⟨x, h hx⟩ : ↥(S : Set X))
+  rw [← e1, e2, e3]
+
+theorem restrict_toGerm_eq {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
+    RS.MeroGermOn.restrict h (toGerm S f) = MeroGermOn.mk f.2.choose
+      (fun x hx => RS.ContMDiffAt.meromorphicAtX
+        ((f.2.choose_spec.1.mono h).contMDiffAt (S'.2.mem_nhds hx))) :=
+  RS.MeroGermOn.restrict_mk h
+
+/-! ### `restrictGerm`: de-germification (D5) -/
+
+variable [T2Space X] [CompactSpace X]
+
+/-- A closure-nested open pair `S' ⋐ S` gives `S' ≤ S`. -/
+theorem le_of_closure {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X)) : S' ≤ S :=
+  subset_closure.trans hc
+
+/-- De-germification onto a compactly-contained smaller open (uses `holoRepr`). -/
+noncomputable def restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
+    (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) : BddHoloOn S' :=
+  have hordnn : ∀ x ∈ (S : Set X), 0 ≤ (φ : RS.MeroGermOn X (S : Set X)).ord x :=
+    RS.mem_linSysOn_iff_of_isOpen S.2 |>.1 φ.2
+  have hCS : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (φ : RS.MeroGermOn X (S : Set X)).holoRepr (S : Set X) :=
+    RS.MeroGermOn.holoRepr_contMDiffOn S.2 hordnn
+  have hCS' : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (φ : RS.MeroGermOn X (S : Set X)).holoRepr (S' : Set X) :=
+    hCS.mono (le_of_closure hc)
+  have hcompact : IsCompact (closure (S' : Set X)) := isClosed_closure.isCompact
+  have hcont : ContinuousOn (φ : RS.MeroGermOn X (S : Set X)).holoRepr (closure (S' : Set X)) :=
+    (hCS.mono hc).continuousOn
+  have hbdd := hcompact.exists_bound_of_continuousOn hcont
+  ⟨BoundedContinuousFunction.ofNormedAddCommGroup
+      (fun z : ↥(S' : Set X) => (φ : RS.MeroGermOn X (S : Set X)).holoRepr z)
+      (hCS'.continuousOn.comp_continuous continuous_subtype_val (fun z => z.2))
+      hbdd.choose
+      (fun z => hbdd.choose_spec z (subset_closure z.2)),
+    ⟨(φ : RS.MeroGermOn X (S : Set X)).holoRepr, hCS', fun _ => rfl⟩⟩
+
+@[simp] theorem restrictGerm_apply {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
+    (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) (z : ↥(S' : Set X)) :
+    (restrictGerm hc φ : ↥(S' : Set X) →ᵇ ℂ) z
+      = RS.MeroGermOn.holoRepr (φ : RS.MeroGermOn X (S : Set X)) z := rfl
+
+theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
+    (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) :
+    toGerm S' (restrictGerm hc φ) =
+      RS.MeroGermOn.restrict (le_of_closure hc) (φ : RS.MeroGermOn X (S : Set X)) := by
+  apply mk_eq_mk_of_eqOn S'.2
+  intro x hx
+  show (restrictGerm hc φ).2.choose x = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x
+  have e1 := (restrictGerm hc φ).2.choose_spec.2 (⟨x, hx⟩ : ↥(S' : Set X))
+  have e2 : (restrictGerm hc φ : ↥(S' : Set X) →ᵇ ℂ) ⟨x, hx⟩
+      = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x := rfl
+  rw [← e1, e2]
+
+theorem restrictGerm_toGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
+    (f : BddHoloOn S) :
+    restrictGerm hc ⟨toGerm S f, toGerm_mem_linSysOn f⟩ = restrictCLM (le_of_closure hc) f := by
+  apply Subtype.ext
+  apply BoundedContinuousFunction.ext
+  intro z
+  show RS.MeroGermOn.holoRepr (toGerm S f) z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
+  show (toGerm S f).evalAt z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
+  rw [evalAt_toGerm f (le_of_closure hc z.2)]
+
+end RS.Finiteness

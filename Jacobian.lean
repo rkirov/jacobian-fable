@@ -10,3 +10,4 @@ import Jacobian.ResidueCalculus
 import Jacobian.Meromorphic
 import Jacobian.Path
 import Jacobian.SphereTopology
+import Jacobian.MeromorphicTrace

@@ -159,6 +159,87 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
         RS.P1.invChart_apply_infty]
     exact AnalyticAt.of_meromorphicOrderAt_pos hpos hvalz
 
+/-! ### Reusable `holoRepr` facts (for `OrderMultiplicity`/`ArgumentPrinciple`) -/
+
+/-- `f` agrees with its `holoRepr` in `toP1`, everywhere (both `ordAtX` and `limUnder` are
+`𝓝[≠]x`-germ notions, and `holoRepr` matches any representative there, at *every* `x`). -/
+theorem toP1_eq_toP1_holoRepr (hf : MeromorphicOnX f Set.univ) :
+    toP1 f = toP1 (RS.MeroGermOn.mk f hf).holoRepr := by
+  funext y
+  have heq : f =ᶠ[𝓝[≠] y] (RS.MeroGermOn.mk f hf).holoRepr :=
+    (RS.MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ y)
+      (RS.MeroGermOn.mk f hf) rfl).symm
+  unfold toP1
+  rw [RS.ordAtX_congr heq, RS.limUnder_congr heq]
+
+theorem ordAtX_holoRepr (hf : MeromorphicOnX f Set.univ) (y : X) :
+    RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y = RS.ordAtX f y :=
+  (RS.ordAtX_congr ((RS.MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ y)
+    (RS.MeroGermOn.mk f hf) rfl).symm)).symm
+
+theorem meromorphicOnX_holoRepr' (hf : MeromorphicOnX f Set.univ) :
+    MeromorphicOnX (RS.MeroGermOn.mk f hf).holoRepr Set.univ :=
+  RS.MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
+
+theorem holoRepr_contMDiffAt_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
+    (hy : 0 ≤ RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y) :
+    ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (RS.MeroGermOn.mk f hf).holoRepr y := by
+  rw [ordAtX_holoRepr hf y] at hy
+  exact RS.MeroGermOn.holoRepr_contMDiffAt isOpen_univ (mem_univ y)
+    (by rwa [RS.MeroGermOn.ord_mk isOpen_univ (mem_univ y)])
+
+/-- Wherever `f`'s `holoRepr` has nonnegative order, `toP1` of it is the literal coercion — a
+*pointwise* fact (no "isolated zeros" propagation needed: `holoRepr_contMDiffAt` gives continuity
+of the `holoRepr` AT that point directly). -/
+theorem toP1_holoRepr_eq_coe_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
+    (hy : 0 ≤ RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y) :
+    toP1 (RS.MeroGermOn.mk f hf).holoRepr y =
+      (((RS.MeroGermOn.mk f hf).holoRepr y : ℂ) : OnePoint ℂ) := by
+  have hcy := holoRepr_contMDiffAt_of_nonneg hf hy
+  rw [toP1_eq_coe_iff]
+  exact ⟨hy, (hcy.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).limUnder_eq⟩
+
+/-- Full-neighborhood upgrade of `toP1_holoRepr_eq_coe_of_nonneg`: at a regular point (finite or
+`⊤` order), `toP1 (holoRepr)` agrees with the coercion on a *full* neighborhood (isolated
+zeros/poles). -/
+theorem toP1_holoRepr_eventuallyEq_coe_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
+    (hy : 0 ≤ RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y) :
+    toP1 (RS.MeroGermOn.mk f hf).holoRepr =ᶠ[𝓝 y]
+      fun z => (((RS.MeroGermOn.mk f hf).holoRepr z : ℂ) : OnePoint ℂ) := by
+  set f' := (RS.MeroGermOn.mk f hf).holoRepr with hf'_def
+  have hf'mero : MeromorphicOnX f' Set.univ := meromorphicOnX_holoRepr' hf
+  by_cases htop : RS.ordAtX f' y = ⊤
+  · filter_upwards [RS.eventually_ordAtX_eq_top htop] with z hz
+    exact toP1_holoRepr_eq_coe_of_nonneg hf (hz ▸ le_top)
+  · have hreg : ∀ᶠ z in 𝓝[≠] y, RS.ordAtX f' z = 0 :=
+      RS.eventually_ordAtX_eq_zero (hf'mero y (mem_univ y)) htop
+    rw [eventually_nhdsWithin_iff] at hreg
+    filter_upwards [hreg] with z hz
+    rcases eq_or_ne z y with rfl | hzy
+    · exact toP1_holoRepr_eq_coe_of_nonneg hf hy
+    · exact toP1_holoRepr_eq_coe_of_nonneg hf (hz hzy ▸ le_rfl)
+
+/-- The `invChart` chart-composite of `toP1 (holoRepr)` at a pole matches the (inverted) chart
+composite of `holoRepr` itself, off the pole. -/
+theorem invChart_toP1_holoRepr_eventuallyEq_of_neg (hf : MeromorphicOnX f Set.univ) {y : X}
+    (hy : RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y < 0) :
+    (⇑RS.P1.invChart ∘ (toP1 (RS.MeroGermOn.mk f hf).holoRepr) ∘ ⇑(chartAt ℂ y).symm)
+      =ᶠ[𝓝[≠] (chartAt ℂ y y)] ((RS.MeroGermOn.mk f hf).holoRepr ∘ (chartAt ℂ y).symm)⁻¹ := by
+  set f' := (RS.MeroGermOn.mk f hf).holoRepr with hf'_def
+  have hf'mero : MeromorphicOnX f' Set.univ := meromorphicOnX_holoRepr' hf
+  set e := chartAt ℂ y with he_def
+  have heq : ∀ᶠ z in 𝓝[≠] y, toP1 f' z = ((f' z : ℂ) : OnePoint ℂ) := by
+    have hreg : ∀ᶠ z in 𝓝[≠] y, RS.ordAtX f' z = 0 :=
+      RS.eventually_ordAtX_eq_zero (hf'mero y (mem_univ y)) hy.ne_top
+    filter_upwards [hreg] with z hz
+    exact toP1_holoRepr_eq_coe_of_nonneg hf (hz ▸ le_rfl)
+  have heqchart : ∀ᶠ z in 𝓝[≠] e y, toP1 f' (e.symm z) = ((f' (e.symm z) : ℂ) : OnePoint ℂ) :=
+    RS.eventually_nhdsNE_iff_comp_chart.mp heq
+  filter_upwards [heqchart] with z hz
+  show RS.P1.invChart (toP1 f' (e.symm z)) = ((f' ∘ e.symm) z)⁻¹
+  rw [hz, RS.P1.invChart_apply_coe]
+  rfl
+
 /-! ### Nonconstancy (D3) -/
 
 /-- The natural raw-function nonconstancy hypothesis: `f` is not codiscretely equal to any single

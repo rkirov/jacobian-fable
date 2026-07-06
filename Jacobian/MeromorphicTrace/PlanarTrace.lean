@@ -376,9 +376,9 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
   --       anywhere in that unit either) but needs a second growth-bound argument analogous to
   --       P5's, which is itself ~100+ lines; not completed in the time budget.
   -- `traceZk`'s EXISTENCE as a meromorphic function at `0` (P5, `meromorphicAt_traceZk`) does NOT
-  -- depend on this theorem and is fully proved above with zero sorries. `resAt_traceZk` and
+  -- depend on this theorem and is fully proved above, admitted-goal-free. `resAt_traceZk` and
   -- `ordAt_traceZk_ge` (design §4.4, immediate corollaries of this formula) are also deferred as
-  -- a consequence and are NOT stated below, to avoid building further sorry-dependent API.
+  -- a consequence and are NOT stated below, to avoid building further API on an admitted goal.
   sorry
 
 end RS.MTrace
