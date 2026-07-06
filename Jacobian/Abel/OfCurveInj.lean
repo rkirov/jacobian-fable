@@ -1,4 +1,5 @@
 import Jacobian.Abel.Sufficiency
+import Jacobian.Abel.UpgradeDischarge
 
 /-!
 # abel-theorem: the gated `ofCurve_inj` and final-assembly discharge (§4.4 D4)
@@ -74,5 +75,23 @@ theorem ofCurve_inj (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 < 
     [DiscreteTopology (RS.periodSubgroup X)] :
     Function.Injective (ofCurve P) :=
   ofCurve_inj' hupgrade P h
+
+/-- `ofCurve_inj'` with the `WeakSolutionUpgrade` hypothesis **discharged**
+(`UpgradeDischarge.lean`): the only remaining gates are `period-lattice-rank`'s
+`[DiscreteTopology (RS.periodSubgroup X)]` and `serre-duality-tails`'s single remaining
+external fact (`Function.Surjective (tailToH1 0)`). -/
+theorem ofCurve_inj_of_surjective' [DecidableEq X]
+    (hsurj : Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X)))
+    (P : X) (h : 0 < genus X) [DiscreteTopology (RS.periodSubgroup X)] :
+    Function.Injective (ofCurve P) :=
+  ofCurve_inj' (RS.Abel.weakSolutionUpgrade_of_surjective hsurj) P h
+
+/-- The literal challenge statement, gated on discreteness (`period-lattice-rank`'s job) and
+the single `serre-duality-tails` fact only. -/
+theorem ofCurve_inj_of_surjective [DecidableEq X]
+    (hsurj : Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X)))
+    (P : X) (h : 0 < genus X) [DiscreteTopology (RS.periodSubgroup X)] :
+    Function.Injective (ofCurve P) :=
+  ofCurve_inj_of_surjective' hsurj P h
 
 end Jacobian

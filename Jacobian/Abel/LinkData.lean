@@ -59,11 +59,14 @@ theorem meromorphicAt_of_tendsto_factor {F : ℂ → ℂ} {z₀ C : ℂ} {m : �
     refine h.congr' ?_
     filter_upwards [self_mem_nhdsWithin] with z hz
     exact (hGoff z (by simpa using hz)).symm
+  have hGval : G z₀ = C := by
+    rw [hG_def]
+    exact Function.update_self _ _ _
   have hGcont : ContinuousAt G z₀ := by
     have hpure : Tendsto G (pure z₀) (nhds C) := by
-      rw [show C = G z₀ from (Function.update_self _ _ _).symm]
+      rw [← hGval]
       exact tendsto_pure_nhds G z₀
-    rw [ContinuousAt, show G z₀ = C from Function.update_self _ _ _, ← nhdsNE_sup_pure z₀]
+    rw [ContinuousAt, hGval, ← nhdsNE_sup_pure z₀]
     exact tendsto_sup.mpr ⟨hGtendsto, hpure⟩
   have hGdiffAt : ∀ z ∈ U \ {z₀}, DifferentiableAt ℂ G z := by
     intro z hz
@@ -459,9 +462,9 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
           have hfq : f ((chartAt ℂ x).symm (chartAt ℂ x q)) = P.g (τ (chartAt ℂ x q)) := by
             rw [hq1, hf_source q hq.2, hτ_def]
             simp only [Function.comp_apply, hq1]
-          rw [hfq, hτz₀, hβval, zpow_neg_one]
-          field_simp
-          ring
+          rw [hfq, zpow_neg_one, show τ z₀ = P.β from hτz₀.trans hβval.symm]
+          rw [mul_assoc, ← mul_assoc ((τ (chartAt ℂ x q) - P.β)⁻¹),
+            inv_mul_cancel₀ hτβ, one_mul]
         · rcases eq_or_ne x A with rfl | hxA
           · -- the pole: `linkOrd = -1`
             have hord : linkOrd x B x = -1 := by
@@ -510,13 +513,9 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
                 = P.g (τ (chartAt ℂ x q)) := by
               rw [hq1, hf_source q hq.2, hτ_def]
               simp only [Function.comp_apply, hq1]
-            have hττ : τ (chartAt ℂ x q) - τ z₀ ≠ 0 := by
-              rw [hτz₀, ← hαval]
-              exact hτα
-            rw [hfq, hτz₀, ← hαval]
-            rw [show (-(-1 : ℤ)) = (1 : ℤ) from rfl, zpow_one]
-            field_simp
-            ring
+            rw [hfq, neg_neg, zpow_one, show τ z₀ = P.α from hτz₀.trans hαval.symm]
+            rw [mul_assoc, mul_comm (chartAt ℂ x q - z₀) ((τ (chartAt ℂ x q) - P.α)⁻¹),
+              ← mul_assoc (τ (chartAt ℂ x q) - P.α), mul_inv_cancel₀ hτα, one_mul]
           · -- a regular point: `linkOrd = 0`
             have hord : linkOrd A B x = 0 := by
               rw [linkOrd, if_neg hxB, if_neg hxA, sub_zero]
@@ -528,9 +527,9 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
               rw [hτz₀]
               exact (P.g_contDiffAt hexA).continuousAt
             have hgoal : Tendsto (P.g ∘ τ) (nhdsWithin z₀ {z₀}ᶜ) (nhds (P.g (e x))) := by
-              have := hcont.continuousWithinAt.tendsto
-              rw [Function.comp_apply, hτz₀] at this
-              exact this
+              have h1 : Tendsto (P.g ∘ τ) (nhds z₀) (nhds ((P.g ∘ τ) z₀)) := hcont
+              rw [Function.comp_apply, hτz₀] at h1
+              exact h1.mono_left nhdsWithin_le_nhds
             refine hgoal.congr' ?_
             filter_upwards [mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem)] with z hz2
             obtain ⟨q, hq, rfl⟩ := hz2

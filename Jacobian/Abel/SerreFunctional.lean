@@ -689,6 +689,38 @@ theorem exists_dbar_of_forall_pairing_eq_zero (PU : SurfPoU X)
   rw [pairingH01_mk]
   exact h θ
 
+/-- **The single remaining gate, reformulated as a pure dimension count**: `tailToH1 0` is
+surjective iff the Čech `H¹(𝒪_X)` has dimension at most `genus X`. (The `≥` inequality is the
+unconditional tail injection `H1Tail.toH1_injective` + `h1T_zero_eq_genus`; classically the
+`≤` direction is Forster §17.9's Serre-duality counting — the one fact of this challenge that
+remains open, everything else in `Jacobian/Abel` now being reduced to it.) -/
+theorem tailToH1_zero_surjective_iff_finrank_le :
+    Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X)) ↔
+      Module.finrank ℂ (RS.Cech.H1 (0 : RS.Divisor X)) ≤ genus X := by
+  constructor
+  · intro hsurj
+    have e1 := RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj
+    rw [← e1.finrank_eq]
+    exact le_of_eq RS.TailDuality.h1T_zero_eq_genus
+  · intro hle
+    have hinj := RS.LaurentTail.H1Tail.toH1_injective (0 : RS.Divisor X)
+    have hgen : Module.finrank ℂ (RS.LaurentTail.H1Tail (0 : RS.Divisor X)) = genus X :=
+      RS.TailDuality.h1T_zero_eq_genus
+    have hfr : Module.finrank ℂ (RS.LaurentTail.H1Tail (0 : RS.Divisor X))
+        = Module.finrank ℂ (RS.Cech.H1 (0 : RS.Divisor X)) := by
+      refine le_antisymm ?_ ?_
+      · exact LinearMap.finrank_le_finrank_of_injective hinj
+      · rw [hgen]
+        exact hle
+    have hsurj' : Function.Surjective (RS.LaurentTail.H1Tail.toH1 (0 : RS.Divisor X)) :=
+      (LinearMap.injective_iff_surjective_of_finrank_eq_finrank hfr).mp hinj
+    intro ξ
+    obtain ⟨c, hc⟩ := hsurj' ξ
+    obtain ⟨z, rfl⟩ := RS.LaurentTail.H1Tail.mk_surjective (0 : RS.Divisor X) c
+    refine ⟨z, ?_⟩
+    rw [← RS.LaurentTail.H1Tail.toH1_mk]
+    exact hc
+
 end RS.Abel
 
 end

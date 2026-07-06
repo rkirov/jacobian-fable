@@ -6,8 +6,15 @@ import Jacobian.Abel.DolbeaultBridge
 
 Unit: abel-theorem. Namespace `RS.Abel`. The unit's centerpiece.
 
-## Status: the external blocker (`serre-duality-tails` not existing) has CLEARED; one precisely-
-isolated, non-external, gated hypothesis remains
+## Status: the external blocker (`serre-duality-tails` not existing) has CLEARED; the isolated
+hypotheses below are now DISCHARGED modulo that unit's ONE remaining fact
+
+**UPDATE (upgrade-discharge pass)**: `WeakSolutionUpgrade X` and `WeakSolutionUpgradeFinset X ι`
+are now PROVEN in `UpgradeDischarge.lean` (`weakSolutionUpgrade_of_surjective` /
+`weakSolutionUpgradeFinset_of_surjective`), gated ONLY on `serre-duality-tails`'s single
+remaining external fact `Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))` —
+the same gate `DolbeaultBridge.lean` carries. The defs below are kept as the frozen consumer
+interface (`period-lattice-rank` cites them); the historical account of the gap follows.
 
 `exists_mero_of_pathIntegral_mem`'s proof is complete through step 4 of the design's own §2.1
 proof plan (loop cancellation via `Loops.lean` + the weak solution `f` via

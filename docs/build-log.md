@@ -2109,3 +2109,117 @@
   Files: `Jacobian/PeriodLattice/{Membership,GenericPoints,Segment,FormIdentity,Nondegeneracy,
   Discreteness,FullRank}.lean` (all new) + `Jacobian/PeriodLattice.lean` (new, unit root/API
   docstring). `Jacobian.lean` (root orchestrator) NOT touched, per task hard rule.
+
+## abel-theorem: the weak-solution-upgrade DISCHARGE (the Serre-functional pass)
+
+**Task**: discharge the two hypotheses isolated by the previous Abel pass —
+`RS.Abel.WeakSolutionUpgrade X` / `WeakSolutionUpgradeFinset X ι` (design §4.1 steps 5-7) and
+the `DolbeaultBridge` gate `Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))` —
+by building the blueprint's routing-decision-#2 "honest integration atom" (the Dolbeault-side
+Serre functional).
+
+**Outcome**: the atom is BUILT and steps 5-7 are FULLY DISCHARGED, collapsing the unit's whole
+gate structure to the ONE pre-existing `serre-duality-tails` fact. Six new files, all under
+`Jacobian/Abel/`, zero sorries, no new axioms:
+
+* `AreaPairing.lean` — `SurfPoU X` (finite smooth PoU subordinate to preferred-chart sources,
+  from `RS.exists_smoothPartitionOfUnity` + compactness); the indicator-extension smoothness /
+  compact-support / integrability gadgets; the chart-inverse `ContDiffOn` bridges; the
+  spike-recorded holomorphic-Jacobian fact `det_fderiv_eq_normSq_deriv`; the biholomorphic
+  `(1,1)`-density change-of-variables atom `integral_eq_integral_transition` (mathlib
+  `integral_image_eq_integral_abs_det_fderiv_smul` + `normSq∘deriv`); and the **Serre area
+  pairing** `RS.Abel.pairing PU σ θ := ∑ i, ∫ ψᵢ σᵢ θᵢ dA`, integrable and bilinear. The pairing
+  is parametrized by a fixed `PU : SurfPoU X` — no independence-of-PoU statement is ever needed,
+  since every downstream conclusion is a `Prop` that fixes one `PU` at the start.
+* `SerreFunctional.lean` — (a) **`pairing_dbar_eq_zero`** (`∬ ∂̄u ∧ θ = 0`, UNCONDITIONAL): the
+  compact-surface Stokes argument run through planar Atom 1 per PoU chart
+  (`ψᵢ ∂̄u θᵢ = ∂̄(ψᵢ u θᵢ) − ∂̄ψᵢ·u·θᵢ`), with the leftover sum killed by inserting `∑ⱼ ψⱼ = 1`,
+  transporting each `(i,j)` piece to chart `j` by the change-of-variables atom (the
+  `conj (deriv τ)·deriv τ = normSq (deriv τ)` cancellation against the `(0,1)` chain rule and
+  `coeffIn_trans`), and summing `∑ᵢ ∂̄ψᵢ = ∂̄1 = 0`. (b) `conjForm` (the conjugate `(0,1)`-form,
+  whose `Form01.compat` law is the conjugated `coeffIn_trans`) and **`pairingDual_injective`**
+  (UNCONDITIONAL, Hodge-free: `∬ θ̄ ∧ θ = ∑ ∫ ψᵢ|θᵢ|² ≥ 0`, zero only for `θ = 0`, via
+  `volume`'s open-positivity). (c) `finrank_H01_eq_genus` and the INTEGRAL-pairing bridge
+  **`exists_dbar_of_forall_pairing_eq_zero`** (σ ⊥ all of `Form1 X` ⟹ ∂̄-exact), both gated on
+  the single `serre-duality-tails` fact: surjectivity forces `finrank (H01 X) = genus X`
+  (via `dolbeaultEquiv` + `H1Tail.equiv_of_surjective` + `h1T_zero_eq_genus`), so the positivity
+  injection is onto `Dual (H01 X)` by dimension count and
+  `Module.forall_dual_apply_eq_zero_iff` closes. Also
+  **`tailToH1_zero_surjective_iff_finrank_le`**: the remaining gate is EQUIVALENT to the pure
+  dimension statement `finrank ℂ (Cech.H1 0) ≤ genus X` (the `≥` direction being the
+  unconditional tail injection).
+* `ChartSupported.lean` — `ChartSupportedData.form`: a planar coefficient compactly supported in
+  one maximal-atlas chart spreads to a global `Form01 X` (direct construction, `compat` via
+  `deriv_trans_comp`); the localization **`pairing_form`**: `pairing PU D.form θ =
+  ∫ h · coeffIn e θ dA` (one planar integral in the supporting chart — per-PoU-index
+  change of variables, `deriv_trans_mul_deriv_trans_symm` unit cancellation, `∑ψᵢ = 1`).
+* `LogPiece.lean` (pure planar) — `LogPieceData`: one `SingleChart.lean`-recipe piece
+  (`(z-β)/(z-α)` inside `ball c ρ`, `exp(χ·L)` across the bump annulus, `1` outside, `L` the
+  exterior log branch); its `∂̄log` coefficient `dlog = ∂̄(χL)`, globally smooth, supported in
+  the closed bump annulus, with `∂̄g = dlog·g` off `{α, β}`; punctured-limit factorizations
+  `g·(z-β)⁻¹ → (β-α)⁻¹`, `g·(z-α) → α-β`; and **`integral_dlog_mul`** — Forster 20.3/20.5 in
+  planar form, `∫ dlog·θ dA = π (Gp β − Gp α)`: the annulus-Stokes atom reduces the area
+  integral to `−∮ L·θ` on the inner circle, integration by parts along the circle
+  (`circleIntegral.integral_eq_zero_of_hasDerivWithinAt`) trades `L·θ` for the two-pole kernel
+  `((z-β)⁻¹−(z-α)⁻¹)·Gp`, and `DiffContOnCl.circleIntegral_sub_inv_smul` evaluates it.
+* `LinkData.lean` — **`exists_link`**: one `ChartChain` link (two points in a common chart
+  ball) yields the piece function on `X` plus its packaged `Form01` with five facts:
+  real-smoothness off the pole, non-vanishing off the divisor, the `∂̄log`-matching at every
+  preferred-chart center, the punctured factor limit `f·(z-z₀)^(−linkOrd) → C ≠ 0` at EVERY
+  point (handled uniformly — zero, pole, regular, off-chart, and degenerate `A = B` cases; slope
+  limits via `hasDerivAt_iff_tendsto_slope`), and the pairing identity
+  `∬ η ∧ θ = π (Gp(eB) − Gp(eA))`. Also the planar **promotion lemma**
+  `meromorphicAt_of_tendsto_factor` (punctured holomorphy + factor limit ⟹ `MeromorphicAt` AND
+  `meromorphicOrderAt = m`, via the removable-singularity theorem +
+  `tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero` — this replaces ALL `Rechart`-style order
+  bookkeeping), and the `∂̄` finite product rule.
+* `UpgradeDischarge.lean` — **`exists_mero_of_sum_pathIntegral_eq_zero`** (the engine): chains
+  via `RS.exists_chartChain`, one `exists_link` per link, `η := ∑ η_l`;
+  `pairing PU η θ = π ∑ᵢ ∫_{δᵢ} θ = 0` (the per-link residue identities telescope through
+  `pathIntegral_eq_sum_chartChain` USING THE SAME chart primitives, from mathlib's
+  `DifferentiableOn.isExactOn_ball`); the bridge gives `u` with `∂̄u = η`;
+  `F₀ := exp(−u)·∏ f_l` is `∂̄`-closed off the divisor points
+  (`wirtingerDbar_exp_neg_mul_eq_zero` + the product rule + the per-link `∂̄log`-matchings),
+  hence holomorphic there (`contMDiffOn_omega_of_isDbarOn_zero`), and the factor limits multiply
+  into the promotion lemma at EVERY point, giving meromorphy and
+  `ord_z F = ∑_l linkOrd l z` in one stroke; the link orders telescope
+  (`Finset.sum_range_sub`) to the endpoint divisor. Consumers:
+  **`weakSolutionUpgrade_of_surjective : (surjectivity) → WeakSolutionUpgrade X`** and
+  **`weakSolutionUpgradeFinset_of_surjective`** — note the `WeakSolutionUpgrade` shapes'
+  weak-solution ARGUMENTS are not needed at all (their conclusions never mention `f`), so the
+  discharge builds its own chain pieces along the given zero-period paths.
+* `OfCurveInj.lean` (edited) — new `Jacobian.ofCurve_inj_of_surjective'`/`ofCurve_inj_of_surjective`:
+  the challenge statement now gated ONLY on `[DiscreteTopology (RS.periodSubgroup X)]`
+  (`period-lattice-rank`'s job) and the single `serre-duality-tails` fact.
+
+**What remains (ONE fact, strictly smaller than the previous gate set)**:
+`Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))`, equivalently (proved,
+`tailToH1_zero_surjective_iff_finrank_le`) `Module.finrank ℂ (RS.Cech.H1 (0 : RS.Divisor X)) ≤
+genus X`. Classically this is the surjectivity half of Serre duality for `𝒪_X`; the recorded
+Hodge-free route is Forster §17.9's dimension counting (Čech level: the residue pairing
+`H⁰(Ω_{nP}) × H¹(𝒪_{−nP}) → ℂ` via PoU-splitting + the now-built `∬` machinery, the
+multiplication epimorphisms `H¹(𝒪_{−nP}) → H¹(𝒪)` through the six-term/skyscraper ledger, and
+the count `dim Λ + dim Im(ι) > dim H¹(𝒪_{−nP})*` for `n ≫ 0`) — a further sibling-unit-sized
+build on the Čech colimit, not attempted here. NOTE the reduction is strict: previously
+`WeakSolutionUpgrade`(+Finset) was an INDEPENDENT second gap; now every `Jacobian/Abel` result
+is reduced to this single fact.
+
+**Lean gotchas hit**: `ω`/`𝒫` are not usable as identifiers under `open scoped ContDiff` (hence
+"θ not ω" everywhere); raw `P.ρ < ‖z-c‖` props must be coerced to `z ∈ {w | …}` memberships
+before `Set.indicator_of_mem` rewrites (the unifier otherwise decomposes the membership as a
+`Real.lt`-application and the rewrite pattern misses the `setOf`-indicator); `rcases eq_or_ne x B
+with rfl` substitutes `B := x`, so subsequent references must use `x`; `ContDiffOn.smul`/`.mul`
+chains need the scalar factor bound by `have` first (metavariable-stuck `IsScalarTower`
+otherwise); `ContDiffBump`-field inequalities are best proved by `show`-normalizing the structure
+literal's projections (a `rw` into the literal makes the motive ill-typed); and
+`Set.piecewise`/`Function.comp` chart-center evaluations close by `simp [Function.comp,
+left_inv]`, not `rfl`.
+
+**Verification**: `scripts/check.sh Jacobian/Abel` — Build completed successfully (3276 jobs),
+zero sorries. Files touched: `Jacobian/Abel/AreaPairing.lean`, `SerreFunctional.lean`,
+`ChartSupported.lean`, `LogPiece.lean`, `LinkData.lean`, `UpgradeDischarge.lean` (all new),
+`Jacobian/Abel/Sufficiency.lean` (docstring update), `Jacobian/Abel/OfCurveInj.lean` (new
+wrappers), `Jacobian/Abel.lean` (imports + docstring), `docs/build-log.md` (this entry).
+`Jacobian.lean` NOT touched.
+
+- [abel] UPGRADE DISCHARGED
