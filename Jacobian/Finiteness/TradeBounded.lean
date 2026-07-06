@@ -385,8 +385,8 @@ variable [T1Space X] [T2Space X] [CompactSpace X]
 to the Banach layer). -/
 theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T) := by
   intro ξ
-  obtain ⟨F, g, hFg⟩ := exists_trade (0 : RS.Divisor X) T.good_star id T.ref_star_V
-    (toGermZ1 T T.V T.covers_V ξ)
+  obtain ⟨F, g, hFg⟩ := exists_trade (𝒰 := T.coverStar) (𝒱 := T.coverV) (D := (0 : RS.Divisor X))
+    (h𝒰 := T.good_star) (hτ := T.ref_star_V) (τ := id) (f := toGermZ1 T T.V T.covers_V ξ)
   have hζmem : boundZ1 T T.closure_U_subset F ∈ NZ1 T T.U := boundZ1_mem_NZ1 T T.closure_U_subset F
   set ζ : NZ1 T T.U := ⟨boundZ1 T T.closure_U_subset F, hζmem⟩ with hζ_def
   set η : NC0 T T.W := boundZ1C0 T g with hη_def
@@ -394,23 +394,23 @@ theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T)
     rw [mem_tradeSpace_iff_eq]
     rintro ⟨α, β⟩
     apply Subtype.ext
-    simp only [Submodule.coe_add, Submodule.coe_sub]
     apply BoundedContinuousFunction.ext
     intro z
-    simp only [restrictCLM_apply_coe]
+    simp only [Submodule.coe_add, Submodule.coe_sub, BoundedContinuousFunction.coe_add,
+      BoundedContinuousFunction.coe_sub, Pi.add_apply, Pi.sub_apply, restrictCLM_apply_coe]
     have hzeq : (ζ.1 : NC1 T T.U) (α, β) = boundZ1 T T.closure_U_subset F (α, β) := rfl
     rw [hzeq, boundZ1_apply_eq_evalAt]
     have hηβ : η β = boundZ1C0 T g β := rfl
     have hηα : η α = boundZ1C0 T g α := rfl
     rw [hηβ, hηα, boundZ1C0_apply_eq_evalAt, boundZ1C0_apply_eq_evalAt]
-    have hξeval : (ξ (α, β) : ↥((T.V α ⊓ T.V β : Set X)) →ᵇ ℂ)
+    have hξeval : ((ξ : NC1 T T.V) (α, β) : ↥((T.V α ⊓ T.V β : Set X)) →ᵇ ℂ)
         (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z) =
-        (toGerm (T.V α ⊓ T.V β) (ξ (α, β))).evalAt
+        (toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β))).evalAt
           ((Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z : X)) :=
-      (evalAt_toGerm (ξ (α, β))
+      (evalAt_toGerm ((ξ : NC1 T T.V) (α, β))
         (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2).symm
     rw [hξeval]
-    have hcgerm : (toGerm (T.V α ⊓ T.V β) (ξ (α, β))) =
+    have hcgerm : (toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β))) =
         ((toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X) (coverOfP T T.V T.covers_V))
           (α, β) : RS.MeroGermOn X (T.V α ⊓ T.V β : Set X)) := by
       rw [toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]

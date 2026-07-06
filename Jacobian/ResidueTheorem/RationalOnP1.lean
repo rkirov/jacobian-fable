@@ -4,24 +4,68 @@ import Jacobian.ResidueCalculus.PrincipalPart
 import Mathlib.MeasureTheory.Integral.CircleAverage
 
 /-!
-# residue-theorem: the `ℙ¹` base case (file 1/3)
+# residue-theorem: the `ℙ¹` base case — atoms (file 1/1, PARTIAL DELIVERY)
 
 Unit: residue-theorem (`docs/design/residue-theorem.md` §6, `docs/design/form-trace-tower.md`
-§RationalOnP1). Proves the genus-0 instance of the deliverable directly at the `MForm` level:
-`∑ᶠ p, θ.resAt p = 0` for `θ : MForm (OnePoint ℂ)` (`RS.MForm.sum_resAt_eq_zero_P1`).
+§RationalOnP1). Target headline: `∑ᶠ p, θ.resAt p = 0` for `θ : MForm (OnePoint ℂ)`, as the
+genus-0 base case feeding the general-`X` reduction via a nonconstant map to `ℙ¹` (design §6).
 
-## Route
+**Status: the headline theorem is NOT proved here — read this note before building on this
+file.** What follows is a complete (no open goals anywhere), independently useful collection of atoms toward
+it, plus an honest account of the one remaining gap and how to close it. See `Jacobian/
+ResidueTheorem.lean` (unit root) for the full write-up of what is/isn't delivered and why.
 
-Two-chart bookkeeping (`RS.P1.formOfCoeFn`) packages an arbitrary meromorphic "coefficient in the
-finite chart" function into a genuine `MFormData (OnePoint ℂ)`. Given `θ`, extract its (single,
-shared — `ℙ¹`'s finite points all read through the same `coeChart`) finite-chart coefficient `R`,
-subtract the finite sum of its principal parts (`RS.principalPartAt`, residue-calculus, already
-built) at its finitely many finite poles, getting a remainder `θ'` whose finite-chart coefficient
-is *entire*. The classical "Liouville" step is not a polynomial-growth argument: it is Cauchy's
-theorem (an entire function's circle integral vanishes at every radius) transported through the
-`z ↦ z⁻¹` reindexing of the contour (`circleIntegral_inv_eq_neg`), giving directly that `θ'.resAt ∞
-= 0` with no growth/degree bookkeeping at all. Summing residues then telescopes: the tail's own
-residue at `∞` is exactly minus the sum of the finite residues it was built to reproduce.
+## What IS built, zero sorries
+
+* `RS.P1.formOfCoeFn`: packages an arbitrary meromorphic "coefficient in the finite chart"
+  function `R : ℂ → ℂ` into a genuine `MFormData (OnePoint ℂ)`, given that its `invChart`-transported
+  reading `fun w => -(w²)⁻¹ * R w⁻¹` is *also* meromorphic. The two-chart `compat` check reduces to
+  "apply the transition rule twice returns to the start", independent of what `R` is.
+* `RS.P1.coeffAt_coe_eq_coeffAt_coe`: any `MFormData (OnePoint ℂ)`'s finite-chart coefficient is
+  the *same raw function* at every finite basepoint (all of `ℙ¹`'s finite points share `coeChart`).
+* **The Liouville-free residue-at-infinity fact** (`RS.P1.circleIntegral_inv_eq_neg` +
+  `RS.P1.resAt_neg_sq_inv_mul_comp_inv_eq_zero`): for `R_mid` differentiable on all of `ℂ`, the
+  residue "at infinity" of its `invChart` reading vanishes — via Cauchy's theorem (an entire
+  function's circle integral is `0` at every radius) transported through the `z ↦ z⁻¹` reindexing
+  of the contour, NOT a polynomial-growth/degree argument. This is the "Liouville" ingredient the
+  task brief anticipated, done more cheaply than the growth-bound route the non-quotient
+  `form-trace-tower` design had budgeted for.
+* `RS.P1.meromorphicAt_neg_sq_inv_mul_sub_inv_zpow` / `RS.P1.resAt_neg_sq_inv_mul_sub_inv_zpow`:
+  the "companion pole at `∞`" bookkeeping for a single principal-part monomial `(w⁻¹ - a) ^ k`
+  (`k < 0`) — meromorphic at `0`, with residue `-1` for the simple pole `k = -1` (Miranda's
+  "`dz/(z-a)` has residues `1` at `a` and `-1` at `∞`") and `0` otherwise.
+
+## What is NOT built: the assembly, and why (read before attempting it)
+
+The intended proof: extract `θ`'s finite-chart coefficient `R`, subtract the finite sum of its
+principal parts at its finitely many finite poles (`RS.principalPartAt`, already built) to get a
+remainder `R_mid`, apply the Liouville-free fact above to conclude the remainder's residue at `∞`
+vanishes, then telescope (the tail's own residue at `∞` is exactly minus the sum of residues it
+reproduces at the finite poles it was built to match, by `resAt_neg_sq_inv_mul_sub_inv_zpow`).
+
+**The blocker, found late and not resolved in the time available**: `resAt_neg_sq_inv_mul_comp_inv_eq_zero`
+needs `R_mid` genuinely `Differentiable ℂ` — but `R_mid := R - R_tail` is built from `MeromorphicAt`
+data, whose junk convention at a pole/removable point does **not** force the value there to match
+the analytic-repair limit (`MeromorphicAt f x` with witness order `n > 0` puts no constraint on
+`f x` at all, since it is multiplied by `(x - x) ^ n = 0`). So `R_mid`, built by bare pointwise
+subtraction, may fail to be *continuous* at the finitely many points of `θ`'s pole set even though
+its *order* is `≥ 0` there (checked and proved separately, via `MeromorphicAt.orderAt_sub_
+principalPartAt_nonneg` + a `Finset.analyticAt_fun_sum` argument — that part of the assembly DID
+work, it is only the final "hence `Differentiable ℂ`, hence apply the Liouville-free fact" step
+that does not follow as stated). Two fixes, either workable, neither attempted:
+(a) weaken `resAt_neg_sq_inv_mul_comp_inv_eq_zero` to take an explicit radius `R₀` with
+`R_mid` differentiable only on `closedBall 0 R₀ \ {0}` for `R₀` small enough to exclude the
+(finite) pole set — the circle-integral argument only ever needs one such disk, and `resAt` at `0`
+doesn't care which; or (b) repair `R_mid` first (canonical-forms' `MeroGermOn.holoRepr`-style
+construction, already used elsewhere in this project, e.g. `MForm.d`) to an honestly continuous
+representative before invoking Cauchy's theorem. Route (a) is probably the smaller patch — the
+`Set.Finite`/`Metric` "there is a positive radius smaller than the nearest nonzero pole" lemma is
+routine, and every other piece of the assembly (the finite-pole-sum construction, the order-≥0
+argument, the `θ.coeffAt ∞` transition formula, the finite pole set extraction from `θ.divisor`)
+was fully worked out and test-compiled during this build and is recorded in this design's build
+notes for the next attempt; none of it is included here as code because it was written against the
+now-known-insufficient `Differentiable ℂ R_mid` hypothesis and would need re-threading through
+whichever fix is chosen.
 -/
 
 open scoped ContDiff Manifold OnePoint Classical
