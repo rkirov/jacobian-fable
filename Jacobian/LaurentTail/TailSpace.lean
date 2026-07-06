@@ -35,16 +35,13 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-- The tail space at `p`: germs at the chart source of `p`, modulo those of order `≥ -(D p)`.
 No colimit over `d'` is needed: every germ has *some* finite order, so it already lies in some
-`Cech.ordGe p (-d')`. -/
-noncomputable def TailAt (p : X) (D : RS.Divisor X) : Type _ :=
+`Cech.ordGe p (-d')`. **`abbrev`, not `def`** — matching `T D`'s own convention (D2): a plain
+`def` here is opaque enough to break `Submodule.liftQ`'s instance/type matching against
+`TailAt p D` downstream (`Comparison.lean`'s `tailAtToH1`, confirmed by that build); `abbrev`
+lets the ambient `Submodule.Quotient` `AddCommGroup`/`Module ℂ` instances be found directly,
+so the two instances previously declared here by hand are no longer needed. -/
+noncomputable abbrev TailAt (p : X) (D : RS.Divisor X) : Type _ :=
   RS.MeroGermOn X (chartAt ℂ p).source ⧸ RS.Cech.ordGe p (-(D p))
-
-noncomputable instance instAddCommGroupTailAt (p : X) (D : RS.Divisor X) :
-    AddCommGroup (TailAt p D) :=
-  inferInstanceAs (AddCommGroup (RS.MeroGermOn X (chartAt ℂ p).source ⧸ RS.Cech.ordGe p (-(D p))))
-
-noncomputable instance instModuleTailAt (p : X) (D : RS.Divisor X) : Module ℂ (TailAt p D) :=
-  inferInstanceAs (Module ℂ (RS.MeroGermOn X (chartAt ℂ p).source ⧸ RS.Cech.ordGe p (-(D p))))
 
 /-- The quotient map onto `TailAt p D`. -/
 noncomputable def TailAt.mk (p : X) (D : RS.Divisor X) :
