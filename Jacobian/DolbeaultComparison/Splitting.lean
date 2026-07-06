@@ -317,7 +317,7 @@ theorem sub_mem_range_dbar_of_splittings {𝒰 : FinCover (⊤ : Opens X)} (h�
     have hxmem : x ∈ (𝒰.U i ⊓ 𝒰.U (idx x) : Opens X) := ⟨hxi, hidx x⟩
     have h1 := s.split i (idx x) x hxmem
     have h2 := s'.split i (idx x) x hxmem
-    linear_combination h1 - h2
+    linear_combination h2 - h1
   have hCM : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ w := by
     intro x₀
     have hCM0 : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun x => s.g (idx x₀) x - s'.g (idx x₀) x)
@@ -384,7 +384,7 @@ theorem dolbForm_mem_range_of_mem_B1 [T2Space X] [CompactSpace X] {𝒰 : FinCov
         ((f : C1 (0 : RS.Divisor X) 𝒰) (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) =
         RS.MeroGermOn.restrict (inf_le_right : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U j)
           (c j : RS.MeroGermOn X (𝒰.U j : Set X)) := by
-      linear_combination hval
+      linear_combination -hval
     have heval := congrArg (fun ψ => RS.MeroGermOn.evalAt ψ x) hsum
     dsimp only at heval
     rw [RS.MeroGermOn.evalAt_add (𝒰.U i ⊓ 𝒰.U j).isOpen hx hordi_r hordf,
@@ -441,7 +441,7 @@ theorem dolbForm_add_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ 
         have h1 := sf.split i j x hx
         have h2 := sf'.split i j x hx
         linear_combination h1 + h2 } with hs2_def
-  have hkey : sf.glueData h𝒰 |>.form + sf'.glueData h𝒰 |>.form = s2.glueData h𝒰 |>.form := by
+  have hkey : (sf.glueData h𝒰).form + (sf'.glueData h𝒰).form = (s2.glueData h𝒰).form := by
     apply DbarGlueData.form_unique
     intro i x hxi
     exact IsDbarOn.add (𝒰.U i).isOpen (sf.smoothOn i) (sf'.smoothOn i)
@@ -465,7 +465,7 @@ theorem dolbForm_smul_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤
       smoothOn := fun i => by
         have hL : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞
             (⇑(ContinuousLinearMap.mul ℝ ℂ c) ∘ sf.g i) (𝒰.U i : Set X) :=
-          (ContinuousLinearMap.mul ℝ ℂ c).contMDiffOn.comp (sf.smoothOn i)
+          ((ContinuousLinearMap.mul ℝ ℂ c).contMDiffOn (s := Set.univ)).comp (sf.smoothOn i)
             (fun x _ => Set.mem_univ _)
         have heq : (⇑(ContinuousLinearMap.mul ℝ ℂ c) ∘ sf.g i) = fun x => c • sf.g i x := by
           funext x; simp [ContinuousLinearMap.mul_apply', smul_eq_mul]
@@ -524,9 +524,10 @@ theorem dolbForm_res_sub_mem [T2Space X] [CompactSpace X] {𝒰 𝒱 : FinCover 
               RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l : Set X)).evalAt x =
             ((f : C1 (0 : RS.Divisor X) 𝒰) (τ k, τ l) :
               RS.MeroGermOn X (𝒰.U (τ k) ⊓ 𝒰.U (τ l) : Set X)).evalAt x
-          rw [resZ1_apply_coe, resC1_apply]
+          rw [resZ1_apply_coe, resC1_apply, restrictL_apply_coe]
           exact RS.MeroGermOn.evalAt_restrict (inf_le_inf (hτ k) (hτ l))
             (𝒱.U k ⊓ 𝒱.U l).isOpen (𝒰.U (τ k) ⊓ 𝒰.U (τ l)).isOpen hx
+            ((f : C1 (0 : RS.Divisor X) 𝒰) (τ k, τ l))
         rw [heq]
         exact s𝒰.split (τ k) (τ l) x hxkl } with hs𝒱_def
   have hkey : (s𝒰.glueData h𝒰).form = (s𝒱.glueData h𝒱).form := by

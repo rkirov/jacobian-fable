@@ -1066,3 +1066,83 @@
   `form_unique` applied to a candidate `(u := s.g)` against a shifted target, never by comparing
   PoU data pairwise. `Form01.ext_center` and `DbarGlueData.{form,isDbarOn_form,form_unique}` are
   the only 4 names this file exports for downstream comparison use (per design §4.2, verbatim).
+- [abelweak] Jacobian/AbelWeak/PlanarLogBranch.lean OK (187 lines) — the exp-gluing engine, spiked
+  in `scratch_abelweak.lean` and built out per design §6.1: `exists_logBranch_disk` (disk case,
+  disk-Morera primitive `DifferentiableOn.isExactOn_ball` + zero-derivative uniqueness via
+  `Convex.is_const_of_fderivWithin_eq_zero`) and `exists_exteriorLogBranch` (the exterior case
+  Forster's construction needs, via the inversion `w = 1/z`; the transported function
+  `H w := (1-b*w)/(1-a*w)` has genuinely no singularity on `ball 0 ρ⁻¹`, checked directly:
+  `1 - a*w ≠ 0` there follows from `‖a‖<ρ, ‖w‖<ρ⁻¹ ⟹ ‖a‖·‖w‖<1`). Zero sorries, mathlib-only, no
+  manifold imports (matches `Path/Planar.lean`'s hygiene).
+- [abelweak] Jacobian/AbelWeak/WeakSolution.lean OK (214 lines) — `IsWeakSolutionAt`/
+  `IsWeakSolutionOfPair` (D1, Forster §20.1), stated with the local-model chart taken
+  existentially from `IsManifold.maximalAtlas` and a plain `f =ᶠ[𝓝 a] (...)` eventual-equality
+  local model (junk-free, simpler than the design's filter-sup formula). **Gotcha recorded**: the
+  design's D1 used `ContDiffAt ℝ ⊤ ψ` for the local-model cutoff; `⊤` in this project's
+  `ContDiff`-scope notation means `ω` (real-**analytic**), which is false for a genuine
+  `ContDiffBump` (bump functions are never real-analytic) — fixed throughout to `∞` (matching
+  `Dbar/Operator.lean`'s own `SmoothC` convention, `ContMDiff 𝓘(ℝ,ℂ) 𝓘(ℝ,ℂ) ∞`). **SCOPE
+  ADDITION** (`docs/design/abel-theorem.md` §1.4/§4.1's finding that Thm 21.4(b) needs the
+  `k`-point case, not just two-point): `IsWeakSolutionOfFinset` + `isWeakSolutionOfFinset_prod`
+  (Forster's Lemma 20.1, Finset-indexed product of pairwise-disjoint two-point weak solutions).
+  Built two reusable chart-bridge Compat lemmas since `ℂ`'s model `𝓘(ℝ,ℂ)` has no registered
+  `ContMDiffMul` instance (mathlib only gives `ContMDiffRing 𝓘(𝕜) n 𝕜`, the model over *itself*,
+  not `𝓘(ℝ,ℂ)` for `ℂ` as a real algebra): `contMDiffAt_finsetProd_real` (routes finite products
+  through `ContDiffAt ℝ` in `extChartAt 𝓘(ℂ) x` via `RS.contMDiffAt_real_iff_contDiffAt` +
+  mathlib's generic `contDiffAt_prod`) and the two directions `contDiffAt_comp_symm_of_contMDiffAt`
+  / `contMDiffAt_comp_of_contDiffAt` (composing a chart-free `ContMDiffAt` fact with an arbitrary
+  *existing* `maximalAtlas` chart, not `extChartAt` — needed because `IsWeakSolutionAt`'s witness
+  chart is existential, reused as-is rather than re-charted). Zero sorries.
+- [abelweak] Jacobian/AbelWeak/SingleChart.lean OK (285 lines) — the single-chart weak solution
+  (§6.2–6.3): `exists_weakSolutionOfPair_chart`. Planar formula
+  `g z := if ‖z-c‖≤ρ then (z-eP)/(z-eQ) else exp(ψ(z-c)·L(z-c))` (`ψ : ContDiffBump (0:ℂ)`, `L`
+  from `exists_exteriorLogBranch`), consistency on the transition annulus via
+  `ψ.one_of_mem_closedBall`/`ψ.zero_of_le_dist` (`Set.EqOn`-rewriting only, no matching argument),
+  lifted to `X` via `Set.piecewise e.source (g∘e) 1`. Topology: `U := e.symm''(ball c ψ.rOut)`
+  (open, `OpenPartialHomeomorph.isOpen_image_of_subset_source`), `K := e.symm''(closedBall
+  c ψ.rOut)` (compact, `IsCompact.image_of_continuousOn`), `closure U ⊆ K` (`closure_minimal`)
+  gives `IsCompact (closure U)`. Zero sorries.
+- [abelweak] Jacobian/AbelWeak/ChainAssembly.lean OK (166 lines) — three of the four deliverables:
+  (1) **SCOPE ADDITION** `exists_weakSolutionOfFinset` (the `k`-point layer), assembled directly
+  from `exists_weakSolutionOfPair_chart` (one call per pairwise-disjoint pair — the shape
+  `abel-theorem`'s own Thm 21.4(a) disjoint-chart construction produces per its design's §1.4)
+  plus `isWeakSolutionOfFinset_prod`; (2) `pathIntegral_eq_sum_chartChain` (§7.2, pure `Path`-API
+  telescoping via `IsPrimitiveAlongMap.sub_eq_sub` + a hand-rolled induction — no Stokes, no
+  mathlib "telescoping sum" lemma was found generically applicable to `ℂ`, `sum_range_tsub` is
+  `OrderedSub`-only); (3) `residue_identity_two_point` + `logDeriv_rat_eq` (§7.3, the
+  Lemma-20.3-specialized residue identity), citing `planar-stokes-atoms`' own hypothesis-free
+  two-puncture export `RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` directly (no new
+  integration atom needed — that unit's own `abel-weak-solutions` refinement, §7.3/§11 risk R1,
+  was already exactly what this needed) plus a new small computation (`logDeriv_rat_eq`)
+  connecting the abstract two-puncture kernel to a weak solution's own rational-function
+  log-derivative. **NOT built**: the fully general multi-chart `exists_weakSolutionOfPair` (an
+  arbitrary path, assembled via a full `RS.ChartChain` product) — the design's own risk item 3
+  ("internal-breakpoint cancellation bookkeeping... mechanical, ~20 lines") underestimated this:
+  adjacent `ChartChain` pieces generally use *different* charts, so showing the product is smooth
+  *at* a shared breakpoint needs a "rechart" lemma for `IsWeakSolutionAt` (transporting a
+  simple-zero/pole local model across a holomorphic chart transition via mathlib's
+  removable-singularity theorem, `Complex.analyticAt_of_differentiable_on_punctured_nhds_of_
+  continuousAt`, applied to the transition map's difference quotient). Real, correct, buildable
+  content, but did not fit this pass's time budget on top of the rest of the unit. Filed as a
+  documented gap (root file + this entry), not a placeholder tactic. Notes for **abel-theorem**:
+  its `k`-point/Finset use (§1.4) does NOT need the general case (its own account of Thm 21.4(a)
+  is exactly the disjoint-single-chart-per-pair shape `exists_weakSolutionOfFinset` covers); its
+  two-point sufficiency direction (§2.1) is the one consumer that would need it — the
+  multiplicativity step it would need for the induction (`IsWeakSolutionAt.mul_of_contMDiffAt`,
+  `WeakSolution.lean`) is already built; only the adjacent-breakpoint rechart step is missing.
+- [abelweak] Jacobian/AbelWeak.lean (unit root) OK (95 lines); `scripts/check.sh Jacobian/AbelWeak`
+  passes, zero sorries across all 5 files (947 lines total) + root — unit COMPLETE per the scope
+  actually shipped (see the ChainAssembly.lean entry above for the one documented gap). NOT
+  registered in `Jacobian.lean` per task hard rule, orchestrator to add `import Jacobian.AbelWeak`.
+  Exact export names for **abel-theorem** vs its own design's expectations: `RS.AbelWeak.
+  exists_weakSolutionOfPair` (the fully general two-point deliverable its §4.1 proof plan cites)
+  is NOT exported — see the gap above; `RS.AbelWeak.IsWeakSolutionOfPair`,
+  `RS.AbelWeak.pathIntegral_eq_sum_chartChain` are exported exactly as its design expects; the
+  "§7.3 residue identity" it expects is exported as `RS.AbelWeak.residue_identity_two_point` +
+  `RS.AbelWeak.logDeriv_rat_eq` (two lemmas, not one, and not literally in `f`'s own vocabulary —
+  the caller must supply its own weak solution's `g`/kernel data to invoke them, matching exactly
+  what `SingleChart.exists_weakSolutionOfPair_chart`'s construction produces). The k-point layer
+  abel-theorem's design expected to build itself, inline, in its own `Sufficiency.lean`
+  (`f := ∏ i, f i`) is instead available pre-packaged here as `RS.AbelWeak.
+  exists_weakSolutionOfFinset` + `RS.AbelWeak.IsWeakSolutionOfFinset` — abel-theorem should cite
+  this directly rather than re-deriving the `Finset.prod` bookkeeping.
