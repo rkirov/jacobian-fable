@@ -225,6 +225,25 @@ theorem pairAt_smul (c : ℂ) (θ : MForm X) (p : X) : pairAt (c • θ) p = c �
       funext z; simp [MFormData.coeffAt_smul]; ring]
   exact RS.resAt_const_mul c
 
+theorem pairAt_sub (θ η : MForm X) (p : X) : pairAt (θ - η) p = pairAt θ p - pairAt η p := by
+  obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
+  obtain ⟨ηdata, rfl⟩ := MForm.exists_rep η
+  rw [show MForm.mk θdata - MForm.mk ηdata = MForm.mk (θdata - ηdata) from rfl,
+    pairAt_apply_mk, pairAt_apply_mk, pairAt_apply_mk]
+  apply LinearMap.ext
+  intro ψ
+  obtain ⟨f, hf, rfl⟩ := RS.MeroGermOn.exists_rep ψ
+  rw [LinearMap.sub_apply, pairAtData_mk, pairAtData_mk, pairAtData_mk]
+  rw [show (fun z => f ((chartAt ℂ p).symm z) * (θdata - ηdata).coeffAt p z)
+    = (fun z => f ((chartAt ℂ p).symm z) * θdata.coeffAt p z
+        - f ((chartAt ℂ p).symm z) * ηdata.coeffAt p z) from by
+      funext z; simp [mul_sub]]
+  exact RS.resAt_sub
+    ((show MeromorphicAt (fun z => f ((chartAt ℂ p).symm z)) (chartAt ℂ p p) from
+      hf p (mem_chart_source ℂ p)).mul (θdata.meromorphicAt_coeffAt p))
+    ((show MeromorphicAt (fun z => f ((chartAt ℂ p).symm z)) (chartAt ℂ p p) from
+      hf p (mem_chart_source ℂ p)).mul (ηdata.meromorphicAt_coeffAt p))
+
 /-! ### `pairAt_tailGerm_order_ne_zero`: the shared core of injectivity and Lemma 3.6 -/
 
 theorem pairAt_tailGerm_order_ne_zero {θ : MForm X} {p : X} (hne : θ.ord p ≠ ⊤) :
@@ -375,11 +394,21 @@ theorem alpha_eq_sum_singleT (D : RS.Divisor X) (f : RS.Mero X) :
   by_cases hq : q ∈ alphaFinset D f
   · rw [Finset.sum_eq_single q (fun b _ hbq => singleT_apply_of_ne (Ne.symm hbq) D _)
       (fun hqS => absurd hq hqS), singleT_apply_self, alpha_apply]
-  · rw [alpha_apply,
-      (TailAt.mk_eq_zero_iff (RS.MeroGermOn.restrict (Set.subset_univ _) f)).2
-        (not_mem_alphaFinset D f hq)]
-    exact (Finset.sum_eq_zero fun p hp =>
-      singleT_apply_of_ne (fun h => hq (h ▸ hp)) D _).symm
+  · have hbound : ((-(D q) : ℤ) : WithTop ℤ) ≤
+        (RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source) f).ord q := by
+      rw [RS.MeroGermOn.ord_restrict (Set.subset_univ _) (chartAt ℂ q).open_source isOpen_univ
+        (mem_chart_source ℂ q)]
+      exact not_mem_alphaFinset D f hq
+    have hzero : TailAt.mk q D (RS.MeroGermOn.restrict (Set.subset_univ _) f) = 0 :=
+      (TailAt.mk_eq_zero_iff (RS.MeroGermOn.restrict (Set.subset_univ _) f)).2 hbound
+    rw [alpha_apply, hzero]
+    apply (Finset.sum_eq_zero ?_).symm
+    intro p hp
+    apply singleT_apply_of_ne _ D _
+    intro h
+    apply hq
+    rw [h]
+    exact hp
 
 theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaSpace (-D))
     (f : RS.Mero X) : pairT θ hθ (alphaL D f) = 0 := by
@@ -415,5 +444,87 @@ theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaS
   show (0 : WithTop ℤ) ≤ χdata.ord p
   rw [show χdata.ord p = (f • θ).ord p from by rw [← hχ, MForm.ord_mk]]
   exact hordnn
+
+/-! ### `pairT` linearity in `θ` (feeds `resMap`) and injectivity -/
+
+theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
+    (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ + θ₂ ∈ MForm.OmegaSpace (-D)) :
+    pairT (θ₁ + θ₂) hθ12 = pairT θ₁ hθ₁ + pairT θ₂ hθ₂ := by
+  apply DFinsupp.lhom_ext
+  intro p x
+  obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
+  show pairT (θ₁ + θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ + pairT θ₂ hθ₂) (singleT p D ψ)
+  rw [LinearMap.add_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_add,
+    LinearMap.add_apply]
+
+theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
+    (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ - θ₂ ∈ MForm.OmegaSpace (-D)) :
+    pairT (θ₁ - θ₂) hθ12 = pairT θ₁ hθ₁ - pairT θ₂ hθ₂ := by
+  apply DFinsupp.lhom_ext
+  intro p x
+  obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
+  show pairT (θ₁ - θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ - pairT θ₂ hθ₂) (singleT p D ψ)
+  rw [LinearMap.sub_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_sub,
+    LinearMap.sub_apply]
+
+theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MForm.OmegaSpace (-D))
+    (hcθ : c • θ ∈ MForm.OmegaSpace (-D)) :
+    pairT (c • θ) hcθ = c • pairT θ hθ := by
+  apply DFinsupp.lhom_ext
+  intro p x
+  obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
+  show pairT (c • θ) hcθ (singleT p D ψ) = (c • pairT θ hθ) (singleT p D ψ)
+  rw [LinearMap.smul_apply, pairT_singleT, pairT_singleT, pairAt_smul, LinearMap.smul_apply]
+
+theorem pairT_ne_zero [ConnectedSpace X] {D : RS.Divisor X} {θ : MForm X} (hθ0 : θ ≠ 0)
+    (hθ : θ ∈ MForm.OmegaSpace (-D)) : pairT θ hθ ≠ 0 := by
+  intro hz
+  obtain ⟨p⟩ : Nonempty X := inferInstance
+  have hne : θ.ord p ≠ ⊤ := MForm.ord_ne_top hθ0 p
+  apply pairAt_tailGerm_order_ne_zero hne
+  have h2 := DFunLike.congr_fun hz
+    (singleT p D (RS.Cech.tailGerm p (-1 - (θ.ord p).untop₀)))
+  rwa [pairT_singleT, LinearMap.zero_apply] at h2
+
+/-! ### `resMap`: the induced map `Ω(-D) →ₗ Dual(H1Tail D)` -/
+
+/-- The residue pairing, descended to `H1Tail D` (Miranda's `Res : L⁽¹⁾(-D) → H¹(D)^*`). -/
+noncomputable def resMap (D : RS.Divisor X) :
+    ↥(MForm.OmegaSpace (-D)) →ₗ[ℂ] Module.Dual ℂ (H1Tail D) where
+  toFun θ := Submodule.liftQ (LinearMap.range (alphaL D)) (pairT θ.1 θ.2)
+    (by rintro τ ⟨g, rfl⟩; exact pairT_alpha θ.1 θ.2 g)
+  map_add' θ₁ θ₂ := by
+    apply LinearMap.ext
+    intro x
+    obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective D x
+    show pairT (θ₁ + θ₂).1 (θ₁ + θ₂).2 τ = pairT θ₁.1 θ₁.2 τ + pairT θ₂.1 θ₂.2 τ
+    exact DFunLike.congr_fun (pairT_add θ₁.1 θ₂.1 θ₁.2 θ₂.2 (θ₁ + θ₂).2) τ
+  map_smul' c θ := by
+    apply LinearMap.ext
+    intro x
+    obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective D x
+    show pairT (c • θ).1 (c • θ).2 τ = (RingHom.id ℂ) c • pairT θ.1 θ.2 τ
+    rw [RingHom.id_apply]
+    exact DFunLike.congr_fun (pairT_smul c θ.1 θ.2 (c • θ).2) τ
+
+theorem resMap_mk (D : RS.Divisor X) (θ : ↥(MForm.OmegaSpace (-D))) (τ : T D) :
+    resMap D θ (H1Tail.mk D τ) = pairT θ.1 θ.2 τ :=
+  Submodule.liftQ_apply _ _ τ
+
+theorem resMap_injective [ConnectedSpace X] (D : RS.Divisor X) :
+    Function.Injective (resMap D) := by
+  intro θ₁ θ₂ heq
+  apply Subtype.ext
+  by_contra hne
+  have hsub0 : θ₁.1 - θ₂.1 ≠ 0 := sub_ne_zero.2 hne
+  have hmem : θ₁.1 - θ₂.1 ∈ MForm.OmegaSpace (-D) := Submodule.sub_mem _ θ₁.2 θ₂.2
+  apply pairT_ne_zero hsub0 hmem
+  apply LinearMap.ext
+  intro τ
+  show pairT (θ₁.1 - θ₂.1) hmem τ = (0 : T D →ₗ[ℂ] ℂ) τ
+  rw [LinearMap.zero_apply, pairT_sub θ₁.1 θ₂.1 θ₁.2 θ₂.2 hmem, LinearMap.sub_apply]
+  have h1 := resMap_mk D θ₁ τ
+  have h2 := resMap_mk D θ₂ τ
+  rw [← h1, ← h2, heq, sub_self]
 
 end RS.TailDuality
