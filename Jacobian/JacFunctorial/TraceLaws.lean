@@ -233,7 +233,10 @@ end Comp
 
 /-! ### The projection formula -/
 
-variable [Nonempty Y] {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hne : ¬ ∃ c, ∀ x, f x = c)
+section Projection
+
+variable [CompactSpace Y] [ConnectedSpace Y]
+variable {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hne : ¬ ∃ c, ∀ x, f x = c)
 
 include hf hne in
 /-- Per-point cancellation: the canonical trace coefficient of a pulled-back form at an
@@ -270,27 +273,25 @@ theorem traceForm_pullback (η : Form1 Y) :
     exact RS.ncard_fiber_of_isRegularValue hf hne hŷ
   rw [hcard, nsmul_eq_mul]
 
-section Challenge
-
-variable [CompactSpace Y] [ConnectedSpace Y]
-
+variable (f) in
 /-- **The projection formula (challenge form)**: `Form1.trace f hf ∘ Form1.pullback f hf` is
 multiplication by the challenge degree `ContMDiff.degree f hf` — including the constant case
 (both sides vanish). -/
-theorem Form1.trace_pullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (η : Form1 Y) :
+theorem Form1.trace_pullback (η : Form1 Y) :
     Form1.trace f hf (Form1.pullback f hf η) = (ContMDiff.degree f hf : ℂ) • η := by
   by_cases hc : ∃ c, ∀ x, f x = c
   · rw [Form1.trace_of_forall_eq hf hc]
     obtain ⟨c, hcc⟩ := hc
     have hdeg : RS.degree f = 0 := by
-      have : f = fun _ : X => c := funext hcc
-      rw [this]
+      have hfeq : f = fun _ : X => c := funext hcc
+      rw [hfeq]
       exact RS.degree_of_forall_eq c
-    rw [ContMDiff.degree_eq, hdeg]
-    simp
+    rw [ContMDiff.degree_eq, hdeg, Nat.cast_zero]
+    rw [LinearMap.zero_apply]
+    exact (zero_smul ℂ η).symm
   · rw [Form1.trace_apply hf hc, traceForm_pullback hf hc η, ContMDiff.degree_eq]
 
-end Challenge
+end Projection
 
 end RS
 
