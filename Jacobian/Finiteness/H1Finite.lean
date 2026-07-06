@@ -47,13 +47,12 @@ theorem finiteDimensional_h1Cover_W (T : ShrinkChain X) :
 /-- Compat: `AddCommGroup (H1 D)` does not resolve by plain `inferInstance` in this codebase (a
 higher-order-instance gap resolving `∀ 𝒰, AddCommGroup (H1Cover D 𝒰)` for
 `Module.DirectLimit.addCommGroup`, per cech's own recorded gotcha) — supply it explicitly. -/
-theorem addCommGroup_H1 (D : RS.Divisor X) : AddCommGroup (H1 D) :=
+noncomputable instance addCommGroup_H1 (D : RS.Divisor X) : AddCommGroup (H1 D) :=
   Module.DirectLimit.addCommGroup (fun 𝒰 : FinCover (⊤ : Opens X) => H1Cover D 𝒰)
     (fun _ _ h => resH1' D h)
 
 /-- **The unit's headline instance**: `H¹(X, 𝒪)` is finite-dimensional (Forster §14). -/
 instance finiteDimensional_H1_zero : FiniteDimensional ℂ (H1 (0 : RS.Divisor X)) := by
-  haveI := addCommGroup_H1 (0 : RS.Divisor X)
   obtain ⟨T⟩ := ShrinkChain.nonempty (X := X)
   haveI := finiteDimensional_h1Cover_W T
   exact Module.Finite.of_surjective (toH1 (0 : RS.Divisor X) T.coverW) (toH1_coverW_surjective T)
@@ -67,10 +66,7 @@ cech's six-term exactness `exact_windowConnect_H1Incl`, itself finite since `Win
 and finite-dimensional codomain `H¹(D')`, so `H¹(D)` is finite by
 `FiniteDimensional.of_linearMap_ker_range`. -/
 instance finiteDimensional_H1 (D : RS.Divisor X) : FiniteDimensional ℂ (H1 D) := by
-  haveI := addCommGroup_H1 D
   set D' := D ⊔ 0 with hD'_def
-  haveI := addCommGroup_H1 D'
-  haveI := addCommGroup_H1 (0 : RS.Divisor X)
   have h0 : (0 : RS.Divisor X) ≤ D' := le_sup_right
   have h : D ≤ D' := le_sup_left
   haveI hD'fin : FiniteDimensional ℂ (H1 D') :=
