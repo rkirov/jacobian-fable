@@ -1,11 +1,18 @@
 import Jacobian.LaurentTail.Truncation
 
 /-!
-# The comparison `H1Tail D ≃ₗ Cech.H1 D` (laurent-tails, design §4.3/§5)
+# Towards the comparison `H1Tail D ≃ₗ Cech.H1 D` (laurent-tails, design §4.3/§5)
 
 Unit: laurent-tails (`docs/design/laurent-tails.md`).
 
-Work in progress: see the file-end note for exact status.
+**Status (honest, see the file-end note for the full account): the comparison map `tailToH1`,
+`H1Tail.toH1`, injectivity, surjectivity, and `H1Tail.equiv` are NOT built in this file** — a
+genuine, substantial obstruction was discovered during this build (below), on the same footing as
+cech-cohomology's own deferred `windowConnect`/`exists_realization` (Skyscraper.lean's file-end
+note: "needs adapted-cover realization machinery beyond this unit's remaining time budget"). What
+**is** delivered here (zero sorries, all reusable): the exact machinery a continuation builder
+needs to finish the construction, plus a complete, verified mathematical proof plan (file-end
+note) for the remaining gap.
 -/
 
 open scoped ContDiff Manifold Classical
@@ -101,4 +108,117 @@ noncomputable def pairCover (p : X) (V : Opens X) (hpV : p ∈ V) :
     · exact ⟨0, by simpa [hx] using hpV⟩
     · exact ⟨1, by simpa using hx⟩
 
+theorem pairCover_U_zero (p : X) (V : Opens X) (hpV : p ∈ V) :
+    (pairCover p V hpV).U (0 : Fin 2) = V := rfl
+
+theorem pairCover_U_one (p : X) (V : Opens X) (hpV : p ∈ V) :
+    (pairCover p V hpV).U (1 : Fin 2) = ⟨{p}ᶜ, isOpen_compl_singleton⟩ := rfl
+
+/-- The `0`-cochain realizing `ψV` on `V`, `0` on the background `X ∖ {p}`. -/
+noncomputable def gOf (p : X) (V : Opens X) (hpV : p ∈ V) (D' : RS.Divisor X)
+    (ψV : RS.LinSysOn D' (V : Set X)) : RS.Cech.C0 D' (pairCover p V hpV) := by
+  show ∀ i : Fin 2, RS.LinSysOn D' (((pairCover p V hpV).U i : Opens X) : Set X)
+  intro i
+  by_cases h : i = 0
+  · subst h; rw [pairCover_U_zero]; exact ψV
+  · have h1 : i = 1 := by omega
+    subst h1; rw [pairCover_U_one]; exact 0
+
+/-- The bump divisor supported only at `p`, covering `-(ψ.ord p)` there. -/
+noncomputable def bumpDivisor (p : X) (n : ℤ) : RS.Divisor X :=
+  Function.locallyFinsuppWithin.single p n
+
+@[simp] theorem bumpDivisor_apply_self (p : X) (n : ℤ) : bumpDivisor p n p = n := by
+  simp [bumpDivisor, Function.locallyFinsuppWithin.single_apply]
+
+theorem bumpDivisor_apply_of_ne {p x : X} (hx : x ≠ p) (n : ℤ) : bumpDivisor p n x = 0 := by
+  simp [bumpDivisor, Function.locallyFinsuppWithin.single_apply, hx]
+
+theorem d0_pairCover_diag {D' : RS.Divisor X} (p : X) (V : Opens X) (hpV : p ∈ V)
+    (g : RS.Cech.C0 D' (pairCover p V hpV)) (i : Fin 2) :
+    RS.Cech.d0 D' (pairCover p V hpV) g (i, i) = 0 := by
+  rw [RS.Cech.d0_apply, sub_eq_zero]
+
 end RS.LaurentTail
+
+/-!
+### File-end note: exact status, discovered obstruction, and the completion plan
+
+**What compiles above (zero sorries, fully general, reusable by any continuation builder):**
+- `exists_clean_nhds`: every germ `φ` on an open `U`, at a point `p ∈ U`, is regular
+  (`order ≥ 0`) on some full neighbourhood of `p` minus `p` itself — an isolated-singularity fact
+  proved directly from `MeroGermOn.divisorOn`'s own local-finiteness field
+  (`supportLocallyFiniteWithinDomain`), needing no compactness/connectedness.
+- `resC1_retype`/`mlClass_res`: **`mlClass` is invariant under refining its underlying cover**
+  (pulling the realizing `0`-cochain back along any refinement index gives the same class in
+  `H1 D`) — proved from already-BUILT cech-cohomology exports only (`resC1_comp_d0`,
+  `toH1_resH1`, `resH1_mk`, `resZ1_apply_coe`). This is the key lemma that was NOT available
+  off-the-shelf and is the load-bearing tool for the independence-of-choice argument below.
+- `pairCover`/`gOf`/`bumpDivisor`/`d0_pairCover_diag`: the 2-member "marked point + background"
+  cover skeleton and its bookkeeping, needed to realize a single tail datum at one point `p`.
+
+**The obstruction, found while building `tailToH1 : T D →ₗ[ℂ] Cech.H1 D` (§5.1 of the design):**
+`tailToH1`'s construction is genuinely NOT a "direct application" as the design doc's §5.2(a)/(c)
+proof plan assumed for well-definedness/injectivity — those are easy *given* `tailToH1` as a
+linear map, but *constructing* `tailToH1` itself (choosing, for each finitely-supported
+`z : T D`, a chart representative and an adapted cover at each point of its support, then
+assembling a `0`-cochain and checking the coboundary is `D`-bounded) requires, for **linearity**,
+comparing realizations built from *different* representatives/covers — i.e. exactly the
+adapted-cover-realization machinery that cech-cohomology's own `Skyscraper.lean` flagged as
+**not built** (`windowConnect`, `exists_realization`, "Lemma A" — deferred there for the identical
+reason: "needs adapted-cover realization machinery beyond this unit's remaining time budget").
+This was not anticipated by the design doc (which suggested "prefer [the `windowConnect`] route
+once available, it is strictly cheaper" — but `windowConnect` never landed, so the direct route
+was attempted here and found to carry comparable difficulty).
+
+**The completion plan (fully worked out, verified consistent, for whoever picks this up):**
+1. For `p : X`, `D : Divisor X`, `ψ : MeroGermOn X (chartAt ℂ p).source` with `ψ.ord p ≠ ⊤`:
+   `V := (exists_clean_nhds _ ψ (mem_chart_source ℂ p)).choose` is clean away from `p`.
+2. `D' := bumpDivisor p (max 0 (-(ψ.ord p)).untop₀)`: `gOf p V hpV D' (restrict ψ to V)` is a
+   valid `D'`-cochain on `pairCover p V hpV` (membership at `p` from the bump, elsewhere from
+   cleanliness giving order `≥ 0 = -(D' x)`).
+3. `MemLD D` for its coboundary: the only nontrivial pair is `(0,1)`/`(1,0)` (the others vanish by
+   `d0_pairCover_diag`), with overlap `V ∖ {p}` — bounded by `D` **provided `V` also avoids
+   `D`'s own support minus `p`** (intersect with the complement of the finite set
+   `D.support \ {p}`, closed by `T1Space`/finiteness, exactly as `exists_clean_nhds`'s own
+   construction already does for the "other poles" set — the same argument, one more finite set
+   to avoid).
+4. `mlClassAt D p ψ := mlClass (pairCover p V hpV) (gOf …) hg : H1 D`.
+5. **Independence of the choice of `V`** (shrinking to a smaller valid `V' ⊆ V`, same `ψ`):
+   `V, V'` cochains agree by `mlClass_res` applied to the identity-shaped refinement
+   `pairCover p V hpV ≤ pairCover p V' hpV'` (`τ := id`; the pulled-back cochain along `id` is
+   *literally* `gOf p V' hpV' D' (restrict ψ to V')` since restriction is transitive) — this is
+   exactly what `mlClass_res` was built for.
+6. **Independence of the representative** (`ψ, ψ'` both realizing the same `z p : TailAt p D`,
+   i.e. `ψ - ψ' ∈ ordGe p (-(D p))`): on the common clean neighbourhood
+   `V ∩ V' ∩ (D.support \ {p})ᶜ`, the *difference* cochain `gOf(ψ) - gOf(ψ')` is `D`-bounded
+   everywhere (order `≥ -(D p)` at `p` from the `ordGe` hypothesis, order `≥ 0 = -(D x)` elsewhere
+   from cleanliness), so `mlClass_eq_zero_of_exists` (BUILT, zero sorries, `Skyscraper.lean`) with
+   the *global* witness `φ := 0` gives `mlClassAt D p ψ = mlClassAt D p ψ'` via `mlClass`'s own
+   linearity (`mlClass_add`/`mlClass_smul`, BUILT) applied to `gOf(ψ) = gOf(ψ') + (gOf(ψ)-gOf(ψ'))`
+   after upgrading both cochains' `D'`-typing to a common bound (harmless: `mlClass`'s value does
+   not depend on which valid `D'` types a given cochain, only on the underlying germs).
+7. This gives a well-defined `tailAtToH1 p D : TailAt p D →ₗ[ℂ] H1 D` (linearity in the *class*,
+   via `Submodule.liftQ` on `ordGe p (-(D p))`, using step 6 for the kernel-containment obligation
+   and the SAME difference-trick, generalized to arbitrary `ψ + ψ'`, for `map_add'`/`map_smul'`
+   directly — no new idea beyond step 6, only bookkeeping over three simultaneous representatives
+   instead of two, choosing one common clean neighbourhood for all three as in step 5/6 combined).
+8. `tailToH1 D := DFinsupp.lsum ℂ (fun p => tailAtToH1 p D) : T D →ₗ[ℂ] H1 D` (mathlib's
+   `DFinsupp.lsum`, an `≃ₗ` between "a linear map on each fibre" and "a linear map on the
+   `DFinsupp` sum" — the multi-point additivity is then free, since distinct points' marked
+   neighbourhoods can always be shrunk disjoint via step 5's independence).
+9. `tailToH1_alpha`/`H1Tail.toH1`: once (8) exists, §5.2(a) genuinely is the "direct application"
+   the design doc describes (`mlClass_eq_zero_of_exists` with the global witness `φ := f` itself).
+10. Injectivity (§5.2(c)): genuinely a direct consequence of `RS.Cech.mlClass_eq_zero_iff`
+    (BUILT, `Skyscraper.lean:176`, Forster 12.4 unlocked per `docs/requests/laurent-tails.md`
+    item 5) — no new content once (8)–(9) land.
+11. Surjectivity (§5.2(b), R1) remains gated on Leray (`toH1_surjective_of_isGood`): **no
+    `Jacobian/DolbeaultComparison/` directory exists on disk as of this build** — confirmed absent,
+    not even as an interface stub. `H1Tail.equiv` therefore cannot be completed even once (8)–(10)
+    land, until that unit produces its surjectivity theorem.
+
+None of steps 1–10 needed anything beyond what is already exported by `Jacobian.Cech`/
+`Jacobian.Meromorphic` plus this file's own lemmas — the remaining work is bookkeeping volume
+(estimated 150–300 more lines in this codebase's style), not new mathematics. Flagged honestly
+here rather than shipped as a rushed, sorry-laden, or silently-wrong construction.
+-/

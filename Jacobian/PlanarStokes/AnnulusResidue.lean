@@ -2,6 +2,7 @@ import Jacobian.PlanarStokes.CompactSupport
 import Jacobian.ResidueCalculus.IntegralBridge
 import Jacobian.ResidueCalculus.Residue
 import Jacobian.ResidueCalculus.PrincipalPart
+import Jacobian.Dbar.CauchyKernel
 import Mathlib.MeasureTheory.Function.Jacobian
 import Mathlib.RingTheory.Complex
 import Mathlib.RingTheory.Norm.Transitivity
@@ -439,8 +440,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       simp only [zero_add, smul_eq_mul]
       ring
     rw [hLHS_yb, zero_add, hcircleR, hcircler] at hrect
-    clear_value f' F τ A Rec s RecOpen z0 w0
-    clear hHc hHd hHi hHc' hHd' hHi' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
+    clear hHc hHd hHc' hHd' hHi' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
       hRec_int hτ_CD hexp_CD hRec_eq hperiod hLHS_yb hFexp hcircleR hcircler
     -- Convert the RHS iterated integral to a set integral over `Rec`.
     have hiter_to_set : (∫ x : ℝ in a..b, ∫ y : ℝ in (0 : ℝ)..(2 * π),
@@ -448,9 +448,10 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       have hHi' : IntegrableOn (fun ζ => I • f' ζ 1 - f' ζ I)
           (Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π))) := by
         rw [← hRec_def]; exact hHi
-      have := (setIntegral_reProdIm_eq_intervalIntegral hab.le Real.two_pi_pos.le hHi').symm
+      have hkey := (setIntegral_reProdIm_eq_intervalIntegral
+        (z := (⟨a, 0⟩ : ℂ)) (w := (⟨b, 2 * π⟩ : ℂ)) hab.le Real.two_pi_pos.le hHi').symm
       rw [hRec_def]
-      exact this
+      exact hkey
     rw [hiter_to_set] at hrect
     -- Pointwise, on `RecOpen`, the integrand matches `2i·normSq(exp ζ)·wirtingerDbar u (τ ζ)`.
     have hpt : ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
@@ -472,7 +473,6 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
         have hI2 : I * I = -1 := Complex.I_mul_I
         linear_combination (-(fderiv ℝ F ζ I)) * hI2
       rw [h2i, hwF, Complex.mul_conj, Complex.real_smul]
-      ring
     have hRecOpen_null_diff : volume (Rec \ RecOpen) = 0 := by
       rw [hRec_def, hRecOpen_def]
       exact measure_frame_null a b 0 (2 * π) hab.le Real.two_pi_pos.le
@@ -486,8 +486,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       exact hζ ⟨hζRec, fun hop => hne (hpt ζ hop)⟩
     have hRec_meas : MeasurableSet Rec := by
       rw [hRec_def, Complex.reProdIm]
-      exact MeasurableSet.preimage (measurableSet_Icc.prod measurableSet_Icc)
-        Complex.measurableEquivRealProd.measurable
+      exact (measurableSet_Icc.preimage Complex.measurable_re).inter
+        (measurableSet_Icc.preimage Complex.measurable_im)
     have hset_eq : (∫ ζ in Rec, I • f' ζ 1 - f' ζ I)
         = ∫ ζ in Rec, 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)) :=
       MeasureTheory.setIntegral_congr_ae hRec_meas hae
@@ -500,8 +500,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     -- Restrict from `Rec` to `s` (differ by the one null edge `im = 2π`).
     have hs_meas : MeasurableSet s := by
       rw [hs_def, Complex.reProdIm]
-      exact MeasurableSet.preimage (measurableSet_Icc.prod measurableSet_Ico)
-        Complex.measurableEquivRealProd.measurable
+      exact (measurableSet_Icc.preimage Complex.measurable_re).inter
+        (measurableSet_Ico.preimage Complex.measurable_im)
     have hRecs_null_diff : volume (Rec \ s) = 0 := by
       have heq : Rec \ s = Complex.reProdIm (Set.Icc a b) ({2 * π} : Set ℝ) := by
         rw [hRec_def, hs_def, ← Icc_diff_Ico_same Real.two_pi_pos.le]
@@ -530,9 +530,165 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       rw [hjac]
       apply MeasureTheory.setIntegral_congr_fun hs_meas
       intro ζ _
+      show (Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)
+          = |(fderiv ℝ τ ζ).det| • wirtingerDbar u (τ ζ)
       congr 1
       rw [det_fderiv_of_differentiableAt (hτ_diffC ζ), hderivτ,
         abs_of_nonneg (Complex.normSq_nonneg _)]
     rw [hJacobian] at hrect
     exact hrect
+
+/-! ## The smeared residue theorem (Atom 2) -/
+
+set_option maxHeartbeats 1000000 in
+/-- **Atom 2** (the smeared residue theorem — the "one honest integration atom" routing decision
+#2 budgets for): `g` compactly supported in `U`, locally CONSTANT near the puncture `p` (§D4),
+`f` holomorphic on `U \ {p}` and meromorphic at `p`. -/
+theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : Set ℂ} {p : ℂ}
+    (hU : IsOpen U) (hpU : p ∈ U)
+    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U)
+    (hconst : g =ᶠ[nhds p] Function.const ℂ (g p))
+    (hf : DifferentiableOn ℂ f (U \ {p})) (hfp : MeromorphicAt f p) :
+    ∫ w : ℂ, wirtingerDbar g w * f w = -π * g p * resAt f p := by
+  -- Step 1: `g ≡ g p` on some `ball p δ`, hence `wirtingerDbar g ≡ 0` there.
+  obtain ⟨δ, hδpos, hδ⟩ := Metric.eventually_nhds_iff_ball.mp hconst
+  have hwbar0 : ∀ w ∈ Metric.ball p δ, wirtingerDbar g w = 0 := by
+    intro w hw
+    have hgnh : g =ᶠ[nhds w] Function.const ℂ (g p) := by
+      filter_upwards [Metric.isOpen_ball.mem_nhds hw] with x hx using hδ x hx
+    rw [wirtingerDbar_congr_nhds g (Function.const ℂ (g p)) w hgnh]
+    exact wirtingerDbar_const w (g p)
+  -- Choose `R` with `tsupport g ⊆ ball p R` and `δ ≤ R`.
+  obtain ⟨R0, hR0⟩ := hcs.isBounded.subset_ball p
+  set R : ℝ := max R0 (max δ 1) with hR_def
+  have hRpos : 0 < R :=
+    lt_of_lt_of_le one_pos (le_trans (le_max_right δ 1) (le_max_right R0 (max δ 1)))
+  have hRδ : δ ≤ R := le_trans (le_max_left δ 1) (le_max_right R0 (max δ 1))
+  have htsub_ballR : tsupport g ⊆ Metric.ball p R :=
+    hR0.trans (Metric.ball_subset_ball (le_max_left _ _))
+  -- Choose `ε ∈ (0, δ)` in the eventual set of the residue bridge.
+  obtain ⟨ε, hε_res, hε_mem⟩ :=
+    ((MeromorphicAt.eventually_circleIntegral_eq_two_pi_I_mul_resAt hfp).and
+    (Filter.eventually_of_mem (Ioo_mem_nhdsGT hδpos) (fun ρ hρ => hρ))).exists
+  have hεpos : 0 < ε := hε_mem.1
+  have hεδ : ε < δ := hε_mem.2
+  have hεR : ε ≤ R := le_of_lt (lt_of_lt_of_le hεδ hRδ)
+  -- `v := g * f` is `ContDiffOn ℝ 1` on the annulus `closedBall p R \ ball p ε`.
+  set v : ℂ → ℂ := fun w => g w * f w with hv_def
+  have hUp_open : IsOpen (U \ {p}) := hU.sdiff isClosed_singleton
+  have hf_CD : ContDiffOn ℝ 1 f (U \ {p}) := by
+    have hfAn : AnalyticOnNhd ℂ f (U \ {p}) := hf.analyticOnNhd hUp_open
+    have hfCD : ContDiffOn ℂ 1 f (U \ {p}) := hfAn.contDiffOn hUp_open.uniqueDiffOn
+    exact hfCD.restrict_scalars ℝ
+  have hwp_ne : ∀ w, w ∈ Metric.closedBall p R \ Metric.ball p ε → w ∈ tsupport g → w ≠ p := by
+    intro w hw _ hcontra
+    rw [hcontra] at hw
+    exact hw.2 (Metric.mem_ball_self hεpos)
+  have hv_ContDiffAt : ∀ w ∈ Metric.closedBall p R \ Metric.ball p ε, ContDiffAt ℝ 1 v w := by
+    intro w hw
+    by_cases hwt : w ∈ tsupport g
+    · have hwU : w ∈ U := hsub hwt
+      have hwne : w ≠ p := hwp_ne w hw hwt
+      have hwUp : w ∈ U \ {p} := ⟨hwU, hwne⟩
+      have hgAt : ContDiffAt ℝ 1 g w := hg.contDiffAt (hU.mem_nhds hwU)
+      have hfAt : ContDiffAt ℝ 1 f w := hf_CD.contDiffAt (hUp_open.mem_nhds hwUp)
+      exact hgAt.mul hfAt
+    · have hg0 : g =ᶠ[nhds w] (fun _ => (0 : ℂ)) := notMem_tsupport_iff_eventuallyEq.mp hwt
+      have hv0 : v =ᶠ[nhds w] (fun _ => (0 : ℂ)) := by
+        filter_upwards [hg0] with x hx
+        show g x * f x = 0
+        rw [hx]; ring
+      exact contDiffAt_const.congr_of_eventuallyEq hv0
+  have hv_ContDiffOn : ContDiffOn ℝ 1 v (Metric.closedBall p R \ Metric.ball p ε) :=
+    fun w hw => (hv_ContDiffAt w hw).contDiffWithinAt
+  have hannulus := circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
+    hεpos hεR hv_ContDiffOn
+  -- The outer circle integral vanishes (`g ≡ 0` there, `R` chosen `⊇ tsupport g`).
+  have hgouter0 : ∀ w ∈ Metric.sphere p R, g w = 0 := by
+    intro w hw
+    apply image_eq_zero_of_notMem_tsupport
+    intro hwt
+    have hlt := htsub_ballR hwt
+    rw [Metric.mem_ball] at hlt
+    rw [Metric.mem_sphere] at hw
+    exact absurd hw (ne_of_lt hlt)
+  have hoq : (∮ w in C(p, R), v w) = 0 := by
+    have heq0 : Set.EqOn v (fun _ => (0 : ℂ)) (Metric.sphere p R) := by
+      intro w hw
+      show g w * f w = 0
+      rw [hgouter0 w hw, zero_mul]
+    rw [circleIntegral.integral_congr hRpos.le heq0]
+    simp [circleIntegral]
+  -- The inner circle integral is `g p * (2πi · resAt f p)` (`g ≡ g p` exactly there, `ε < δ`).
+  have hgε : Set.EqOn g (Function.const ℂ (g p)) (Metric.sphere p ε) := by
+    intro w hw
+    rw [Metric.mem_sphere] at hw
+    exact hδ w (by rw [Metric.mem_ball, hw]; exact hεδ)
+  have hvε : Set.EqOn v (fun w => g p * f w) (Metric.sphere p ε) := by
+    intro w hw
+    show g w * f w = g p * f w
+    rw [hgε hw]
+    rfl
+  have hcircleε : (∮ w in C(p, ε), v w) = g p * (2 * π * I * resAt f p) := by
+    rw [circleIntegral.integral_congr hεpos.le hvε, circleIntegral.integral_const_mul, hε_res]
+  -- Assemble and divide by `2i`.
+  have hεeq : (∮ w in C(p, ε), v w)
+      = -(2 * I * ∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar v w) := by
+    have h2 := hannulus
+    rw [hoq] at h2
+    linear_combination -h2
+  have hfinal_annulus : g p * (2 * π * I * resAt f p)
+      = -(2 * I * ∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar v w) := by
+    rw [← hcircleε]; exact hεeq
+  have h2Ine : (2 : ℂ) * I ≠ 0 := by simp [Complex.I_ne_zero]
+  have harea : (∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar v w)
+      = -π * g p * resAt f p := by
+    have hmul : 2 * I * (∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar v w)
+        = 2 * I * (-π * g p * resAt f p) := by
+      linear_combination hfinal_annulus
+    exact mul_left_cancel₀ h2Ine hmul
+  -- On the annulus (`w ≠ p`), `wirtingerDbar v w = wirtingerDbar g w * f w`.
+  have hv_eq_gf : ∀ w ∈ Metric.closedBall p R \ Metric.ball p ε,
+      wirtingerDbar v w = wirtingerDbar g w * f w := by
+    intro w hw
+    by_cases hwt : w ∈ tsupport g
+    · have hwU : w ∈ U := hsub hwt
+      have hwne : w ≠ p := hwp_ne w hw hwt
+      have hwUp : w ∈ U \ {p} := ⟨hwU, hwne⟩
+      have hgd : DifferentiableAt ℝ g w := (hg.contDiffAt (hU.mem_nhds hwU)).differentiableAt
+        (by norm_num)
+      have hfd : DifferentiableAt ℂ f w := (hf w hwUp).differentiableAt (hUp_open.mem_nhds hwUp)
+      rw [hv_def]
+      exact wirtingerDbar_mul_of_differentiableAt hgd hfd
+    · have hg0 : g =ᶠ[nhds w] (fun _ => (0 : ℂ)) := notMem_tsupport_iff_eventuallyEq.mp hwt
+      have hgbar0 : wirtingerDbar g w = 0 := by
+        rw [wirtingerDbar_congr_nhds g (fun _ => (0 : ℂ)) w hg0]
+        simp [wirtingerDbar]
+      have hgval0 : g w = 0 := image_eq_zero_of_notMem_tsupport hwt
+      rw [hgbar0, zero_mul, hv_def]
+      show g w * f w = 0
+      rw [hgval0, zero_mul]
+  have harea_gf : (∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar g w * f w)
+      = -π * g p * resAt f p := by
+    rw [← harea]
+    exact MeasureTheory.setIntegral_congr_fun
+      (measurableSet_closedBall.diff measurableSet_ball) (fun w hw => (hv_eq_gf w hw).symm)
+  -- The area integral over the annulus equals the global integral (the rest vanishes).
+  have hglobal_eq_annulus : (∫ w : ℂ, wirtingerDbar g w * f w)
+      = ∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar g w * f w := by
+    apply (MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero ?_).symm
+    intro w hw
+    rw [Set.mem_diff, not_and, not_not] at hw
+    by_cases hw1 : w ∈ Metric.closedBall p R
+    · have hw2 : w ∈ Metric.ball p ε := hw hw1
+      have hwδ : w ∈ Metric.ball p δ := Metric.ball_subset_ball hεδ.le hw2
+      rw [hwbar0 w hwδ, zero_mul]
+    · have hwt : w ∉ tsupport g := fun h => hw1 (Metric.ball_subset_closedBall (htsub_ballR h))
+      have hg0 : g =ᶠ[nhds w] (fun _ => (0 : ℂ)) := notMem_tsupport_iff_eventuallyEq.mp hwt
+      have hgbar0 : wirtingerDbar g w = 0 := by
+        rw [wirtingerDbar_congr_nhds g (fun _ => (0 : ℂ)) w hg0]
+        simp [wirtingerDbar]
+      rw [hgbar0, zero_mul]
+  rw [hglobal_eq_annulus]
+  exact harea_gf
 
