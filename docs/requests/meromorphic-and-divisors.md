@@ -72,3 +72,23 @@ marked `Compat` section — nothing blocks either unit.
    — no blocking either way.
 5. **(nice-to-have)** an `Iff.rfl`-grade `mem_linSysOn_iff : φ ∈ LinSysOn D U ↔ ∀ x ∈ U,
    (-(D x) : WithTop ℤ) ≤ φ.ord x` unfolding lemma, so consumers never touch the carrier.
+
+---
+
+## From canonical-forms (designer/builder, see `docs/design/canonical-forms.md` §1.6, §4.4)
+
+6. **`Divisor.single`/`degree_single`** (a point-divisor constructor): `Divisor.single (P : X)
+   (n : ℤ) : Divisor X` with `toFun := Pi.single P n` (finite, singleton support — trivially
+   satisfies both `locallyFinsuppWithin`'s side conditions), and `degree_single [T2Space X]
+   [CompactSpace X] : (Divisor.single P n).degree = n`. `grep`ped `Divisor.lean` — genuinely
+   absent (only `degree`/`divisorOn`/`divisor` and their algebra are there). Needed for
+   `exists_nonconstant_mero`'s divisors `n • Divisor.single P 1` (Forster 16.11 pattern, per
+   `finiteness-and-chi`'s own downstream note naming this exact construction). A three-line
+   route via `Function.locallyFinsuppWithin.mk_of_mem_addSubgroup` (`Divisor.lean`'s own imports
+   already bring in `Topology.LocallyFinsupp`) — see `docs/design/canonical-forms.md` §1.6/§4.4
+   for the worked-out membership proofs. Generically useful beyond canonical-forms (laurent-tails,
+   riemann-roch will also want point divisors) — hence filed here rather than kept as a local
+   `Compat`. **Status**: canonical-forms' own `Existence.lean` (the only consumer) is currently
+   UNWRITTEN (gated on `finiteness-and-chi`'s `chi`/`exists_ne_zero_mem_linSys` not yet landing,
+   see `docs/build-log.md`), so this is not yet blocking anything — filed proactively so it's
+   ready whenever either unit picks it up.
