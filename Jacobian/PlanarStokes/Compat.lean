@@ -89,6 +89,17 @@ theorem continuous_wirtingerDbar_of_contDiff_one (hg : ContDiff ℝ 1 g) :
   have hI : Continuous (fun z => fderiv ℝ g z Complex.I) := hfc.clm_apply continuous_const
   simpa [wirtingerDbar] using (h1.add (continuous_const.mul hI)).div_const 2
 
+/-- `tsupport (wirtingerDbar g) ⊆ tsupport g` (a sharper, closure-level companion to Dbar's own
+`hasCompactSupport_wirtingerDbar`, which only extracts compactness). -/
+theorem tsupport_wirtingerDbar_subset : tsupport (wirtingerDbar g) ⊆ tsupport g := by
+  have hsupp : Function.support (wirtingerDbar g) ⊆ tsupport g := by
+    intro x hx
+    by_contra hxt
+    exact hx (by simp [wirtingerDbar, fderiv_of_notMem_tsupport (𝕜 := ℝ) hxt])
+  calc tsupport (wirtingerDbar g) = closure (Function.support (wirtingerDbar g)) := rfl
+    _ ⊆ closure (tsupport g) := closure_mono hsupp
+    _ = tsupport g := (isClosed_tsupport g).closure_eq
+
 /-! ## The rectangle ↔ iterated-real-integral bridge -/
 
 /-- Internal building block (no support/vanishing hypothesis): the `ℂ`-set integral over a closed

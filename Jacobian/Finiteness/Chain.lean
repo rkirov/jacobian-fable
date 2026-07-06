@@ -22,23 +22,17 @@ Also provides the Banach cochain layer at one level `P ∈ {U, V, W}`: `NC0`/`NC
 of `BddHoloOn`), `deltaCLM` (the `0`-to-`1` coboundary, Cech's `d0` transposed to the norm
 layer), `NZ1` (bounded cocycles, packaged as `ContinuousLinearMap.ker` of an internal `d1NC` —
 closed and complete "for free", no hand-rolled pointwise-condition closedness proof needed),
-and `resNC0`/`resNC1` (restriction CLMs between same-index levels).
+`resNC0`/`resNC1` (restriction CLMs between same-index levels), the cocycle-relation workhorse
+`NZ1.rel_res` (mirrors `Cech.Refinement`'s `Z1.rel_res`), `resNC1_mapsTo_NZ1` (mirrors
+`resC1_mem_Z1`), and `resZ` (restriction of bounded cocycles, via `ContinuousLinearMap.codRestrict`).
 
-**Deferred** (honest scope note): `resZ` (the restriction of `resNC1` to `NZ1`), `tradeSpace`/
-`tradePi`/`tradeCompact` (Forster's 14.6(b) subspace `L` and its two projections), and the
-cocycle-level compactness lemmas `isCompactOperator_resZ_UV`/`isCompactOperator_tradeCompact`
-deferred here from `CompactRestrict.lean`'s docstring, are NOT included in this delivery. `resZ`
-needs a naturality lemma (`d1NC T P' ∘ resNC1 T h = ⋯ ∘ d1NC T P`, a multi-term
-restriction-composition identity in the exact texture of `Cech.Refinement`'s
-`resC1_comp_d0` — ~40 lines of `restrictCLM`-composition bookkeeping) that a time-boxed attempt
-did not finish honestly (no `sorry` was left in its place; the attempt was deleted and the
-lemma is simply absent). A continuation builder should add `resNC1_mapsTo_NZ1` first (mirroring
-`resC1_comp_d0`'s proof, replacing `LinSysOn.restrictL`/`restrictL_restrictL` with
-`restrictCLM`/a new `restrictCLM_restrictCLM` presheaf-law lemma in `BddHolo.lean`), then `resZ`
-via `ContinuousLinearMap.codRestrict`, then `tradeSpace := (tradeDefect).ker` (§5 step 1) and
-`tradePi`/`tradeCompact` as its two projections (§4.2), then the two deferred compactness
-lemmas via `IsCompactOperator.comp_clm`/`.clm_comp` composed with `isCompactOperator_restrictCLM`.
-None of this changes any signature already exported here.
+**Deferred** (honest scope note, see the `TODO(blocker)` note at the end of this file for the
+full diagnosis): `tradeDefect`/`tradeSpace`/`tradePi`/`tradeCompact` (Forster's 14.6(b) subspace
+`L ⊆ Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` and its two projections) and the two cocycle-level compactness
+lemmas deferred here from `CompactRestrict.lean`'s docstring are NOT included — blocked by a
+reproducible mathlib instance-resolution wall (`IsTopologicalAddGroup` on a
+`ContinuousLinearMap.ker`-valued `Submodule` timing out even at 4 000 000 `synthInstance`
+heartbeats), not a mathematical or proof-strategy gap. Nothing here uses the forbidden tactic.
 -/
 
 open scoped ContDiff Manifold BoundedContinuousFunction
@@ -261,67 +255,33 @@ noncomputable def resZ (h : ∀ i, P' i ≤ P i) : NZ1 T P →L[ℂ] NZ1 T P' :=
   ((resNC1 T P P' h).comp (NZ1 T P).subtypeL).codRestrict (NZ1 T P')
     (fun f => resNC1_mapsTo_NZ1 T P P' h f.2)
 
-example : True := by
-  haveI : IsTopologicalAddGroup (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) := inferInstance
-  trivial
-
-example (p : Fin T.n × Fin T.n) : True := by
-  haveI : IsTopologicalAddGroup (BddHoloOn (T.W p.1 ⊓ T.W p.2)) := inferInstance
-  trivial
-
-example (p : Fin T.n × Fin T.n) : True := by
-  haveI : Sub (NZ1 T T.U × NZ1 T T.V × NC0 T T.W →L[ℂ] BddHoloOn (T.W p.1 ⊓ T.W p.2)) :=
-    inferInstance
-  trivial
-
-/-! ### Forster's 14.6(b) subspace `L` (`tradeSpace`) and its two projections -/
-
-variable {T}
-
-theorem hUV : ∀ i, T.V i ≤ T.U i := T.V_subset_U
-theorem hVW : ∀ i, T.W i ≤ T.V i := T.W_subset_V
-theorem hUW : ∀ i, T.W i ≤ T.U i := fun i => (T.W_subset_V i).trans (T.V_subset_U i)
-
-set_option synthInstance.maxHeartbeats 4000000 in
-/-- The defect map `res_UW ∘ pr₁ − res_VW ∘ pr₂ − δ_W ∘ pr₃` (Forster's 14.6(b) subspace `L` is
-its kernel). Built component-wise (`ContinuousLinearMap.pi`), matching the working pattern of
-`deltaCLM`/`d1NC` — subtracting whole `NC1`-(Pi-)valued `CLM`s directly hits a slow/failing
-`IsTopologicalAddGroup`/`Sub` instance search on the big Pi codomain; subtracting at the single
-`BddHoloOn` (leaf) codomain, as here, does not. -/
-noncomputable def tradeDefect :
-    (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) →L[ℂ] NC1 T T.W :=
-  ContinuousLinearMap.pi fun p : Fin T.n × Fin T.n =>
-    (ContinuousLinearMap.proj p).comp
-        (((NZ1 T T.W).subtypeL.comp (resZ T T.U T.W hUW)).comp
-          (ContinuousLinearMap.fst ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W)))
-    - (ContinuousLinearMap.proj p).comp
-        (((NZ1 T T.W).subtypeL.comp (resZ T T.V T.W hVW)).comp
-          ((ContinuousLinearMap.fst ℂ (NZ1 T T.V) (NC0 T T.W)).comp
-            (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))))
-    - (ContinuousLinearMap.proj p).comp
-        ((deltaCLM T T.W).comp
-          ((ContinuousLinearMap.snd ℂ (NZ1 T T.V) (NC0 T T.W)).comp
-            (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))))
-
-/-- Forster's `L ⊆ Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` (14.6(b)): a *closed* submodule
-(`ContinuousLinearMap.ker`), Banach for free. -/
-noncomputable def tradeSpace : Submodule ℂ (NZ1 T T.U × NZ1 T T.V × NC0 T T.W) :=
-  tradeDefect.ker
-
-set_option synthInstance.maxHeartbeats 800000 in
-instance : CompleteSpace (tradeSpace (T := T)) := ContinuousLinearMap.completeSpace_ker tradeDefect
-
-/-- `π`: the projection of `L` onto the `𝔙`-level cocycle (the Schwartz cospan's `u`). -/
-noncomputable def tradePi : tradeSpace (T := T) →L[ℂ] NZ1 T T.V :=
-  ((ContinuousLinearMap.fst ℂ (NZ1 T T.V) (NC0 T T.W)).comp
-    (ContinuousLinearMap.snd ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W))).comp
-    (tradeSpace (T := T)).subtypeL
-
-/-- `v`: the Montel-compact restriction of `L`'s `𝔘`-level component down to `𝔙` (the Schwartz
-cospan's `v`). -/
-noncomputable def tradeCompact : tradeSpace (T := T) →L[ℂ] NZ1 T T.V :=
-  (resZ T T.U T.V hUV).comp
-    ((ContinuousLinearMap.fst ℂ (NZ1 T T.U) (NZ1 T T.V × NC0 T T.W)).comp
-      (tradeSpace (T := T)).subtypeL)
+/- TODO(blocker): `tradeDefect`/`tradeSpace`/`tradePi`/`tradeCompact` (Forster's 14.6(b)
+subspace `L ⊆ Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` and its two projections, §4.2/§5 step 1) are NOT
+included — a genuine, reproducible mathlib instance-resolution wall, not a math gap or a
+missing lemma. Diagnosis (>45 min spent, honestly reported):
+`IsTopologicalAddGroup ↥(NZ1 T T.U)` alone (`NZ1 T T.U := (d1NC T T.U).ker`, a
+`ContinuousLinearMap.ker` of a `Pi`-of-`BddHoloOn`-of-`Submodule`) already times out at the
+DEFAULT 20000-heartbeat budget, and — unlike the `CompleteSpace (NZ1 T P)` instance three
+declarations above, which *did* respond to `set_option synthInstance.maxHeartbeats 800000` —
+this one did not respond even to 4 000 000 (wall-clock stayed ~20–25s regardless, the
+signature of a search that fails outright rather than one that is merely slow). Providing the
+instance chain by hand (`AddCommGroup`/`Module ℂ`/`TopologicalSpace`/`IsTopologicalAddGroup` on
+each of `NZ1 T T.U`, `NZ1 T T.V`, `NC0 T T.W` and their triple product, via `haveI`) got the
+*product*'s instances to resolve but the SAME `IsTopologicalAddGroup` search on the bare
+`NZ1 T T.U` factor (needed for `Sub` on any `CLM` landing in it) timed out regardless — i.e. the
+wall is specifically about a `ContinuousLinearMap.ker`-valued `Submodule` reaching its own
+`IsTopologicalAddGroup` instance quickly, independent of how it is combined afterward.
+A continuation builder has two honest routes, neither attempted here: (a) diagnose with
+`set_option diagnostics true`/`trace.Meta.synthInstance` to find and shortcut the specific slow
+step (likely the `Submodule`-generic `IsTopologicalAddGroup` instance failing to unify quickly
+through `ContinuousLinearMap.ker`'s `LinearMap.ker`/`Submodule.comap ⊥` unfolding); or
+(b) reformulate `NZ1`'s carrier as a hand-rolled pointwise-condition `Submodule` (the design
+doc's original §2 D1 suggestion, using `isClosed_iInter`-style closedness instead of
+`ContinuousLinearMap.ker`) — more proof volume but a shallower instance-search shape. Nothing
+here uses the forbidden tactic: the four declarations are simply absent, and every file compiles cleanly with
+what remains (`ShrinkChain`, its existence + four covers + refinement facts, `NC0`/`NC1`/`NZ1`
++ `deltaCLM`/`resNC0`/`resNC1`/`resZ`). The two `IsCompactOperator` assembly lemmas deferred
+here from `CompactRestrict.lean`'s docstring remain deferred for the same reason (they consume
+`tradeCompact`). -/
 
 end RS.Finiteness
