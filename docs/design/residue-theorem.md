@@ -760,3 +760,10 @@ planar-stokes's own "prove exactly the one annulus identity needed" scope discip
 design). No trace-to-`ℙ¹` machinery built (documented as the alternative route, §3, not
 implemented — form-trace-tower's own gaps make it premature). No change to any other unit's frozen
 interface.
+## Orchestrator addendum (2026-07-07)
+
+The route recommendation in this doc was made while mtrace P6 (laurentCoeffAt_traceZk) still
+had a sorry. That sorry is CLOSED (MeromorphicTrace complete) and Jacobian/FormTrace/ is in
+build. Therefore the BUILD order is inverted: **§6 trace route is PRIMARY**; the PoU+Stokes
+route (§3-5) is the fallback if FormTrace's residue-trace compatibility or the P1 base case
+slips. The Area-Gluing atom should NOT be built unless the fallback is triggered.
