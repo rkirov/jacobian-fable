@@ -44,6 +44,9 @@ API) over mathlib pinned at `548398201a64f3a5127d90d83945278cfe38cac4`, followin
   so; don't chase maximal generality otherwise.
 - Every file starts with a module docstring stating what it provides and which blueprint unit it
   belongs to. Keep files under ~800 lines; split when larger.
+- Identifier gotchas: `ω` is the ContDiff-scope smoothness token and `∞` the OnePoint/ContDiff
+  token — neither is usable as an identifier (use `θ`, `η`, `hFinf`, …). `σ` clashes with scoped
+  `unitInterval.symm`.
 - Prefer mathlib's existing machinery (see `docs/mathlib-inventory.md`) over hand-rolling:
   `MeromorphicAt/On`, `meromorphicOrderAt`, `Function.locallyFinsuppWithin` divisors,
   `AnalyticAt`, `ZLattice`, `SmoothPartitionOfUnity`, `IsCompactOperator`, etc.
