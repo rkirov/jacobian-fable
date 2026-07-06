@@ -2,6 +2,7 @@ import Jacobian.TailDuality.TailOps
 import Jacobian.TailDuality.Pairing
 import Jacobian.TailDuality.Counting
 import Jacobian.TailDuality.Duality
+import Jacobian.TailDuality.ChiLedger
 
 /-!
 # serre-duality-tails: Serre duality via Laurent tails (Miranda VI.3) (namespace `RS.TailDuality`)
@@ -39,6 +40,18 @@ a finite-dimensional space).
   **`exists_pairT_eq`** (Miranda Thm 3.3's surjectivity half — the endgame combining Lemma 3.4,
   the `μ_{f₁}` inversion, and Lemma 3.6 applied twice), `resMap_surjective`/`resEquiv` (`resMap`
   is a linear ISOMORPHISM `Ω(-D) ≃ₗ Dual(H1Tail D)`), and the export bank below.
+* **`ChiLedger.lean`** (the chiT-ledger closure pass): **`chiT_eq_chiT_zero_add_degree (D) :
+  chiT D = chiT 0 + D.degree`** and **`chiT_single_add (D) (P) : chiT (D + single P 1) =
+  chiT D + 1`** — `chiT`'s additivity, closing the one gap this unit used to flag as open. Built
+  by transposing `Finiteness/Chi.lean`'s own `sixterm_rank1/2/3 → chi_of_le →
+  chi_eq_chi_zero_add_degree` recipe to the tail level via a NEW `H1TailIncl` (the descent of
+  `truncT` through the `alphaL`-quotients) and `windowConnectT := H1Tail.mk D ∘ₗ windowToT D D' h`
+  (Cech's finite window, embedded via laurent-tails' `windowToT`); both exactness facts
+  (`ker windowConnectT = range windowMap`, `ker H1TailIncl = range windowConnectT`) are proved
+  entirely elementarily (no Čech `H1`/cochain machinery — `H1Tail D` is a literal coker of
+  `alphaL D`, not a colimit, so exactness is a DFinsupp/Submodule bookkeeping argument: choose a
+  representative per marked point, one two-term `MeroGermOn.ord_add` estimate). Does not touch
+  `H1Tail.toH1`'s surjectivity. Zero sorries.
 
 ## Export bank (all in namespace `RS.TailDuality`, all with no admitted steps)
 
@@ -56,18 +69,16 @@ a finite-dimensional space).
 * `resEquiv (D) : ↥(MForm.OmegaSpace (-D)) ≃ₗ[ℂ] Module.Dual ℂ (H1Tail D)` — the
   functional-level isomorphism (Miranda Thm 3.3 exactly as stated, not just the dimension count);
   this is the shape `Jacobian/Abel/Sufficiency.lean`'s blocked step needs (see below).
-* `chiT (D) := (RS.l D : ℤ) - (h1T D : ℤ)` — defined, but its additivity
-  (`chiT D = chiT 0 + deg D`) is **NOT delivered** (honest gap; see `Duality.lean`'s file
-  docstring for the precise reason and a recorded proof sketch for whoever picks it up).
-  riemann-roch (#28) should combine `l_sub_eq_h1T`/`h1T_zero_eq_genus`/`RS.l_zero` with
-  `Finiteness.chi_eq_chi_zero_add_degree` (Čech-level, already built) directly instead.
+* `chiT (D) := (RS.l D : ℤ) - (h1T D : ℤ)`, with **`chiT_eq_chiT_zero_add_degree`**/
+  **`chiT_single_add`** (`ChiLedger.lean`) — the tail ledger, now fully delivered.
 
 ## Consumer notes
 
-* **riemann-roch (#28)**: cite `l_sub_eq_h1T`, `h1T_zero_eq_genus`, `h1T_zero_eq_l_K`,
-  `h1T_canonical` together with `RS.Finiteness.chi_eq_chi_zero_add_degree`/`chi_zero_add_degree_le_l`
-  (already built, Čech-level) and `RS.l_zero`; the combination is pure ℤ-arithmetic (`omega`),
-  exactly as design §9.1 anticipated.
+* **riemann-roch (#28)**: cite `chiT_eq_chiT_zero_add_degree` + `l_sub_eq_h1T` +
+  `h1T_zero_eq_genus` + `RS.l_zero` (the combination is pure ℤ-arithmetic, `omega`) for
+  `riemannRoch`/`riemann_inequality`/`l_K_eq_genus`/`deg_canonical`, exactly as design §9.1
+  anticipated (the Čech-level `Finiteness.chi_eq_chi_zero_add_degree` is no longer needed for
+  this — the tail-level ledger suffices on its own).
 * **cech-h1-genus (#27)**: re-based to `h1T_zero_eq_genus` (`finrank (H1Tail 0) = genus X`); the
   literal Čech-`H1` statement (`Finiteness.h1 0 = genus X`) is NOT produced here (would need
   `H1Tail.equiv`, gated on the same out-of-scope surjectivity) — document as open/optional.
