@@ -97,7 +97,7 @@ theorem deriv_sub_zpow (z₀ : ℂ) (m : ℤ) (z : ℂ) :
 /-- Residue of a derivative vanishes (Serre/Abel bookkeeping; the `k ≤ -2` engine of
 change-of-variables). -/
 theorem MeromorphicAt.resAt_deriv (hf : MeromorphicAt f z₀) : resAt (deriv f) z₀ = 0 := by
-  obtain ⟨r, hr, _, hdecomp⟩ := hf.exists_principalPart_add_analyticAt
+  obtain ⟨r, hr, _, hdecomp⟩ := MeromorphicAt.exists_principalPart_add_analyticAt hf
   have hderivEq : deriv f =ᶠ[𝓝[≠] z₀] deriv (fun z => principalPartAt f z₀ z + r z) :=
     hdecomp.nhdsNE_deriv
   have hrEventually : ∀ᶠ z in 𝓝[≠] (z₀ : ℂ), AnalyticAt ℂ r z :=
@@ -116,7 +116,9 @@ theorem MeromorphicAt.resAt_deriv (hf : MeromorphicAt f z₀) : resAt (deriv f) 
         laurentCoeffAt f z₀ k * (z - z₀) ^ k) z = _
     rw [deriv_fun_sum (fun k _ => by
       have hzne : z - z₀ ≠ 0 := sub_ne_zero.2 hz
-      fun_prop (disch := assumption))]
+      have hzpow : DifferentiableAt ℂ (fun z => (z - z₀) ^ k) z :=
+        (show DifferentiableAt ℂ (fun w : ℂ => w - z₀) z by fun_prop).zpow (Or.inl hzne)
+      exact (differentiableAt_const _).mul hzpow)]
     exact Finset.sum_congr rfl fun k _ => by rw [deriv_const_mul_field, deriv_sub_zpow]
   have hPdEq : deriv (principalPartAt f z₀) =ᶠ[𝓝[≠] z₀]
       fun z => ∑ k ∈ Finset.Icc (meromorphicOrderAt f z₀).untop₀ (-1),
@@ -132,7 +134,8 @@ theorem MeromorphicAt.resAt_deriv (hf : MeromorphicAt f z₀) : resAt (deriv f) 
   apply Finset.sum_eq_zero
   intro k hk
   simp only [Finset.mem_Icc] at hk
-  rw [resAt_const_mul, resAt_zpow_monomial, if_neg (by omega : k - 1 ≠ -1), mul_zero]
+  rw [resAt_const_mul, resAt_const_mul, resAt_zpow_monomial, if_neg (by omega : k - 1 ≠ -1)]
+  ring
 
 /-- Log-derivative residue = order (THE argument-principle atom; meromorphic-trace input).
 Junk-robust: no order hypothesis (order `⊤` gives `0 = untop₀ ⊤`). -/
@@ -152,16 +155,21 @@ theorem MeromorphicAt.resAt_deriv_div (hf : MeromorphicAt f z₀) :
     have huEventually : ∀ᶠ z in 𝓝[≠] (z₀ : ℂ), u z ≠ 0 :=
       Filter.Eventually.filter_mono nhdsWithin_le_nhds
         (h₁u.continuousAt.eventually_ne h₂u)
+    have huDiffEventually : ∀ᶠ z in 𝓝[≠] (z₀ : ℂ), DifferentiableAt ℂ u z :=
+      (Filter.Eventually.filter_mono nhdsWithin_le_nhds h₁u.eventually_analyticAt).mono
+        fun z hz => hz.differentiableAt
     have hderivEq : deriv f =ᶠ[𝓝[≠] z₀] deriv (fun z => (z - z₀) ^ m * u z) := h₃u.nhdsNE_deriv
     have hquot : (fun z => deriv f z / f z) =ᶠ[𝓝[≠] z₀]
         fun z => (m : ℂ) / (z - z₀) + deriv u z / u z := by
-      filter_upwards [hderivEq, h₃u, huEventually, self_mem_nhdsWithin] with z hz1 hz2 hune hzne
+      filter_upwards [hderivEq, h₃u, huEventually, huDiffEventually, self_mem_nhdsWithin]
+        with z hz1 hz2 hune hudiff hzne
       have hzz : z - z₀ ≠ 0 := sub_ne_zero.2 hzne
       have hfz : (z - z₀) ^ m * u z ≠ 0 := mul_ne_zero (zpow_ne_zero m hzz) hune
+      have hdiffzpow : DifferentiableAt ℂ (fun w : ℂ => (w - z₀) ^ m) z :=
+        (show DifferentiableAt ℂ (fun w : ℂ => w - z₀) z by fun_prop).zpow (Or.inl hzz)
       have hlog : logDeriv (fun w => (w - z₀) ^ m * u w) z
           = logDeriv (fun w => (w - z₀) ^ m) z + logDeriv u z :=
-        logDeriv_mul z (zpow_ne_zero m hzz) hune (by fun_prop (disch := assumption))
-          h₁u.differentiableAt
+        logDeriv_mul z (zpow_ne_zero m hzz) hune hdiffzpow hudiff
       have hzsub : logDeriv (fun w : ℂ => w - z₀) z = 1 / (z - z₀) := by
         rw [logDeriv_apply, deriv_sub_const, deriv_id'']
       have hpow : logDeriv (fun w => (w - z₀) ^ m) z = (m : ℂ) * logDeriv (fun w => w - z₀) z :=
@@ -216,7 +224,7 @@ theorem resAt_analyticAt_mul (hh : AnalyticAt ℂ h z₀) (hf : MeromorphicAt f 
     {n : ℤ} (hn : (n : WithTop ℤ) ≤ meromorphicOrderAt f z₀) :
     resAt (fun z => h z * f z) z₀
       = ∑ k ∈ Finset.Icc n (-1), taylorCoeffAt h z₀ (-1 - k).toNat * laurentCoeffAt f z₀ k := by
-  obtain ⟨r, hr, _, hdecomp⟩ := hf.exists_principalPart_add_analyticAt
+  obtain ⟨r, hr, _, hdecomp⟩ := MeromorphicAt.exists_principalPart_add_analyticAt hf
   have hmulcongr : (fun z => h z * f z)
       =ᶠ[𝓝[≠] z₀] fun z => h z * principalPartAt f z₀ z + h z * r z := by
     filter_upwards [hdecomp] with z hz
@@ -224,7 +232,8 @@ theorem resAt_analyticAt_mul (hh : AnalyticAt ℂ h z₀) (hf : MeromorphicAt f 
   have hPmero : MeromorphicAt (fun z => h z * principalPartAt f z₀ z) z₀ :=
     hh.meromorphicAt.mul meromorphicAt_principalPartAt
   have hRmero : MeromorphicAt (fun z => h z * r z) z₀ := hh.meromorphicAt.mul hr.meromorphicAt
-  rw [resAt_congr hmulcongr, resAt_fun_add hPmero hRmero, resAt_of_analyticAt (hh.mul hr),
+  have hhr : AnalyticAt ℂ (fun z => h z * r z) z₀ := hh.mul hr
+  rw [resAt_congr hmulcongr, resAt_fun_add hPmero hRmero, resAt_of_analyticAt hhr,
     add_zero]
   set m := (meromorphicOrderAt f z₀).untop₀ with hmdef
   have hexpand : (fun z => h z * principalPartAt f z₀ z)
@@ -265,6 +274,41 @@ theorem resAt_analyticAt_mul (hh : AnalyticAt ℂ h z₀) (hf : MeromorphicAt f 
         _ = meromorphicOrderAt f z₀ := (WithTop.coe_untop₀_of_ne_top h₂).symm ▸ rfl
     rw [this, mul_zero]
 
+/-- Combining two "one-sided" convolution sums (indices `≤ -1` resp. `≥ 0`) into the full
+convolution sum, given the two sequences vanish below their respective bounds. The Cauchy-product
+bookkeeping engine of `resAt_mul`: every integer `k` is either `≤ -1` or `≥ 0`, and the sums
+`Icc n (-1)`/`Icc 0 (-1-m)` are always disjoint, so the only content is that
+`Icc n (-1-m) ⊆ Icc n (-1) ∪ Icc 0 (-1-m)` with vanishing spillover. -/
+private theorem sum_Icc_add_sum_Icc_eq_sum_Icc {n m : ℤ} (F G : ℤ → ℂ)
+    (hF : ∀ k < n, F k = 0) (hG : ∀ k < m, G k = 0) :
+    (∑ k ∈ Finset.Icc n (-1), F k * G (-1 - k))
+        + (∑ k ∈ Finset.Icc 0 (-1 - m), F k * G (-1 - k))
+      = ∑ k ∈ Finset.Icc n (-1 - m), F k * G (-1 - k) := by
+  have hsub : Finset.Icc n (-1 - m) ⊆ Finset.Icc n (-1) ∪ Finset.Icc 0 (-1 - m) := by
+    intro x hx
+    simp only [Finset.mem_Icc] at hx
+    simp only [Finset.mem_union, Finset.mem_Icc]
+    rcases lt_or_ge x 0 with h | h
+    · exact Or.inl ⟨hx.1, by omega⟩
+    · exact Or.inr ⟨h, hx.2⟩
+  have hdisj : Disjoint (Finset.Icc n (-1) : Finset ℤ) (Finset.Icc 0 (-1 - m)) := by
+    apply Finset.disjoint_left.2
+    intro a ha hb
+    simp only [Finset.mem_Icc] at ha hb
+    omega
+  have hzero : ∀ x ∈ Finset.Icc n (-1) ∪ Finset.Icc 0 (-1 - m), x ∉ Finset.Icc n (-1 - m) →
+      F x * G (-1 - x) = 0 := by
+    intro x hx hx'
+    simp only [Finset.mem_union, Finset.mem_Icc] at hx
+    simp only [Finset.mem_Icc] at hx'
+    rcases hx with ⟨h1, h2⟩ | ⟨h1, h2⟩
+    · have hgt : -1 - m < x := by by_contra hcon; exact hx' ⟨h1, by omega⟩
+      rw [hG (-1 - x) (by omega), mul_zero]
+    · have hlt : x < n := by by_contra hcon; exact hx' ⟨by omega, h2⟩
+      rw [hF x hlt, zero_mul]
+  rw [← Finset.sum_union hdisj]
+  exact (Finset.sum_subset hsub hzero).symm
+
 /-- General product formula (both meromorphic; subsumes the two above — provided because
 laurent-tails' `μ_f` operators multiply tails by meromorphic functions). -/
 theorem resAt_mul (hf : MeromorphicAt f z₀) (hg : MeromorphicAt g z₀)
@@ -272,51 +316,61 @@ theorem resAt_mul (hf : MeromorphicAt f z₀) (hg : MeromorphicAt g z₀)
     (hm : (m : WithTop ℤ) ≤ meromorphicOrderAt g z₀) :
     resAt (fun z => f z * g z) z₀
       = ∑ k ∈ Finset.Icc n (-1 - m), laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k) := by
-  obtain ⟨rg, hrg, hrgcoeff, hgdecomp⟩ := hg.exists_principalPart_add_analyticAt
+  obtain ⟨rf, hrf, hrfcoeff, hfdecomp⟩ := MeromorphicAt.exists_principalPart_add_analyticAt hf
   have hmulcongr : (fun z => f z * g z)
-      =ᶠ[𝓝[≠] z₀] fun z => f z * principalPartAt g z₀ z + f z * rg z := by
-    filter_upwards [hgdecomp] with z hz
+      =ᶠ[𝓝[≠] z₀] fun z => principalPartAt f z₀ z * g z + rf z * g z := by
+    filter_upwards [hfdecomp] with z hz
     rw [hz]; ring
-  have hPmero : MeromorphicAt (fun z => f z * principalPartAt g z₀ z) z₀ :=
-    hf.mul meromorphicAt_principalPartAt
-  have hRmero : MeromorphicAt (fun z => f z * rg z) z₀ := hf.mul hrg.meromorphicAt
+  have hPmero : MeromorphicAt (fun z => principalPartAt f z₀ z * g z) z₀ :=
+    meromorphicAt_principalPartAt.mul hg
+  have hRmero : MeromorphicAt (fun z => rf z * g z) z₀ := hrf.meromorphicAt.mul hg
   rw [resAt_congr hmulcongr, resAt_fun_add hPmero hRmero]
-  set mg := (meromorphicOrderAt g z₀).untop₀ with hmgdef
-  -- second term: `f · rg` — analytic-multiplier form with roles swapped
-  have hcomm : (fun z => f z * rg z) = fun z => rg z * f z := by funext z; ring
-  rw [hcomm, resAt_analyticAt_mul hrg hf hn]
-  have hterm2 : ∀ k ∈ Finset.Icc n (-1),
-      taylorCoeffAt rg z₀ (-1 - k).toNat * laurentCoeffAt f z₀ k
-        = laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k) := by
-    intro k hk
-    simp only [Finset.mem_Icc] at hk
-    rw [hrgcoeff (-1 - k).toNat, Int.toNat_of_nonneg (by omega : (0:ℤ) ≤ -1 - k), mul_comm]
-  rw [Finset.sum_congr rfl hterm2]
-  -- first term: `f · principalPartAt g z₀` — tail form
-  have hexpand : (fun z => f z * principalPartAt g z₀ z)
-      = fun z => (∑ k ∈ Finset.Icc mg (-1), laurentCoeffAt g z₀ k * (z - z₀) ^ k) * f z := by
-    funext z
-    show f z * (∑ k ∈ Finset.Icc mg (-1), laurentCoeffAt g z₀ k * (z - z₀) ^ k) = _
-    ring
-  rw [hexpand, resAt_tail_mul hf]
-  have hpad : ∑ k ∈ Finset.Icc mg (-1), laurentCoeffAt g z₀ k * laurentCoeffAt f z₀ (-1 - k)
-      = ∑ k ∈ Finset.Icc n (-1 - m), laurentCoeffAt g z₀ k * laurentCoeffAt f z₀ (-1 - k) := by
-    by_cases h₂ : meromorphicOrderAt g z₀ = ⊤
-    · have hmgz : mg = 0 := by rw [hmgdef, h₂, WithTop.untop₀_top]
-      rw [hmgz]
+  set a := (meromorphicOrderAt f z₀).untop₀ with hadef
+  -- first term: `principalPartAt f z₀ · g` — tail form
+  have hexpand : (fun z => principalPartAt f z₀ z * g z)
+      = fun z => (∑ k ∈ Finset.Icc a (-1), laurentCoeffAt f z₀ k * (z - z₀) ^ k) * g z := rfl
+  rw [hexpand, resAt_tail_mul hg]
+  -- second term: `rf · g` — analytic-multiplier form
+  rw [resAt_analyticAt_mul hrf hg hm]
+  have hreindex : ∑ j ∈ Finset.Icc m (-1), taylorCoeffAt rf z₀ (-1 - j).toNat * laurentCoeffAt g z₀ j
+      = ∑ k ∈ Finset.Icc 0 (-1 - m), laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k) := by
+    apply Finset.sum_nbij' (fun j => -1 - j) (fun k => -1 - k)
+    · intro j hj; simp only [Finset.mem_Icc] at hj; simp only [Finset.mem_Icc]; omega
+    · intro k hk; simp only [Finset.mem_Icc] at hk; simp only [Finset.mem_Icc]; omega
+    · intro j _; omega
+    · intro k _; omega
+    · intro j hj
+      simp only [Finset.mem_Icc] at hj
+      have hidx : (-1 : ℤ) - (-1 - j) = j := by omega
+      rw [hrfcoeff (-1 - j).toNat, Int.toNat_of_nonneg (by omega : (0:ℤ) ≤ -1 - j), hidx]
+  rw [hreindex]
+  -- pad the tail term from `Icc a (-1)` (the actual order) up to `Icc n (-1)` (the given bound)
+  have hpad : ∑ k ∈ Finset.Icc a (-1), laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k)
+      = ∑ k ∈ Finset.Icc n (-1), laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k) := by
+    by_cases h₂ : meromorphicOrderAt f z₀ = ⊤
+    · have haz : a = 0 := by rw [hadef, h₂, WithTop.untop₀_top]
+      rw [haz]
       have hempty : Finset.Icc (0 : ℤ) (-1) = ∅ := Finset.Icc_eq_empty (by omega)
       rw [hempty, Finset.sum_empty]
-      symm
-      apply Finset.sum_eq_zero
-      intro k _
-      rw [laurentCoeffAt_of_order_eq_top h₂, zero_mul]
-    · have hmm : m ≤ mg := by
-        have hle : (m : WithTop ℤ) ≤ ((mg : ℤ) : WithTop ℤ) := by
-          rwa [hmgdef, WithTop.coe_untop₀_of_ne_top h₂]
+      exact (Finset.sum_eq_zero fun k _ => by rw [laurentCoeffAt_of_order_eq_top h₂, zero_mul]).symm
+    · have hna : n ≤ a := by
+        have hle : (n : WithTop ℤ) ≤ ((a : ℤ) : WithTop ℤ) := by
+          rwa [hadef, WithTop.coe_untop₀_of_ne_top h₂]
         exact_mod_cast hle
-      apply Finset.sum_subset (Finset.Icc_subset_Icc le_rfl (by omega : (-1:ℤ) ≤ -1 - m) |>.trans
-        (Finset.Icc_subset_Icc (le_refl mg) le_rfl))
-      · -- Icc mg (-1) ⊆ Icc n (-1-m): needs n ≤ mg
-        sorry
-      · sorry
-  sorry
+      apply Finset.sum_subset (Finset.Icc_subset_Icc hna le_rfl)
+      intro k hk hk'
+      simp only [Finset.mem_Icc] at hk hk'
+      have hklt : k < a := by omega
+      have : laurentCoeffAt f z₀ k = 0 := by
+        apply laurentCoeffAt_eq_zero_of_lt_order
+        calc (k : WithTop ℤ) < (a : WithTop ℤ) := by exact_mod_cast hklt
+          _ = meromorphicOrderAt f z₀ := WithTop.coe_untop₀_of_ne_top h₂
+      rw [this, zero_mul]
+  rw [hpad]
+  exact sum_Icc_add_sum_Icc_eq_sum_Icc (laurentCoeffAt f z₀) (laurentCoeffAt g z₀)
+    (fun k hk => laurentCoeffAt_eq_zero_of_lt_order
+      (lt_of_lt_of_le (by exact_mod_cast hk) hn))
+    (fun k hk => laurentCoeffAt_eq_zero_of_lt_order
+      (lt_of_lt_of_le (by exact_mod_cast hk) hm))
+
+end RS

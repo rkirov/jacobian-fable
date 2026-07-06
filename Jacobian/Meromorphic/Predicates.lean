@@ -1,5 +1,6 @@
 import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Analysis.Meromorphic.Order
+import Mathlib.Analysis.Meromorphic.IsolatedZeros
 import Jacobian.Surface.Bridges
 import Jacobian.LocalMultiplicity.ChartBridge
 import Jacobian.LocalMultiplicity.Multiplicity
@@ -56,6 +57,12 @@ theorem eventually_nhdsNE_iff_comp_chart {p : X → Prop} {x : X} :
     ((chartAt ℂ x).eventually_left_inverse (mem_chart_source ℂ x)).filter_mono nhdsWithin_le_nhds
   exact eventually_congr (hleft.mono fun y hy => by rw [hy])
 
+/-- Simpler companion transport (no correction needed): a property `q` of the chart-image `c y`
+transports directly by pulling back along `c`. -/
+theorem eventually_nhdsNE_comp_chart_apply_iff {q : ℂ → Prop} {x : X} :
+    (∀ᶠ y in 𝓝[≠] x, q (chartAt ℂ x y)) ↔ ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), q z := by
+  rw [← map_nhdsNE (chartAt ℂ x) (mem_chart_source ℂ x), eventually_map]
+
 /-- `Frequently` version of `eventually_nhdsNE_iff_comp_chart`. -/
 theorem frequently_nhdsNE_iff_comp_chart {p : X → Prop} {x : X} :
     (∃ᶠ y in 𝓝[≠] x, p y) ↔ ∃ᶠ z in 𝓝[≠] (chartAt ℂ x x), p ((chartAt ℂ x).symm z) :=
@@ -76,111 +83,6 @@ theorem tendsto_nhdsNE_comp_chart_iff {f : X → ℂ} {x : X} {l : Filter ℂ} :
     ((chartAt ℂ x).eventually_left_inverse (mem_chart_source ℂ x)).filter_mono nhdsWithin_le_nhds
   exact (tendsto_congr' (hleft.mono fun z hz => by simp [Function.comp_apply, hz])).symm
 
-/-! ### Chart invariance -/
-
-section ChartInvariance
-
-variable [IsManifold 𝓘(ℂ) ω X]
-
-/-- Meromorphy at `x` may be read in ANY maximal-atlas chart whose source contains `x`. -/
-theorem meromorphicAtX_iff_of_mem_source {e : OpenPartialHomeomorph X ℂ}
-    (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
-    MeromorphicAtX f x ↔ MeromorphicAt (f ∘ e.symm) (e x) := by
-  set c := chartAt ℂ x with hc_def
-  have hxc : x ∈ c.source := mem_chart_source ℂ x
-  obtain ⟨hτ, hτ'⟩ := analyticAt_transition (IsManifold.chart_mem_maximalAtlas x) he hxc hx
-  have hgx : (c ∘ e.symm) (e x) = c x := by
-    simp only [Function.comp_apply]
-    rw [e.left_inv hx]
-  have hev : (f ∘ e.symm) =ᶠ[𝓝[≠] (e x)] (f ∘ c.symm) ∘ (c ∘ e.symm) := by
-    have h1 : ∀ᶠ z in 𝓝 (e x), e.symm z ∈ c.source := by
-      apply (e.continuousAt_symm (e.map_source hx)).preimage_mem_nhds
-      rw [e.left_inv hx]
-      exact c.open_source.mem_nhds hxc
-    filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
-    simp only [Function.comp_apply]
-    rw [c.left_inv hz]
-  show MeromorphicAt (f ∘ c.symm) (c x) ↔ MeromorphicAt (f ∘ e.symm) (e x)
-  rw [meromorphicAt_congr hev, meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ', hgx]
-
-/-- CC3 chart invariance: the order at `x` may be read in ANY maximal-atlas chart whose source
-contains `x`. -/
-theorem ordAtX_eq_of_mem_source {e : OpenPartialHomeomorph X ℂ}
-    (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
-    ordAtX f x = meromorphicOrderAt (f ∘ e.symm) (e x) := by
-  set c := chartAt ℂ x with hc_def
-  have hxc : x ∈ c.source := mem_chart_source ℂ x
-  obtain ⟨hτ, hτ'⟩ := analyticAt_transition (IsManifold.chart_mem_maximalAtlas x) he hxc hx
-  have hgx : (c ∘ e.symm) (e x) = c x := by
-    simp only [Function.comp_apply]; rw [e.left_inv hx]
-  have hev : (f ∘ e.symm) =ᶠ[𝓝[≠] (e x)] (f ∘ c.symm) ∘ (c ∘ e.symm) := by
-    have h1 : ∀ᶠ z in 𝓝 (e x), e.symm z ∈ c.source := by
-      apply (e.continuousAt_symm (e.map_source hx)).preimage_mem_nhds
-      rw [e.left_inv hx]
-      exact c.open_source.mem_nhds hxc
-    filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
-    simp only [Function.comp_apply]
-    rw [c.left_inv hz]
-  show meromorphicOrderAt (f ∘ c.symm) (c x) = meromorphicOrderAt (f ∘ e.symm) (e x)
-  rw [meromorphicOrderAt_congr hev, meromorphicOrderAt_comp_of_deriv_ne_zero hτ hτ', hgx]
-
-theorem ContMDiffAt.meromorphicAtX (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) : MeromorphicAtX f x :=
-  (RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hf).meromorphicAt
-
-theorem ContMDiffAt.ordAtX_nonneg (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) : 0 ≤ ordAtX f x :=
-  (RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hf).meromorphicOrderAt_nonneg
-
-/-- `MeromorphicAtX` propagates to nearby points (read in the same chart, then converted by
-chart invariance). -/
-theorem eventually_meromorphicAtX (hf : MeromorphicAtX f x) :
-    ∀ᶠ y in 𝓝[≠] x, MeromorphicAtX f y := by
-  have h1 : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) z :=
-    hf.eventually_analyticAt
-  have h2 : ∀ᶠ y in 𝓝[≠] x, AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) :=
-    eventually_nhdsNE_iff_comp_chart.mpr h1
-  have h3 : ∀ᶠ y in 𝓝[≠] x, y ∈ (chartAt ℂ x).source :=
-    eventually_nhdsWithin_of_eventually_nhds
-      ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
-  filter_upwards [h2, h3] with y h2y h3y
-  exact (meromorphicAtX_iff_of_mem_source (IsManifold.chart_mem_maximalAtlas x) h3y).2
-    h2y.meromorphicAt
-
-/-- `ordAtX` is eventually `0` away from a point where it is finite (read in the same chart,
-then converted by chart invariance). Feeds the local finiteness of divisors. -/
-theorem eventually_ordAtX_eq_zero (hf : MeromorphicAtX f x) (h : ordAtX f x ≠ ⊤) :
-    ∀ᶠ y in 𝓝[≠] x, ordAtX f y = 0 := by
-  have h1 : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) z :=
-    hf.eventually_analyticAt
-  have h2 : ∀ᶠ y in 𝓝[≠] x, AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) :=
-    eventually_nhdsNE_iff_comp_chart.mpr h1
-  have h3 : ∀ᶠ y in 𝓝[≠] x, y ∈ (chartAt ℂ x).source :=
-    eventually_nhdsWithin_of_eventually_nhds
-      ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
-  have h4 : ∀ᶠ y in 𝓝[≠] x, f y ≠ 0 := ordAtX_ne_top_iff hf |>.1 h
-  have h5 : ∀ᶠ y in 𝓝[≠] x, (chartAt ℂ x).symm (chartAt ℂ x y) = y :=
-    ((chartAt ℂ x).eventually_left_inverse (mem_chart_source ℂ x)).filter_mono nhdsWithin_le_nhds
-  filter_upwards [h2, h3, h4, h5] with y h2y h3y h4y h5y
-  rw [ordAtX_eq_of_mem_source (IsManifold.chart_mem_maximalAtlas x) h3y]
-  refine h2y.meromorphicOrderAt_eq.trans ?_
-  have hval : (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) ≠ 0 := by
-    simp only [Function.comp_apply, h5y]; exact h4y
-  rw [h2y.analyticOrderAt_eq_zero.mpr hval]
-  rfl
-
-theorem eventually_ordAtX_eq_top [T1Space X] (h : ordAtX f x = ⊤) :
-    ∀ᶠ y in 𝓝 x, ordAtX f y = ⊤ := by
-  have hf0 : ∀ᶠ z in 𝓝 x, z ≠ x → f z = 0 := eventually_nhdsWithin_iff.mp (ordAtX_eq_top_iff.1 h)
-  filter_upwards [hf0.eventually_nhds] with y hy
-  apply ordAtX_eq_top_iff.2
-  rw [eventually_nhdsWithin_iff]
-  rcases eq_or_ne y x with rfl | hyx
-  · exact hy
-  · have hxc : ({x}ᶜ : Set X) ∈ 𝓝 y := isOpen_compl_singleton.mem_nhds hyx
-    filter_upwards [hy, hxc] with z hz1 hz2 _
-    exact hz1 (by simpa using hz2)
-
-end ChartInvariance
-
 /-! ### `MeromorphicAtX`: congruence and arithmetic -/
 
 theorem MeromorphicAtX.congr (hf : MeromorphicAtX f x) (h : f =ᶠ[𝓝[≠] x] g) :
@@ -196,30 +98,30 @@ theorem meromorphicAtX_const (c : ℂ) : MeromorphicAtX (fun _ => c) x :=
 
 theorem MeromorphicAtX.add (hf : MeromorphicAtX f x) (hg : MeromorphicAtX g x) :
     MeromorphicAtX (f + g) x :=
-  hf.add hg
+  MeromorphicAt.add hf hg
 
 theorem MeromorphicAtX.mul (hf : MeromorphicAtX f x) (hg : MeromorphicAtX g x) :
     MeromorphicAtX (f * g) x :=
-  hf.mul hg
+  MeromorphicAt.mul hf hg
 
 theorem MeromorphicAtX.neg (hf : MeromorphicAtX f x) : MeromorphicAtX (-f) x :=
-  hf.neg
+  MeromorphicAt.neg hf
 
 theorem MeromorphicAtX.sub (hf : MeromorphicAtX f x) (hg : MeromorphicAtX g x) :
     MeromorphicAtX (f - g) x :=
-  hf.sub hg
+  MeromorphicAt.sub hf hg
 
 theorem MeromorphicAtX.smul (c : ℂ) (hf : MeromorphicAtX f x) : MeromorphicAtX (c • f) x :=
-  (MeromorphicAt.const c _).smul hf
+  MeromorphicAt.smul (MeromorphicAt.const c _) hf
 
 theorem MeromorphicAtX.inv (hf : MeromorphicAtX f x) : MeromorphicAtX f⁻¹ x :=
-  hf.inv
+  MeromorphicAt.inv hf
 
 theorem MeromorphicAtX.pow (hf : MeromorphicAtX f x) (n : ℕ) : MeromorphicAtX (f ^ n) x :=
-  hf.pow n
+  MeromorphicAt.pow hf n
 
 theorem MeromorphicAtX.zpow (hf : MeromorphicAtX f x) (n : ℤ) : MeromorphicAtX (f ^ n) x :=
-  hf.zpow n
+  MeromorphicAt.zpow hf n
 
 /-! ### `MeromorphicOnX`: pointwise lifting -/
 
@@ -246,9 +148,9 @@ theorem MeromorphicOnX.inv {U : Set X} (hf : MeromorphicOnX f U) : MeromorphicOn
   fun x hx => (hf x hx).inv
 
 theorem meromorphicOnX_const (c : ℂ) (U : Set X) : MeromorphicOnX (fun _ => c) U :=
-  fun x _ => meromorphicAtX_const c
+  fun _x _ => meromorphicAtX_const c
 
-/-! ### Classification of the order -/
+/-! ### Classification of the order (no chart invariance needed) -/
 
 theorem ordAtX_eq_top_iff : ordAtX f x = ⊤ ↔ f =ᶠ[𝓝[≠] x] 0 := by
   show meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = ⊤ ↔ _
@@ -273,7 +175,7 @@ theorem MeromorphicAtX.frequently_zero_iff (hf : MeromorphicAtX f x) :
       (f ∘ (chartAt ℂ x).symm) =ᶠ[𝓝[≠] (chartAt ℂ x x)] ((0 : X → ℂ) ∘ (chartAt ℂ x).symm) :=
     eventuallyEq_nhdsNE_comp_chart_iff (f := f) (g := (0 : X → ℂ))
   rw [h1, h2]
-  exact hf.frequently_zero_iff_eventuallyEq_zero
+  exact MeromorphicAt.frequently_zero_iff_eventuallyEq_zero hf
 
 theorem tendsto_nhds_iff_ordAtX_nonneg (hf : MeromorphicAtX f x) :
     (∃ c, Tendsto f (𝓝[≠] x) (𝓝 c)) ↔ 0 ≤ ordAtX f x := by
@@ -323,6 +225,113 @@ theorem ordAtX_zero : ordAtX (0 : X → ℂ) x = ⊤ := by
 
 theorem ordAtX_one : ordAtX (1 : X → ℂ) x = 0 := by
   simpa using (ordAtX_const (c := 1) (x := x))
+
+/-- No chart invariance needed: `S = {x | ordAtX f x = ⊤}` is open (the analogue of the
+`identity theorem`'s "S open" step, specialized to a single point). -/
+theorem eventually_ordAtX_eq_top [T1Space X] (h : ordAtX f x = ⊤) :
+    ∀ᶠ y in 𝓝 x, ordAtX f y = ⊤ := by
+  have hf0 : ∀ᶠ z in 𝓝 x, z ≠ x → f z = 0 := eventually_nhdsWithin_iff.mp (ordAtX_eq_top_iff.1 h)
+  filter_upwards [hf0.eventually_nhds] with y hy
+  apply ordAtX_eq_top_iff.2
+  refine eventually_nhdsWithin_iff.mpr ?_
+  rcases eq_or_ne y x with rfl | hyx
+  · exact hy
+  · have hxc : ({x}ᶜ : Set X) ∈ 𝓝 y := isOpen_compl_singleton.mem_nhds hyx
+    filter_upwards [hy, hxc] with z hz1 hz2 _
+    exact hz1 (by simpa using hz2)
+
+/-! ### Chart invariance -/
+
+section ChartInvariance
+
+variable [IsManifold 𝓘(ℂ) ω X]
+
+/-- Meromorphy at `x` may be read in ANY maximal-atlas chart whose source contains `x`. -/
+theorem meromorphicAtX_iff_of_mem_source {e : OpenPartialHomeomorph X ℂ}
+    (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
+    MeromorphicAtX f x ↔ MeromorphicAt (f ∘ e.symm) (e x) := by
+  set c := chartAt ℂ x with hc_def
+  have hxc : x ∈ c.source := mem_chart_source ℂ x
+  obtain ⟨hτ, hτ'⟩ := analyticAt_transition he (IsManifold.chart_mem_maximalAtlas x) hx hxc
+  have hgx : (c ∘ e.symm) (e x) = c x := by
+    simp only [Function.comp_apply]
+    rw [e.left_inv hx]
+  have hev : (f ∘ e.symm) =ᶠ[𝓝[≠] (e x)] (f ∘ c.symm) ∘ (c ∘ e.symm) := by
+    have h1 : ∀ᶠ z in 𝓝 (e x), e.symm z ∈ c.source := by
+      apply (e.continuousAt_symm (e.map_source hx)).preimage_mem_nhds
+      rw [e.left_inv hx]
+      exact c.open_source.mem_nhds hxc
+    filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
+    simp only [Function.comp_apply]
+    rw [c.left_inv hz]
+  show MeromorphicAt (f ∘ c.symm) (c x) ↔ MeromorphicAt (f ∘ e.symm) (e x)
+  rw [MeromorphicAt.meromorphicAt_congr hev, meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ', hgx]
+
+/-- CC3 chart invariance: the order at `x` may be read in ANY maximal-atlas chart whose source
+contains `x`. -/
+theorem ordAtX_eq_of_mem_source {e : OpenPartialHomeomorph X ℂ}
+    (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
+    ordAtX f x = meromorphicOrderAt (f ∘ e.symm) (e x) := by
+  set c := chartAt ℂ x with hc_def
+  have hxc : x ∈ c.source := mem_chart_source ℂ x
+  obtain ⟨hτ, hτ'⟩ := analyticAt_transition he (IsManifold.chart_mem_maximalAtlas x) hx hxc
+  have hgx : (c ∘ e.symm) (e x) = c x := by
+    simp only [Function.comp_apply]; rw [e.left_inv hx]
+  have hev : (f ∘ e.symm) =ᶠ[𝓝[≠] (e x)] (f ∘ c.symm) ∘ (c ∘ e.symm) := by
+    have h1 : ∀ᶠ z in 𝓝 (e x), e.symm z ∈ c.source := by
+      apply (e.continuousAt_symm (e.map_source hx)).preimage_mem_nhds
+      rw [e.left_inv hx]
+      exact c.open_source.mem_nhds hxc
+    filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
+    simp only [Function.comp_apply]
+    rw [c.left_inv hz]
+  show meromorphicOrderAt (f ∘ c.symm) (c x) = meromorphicOrderAt (f ∘ e.symm) (e x)
+  rw [meromorphicOrderAt_congr hev, meromorphicOrderAt_comp_of_deriv_ne_zero hτ hτ', hgx]
+
+theorem ContMDiffAt.meromorphicAtX (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) : MeromorphicAtX f x :=
+  (RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hf).meromorphicAt
+
+theorem ContMDiffAt.ordAtX_nonneg (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) : 0 ≤ ordAtX f x :=
+  (RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hf).meromorphicOrderAt_nonneg
+
+/-- `MeromorphicAtX` propagates to nearby points (read in the same chart, then converted by
+chart invariance). -/
+theorem eventually_meromorphicAtX (hf : MeromorphicAtX f x) :
+    ∀ᶠ y in 𝓝[≠] x, MeromorphicAtX f y := by
+  have h1 : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) z :=
+    MeromorphicAt.eventually_analyticAt hf
+  have h2 : ∀ᶠ y in 𝓝[≠] x, AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) :=
+    eventually_nhdsNE_comp_chart_apply_iff.mpr h1
+  have h3 : ∀ᶠ y in 𝓝[≠] x, y ∈ (chartAt ℂ x).source :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
+  filter_upwards [h2, h3] with y h2y h3y
+  exact (meromorphicAtX_iff_of_mem_source (IsManifold.chart_mem_maximalAtlas x) h3y).2
+    h2y.meromorphicAt
+
+/-- `ordAtX` is eventually `0` away from a point where it is finite (read in the same chart,
+then converted by chart invariance). Feeds the local finiteness of divisors. -/
+theorem eventually_ordAtX_eq_zero (hf : MeromorphicAtX f x) (h : ordAtX f x ≠ ⊤) :
+    ∀ᶠ y in 𝓝[≠] x, ordAtX f y = 0 := by
+  have h1 : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) z :=
+    MeromorphicAt.eventually_analyticAt hf
+  have h2 : ∀ᶠ y in 𝓝[≠] x, AnalyticAt ℂ (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) :=
+    eventually_nhdsNE_comp_chart_apply_iff.mpr h1
+  have h3 : ∀ᶠ y in 𝓝[≠] x, y ∈ (chartAt ℂ x).source :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x))
+  have h4 : ∀ᶠ y in 𝓝[≠] x, f y ≠ 0 := ordAtX_ne_top_iff hf |>.1 h
+  have h5 : ∀ᶠ y in 𝓝[≠] x, (chartAt ℂ x).symm (chartAt ℂ x y) = y :=
+    ((chartAt ℂ x).eventually_left_inverse (mem_chart_source ℂ x)).filter_mono nhdsWithin_le_nhds
+  filter_upwards [h2, h3, h4, h5] with y h2y h3y h4y h5y
+  rw [ordAtX_eq_of_mem_source (IsManifold.chart_mem_maximalAtlas x) h3y]
+  refine h2y.meromorphicOrderAt_eq.trans ?_
+  have hval : (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x y) ≠ 0 := by
+    simp only [Function.comp_apply, h5y]; exact h4y
+  rw [h2y.analyticOrderAt_eq_zero.mpr hval]
+  rfl
+
+end ChartInvariance
 
 /-! ### CC4 compatibility -/
 
