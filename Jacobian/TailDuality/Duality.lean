@@ -14,21 +14,14 @@ Unit: serre-duality-tails (`docs/design/serre-duality-tails.md` §6 P6/P7, orche
   **not** block on `tailToH1`'s surjectivity/the Čech comparison):
   `i_neg_eq_h1T`, `l_sub_eq_h1T`, `h1T_zero_eq_l_K`, `h1T_zero_eq_genus`, `h1T_canonical`.
 
-**Not delivered** (honest gap, flagged per the stuck-blocker protocol): the tail-level six-term
-ledger equality `chiT D = chiT 0 + deg D`. `chiT` (`:= l D - h1T D`) IS defined below, but its
-additivity is genuinely INDEPENDENT content from Serre duality (Miranda §2.3/2.6, not §3) — it
-is NOT derivable from `i_neg_eq_h1T` alone (duality gives `h1T D = l(K-D)`, but turning that into
-`l D - l(K-D) = deg D + 1 - g` needs the separate six-term exactness fact, i.e. literally
-Riemann–Roch itself). A genuine tail-level construction is sketched but not built: reuse Cech's
-already-built `Window D D'`/`windowMap`/`windowToT` (`Jacobian/Cech/Window.lean`,
-`Jacobian/LaurentTail/TailSpace.lean`) as the finite-dimensional bridge, build the connecting map
-`windowConnectT := H1Tail.mk D ∘ₗ windowToT D D' h`, and prove the three exactness facts
-(`ker(windowMap h) = range(inclusion)` is already Cech's `exact_inclusion_windowMap`; the other
-two need new work relating `windowToT`/`alphaL`/`truncT`). Since Lemma 3.4's OWN internal
-arithmetic only needed the one-directional `h1T_le_h1` (built in `Counting.lean`), this gap does
-NOT block anything proved here — riemann-roch (#28) should use the Čech-level ledger
-(`Finiteness.chi_eq_chi_zero_add_degree`) directly together with `l_sub_eq_h1T` instead of
-waiting on `chiT`'s own ledger.
+**Update (chiT-ledger closure pass): DELIVERED**, in `Jacobian/TailDuality/ChiLedger.lean` (not in
+this file, to keep this file's own scope unchanged) — `chiT_eq_chiT_zero_add_degree`/
+`chiT_single_add`, via exactly the sketch recorded here: `windowConnectT := H1Tail.mk D ∘ₗ
+windowToT D D' h` (Cech's `Window D D'`/`windowMap`/`windowToT`, `Jacobian/Cech/Window.lean`,
+`Jacobian/LaurentTail/TailSpace.lean`) plus a NEW descent `H1TailIncl` of `truncT`, both exactness
+facts proved elementarily (no Čech `H1`/cochain machinery: `H1Tail D` being a literal coker of
+`alphaL D`, not a colimit, makes both a DFinsupp/Submodule bookkeeping argument). See that file's
+own docstring for the full account. riemann-roch (#28) now consumes `chiT`'s own ledger directly.
 -/
 
 open scoped ContDiff Manifold Classical

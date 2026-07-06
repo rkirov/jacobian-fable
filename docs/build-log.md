@@ -1895,3 +1895,66 @@
   cech-h1-genus (#27, re-based to `h1T_zero_eq_genus`), and `Jacobian/Abel/Sufficiency.lean`'s
   blocked step (needs `RS.H1Tail.equiv`, unavailable; only `resEquiv`/`H1Tail.equiv_of_surjective`
   exist). `Jacobian.lean` NOT touched per task hard rule (orchestrator's job).
+- [rr] Jacobian/TailDuality/ChiLedger.lean OK (new file, 25 files/3050 jobs in the unit, ~6-9s for
+  this file) — **THE chiT-ledger closure: the primary math item of this pass.** Closes the ONE
+  honest gap `Duality.lean` flagged (chiT's additivity, independent content from Serre duality
+  §3, needing Miranda §2.3/2.6's own six-term exactness). Transposes `Finiteness/Chi.lean`'s own
+  `sixterm_rank1/2/3` → `chi_of_le` → `chi_eq_chi_zero_add_degree` recipe to the tail level:
+  **`H1TailIncl`** (the descent of `truncT` through the `alphaL`-quotients, via `Submodule.mapQ` +
+  `truncT_alpha`; surjective since `truncT` already is) and **`windowConnectT := H1Tail.mk D ∘ₗ
+  windowToT D D' h`** (Cech's finite `Window D D'` embedded into the tail space via laurent-tails'
+  already-built `windowToT`). Both hard exactness facts proved ENTIRELY elementarily, with NO
+  reference to Cech's own `H1`/`mlClass`/cochain machinery (confirming the orchestrator's routing
+  hint: `H1Tail D` being a literal `T D ⧸ range(alphaL D)` coker, not a colimit, makes this a
+  DFinsupp/Submodule bookkeeping exercise): `windowToT_windowMap` identifies `windowMap`'s image
+  (embedded via `windowToT`) with `alphaL D` of the same global section directly;
+  `windowConnectT_eq_zero_iff`'s harder half reconstructs a global section from a killed window
+  class by choosing one representative per marked point (`WindowAt.mk_surjective`) and a two-term
+  `MeroGermOn.ord_add` order estimate; `H1TailIncl_eq_zero_iff`'s harder half does the same at the
+  `T D`/`H1Tail` level (`TailAt.mk_surjective` per point + `truncAt_mk`/`TailAt.mk_eq_zero_iff`).
+  Yields `exact_windowMap_windowConnectT`/`exact_windowConnectT_H1TailIncl` (as `Function.Exact`,
+  matching Cech's own naming), `sixterm_rankT1/2/3`, **`chiT_of_le`**,
+  **`chiT_single_add : chiT (D + single P 1) = chiT D + 1`**, and **`chiT_eq_chiT_zero_add_degree
+  : chiT D = chiT 0 + D.degree`** — the task's two requested headline statements, both delivered.
+  Zero sorries. `Jacobian/TailDuality/Duality.lean` and `Jacobian/TailDuality.lean` docstrings
+  updated to record the closure (no proof content changed in `Duality.lean` itself).
+  `scripts/check.sh Jacobian/TailDuality` re-verified (3050 jobs, zero sorries, no regressions).
+- [rr] Jacobian/RiemannRoch/Basic.lean + Jacobian/RiemannRoch.lean (unit root) OK — riemann-roch
+  (#28), a thin `omega`-level assembly unit exactly as the blueprint promised, now buildable
+  directly off `TailDuality`'s OWN tail ledger (no need for the Čech-level
+  `Finiteness.chi_eq_chi_zero_add_degree` fallback the orchestrator's arithmetic warning flagged
+  as unsafe — that Čech-vs-tail `h¹` equality is genuinely unavailable and was correctly avoided).
+  `chiT_zero : chiT 0 = 1 - g` (`RS.l_zero` + `h1T_zero_eq_genus`); **`riemannRoch {ω₀} (h₀) (D) :
+  (l D : ℤ) - l(K - D) = deg D + 1 - g`**; `l_K_eq_genus`; `deg_canonical : deg K = 2g - 2`;
+  **`riemann_inequality (D) : deg D + 1 - g ≤ l D`** (unconditional, no reference form). Zero
+  sorries. `scripts/check.sh Jacobian/RiemannRoch` passes (3052 jobs).
+- [rr] Jacobian/H1Genus/Basic.lean + Jacobian/H1Genus.lean (unit root) OK — cech-h1-genus (#27),
+  a thin re-export per the orchestrator addendum's own framing (the blueprint's cup-product/
+  monotonicity machinery is unnecessary on the Laurent-tail route this project took):
+  **`RS.finrank_H1Tail_zero_eq_genus : finrank ℂ (H1Tail 0) = genus X`**, re-exported from
+  `RS.TailDuality.h1T_zero_eq_genus`. Documents the literal Čech-`H¹` statement as open/optional
+  (needs `H1Tail.equiv`'s unconditional comparison, gated on `tailToH1`'s out-of-scope
+  surjectivity) — does not block anything, the challenge API never mentions Čech cohomology.
+  Zero sorries. `scripts/check.sh Jacobian/H1Genus` passes (3052 jobs).
+- [rr] Jacobian/GenusSphereHeadline/Basic.lean + Jacobian/GenusSphereHeadline.lean (unit root) OK
+  — genus-zero-headline (#30), assembling BOTH already-built halves. Backward:
+  `RS.SphereTopology.genus_eq_zero_of_homeo_sphere` (cited directly, sphere-topology). Forward
+  (`RS.GenusSphereHeadline.exists_simple_pole_of_genus_eq_zero`): at `D := single P 1` (`P`
+  arbitrary, `ConnectedSpace ⟹ Nonempty`), `riemann_inequality` under `genus X = 0` forces
+  `l D ≥ 2 > 1 = l 0`; `SetLike.exists_of_lt` on `LinSys 0 < LinSys D` (the
+  `CanonicalForms/Existence.lean` pattern, `linSys_zero_eq_span_one` for the properness) extracts
+  `φ ∈ LinSys D \ LinSys 0`; `φ.ord ≥ 0` off `P` and `φ.ord P ≥ -1` from `mem_linSys_iff`;
+  `φ.ord P < 0` else `φ` would be holomorphic everywhere hence in `LinSys 0 = span{1}`,
+  contradiction; combined with `≥ -1`, forces `φ.ord P = -1` exactly (extracting the integer
+  witness via `WithTop.ne_top_iff_exists` + `omega`). `RS.homeoSphere_of_exists_simple_pole`
+  (proper-map-degree, already built) closes it. **`genus_eq_zero_iff_homeo`** exported at ROOT
+  level (no namespace), at the challenge's own EXACT standing variables (no extra `[T1Space X]`/
+  `[DecidableEq X]` — `T1Space` free from `T2Space`, `DecidableEq` supplied internally via
+  `classical`) — matches `docs/Jacobian_challenge.lean:54-56` verbatim, a direct alias target for
+  final assembly. One gotcha hit and fixed: `exact_mod_cast`/`norm_cast` can fail to bridge a bare
+  `WithTop ℤ` numeral literal (e.g. `(-1 : WithTop ℤ)`, elaborated via `Neg`/`OfNat`) against an
+  `Int`-side goal (produces an `Int.negSucc 0` vs `-1` numeral-normal-form mismatch) — avoided by
+  keeping the running hypothesis in the EXPLICIT-cast form `((-1 : ℤ) : WithTop ℤ)` throughout
+  (never materializing the bare `WithTop` literal until the final `rw`/`norm_cast` at the very
+  end, where it closes cleanly) — spike-verified in a scratch file before use. Zero sorries.
+  `scripts/check.sh Jacobian/GenusSphereHeadline` passes (3219 jobs).
