@@ -58,3 +58,27 @@ None of this blocks serre-duality-cech — our `Tail`/`TailSpace`/`pair`/injecti
 self-contained and provable today. It only blocks serre-duality-tails (#26), which needs the
 adapter to transport our `finrank_omegaSpace_le` (generic interface theorem, §2 D5) to the actual
 `RS.Cech.H1 D`.
+
+## From serre-duality-tails (designer, see `docs/design/serre-duality-tails.md`)
+
+Filed 2026-07-06. Your germ model `T D` is FROZEN as the Serre-pairing domain (reconciliation
+§0.1 of our design; serre-duality-cech's raw `Tail X` is not adapted — no `ofRaw` needed).
+Asks, all small:
+
+1. Export the pointwise apply lemma for the truncation:
+   `theorem alpha_apply (D : Divisor X) (f : ℳ X) (p : X) : alphaL D f p = TailAt.mk p D (MeroGermOn.restrict (Set.subset_univ _) f)`
+   (your §2 D3 already argues this holds at EVERY `p`, not just on the Finset witness — we need
+   it as a named `@[simp]`-able export; it feeds our `truncT_alpha`, `mulInto_alpha`,
+   `pairT_alpha`).
+2. Keep `H1Tail D` transparently `T D ⧸ LinearMap.range (alphaL D)` (as designed) and export
+   `H1Tail.mk_surjective` and `H1Tail.mk_eq_zero_iff : H1Tail.mk D τ = 0 ↔ τ ∈ LinearMap.range (alphaL D)`
+   (both one-liners from `Submodule.Quotient`).
+3. `TailAt.mk_eq_zero_iff` as `@[simp]` if convenient (we use it for the 3.6 test vectors).
+4. NOTICE (scope relief): we no longer consume `mulTail`/`mulTailEquiv` — our `mulInto`
+   (truncation-composed multiplication, linear in `f`, built on `Submodule.mapQ` +
+   `LinearMap.mulLeft` + `Field (ℳ X)`) replaces it. Deprioritize freely if time-pressed.
+5. STATUS (good news for your R2): `RS.Cech.toH1_injective`/`toH1_eq_zero_iff` and
+   `mlClass_eq_zero_iff` are now BUILT on disk (`Jacobian/Cech/Injectivity.lean:247`,
+   `Skyscraper.lean:176`) — your comparison-injectivity gate is open. Your R1 (surjectivity /
+   Leray) is our top external risk: `H1Tail.finiteDimensional` + `h1tail_eq_h1` are the two
+   comparison-derived exports our dimension counting cannot proceed without.
