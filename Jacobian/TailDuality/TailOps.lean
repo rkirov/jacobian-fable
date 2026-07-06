@@ -58,13 +58,11 @@ noncomputable def truncT {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) : T D₁
   map_add' τ σ := by
     apply DFinsupp.ext
     intro p
-    rw [DFinsupp.add_apply, DFinsupp.mapRange_apply, DFinsupp.mapRange_apply,
-      DFinsupp.mapRange_apply, map_add]
+    simp only [DFinsupp.add_apply, DFinsupp.mapRange_apply, map_add]
   map_smul' c τ := by
     apply DFinsupp.ext
     intro p
-    rw [DFinsupp.smul_apply, DFinsupp.mapRange_apply, DFinsupp.mapRange_apply, map_smul]
-    rfl
+    simp only [DFinsupp.smul_apply, DFinsupp.mapRange_apply, map_smul, RingHom.id_apply]
 
 theorem truncT_apply {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (τ : T D₁) (p : X) :
     truncT h τ p = truncAt p h (τ p) :=
@@ -75,7 +73,7 @@ theorem truncT_surjective {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) :
   (DFinsupp.mapRange_surjective (fun p => truncAt p h) (fun _ => map_zero _)).mpr
     (fun p => truncAt_surjective p h)
 
-theorem truncT_alpha [CompactSpace X] [ConnectedSpace X] [T1Space X] {D₁ D₂ : RS.Divisor X}
+theorem truncT_alpha [CompactSpace X] [ConnectedSpace X] {D₁ D₂ : RS.Divisor X}
     (h : D₁ ≤ D₂) (f : RS.Mero X) : truncT h (alphaL D₁ f) = alphaL D₂ f := by
   apply DFinsupp.ext
   intro p
@@ -123,9 +121,10 @@ theorem mulIntoAt_bound_computation (p : X) (f : RS.Mero X) {D E : RS.Divisor X}
   rw [RS.MeroGermOn.ord_mul (chartAt ℂ p).open_source (mem_chart_source ℂ p),
     RS.MeroGermOn.ord_restrict (Set.subset_univ _) (chartAt ℂ p).open_source isOpen_univ
       (mem_chart_source ℂ p)]
-  have hkey : ((D p - E p) + -(D p) : ℤ) = -(E p) := by ring
-  calc ((-(E p) : ℤ) : WithTop ℤ) = (((D p - E p) + -(D p) : ℤ) : WithTop ℤ) := by rw [hkey]
-    _ = ((D p - E p : ℤ) : WithTop ℤ) + ((-(D p) : ℤ) : WithTop ℤ) := by push_cast; ring
+  calc ((-(E p) : ℤ) : WithTop ℤ) = (((D p - E p) + -(D p) : ℤ) : WithTop ℤ) := by
+        congr 1; ring
+    _ = ((D p - E p : ℤ) : WithTop ℤ) + ((-(D p) : ℤ) : WithTop ℤ) :=
+          WithTop.coe_add (D p - E p) (-(D p))
     _ ≤ f.ord p + ψ.ord p := add_le_add hf hψ
 
 /-- Miranda's `μ_f` composed with truncation, at a single point: `TailAt p D →ₗ TailAt p E` for
@@ -159,13 +158,11 @@ noncomputable def mulInto (f : RS.Mero X) {D E : RS.Divisor X}
   map_add' τ σ := by
     apply DFinsupp.ext
     intro p
-    rw [DFinsupp.add_apply, DFinsupp.mapRange_apply, DFinsupp.mapRange_apply,
-      DFinsupp.mapRange_apply, map_add]
+    simp only [DFinsupp.add_apply, DFinsupp.mapRange_apply, map_add]
   map_smul' c τ := by
     apply DFinsupp.ext
     intro p
-    rw [DFinsupp.smul_apply, DFinsupp.mapRange_apply, DFinsupp.mapRange_apply, map_smul]
-    rfl
+    simp only [DFinsupp.smul_apply, DFinsupp.mapRange_apply, map_smul, RingHom.id_apply]
 
 theorem mulInto_apply (f : RS.Mero X) {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (τ : T D) (p : X) :
@@ -181,7 +178,7 @@ theorem mulInto_add (f g : RS.Mero X) {D E : RS.Divisor X}
   intro τ
   apply DFinsupp.ext
   intro p
-  rw [LinearMap.add_apply, mulInto_apply, mulInto_apply, mulInto_apply]
+  simp only [LinearMap.add_apply, DFinsupp.add_apply, mulInto_apply]
   obtain ⟨ψ, hψ⟩ := TailAt.mk_surjective p D (τ p)
   rw [← hψ, mulIntoAt_mk, mulIntoAt_mk, mulIntoAt_mk,
     show RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ p).source) (f + g)
@@ -197,15 +194,14 @@ theorem mulInto_smul (c : ℂ) (f : RS.Mero X) {D E : RS.Divisor X}
   intro τ
   apply DFinsupp.ext
   intro p
-  rw [LinearMap.smul_apply, DFinsupp.smul_apply, mulInto_apply, mulInto_apply]
+  simp only [LinearMap.smul_apply, DFinsupp.smul_apply, mulInto_apply, RingHom.id_apply]
   obtain ⟨ψ, hψ⟩ := TailAt.mk_surjective p D (τ p)
   rw [← hψ, mulIntoAt_mk, mulIntoAt_mk,
     show RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ p).source) (c • f)
         = c • RS.MeroGermOn.restrict (Set.subset_univ _) f from map_smul _ c f,
     smul_mul_assoc, map_smul]
-  rfl
 
-theorem mulInto_alpha [CompactSpace X] [ConnectedSpace X] [T1Space X] (f : RS.Mero X)
+theorem mulInto_alpha [CompactSpace X] [ConnectedSpace X] (f : RS.Mero X)
     {D E : RS.Divisor X} (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (g : RS.Mero X) :
     mulInto f hf (alphaL D g) = alphaL E (f * g) := by
   apply DFinsupp.ext
@@ -222,13 +218,13 @@ theorem mulInto_surjective {f : RS.Mero X} (hf0 : f ≠ 0) [ConnectedSpace X] {D
 
 /-! ### `LinSys`/`Mero.ord` bookkeeping helpers -/
 
-theorem LinSys.divisor_ge [T1Space X] [ConnectedSpace X] {C : RS.Divisor X} {f : RS.Mero X}
+theorem LinSys.divisor_ge [ConnectedSpace X] {C : RS.Divisor X} {f : RS.Mero X}
     (hf : f ∈ RS.LinSys C) (hf0 : f ≠ 0) (p : X) : -(C p) ≤ RS.divisor f p := by
   have h := RS.mem_linSys_iff.mp hf p
   rw [RS.divisor_apply]
   exact WithTop.untop₀_le_untop₀ (Mero.ord_ne_top hf0 p) h
 
-theorem Mero.ord_eq_divisor [T1Space X] [ConnectedSpace X] {f : RS.Mero X} (hf : f ≠ 0) (p : X) :
+theorem Mero.ord_eq_divisor [ConnectedSpace X] {f : RS.Mero X} (hf : f ≠ 0) (p : X) :
     f.ord p = ((RS.divisor f p : ℤ) : WithTop ℤ) := by
   rw [RS.divisor_apply, WithTop.coe_untop₀_of_ne_top (Mero.ord_ne_top hf p)]
 
@@ -243,38 +239,41 @@ theorem nu_bound (A C : RS.Divisor X) (f : ↥(RS.LinSys C)) (p : X) :
 
 /-- Miranda's `μ_f` packaged uniformly across `f ∈ L(C)` into the FIXED target `T A`
 (the key linearity-restoring trick, §3 D3). -/
-noncomputable def nuL (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] [T1Space X] :
+noncomputable def nuL (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] :
     ↥(RS.LinSys C) →ₗ[ℂ] (T (A - C) →ₗ[ℂ] T A) where
   toFun f := mulInto (f : RS.Mero X) (nu_bound A C f)
   map_add' f g := mulInto_add (f : RS.Mero X) (g : RS.Mero X) (nu_bound A C f) (nu_bound A C g)
     (nu_bound A C (f + g))
   map_smul' c f := mulInto_smul c (f : RS.Mero X) (nu_bound A C f) (nu_bound A C (c • f))
 
-theorem nuL_apply (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] [T1Space X]
+theorem nuL_apply (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     (f : ↥(RS.LinSys C)) : nuL A C f = mulInto (f : RS.Mero X) (nu_bound A C f) := rfl
 
-theorem nuL_alpha (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] [T1Space X]
+theorem nuL_alpha (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     (f : ↥(RS.LinSys C)) (g : RS.Mero X) :
     nuL A C f (alphaL (A - C) g) = alphaL A ((f : RS.Mero X) * g) := by
   rw [nuL_apply, mulInto_alpha]
 
-theorem nuL_surjective (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] [T1Space X]
+theorem nuL_surjective (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0) : Function.Surjective (nuL A C f) := by
   rw [nuL_apply]
   exact mulInto_surjective hf0 (nu_bound A C f)
 
-theorem sub_divisor_le (A C : RS.Divisor X) [T1Space X] [ConnectedSpace X]
+theorem sub_divisor_le (A C : RS.Divisor X) [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0) :
     A - C - RS.divisor (f : RS.Mero X) ≤ A := by
   rw [Function.locallyFinsuppWithin.le_def]
   intro p
   have hb := LinSys.divisor_ge f.2 hf0 p
-  rw [RS.Divisor.sub_apply, RS.Divisor.sub_apply]
+  have h1 : (A - C - RS.divisor (f : RS.Mero X)) p
+      = A p - C p - RS.divisor (f : RS.Mero X) p := by
+    rw [RS.Divisor.sub_apply, RS.Divisor.sub_apply]
+  rw [h1]
   omega
 
 /-- The `μ_{1/f}` inversion identity (endgame step): inverting `f` and truncating recovers the
 plain truncation. -/
-theorem nuL_mulInto_inv (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] [T1Space X]
+theorem nuL_mulInto_inv (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0)
     (hinv : ∀ p, (((A - C - RS.divisor (f : RS.Mero X)) p - (A - C) p : ℤ) : WithTop ℤ)
       ≤ (f : RS.Mero X)⁻¹.ord p)

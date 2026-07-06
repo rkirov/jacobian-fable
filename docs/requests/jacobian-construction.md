@@ -39,3 +39,15 @@ so `Jacobian.pushforward_id_apply`/`Jacobian.pushforward_comp_apply` and the pul
 analogues are simply **not built** by `jacobian-functoriality` (see its root file's LEDGER).
 Whoever picks up `Torus.inducedHom_id`/`_comp` (here or as a local `Compat` proof in a future
 pass over `jacobian-functoriality`) unblocks exactly those four lemmas.
+
+**UPDATE (2026-07-06, jacobian-functoriality continuation build): FULFILLED.** Both lemmas are
+now defined in `Jacobian/JacobianConstruction/Torus.lean` (end of the `InducedHom` section), as
+`RS.inducedHom_id` and `RS.inducedHom_comp` (the file's declarations live in `namespace RS`, so
+these are the names the request's `Torus.inducedHom_id`/`_comp` resolve to; statements exactly
+as requested, with the composite-`hT` hypothesis `hTT'` explicit). Proofs are the predicted
+one-liners: `ext` + `QuotientAddGroup.induction_on` + `RS.inducedHom_apply_mk`.
+`scripts/check.sh Jacobian/JacobianConstruction` passes with the additions (zero sorries).
+Note: `jacobian-functoriality`'s own `pushforward_id_apply`/`pushforward_comp_apply`/
+`pullback_id_apply`/`pullback_comp_apply` ended up proved by representative-level computation
+(`RS.Jacobian.inducedHom_apply_up_mk`), so they do not *consume* these lemmas — they are
+provided for upstream API completeness per the original request.
