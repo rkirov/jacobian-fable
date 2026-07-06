@@ -30,5 +30,5 @@ executed directly on the project's Čech colimit `RS.Cech.H1` (Hodge-free, duali
   `DiscreteTopology (RS.periodSubgroup X).topologicalClosure`,
   `IsZLattice ℝ (RS.periodSubgroup X).topologicalClosure.toIntSubmodule`,
   `RS.finrank_int_periodSubgroup_final` (`ℤ`-rank `2g`), and
-  **`Jacobian.ofCurve_inj_final`** (the challenge's `ofCurve_inj`, hypothesis-free).
+  **`Jacobian.ofCurve_inj`** (the challenge's `ofCurve_inj`, hypothesis-free).
 -/

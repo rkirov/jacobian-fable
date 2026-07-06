@@ -21,7 +21,7 @@ gate of the project was reduced to. This file records the ungated finals:
   `IsZLattice ℝ (RS.periodSubgroup X).topologicalClosure.toIntSubmodule`
   (the exact recorded final-assembly shapes from `Jacobian/PeriodLattice.lean`).
 * `RS.finrank_int_periodSubgroup_final` — the period lattice has `ℤ`-rank `2·genus X`.
-* `Jacobian.ofCurve_inj_final` — the Abel–Jacobi map is injective for `0 < genus X`,
+* `Jacobian.ofCurve_inj` — the Abel–Jacobi map is injective for `0 < genus X`,
   with no remaining hypotheses (the challenge's `ofCurve_inj`, ungated).
 -/
 
@@ -100,8 +100,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 
 /-- **The Abel–Jacobi map is injective for positive genus** — the challenge's `ofCurve_inj`,
 with every gate discharged (no upgrade hypothesis, no discreteness instance argument). -/
-theorem ofCurve_inj_final (P : X) (h : 0 < genus X) :
+theorem ofCurve_inj (P : X) (h : 0 < genus X) :
     Function.Injective (Jacobian.ofCurve P) :=
-  Jacobian.ofCurve_inj RS.Abel.weakSolutionUpgrade_final P h
+  Jacobian.ofCurve_inj_of_upgrade RS.Abel.weakSolutionUpgrade_final P h
 
 end Jacobian
