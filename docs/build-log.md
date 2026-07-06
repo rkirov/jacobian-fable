@@ -1706,3 +1706,53 @@
   `ofCurve_inj` assembly are recorded in full in `Jacobian/Abel.lean`'s own docstring (the
   `k`-point export it needs is NOT built; the `DiscreteTopology` instances it should register;
   the exact final-assembly discharge shape).
+- [ltails] FINISHER pass on `Jacobian/LaurentTail/` — three of the unit's four previously-deferred
+  items now **CLOSED**, zero sorries, `scripts/check.sh Jacobian/LaurentTail` passes (2990 jobs).
+  **`tailToH1_alpha`** (`Comparison.lean`): built the multi-point Mittag-Leffler combination the
+  previous builder's own file-end note scoped out — `alphaAuxD`/`alphaPatch`/`mlSumCochain`
+  realize `alpha D f`'s finitely-many-marked-points data on one `(|S|+1)`-member adapted cover via
+  the *global* `f` itself (`Cech.exists_adapted_refinement`), `CLAIM1` relates each point's
+  `mlClassAt` to this big cover via a `pairCover → 𝒱` refinement (`mlClass_res`), a
+  `Finset.induction_on` (`main`) combines them via two-argument `mlClass_add`, and the resulting
+  single class vanishes directly via `mlClass_eq_zero_of_exists` with witness `f` (off-diagonal
+  cover overlaps never meet the marked-point Finset, pure adaptedness — no `D`-side hypothesis
+  needed there). **`H1Tail.toH1`/`H1Tail.toH1_injective`**: `H1Tail.toH1` descends via
+  `Submodule.liftQ` off `tailToH1_alpha`; injectivity needed a *second*, independent multi-point
+  construction (`injPatch`/`injD'`/`injψVD'`/`injG`, `inj_CLAIM1`/`inj_main`/`inj_hcoe`) for an
+  *arbitrary* tail datum (no global function available a priori — representatives chosen via
+  `TailAt.mk_surjective`, auxiliary divisor via `Finset.sup'` since `RS.Divisor X` has no
+  `OrderBot`), landing on `Cech.mlClass_eq_zero_iff`'s `⇒` half (Forster 12.4, confirmed landed at
+  `Injectivity.lean:247`) to extract a global witness `φ` with `z = alpha D φ`. Shipped a
+  conditional `H1Tail.equiv_of_surjective` (honest, hypothesis-parametrized, `CONVENTIONS.md`
+  rule 3) as the bridge for the moment surjectivity lands. **Two build-engineering gotchas hit and
+  documented in `Comparison.lean`'s own file-end note** (both cost significant wall-clock time to
+  isolate): composing an `Opens X`-level `≤` with a `Set X`-level `⊆` via bare `.trans` causes
+  catastrophic `isDefEq`/`whnf` slowdown once surrounding terms are sufficiently abstract
+  (confirmed: one lemma this way did not finish in 4,000,000 heartbeats / 7+ minutes; coercing to
+  an explicit `Set`-level inclusion *first*, then using plain `Set.Subset.trans`, fixed it in
+  under 10 seconds — grep for `).trans (` after an `Opens`-typed term if this resurfaces); a single
+  tactic proof accumulating ~25 `have`/`set` steps hits a severe elaboration performance wall
+  regardless of `maxHeartbeats` (confirmed: `20,000,000` heartbeats / 10+ minutes still failed) —
+  fixed by factoring into separate top-level `def`/`theorem` declarations against explicit
+  `variable`/`include` blocks (Lean 4 does **not** auto-include a section `variable` just because
+  a declaration's *tactic proof* references it — only type-mentioned variables are auto-included;
+  `include` is required for proof-only usage, confirmed by direct experiment), mirroring how
+  `tailToH1_alpha`'s own helpers were already structured. **NOT closed: surjectivity of
+  `tailToH1`** (item 3) — contrary to the previous builder's framing, this is **not** simply a
+  citation to `dolbeault-comparison`'s now-landed Leray theorem (`Jacobian/DolbeaultComparison/
+  Leray.lean`, 677 lines, confirmed complete): Leray gives a good-cover representative, but
+  collapsing it to marked-point-supported Mittag-Leffler data is a genuinely separate, hard
+  analytic fact (comparable to a Mittag-Leffler/Cousin-I existence theorem, classically needing
+  meromorphic ∂̄-solving with prescribed principal parts) that is out of this unit's own
+  `Jacobian/LaurentTail/`-only edit surface to prove — full risk writeup, the inductive-bootstrap
+  route considered and ruled out, and a recommendation (a `Jacobian/Dbar/` ask) are recorded in
+  `Comparison.lean`'s file-end note. **`RiemannRoch.lean`**: confirmed `Jacobian/Finiteness/
+  Chi.lean` has landed (a sibling unit completed it mid-session; "Unit COMPLETE" per its own root
+  docstring) — that gate is open, but the file remains empty since its *sole* remaining gate,
+  `H1Tail.equiv` (blocked on the same surjectivity item), is still closed; per `CONVENTIONS.md`
+  rule 3 a hypothesis-parametrized restatement here would add indirection for zero benefit since
+  the true blocker is identical, so the file states this precisely rather than shipping a stub.
+  Root docstring (`Jacobian/LaurentTail.lean`) and `Comparison.lean`'s own top/file-end docstrings
+  updated to match. `Jacobian.lean` not touched (already importing `Jacobian.LaurentTail` from
+  before this pass). Full project (`lake build Jacobian`, 3283 jobs) reverified green after the
+  change.
