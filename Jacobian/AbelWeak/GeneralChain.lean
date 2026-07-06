@@ -350,7 +350,45 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
         have hMm_ord : IsWeakSolutionAt hMm (M m) (ordAt (m + 1) (M m)) := hsum (M m) ▸ hMm_ord0
         have hMm1_ord : IsWeakSolutionAt hMm1 (M (m + 1)) (ordAt (m + 1) (M (m + 1))) :=
           hsum (M (m + 1)) ▸ hMm1_ord0
-        sorry
+        have hk1 : 0 ≤ ordAt (m + 1) (M (m + 1)) := by
+          simp only [hordAt_def]; split_ifs <;> omega
+        have hgne' : ∀ x, x ≠ M (m + 1) → x ≠ M m → g x ≠ 0 :=
+          fun x h1 h2 => hg.ne_zero_off x h1 h2
+        by_cases hM0m : M 0 = M m
+        · -- Case (ii): `M 0 = M m ≠ M (m + 1)`.
+          have hne1 : M 0 ≠ M (m + 1) := by rw [hM0m]; exact hdeg.symm
+          have hh0 : IsWeakSolutionAt hMm (M 0) (ordAt (m + 1) (M 0)) := by
+            rw [hM0m]; exact hMm_ord
+          have hh0_eq : ∀ x, x ≠ M 0 → hMm x = f x * g x := fun x hx =>
+            hMm_eq0 x (by rw [← hM0m]; exact hx)
+          obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne1 hh0 hh0_eq hMm1_ord hMm1_eq0
+          refine chainFinish hUopen hUcompact hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
+            hg.contMDiffOn hgne' hh_ordA hh_ordB ?_ hk1 ?_
+          · rw [hM0m]; exact hh_ordA.congr_of_eventuallyEq (Filter.EventuallyEq.refl _ hMm)
+              |>.congr_of_eventuallyEq (Filter.EventuallyEq.refl _ hMm) |>.symm ▸ hMm_ord
+          · intro x hxp hxq hxr; exact hh_eq x hxp hxr
+        · by_cases hM01 : M 0 = M (m + 1)
+          · -- Case (iii): `M 0 = M (m + 1) ≠ M m`.
+            have hne2 : M m ≠ M 0 := by rw [hM01]; exact hdeg.symm
+            have hh1 : IsWeakSolutionAt hMm1 (M 0) (ordAt (m + 1) (M 0)) := by
+              rw [hM01]; exact hMm1_ord
+            have hh1_eq : ∀ x, x ≠ M 0 → hMm1 x = f x * g x := fun x hx =>
+              hMm1_eq0 x (by rw [← hM01]; exact hx)
+            obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne2 hMm_ord hMm_eq0 hh1 hh1_eq
+            refine chainFinish hUopen hUcompact hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
+              hg.contMDiffOn hgne' hh_ordB ?_ hh_ordA hk1 ?_
+            · rw [hM01]; exact hh_ordB
+            · intro x hxp hxq hxr; exact hh_eq x hxq hxp
+          · -- Case (i): three genuinely distinct points.
+            obtain ⟨h0, h0_ord0, h0_eq0⟩ := (hfAt (M 0)).mul (hgAt (M 0))
+            have h0_ord : IsWeakSolutionAt h0 (M 0) (ordAt (m + 1) (M 0)) := hsum (M 0) ▸ h0_ord0
+            obtain ⟨h12, hh12_ordA, hh12_ordB, hh12_eq⟩ :=
+              merge_two hdeg.symm hMm_ord hMm_eq0 hMm1_ord hMm1_eq0
+            obtain ⟨h, hh_ordA, hh_ordB, hh_ordC, hh_eq⟩ :=
+              merge_two' (Ne.symm hM0m) (Ne.symm hM01) hh12_ordA hh12_ordB hh12_eq h0_ord h0_eq0
+            refine chainFinish hUopen hUcompact hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
+              hg.contMDiffOn hgne' hh_ordC hh_ordB hh_ordA hk1 ?_
+            · intro x hxp hxq hxr; exact hh_eq x hxq hxr hxp
   obtain ⟨f, U, hUopen, hUcompact, hoff, hcm, hne, hwQ, hwP⟩ := main C.n le_rfl
   sorry
 
