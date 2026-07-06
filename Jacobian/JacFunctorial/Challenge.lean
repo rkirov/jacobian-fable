@@ -28,7 +28,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y]
   [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 
-set_option maxHeartbeats 4000000 in
+set_option maxHeartbeats 0 in
 /-- The pushforward map on Jacobians is holomorphic (§9.1 — free from
 `Jacobian.contMDiff_inducedHom`; gated by `[DiscreteTopology (periodSubgroup _).topologicalClosure]`
 exactly as `ofCurve_contMDiff` and every `ChartedSpace`/`IsManifold` instance on `Jacobian _`

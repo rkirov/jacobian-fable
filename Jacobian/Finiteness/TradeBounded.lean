@@ -481,16 +481,19 @@ noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.
          rw [toGermZ1W_apply_coe]
          simp only [Submodule.coe_add]
          rw [map_add, toGermZ1W_apply_coe, toGermZ1W_apply_coe]
+         rfl
        map_smul' := fun c ψ => by
          apply Subtype.ext
          rw [toGermZ1W_apply_coe]
          simp only [Submodule.coe_smul, RingHom.id_apply]
-         rw [map_smul, toGermZ1W_apply_coe] } ∘ₗ (resZ T T.V T.W T.W_le_V))
+         rw [map_smul, toGermZ1W_apply_coe]
+         rfl } ∘ₗ (resZ T T.V T.W T.W_le_V))
 
 theorem classMap_apply (ψ : NZ1 T T.V) :
     classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
   rfl
 
+set_option maxHeartbeats 1000000 in
 /-- **Schwartz-consumer property 1** (§5 step 8): the trade defect dies in `H¹(𝔚)`. -/
 theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
     classMap T (tradePi T x - tradeCompact T x) = 0 := by
@@ -510,9 +513,95 @@ theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
     abel
   rw [classMap_apply, H1Cover.mk_eq_zero_iff]
   refine ⟨-(toGermC0 T T.W x.1.2.2), ?_⟩
-  rw [toGermZ1W_apply_coe, hkey, map_neg, map_neg]
+  rw [toGermZ1W_apply_coe, hkey]
+  have hd0neg : d0 (0 : RS.Divisor X) T.coverW (-(toGermC0 T T.W x.1.2.2)) =
+      -(d0 (0 : RS.Divisor X) T.coverW (toGermC0 T T.W x.1.2.2)) := map_neg _ _
+  have htgneg : toGermC1 T T.W (-(deltaCLM T T.W x.1.2.2)) =
+      -(toGermC1 T T.W (deltaCLM T T.W x.1.2.2)) := map_neg _ _
+  rw [hd0neg, htgneg]
   congr 1
   funext p
   exact (toGermC1_deltaCLM_eq_d0 T x.1.2.2 p).symm
+
+/-- Restriction commutes with `boundZ1` (Banach-level restriction of a de-germified good-cover
+cocycle equals de-germifying with the transitively-composed closure hypothesis). -/
+theorem resZ_boundZ1 {P P' : Fin T.n → Opens X}
+    (h : ∀ i, closure (P i : Set X) ⊆ (T.Ustar i : Set X)) (h' : ∀ i, P' i ≤ P i)
+    (h2 : ∀ i, closure (P' i : Set X) ⊆ (T.Ustar i : Set X)) (F : Z1 (0 : RS.Divisor X) T.coverStar) :
+    resZ T P P' h' ⟨boundZ1 T h F, boundZ1_mem_NZ1 T h F⟩ =
+      (⟨boundZ1 T h2 F, boundZ1_mem_NZ1 T h2 F⟩ : NZ1 T P') := by
+  apply Subtype.ext
+  funext p
+  obtain ⟨i, j⟩ := p
+  apply Subtype.ext
+  apply BoundedContinuousFunction.ext
+  intro z
+  rw [resZ_apply_coe, resNC1_apply]
+  show (boundZ1 T h F (i, j) : ↥((P i ⊓ P j : Opens X) : Set X) →ᵇ ℂ)
+      (Set.inclusion (inf_le_inf (h' i) (h' j)) z) =
+    (boundZ1 T h2 F (i, j) : ↥((P' i ⊓ P' j : Opens X) : Set X) →ᵇ ℂ) z
+  rw [boundZ1_apply_eq_evalAt, boundZ1_apply_eq_evalAt]
+
+/-- The `(i, j)`-component of a `T.coverW`-level `Z1` element, as a `LinSysOn`-membership term
+(same two-step naming device as `starPairMem`/`starPairGerm`). -/
+noncomputable def wPairMem (c : Z1 (0 : RS.Divisor X) T.coverW) (i j : Fin T.n) :
+    RS.LinSysOn (0 : RS.Divisor X) ((T.W i ⊓ T.W j : Opens X) : Set X) :=
+  (c : C1 (0 : RS.Divisor X) T.coverW) (i, j)
+
+noncomputable def wPairGerm (c : Z1 (0 : RS.Divisor X) T.coverW) (i j : Fin T.n) :
+    RS.MeroGermOn X ((T.W i ⊓ T.W j : Opens X) : Set X) :=
+  wPairMem T c i j
+
+/-- The germ roundtrip: germifying the `T.W`-level de-germified `F` recovers `F`'s own germ
+restriction down to `T.coverW` (`resZ1 0 id T.ref_star_W F`). -/
+theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : Set X))
+    (F : Z1 (0 : RS.Divisor X) T.coverStar) :
+    (toGermZ1W T ⟨boundZ1 T h F, boundZ1_mem_NZ1 T h F⟩ : C1 (0 : RS.Divisor X) T.coverW) =
+      (resZ1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W F : C1 (0 : RS.Divisor X) T.coverW) := by
+  rw [toGermZ1W_apply_coe]
+  funext p
+  obtain ⟨i, j⟩ := p
+  show toGermSub (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) = _
+  apply Subtype.ext
+  rw [toGermSub_apply_coe]
+  show toGerm (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) =
+    wPairGerm T (resZ1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W F) i j
+  rw [wPairGerm, wPairMem, boundZ1, toGerm_restrictGerm, resZ1_apply_coe, resC1_apply,
+    restrictL_apply_coe]
+  rfl
+
+set_option maxHeartbeats 1000000 in
+/-- **§5's second centerpiece**: `classMap` is surjective (§5 step 9). -/
+theorem classMap_surjective : Function.Surjective (classMap T) := by
+  intro c'
+  obtain ⟨c, hc⟩ := H1Cover.mk_surjective (0 : RS.Divisor X) T.coverW c'
+  obtain ⟨F, g, hFg⟩ := exists_trade (𝒰 := T.coverStar) (𝒱 := T.coverW) (D := (0 : RS.Divisor X))
+    (h𝒰 := T.good_star) (hτ := T.ref_star_W) (τ := id) (f := c)
+  have hWUstar : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : Set X) :=
+    fun i => (T.closure_W_subset i).trans ((T.V_subset_U i).trans (T.U_subset_Ustar i))
+  have hVUstar : ∀ i, closure (T.V i : Set X) ⊆ (T.Ustar i : Set X) :=
+    fun i => (T.closure_V_subset i).trans (T.U_subset_Ustar i)
+  set ξF : NZ1 T T.V := ⟨boundZ1 T hVUstar F, boundZ1_mem_NZ1 T hVUstar F⟩ with hξF_def
+  refine ⟨ξF, ?_⟩
+  rw [classMap_apply, ← hc]
+  have hresZ : resZ T T.V T.W T.W_le_V ξF = ⟨boundZ1 T hWUstar F, boundZ1_mem_NZ1 T hWUstar F⟩ :=
+    resZ_boundZ1 T hVUstar T.W_le_V hWUstar F
+  rw [hξF_def, hresZ]
+  have hrt := toGermZ1W_boundZ1 T hWUstar F
+  have hd0mem : d0 (0 : RS.Divisor X) T.coverW g ∈ Z1 (0 : RS.Divisor X) T.coverW :=
+    B1_le_Z1 (0 : RS.Divisor X) T.coverW ⟨g, rfl⟩
+  have hsplit : (toGermZ1W T ⟨boundZ1 T hWUstar F, boundZ1_mem_NZ1 T hWUstar F⟩ :
+      Z1 (0 : RS.Divisor X) T.coverW) = c + (⟨d0 (0 : RS.Divisor X) T.coverW g, hd0mem⟩ :
+        Z1 (0 : RS.Divisor X) T.coverW) := by
+    apply Subtype.ext
+    rw [hrt]
+    simp only [Submodule.coe_add]
+    exact hFg
+  rw [hsplit, map_add]
+  have hmk0 : H1Cover.mk (0 : RS.Divisor X) T.coverW
+      (⟨d0 (0 : RS.Divisor X) T.coverW g, hd0mem⟩ : Z1 (0 : RS.Divisor X) T.coverW) = 0 := by
+    rw [H1Cover.mk_eq_zero_iff]
+    exact ⟨g, rfl⟩
+  rw [hmk0, add_zero]
 
 end RS.Finiteness

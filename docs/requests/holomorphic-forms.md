@@ -47,3 +47,39 @@
    `Module.finBasis` (`[Module.Finite ℂ (Form1 X)]`); `[Module.Free ℂ (Form1 X)]` is automatic
    (`Module.Free.of_divisionRing`, every vector space over a field is free) — no action needed
    from you, just confirming the dependency shape.
+
+## From jacobian-functoriality (2026-07-06, non-blocking — local `Compat` copies carried in
+`Jacobian/JacFunctorial/Pullback.lean`)
+
+Needed a two-manifold chart-pullback for `Form1.pullback f hf : Form1 Y →ₗ[ℂ] Form1 X` along an
+arbitrary `f : X → Y` (not just `f : X → ℂ`, which is all `mdifferential`/`Coeffs.lean` needed).
+Three small facts were missing and proved locally; would be nice to have canonically:
+
+1. **Two-manifold arbitrary-chart analyticity bridge**, generalizing
+   `contMDiffAt_iff_analyticAt_of_mem_source` (`f : X → ℂ`) to an arbitrary charted target `Y`:
+   ```lean
+   theorem analyticAt_of_mem_maximalAtlas {f : X → Y} {x : X} (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x)
+       {e : OpenPartialHomeomorph X ℂ} (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source)
+       {e' : OpenPartialHomeomorph Y ℂ} (he' : e' ∈ maximalAtlas 𝓘(ℂ) ω Y) (hy : f x ∈ e'.source) :
+       AnalyticAt ℂ (⇑e' ∘ f ∘ ⇑e.symm) (e x)
+   ```
+   (proved directly from mathlib's `contMDiffWithinAt_iff_of_mem_maximalAtlas`, ~10 lines).
+2. **Forward-chart identity** (symmetric counterpart of your own use of
+   `mfderiv_chartAt_symm_chartAt_self`, `Coeffs.lean:156`):
+   ```lean
+   theorem mfderiv_chartAt_self (y : Y) : mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y) y = ContinuousLinearMap.id ℂ ℂ
+   ```
+   (from mathlib's `mfderiv_extChartAt_self`, ~4 lines).
+3. **Two-manifold generalization of `tangentCoord_mfderiv_comp`** (`Analyticity.lean:91`), reading
+   the target through its own preferred chart instead of requiring the outer map to land in `ℂ`:
+   ```lean
+   theorem tangentCoord_mfderiv_chart_comp {F : X → Y} {g : ℂ → X} {z : ℂ}
+       (hF : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) F (g z)) (hg : MDifferentiableAt 𝓘(ℂ) 𝓘(ℂ) g z) :
+       tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) F (g z) (mfderiv 𝓘(ℂ) 𝓘(ℂ) g z (1 : ℂ))) =
+         deriv (⇑(chartAt ℂ (F (g z))) ∘ F ∘ g) z
+   ```
+   (via `mfderiv_chartAt_self` + `mfderiv_comp` + your own `tangentCoord_mfderiv_comp`, ~12 lines).
+
+All three are proved and carried locally in `Jacobian/JacFunctorial/Pullback.lean`'s `Compat`
+section — non-blocking, just flagging for possible upstream adoption since they're natural
+one-level generalizations of facts you already have.

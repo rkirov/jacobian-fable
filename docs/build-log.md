@@ -1342,3 +1342,124 @@
   `mulInto` directly on `T D`/`TailAt p D` as a superseding replacement (its design doc §0.1),
   a genuine scope relief recorded in `TailSpace.lean`'s own docstring, not a shortfall.
   `firstFormRR`/`g0` (riemann-roch's eventual consumer) remain gated on `finiteness-and-chi`.
+- [dolb] Jacobian/DolbeaultComparison/Splitting.lean OK (545 lines) — design §4.3/§6.2/§6.3's PoU
+  splitting of a `D = 0` Čech cocycle, built in one pass (continuation of the already-BUILT
+  `Leray.lean` + `GlueForm01.lean`). Exports: `Z1.repr` (pointwise holomorphic representative,
+  `holoRepr` of the cocycle component) + `Z1.repr_contMDiffOn`/`repr_cocycle`/`repr_add`/
+  `repr_smul` (the cocycle identity via `evalAt` rigidity, exactly the DiskAcyclic §7.4(a) step-3
+  pattern the handoff note predicted); `contMDiffOn_smul_of_tsupport_subset` (the extension-by-
+  zero smul lemma, design's hand-assembled `SmoothPartitionOfUnity`-adjacent atom) and a private
+  `contMDiffOn_finset_sum` (no generic `ContMDiffOn.sum` found at the pin; proved by
+  `Finset.induction`); `SmoothSplitting`/`exists_smoothSplitting` (D5's frozen formula `g i := ∑
+  k, p k x • Z1.repr f (k,i) x`, verified against the design's frozen sign exactly);
+  `SmoothSplitting.glueData`/`dolbForm`; two new Compat helpers `IsDbarOn.add`/`IsDbarOn.congr`
+  (the design's predicted "3-line helper" grew to ~15 lines each once the differentiability side
+  conditions for `wirtingerDbar_add` and the chart-transport eventual-equality for `congr` were
+  spelled out, but both are genuinely small, general, and reusable); the independence lemmas
+  `sub_mem_range_dbar_of_splittings`/`dolbForm_add_sub_mem`/`dolbForm_smul_sub_mem`/
+  `dolbForm_mem_range_of_mem_B1`/`dolbForm_res_sub_mem`, EVERY one closing via
+  `DbarGlueData.form_unique` exactly as the design promised (construct a candidate splitting/glue
+  data, show it solves the SAME local ∂̄-equations as the target via `IsDbarOn.add`/`.congr`, done).
+  Zero sorries. Gotchas (new, beyond Leray's/GlueForm01's):
+  (1) dot-notation `.evalAt`/`.ord` on a `Submodule`-coerced term fails silently as "invalid
+  field" unless the term is FIRST ascribed to the ambient `MeroGermOn X U` type explicitly (e.g.
+  `((f : C1 D 𝒰) p : MeroGermOn X (...))`, NOT `((f:C1 D𝒰) p).evalAt x` directly) — the
+  intermediate `LinSysOn`/`Z1`-level Submodule coercion needs an EXPLICIT extra ascription before
+  dot notation resolves, a step beyond the single-level coe idiom Leray.lean already used.
+  (2) `linear_combination h` for a 3-term cyclic identity (`A - B + C = 0` shapes) is extremely
+  sign-fragile: get the combination's SIGN wrong (`h` vs `-h`) and the tactic doesn't fail outright
+  — it reports "ring failed" with a residual that is exactly DOUBLE the correct one
+  (`2*(goal_lhs - goal_rhs)`), a reliable tell to flip the sign and retry, cheaper than re-deriving
+  the arithmetic by hand. (3) `Finset.sum_sub_distrib`/`Finset.sum_smul` have EXPLICIT (not
+  implicit) `f`/`g` arguments, so using them bare in `calc`/term mode leaves an unapplied Pi-type
+  term Lean can't unify with the goal; `rw [Finset.sum_sub_distrib]`/`rw [← Finset.sum_smul]` in
+  tactic mode work fine (rw unifies by pattern matching regardless of explicit/implicit-ness).
+  (4) `ContinuousLinearMap.mul 𝕜 A c` (`(A→L[𝕜]A)`) + `.contMDiffOn (s := Set.univ)` +
+  `ContMDiffOn.comp` is the robust route for "multiply-by-a-fixed-scalar is `ContMDiffOn`" at
+  MANIFOLD level (mirrors `SmoothC`'s planar `ContinuousLinearMap.mul ℝ ℂ c` idiom one level up);
+  plain `ContMDiffOn.mul`/`contMDiffOn_const.mul` needs a `ContMDiffMul` instance that does NOT
+  resolve for `𝓘(ℝ,ℂ)`-model targets at this pin — avoid it for constant-scalar multiplication.
+  **Notes for Comparison.lean** (next/final file): `Z1.repr`, `SmoothSplitting`,
+  `exists_smoothSplitting`, `SmoothSplitting.glueData`, `dolbForm`, and all five independence
+  lemmas are exactly the design's §4.3 export list, verified at these compiled shapes — no drift
+  expected in `H01`/`toDolb`/`cechToH01`'s construction.
+- [dolb] Jacobian/DolbeaultComparison/Comparison.lean OK (390 lines) — design §4.4/§6.4's
+  Dolbeault comparison, `H01`, `toDolb`/`cechToH01` (via `H1.lift`), injectivity, surjectivity,
+  `dolbeaultEquiv`, `finiteDimensional_H01`, `exists_dbar_eq_iff`. Zero sorries. The
+  `toDolbAll_compat` compatibility obligation for `H1.lift` (§6.4's "pure diagram algebra on cech
+  exports (~80 lines)") came in almost exactly that size: common-good-refinement via `.meet` +
+  `exists_good_refinement`, then two symmetric `resH1_comp`/`toDolb_res` chains collapsed to the
+  SAME `toDolb h𝒲good ∘ resH1 (combined index)` value via `resH1_indep` (Forster 12.3) — the
+  frozen recipe worked exactly as designed, no surprises in the mathematical content.
+  **Genuine, non-obvious mathlib/Lean gap found and worked around (flagged loudly, HIGH
+  visibility for any future consumer of `RS.Cech.H1 D`'s additive structure)**: `AddCommGroup
+  (RS.Cech.H1 D)` — needed for `LinearMap.ker_eq_bot`, `Sub`, `LinearEquiv`'s `CoeFun`, etc. —
+  does **NOT** resolve via plain `inferInstance`/automatic instance search, even though `H1 D`
+  unfolds (it is a reducible `abbrev`) to `Module.DirectLimit (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h =>
+  resH1' D h)` and mathlib's `Module.DirectLimit.addCommGroup (G)(f) : AddCommGroup (DirectLimit
+  G f)` instance is directly APPLICABLE (confirmed: manually writing
+  `Module.DirectLimit.addCommGroup (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h => resH1' D h)` type-checks
+  immediately). Root cause (isolated in a throwaway scratch file, deleted after use): that
+  instance's hypothesis `[∀ i, AddCommGroup (G i)]` is a `∀`-quantified instance argument, and
+  Lean's `synthInstance` does NOT automatically discharge these by "resolve per `i`" the way it
+  does for ordinary instance arguments — it only succeeds when a BLANKET instance for the exact
+  Pi-type is separately registered, or when the term is built manually (where elaboration handles
+  the `∀`-argument by ordinary term elaboration, not `synthInstance`). Fix: registered ONE local,
+  named instance in `Comparison.lean`, `noncomputable instance : AddCommGroup (H1 (0 : Divisor
+  X))`, built exactly via the manual `Module.DirectLimit.addCommGroup` application (D = 0 only,
+  matching this unit's scope) — once THIS is present, all downstream automatic instance search
+  (`Sub`, `ker_eq_bot`, `CoeFun` for `LinearEquiv`, …) works normally. **Flagged for the
+  orchestrator**: this is really a gap in `Jacobian/Cech/Colimit.lean` (cech-cohomology's file,
+  not editable under this unit's hard rules) — cech's own `H1 D` for ARBITRARY `D` would hit the
+  identical wall the moment anyone needs `Sub`/`ker_eq_bot` on it (e.g. finiteness-and-chi's
+  `H1Finite.lean`, if it ever needs subtraction on `H1 D` rather than only on cover-level
+  `H1Cover`/`Z1`/`C1`, which all already have working `Sub`). Two remediations, either fine: (a)
+  cech adds `instance : AddCommGroup (H1 D)` (all `D`) to `Colimit.lean` upstream (best, one
+  location, then this unit's local `D = 0` instance becomes redundant — safe to delete, since it
+  is definitionally the same construction, no diamond); (b) leave as is — every OTHER consumer
+  that also needs it registers its own `D`-specific local instance the same way, which is safe
+  (same underlying term, no mathematical diamond) but duplicated effort. A request note is left
+  here rather than filed separately since `docs/requests/` convention is per-unit and this unit is
+  now closing out. Two smaller gotchas: (1) `set_option foo in` must be written BEFORE a
+  declaration's docstring (`/-- ... -/`), not after — confirmed AGAIN here (already recorded for
+  `serre-duality-tails`) after re-triggering the identical parse error twice while adding heartbeat
+  bumps; (2) `Function.Surjective f` for `f : _ →ₗ[R] (M ⧸ p)`-shaped codomains needs the target
+  destructured via `Submodule.mkQ_surjective`/the quotient's own `mk_surjective` FIRST (`intro y;
+  obtain ⟨x, rfl⟩ := mk_surjective y`) before the element can be used as the underlying
+  `Form01`/pre-quotient data the rest of the proof needs — forgetting this step (working directly
+  with the quotient-class variable as if it were a representative) produces a confusing type
+  mismatch far into the proof rather than at the point of the actual error.
+- [dolb] Jacobian/DolbeaultComparison.lean (unit root) OK (37 lines) — API docstring covering all
+  four files (`Leray`, `GlueForm01`, `Splitting`, `Comparison`). `scripts/check.sh
+  Jacobian/DolbeaultComparison` passes: zero sorries, clean build, across all 5 files (1899 lines
+  total: Leray 677, GlueForm01 250, Splitting 545, Comparison 390, root 37). NOT registered in
+  `Jacobian.lean` per task hard rule; orchestrator to add `import Jacobian.DolbeaultComparison`.
+  **dolbeault-comparison unit now FULLY BUILT** (all 4 planned files + root, matching the design's
+  file plan exactly, no files dropped or descoped beyond the already-recorded `finiteDimensional_H01`
+  gate).
+  **Consumer notes**:
+  - **finiteness-and-chi**: unblocked since `Leray.lean` landed (prior build-log entry); no new
+    exports from this pass affect it (Splitting/Comparison are downstream of its needs, per design
+    §0.1 — confirmed unchanged).
+  - **abel-theorem** (its own design's §4.3 "Dolbeault-upgrade bridge", the hardest/highest-risk
+    content in that unit): consumes exactly `RS.dolbeaultEquiv : RS.H1 (0 : Divisor X) ≃ₗ[ℂ]
+    RS.H01 X`, `RS.H01.mk`, `RS.H01.mk_eq_zero_iff`, and `finiteDimensional_H01`
+    (`exists_dbar_eq_iff` is available too, noted in their design as an equally-usable
+    alternative). All four are BUILT at exactly the signatures abel-theorem's design doc quotes
+    verbatim — **no interface mismatch found**. The one item to flag LOUDLY: abel-theorem's design
+    text says "using `finiteDimensional_H01` from dolbeault-comparison" without mentioning any
+    gate, but as built here `finiteDimensional_H01` carries an explicit
+    `[FiniteDimensional ℂ (H1 (0 : Divisor X))]` hypothesis (see this file's own entry above —
+    `Jacobian/Finiteness/H1Finite.lean` had not landed at the time of this build, so the
+    unconditional discharge does not yet exist anywhere in the project). abel-theorem's own build
+    will need EITHER (a) `H1Finite.lean` to have landed by then, registering
+    `FiniteDimensional ℂ (H1 D)` as a genuine `instance` (not just a bare `theorem`) so ordinary
+    instance search finds it automatically at their call site, or (b) if it is a `theorem` rather
+    than an `instance`, an explicit `haveI := <that theorem instantiated at D = 0>` immediately
+    before invoking `finiteDimensional_H01`. Recorded here so abel-theorem's builder is not
+    surprised mid-proof.
+  - **serre-duality-cech**: `exists_rep_good` (cech) + `h1CoverEquiv` (this unit's `Leray.lean`)
+    remain available for pairing well-definedness as previously recorded; `H01`/`dolbeaultEquiv`
+    available but the Miranda-tails route remains the frozen path for that unit (no drift).
+  - **Nobody else** consumes `H^{0,1}` twisted variants or an `Ω`-sheaf comparison (unchanged from
+    the design's §0.2/§7 non-goals).
