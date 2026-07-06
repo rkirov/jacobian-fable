@@ -317,3 +317,41 @@
 - [finiteness] Jacobian/Finiteness/CompactRestrict.lean OK (126 lines, ~8s) — `isCompactOperator_restrictCLM`: Montel compactness of `restrictCLM` for `S' ⋐ S ⊆ source (chartAt ℂ x₀)`, via `Φ : BddHoloOn S → C(K,ℂ)` (chart composite) + `isCompact_closure_montelFamily` (BUILT Montel) + `Ψ : C(K,ℂ) → (↥S'→ᵇℂ)` (`ContinuousMap.isometryEquivBoundedOfCompact` + `BoundedContinuousFunction.compContinuous`) + the generic Compat helper `isCompactOperator_of_isCompactOperator_val` (a CLM into a *closed* submodule is compact once its ambient-valued composite is, via `Subtype.isCompact_iff` + `Subtype.val '' preimage = K ∩ S`). Deviation from design's file-plan (documented in-file): the two *cocycle-level* compactness lemmas the design's §4.4 also lists (`isCompactOperator_resZ_UV`, `isCompactOperator_tradeCompact`) need `ShrinkChain`/`NZ1`/`tradeCompact` from `Chain.lean`, built *after* this file per the same file plan's stated build order — deferred to `Chain.lean`'s scope (further deferred there, see below). Zero sorries.
 - [finiteness] Jacobian/Finiteness/Chain.lean OK (287 lines, ~12-14s) — `ShrinkChain X` (Forster's `𝔚⋐𝔙⋐𝔘⋐𝔘*` same-index chain, D3) + `ShrinkChain.nonempty` (iterates cech's `exists_chartDisk_closure_basis` 4× per point + finite subcover, reindexed by `Finset.equivFin` exactly as `Cech.Covers.exists_good_refinement_closure`); the four induced `FinCover ⊤`s + refinement facts (all `τ = id`); the Banach cochain layer `NC0`/`NC1` (finite `Pi`s of `BddHoloOn`), `deltaCLM` (0-to-1 coboundary), `NZ1` (bounded cocycles as `ContinuousLinearMap.ker` of an internal `d1NC` — closed+complete for free, no hand-rolled pointwise closedness); `resNC0`/`resNC1`, the cocycle-relation workhorse `NZ1.rel_res` + `resNC1_mapsTo_NZ1` (mirrors `Cech.Refinement`'s `Z1.rel_res`/`resC1_mem_Z1` almost verbatim, using the new `restrictCLM_restrictCLM` presheaf law), and `resZ` (via `ContinuousLinearMap.codRestrict`). **DEFERRED, honestly diagnosed** (`TODO(blocker)` note at file end, >45min spent): `tradeDefect`/`tradeSpace`/`tradePi`/`tradeCompact` (Forster 14.6(b)'s subspace `L` and its two Schwartz-cospan projections) hit a reproducible mathlib instance-resolution wall — `IsTopologicalAddGroup` on a `ContinuousLinearMap.ker`-valued `Submodule` (`NZ1 T T.U`) times out even at 4,000,000 `synthInstance` heartbeats (vs. the `CompleteSpace (NZ1 T P)` instance three declarations earlier, which DID respond to an 800,000-heartbeat bump) — a genuine performance/search-shape issue, not a missing lemma; two routes recorded for a continuation builder (targeted `trace.Meta.synthInstance` diagnosis, or reformulating `NZ1`'s carrier as a hand-rolled pointwise-condition `Submodule` per the design's original §2 D1 sketch). The two compactness lemmas deferred from `CompactRestrict.lean` remain deferred for the same reason (consume `tradeCompact`). Zero sorries.
 - [finiteness] Jacobian/Finiteness.lean (unit root) OK (64 lines; `scripts/check.sh Jacobian/Finiteness` passes, zero sorries across all 4 written files, 1020 lines total). **PARTIAL UNIT — 4 of 7 design files written** (all gate-free ones, in the design's order). NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add `import Jacobian.Finiteness`. NOT WRITTEN (not sorried): `TradeBounded.lean`, `H1Finite.lean`, `Chi.lean` — gated on the not-yet-built `dolbeault-comparison` unit's `Leray.lean` (`exists_trade`/`toH1_surjective_of_isGood`/`h1CoverEquiv`; no `Jacobian/DolbeaultComparison/` directory exists at all as of this session, though cech's `Colimit`/`Window`/`Skyscraper` DID land mid-session and are ready). Centerpieces delivered: `BddHoloOn` (BCF closed-submodule Banach spaces), `ShrinkChain` (four-level chains + existence), the Montel-compact `restrictCLM` operator, `schwartz_finite_cospan`. Notes for canonical-forms/riemann-roch: the χ ledger (`chi`, `chi_zero_add_degree_le_l`, `l_mono`, etc.) and the Riemann seed `chi 0 + deg D ≤ l D` are NOT yet available — they live in the undelivered `Chi.lean`; a continuation builder should finish `tradeSpace`/`tradePi`/`tradeCompact` (see Chain.lean's blocker note) first, then (once dolbeault lands) `TradeBounded.lean`→`H1Finite.lean`→`Chi.lean` per the design's §5–§8 proof plans, which remain unchanged and fully specified.
+- [dbar] Jacobian/Dbar/Form01.lean OK (127 lines, ~7s) — `Form01 X` (design D5/D8): a plain
+  structure (chartAt-indexed coefficient family for dz̄, junk-zero off chart targets, smooth on
+  targets, anti-holomorphic transition law with `conj`), NOT a bundled `ContMDiffSection` (unlike
+  Form1/CC1) since there is no anti-linear Hom-bundle in mathlib at the pin and the blueprint's
+  `restrictScalars ℂ→ℝ` diamond warning rules one out. `ext`, `Zero/Add/Neg/Sub/SMul` instances,
+  `AddCommGroup`/`Module ℂ` (via `ext` + `simp`/`ring`, no bundle machinery). Gotcha for sibling
+  builders: `ω` (the `ContDiff` scope's top regularity-level token, from `open scoped ContDiff`)
+  CANNOT be reused as an ordinary bound-variable name — `theorem ext {ω η : Form01 X} ...` is a
+  PARSE ERROR ("unexpected token 'ω'"). Used `η, η'` for Form01-valued variables throughout
+  instead (matching Forms' own `Form1` convention of `η`, not `ω`). Second gotcha: instance field
+  proofs using anonymous-constructor lambdas (`fun x z hz => by rw [...]`) hit the usual
+  lambda-vs-Pi-op unreduced-beta mismatch; fixed with a `dsimp only;` before the `rw` in each of
+  the 8 spots (Add/Neg/Sub/SMul × 2 proof fields).
+  `Form01CoeffData`/`Form01.ofCoeffs` (chart-family assembly, for `dolbeault-comparison`
+  consumers) DEFERRED for time — not needed by anything inside this unit itself (only exported);
+  flagged in the final report.
+- [dbar] Jacobian/Dbar/Operator.lean OK (398 lines, ~7-9s) — `SmoothC X` (design D6, a private
+  subtype `{f : X→ℂ // ContMDiff 𝓘(ℝ,ℂ) 𝓘(ℝ,ℂ) ∞ f}` with hand-built `AddCommGroup`/`Module ℂ`,
+  avoiding the `restrictScalars` diamond that mathlib's own bundled `ContMDiffMap` ring/module
+  instances would hit for our target model `𝓘(ℝ,ℂ)`); intrinsic `dbar : SmoothC X →ₗ[ℂ] Form01 X`
+  (chart-local `wirtingerDbar`); `IsDbarAt`/`IsDbarOn` (D7); `eqOn_coeffAt_of_isDbarOn` (the key
+  chart-transition-transport lemma, underlies `dbar_eq_iff`,
+  `contMDiffOn_omega_of_isDbarOn_zero`, `contMDiffOn_omega_sub_of_isDbarOn`); and the named
+  centerpiece `exists_dbar_solution_chart_ball` (transports Forster 13.2 through a chart, using
+  `Form01.compat` + the `(0,1)` chain rule to reconcile the target chart's coefficients with an
+  arbitrary point's own preferred chart). THREE gotchas worth recording:
+  (1) `contMDiffAt_real_iff_contDiffAt` (CC7, RealSmooth.lean) is stated via `extChartAt 𝓘(ℂ) x`,
+  not `chartAt ℂ x` directly — but `(extChartAt 𝓘(ℂ) x : X→ℂ) = ⇑(chartAt ℂ x)` and
+  `⇑(extChartAt 𝓘(ℂ) x).symm = ⇑(chartAt ℂ x).symm` are literally `rfl`, so `exact`/`show` against
+  a `chartAt`-phrased goal works transparently; only `.target` needs a `simp` (not quite `rfl`).
+  (2) Getting `ContDiffOn ℝ ∞ (f∘(chartAt x).symm) (chartAt x).target` from a GLOBAL `ContMDiff f`
+  is easiest via composing `f.contMDiffOn` with mathlib's `contMDiffOn_extChartAt_symm` through
+  `ContMDiffOn.comp`, then `contMDiffOn_iff_contDiffOn` — NOT via chasing "chart invariance of
+  ContMDiffAt" per-point (that route needs its own separate transition-map argument, only used
+  where a hypothesis is merely LOCAL `ContMDiffOn u s`, not global). (3) dependent
+  `if h : p ∈ s then ... else ...` inside a `noncomputable section` still needs a `classical`
+  tactic call (or an ambient `Decidable` instance) even though the SECTION is noncomputable —
+  `noncomputable` alone does not supply `Decidable`. Zero sorries.
