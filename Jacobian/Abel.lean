@@ -1,7 +1,13 @@
 import Jacobian.Abel.Loops
 import Jacobian.Abel.WeakToMero
 import Jacobian.Abel.DolbeaultBridge
+import Jacobian.Abel.AreaPairing
+import Jacobian.Abel.SerreFunctional
+import Jacobian.Abel.ChartSupported
+import Jacobian.Abel.LogPiece
+import Jacobian.Abel.LinkData
 import Jacobian.Abel.Sufficiency
+import Jacobian.Abel.UpgradeDischarge
 import Jacobian.Abel.OfCurveInj
 
 /-!
@@ -14,21 +20,23 @@ the challenge-shaped final exports. No fundamental-polygon/cut-surface machinery
 blueprint's ⚠ is honored); no `Jacobian.Monodromy`/`Jacobian.FormTrace` import anywhere in this
 unit (confirmed at build time, matching the design's DAG audit §3).
 
-**Status**: the external blocker (`serre-duality-tails` not existing at all) has CLEARED —
-`DolbeaultBridge.lean`'s `exists_dbar_eq_zero_of_forall_basis_pairing_eq_zero` proves the abstract
-Dolbeault-upgrade bridge in full, zero sorries, gated only on `serre-duality-tails`'s own one
-remaining external fact (`Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))`, a
-genuine out-of-scope Cousin-I/Mittag-Leffler existence theorem). What remains is a *different*,
-non-external, precisely-isolated gap: packaging a weak solution's chart-local `d''f/f` data into a
-global `Form01 X` object with a proven vanishing pairing (design §4.1 step 5) — substantial new
-analytic content that this pass's investigation found tractable in outline but did not complete on
-top of everything else (see `Sufficiency.lean`'s own docstring for the full account and exact
-discharge roadmap). It is isolated as the explicit hypothesis `RS.Abel.WeakSolutionUpgrade`
-(two-point) / `RS.Abel.WeakSolutionUpgradeFinset` (`k`-point) — both theorems below are gated
-theorems (no admitted-step placeholder), matching this project's established idiom (e.g. `Jacobian.ofCurve_inj'`'s
-own `[DiscreteTopology (RS.periodSubgroup X)]` gate). `scripts/check.sh Jacobian/Abel` reports
-**zero sorries**; the general multi-chart weak-solution gap this builder was separately authorized
-to close inside `Jacobian/AbelWeak/` is complete with zero admitted steps.
+**Status**: design steps 5-7 (the `WeakSolutionUpgrade`/`WeakSolutionUpgradeFinset` content —
+packaging a weak solution's chart-local `∂̄log f` data into a global `Form01 X`, the vanishing
+pairing, the `∂̄`-correction, and the CR-promotion/order bookkeeping) are now **DISCHARGED**
+(`AreaPairing.lean` + `SerreFunctional.lean` + `ChartSupported.lean` + `LogPiece.lean` +
+`LinkData.lean` + `UpgradeDischarge.lean`, this pass), gated ONLY on `serre-duality-tails`'s one
+remaining external fact `Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))` — the
+SAME single gate `DolbeaultBridge.lean` already carries, so the unit's total gate set has
+SHRUNK to that one fact (plus `period-lattice-rank`'s `[DiscreteTopology]` instance, that
+unit's job): `RS.Abel.weakSolutionUpgrade_of_surjective : (surjectivity) → WeakSolutionUpgrade X`
+and `RS.Abel.weakSolutionUpgradeFinset_of_surjective` (the `k`-point form), consumed by the new
+`Jacobian.ofCurve_inj_of_surjective'`/`ofCurve_inj_of_surjective`. The blueprint's routing
+decision #2 "honest integration atom" — the Dolbeault-side Serre functional
+`(σ, θ) ↦ ∬_X σ ∧ θ` — is BUILT (`RS.Abel.pairing`), with the compact-surface Stokes vanishing
+(`pairing_dbar_eq_zero`, unconditional), the conjugate-form positivity injection
+(`pairingDual_injective`, unconditional, Hodge-free), and the integral-pairing bridge
+(`exists_dbar_of_forall_pairing_eq_zero`, same single gate). `scripts/check.sh Jacobian/Abel`
+reports **zero sorries**.
 
 ## The AbelWeak gap closure (authorized edit, not part of this unit's own files)
 
@@ -77,6 +85,44 @@ every breakpoint, including the case where the path revisits its own basepoint).
   TOTAL period, a weak solution per pair via `exists_weakSolutionOfPair`, and Forster's Lemma 20.1
   multiplicativity assembling the product via the ALREADY-BUILT `isWeakSolutionOfFinset_prod`) are
   fully proved, no gate beyond `WeakSolutionUpgradeFinset` itself. Zero sorries throughout.
+
+* **`AreaPairing.lean`** (routing decision #2's atom, foundation): `SurfPoU X` (finite smooth
+  PoU subordinate to preferred-chart sources), the biholomorphic `(1,1)`-density change of
+  variables `integral_eq_integral_transition` (`normSq (deriv τ)` Jacobian, the residue-theorem
+  design's spike-verified `det_fderiv_eq_normSq_deriv`), and the Serre area pairing
+  `RS.Abel.pairing PU σ θ = ∑ i, ∫ ψᵢ σᵢ θᵢ dA` with integrability and bilinearity. Zero sorries.
+
+* **`SerreFunctional.lean`**: `pairing_dbar_eq_zero` (compact-surface Stokes: `∬ ∂̄u ∧ θ = 0`,
+  PoU-globalized planar Atom 1, unconditional), `conjForm`/`pairingDual_injective` (the
+  positivity injection `Form1 X ↪ Dual (H01 X)`, unconditional, no Hodge theory),
+  `finrank_H01_eq_genus` and `exists_dbar_of_forall_pairing_eq_zero` (the INTEGRAL-pairing
+  Dolbeault bridge — a `(0,1)`-form pairing to zero against every holomorphic `1`-form is
+  `∂̄`-exact), the latter two gated on the single `serre-duality-tails` fact. Zero sorries.
+
+* **`ChartSupported.lean`**: `ChartSupportedData.form` (a compactly-chart-supported planar
+  `(0,1)`-coefficient spreads to a global `Form01 X`) and the localization
+  `pairing_form : pairing PU D.form θ = ∫ h · coeffIn e θ dA`; the inverse-derivative units
+  `deriv_trans_mul_deriv_trans_symm`/`deriv_trans_ne_zero`. Zero sorries.
+
+* **`LogPiece.lean`** (planar, no manifold imports): `LogPieceData` (one `SingleChart`-style
+  interpolated piece `(z-β)/(z-α) ⇝ exp(χL) ⇝ 1`), its `∂̄log` coefficient `dlog` with
+  `∂̄g = dlog · g`, the punctured-limit factorizations at the zero/pole, and
+  **`integral_dlog_mul`** — Forster's Lemma 20.3/20.5 in planar form:
+  `∫ dlog · θ dA = π (Gp β - Gp α)` via the annulus-Stokes atom + circle integration by parts +
+  the Cauchy integral formula. Zero sorries.
+
+* **`LinkData.lean`**: `exists_link` (one chain link ⇒ piece function + packaged `Form01` +
+  smoothness/non-vanishing/`∂̄log`-matching/factor-limits/pairing-identity), the planar
+  promotion lemma `meromorphicAt_of_tendsto_factor` (punctured holomorphy + factor limit pin
+  `meromorphicOrderAt` — the `Rechart`-free order bookkeeping), and the `∂̄` finite product
+  rule. Zero sorries.
+
+* **`UpgradeDischarge.lean`** (the discharge): `exists_mero_of_sum_pathIntegral_eq_zero` (the
+  Abel sufficiency engine: finitely many zero-total-period paths ⇒ a meromorphic function with
+  exactly the endpoint divisor) and **`weakSolutionUpgrade_of_surjective` /
+  `weakSolutionUpgradeFinset_of_surjective`** — `WeakSolutionUpgrade X` and
+  `WeakSolutionUpgradeFinset X ι` PROVEN, gated only on
+  `Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))`. Zero sorries.
 
 * **`OfCurveInj.lean`** (§4.4 D4): `Jacobian.ofCurve_inj'` (gated on
   `[DiscreteTopology (RS.periodSubgroup X)]`, Forster 21.4(i) exactly — proved via the frozen
