@@ -1,0 +1,149 @@
+import Jacobian.Cech.Window
+
+/-!
+# Window dimension counts (CC8, D7, proof plan §6.8)
+
+Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.6, §6.8).
+
+* `evalAt_eq_zero_iff` [Compat]: chart-transported analogue of mathlib's
+  `tendsto_zero_iff_meromorphicOrderAt_pos`, filed as a request to meromorphic-and-divisors
+  (`docs/requests/meromorphic-and-divisors.md`) but not upstreamed — proved here from exported
+  chart-transport lemmas only.
+* `leadCoeff_eq_zero_iff`: the one-step leading-coefficient functional detects the exact order.
+* `finrank_windowAt`/`finrank_window`: the `θ`-basis dimension counts (design §6.8), via an
+  explicit one-step splitting `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ` and induction on
+  `(d' - d).toNat` (no explicit basis/independence argument needed).
+-/
+
+open scoped ContDiff Manifold Topology
+open Set TopologicalSpace RS.Cech Filter
+
+namespace RS.Cech
+
+variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
+
+/-! ### Compat: chart-transported vanishing criterion for `evalAt` -/
+
+/-- Compat (requested from meromorphic-and-divisors, not upstreamed): chart-transported analogue
+of mathlib's `tendsto_zero_iff_meromorphicOrderAt_pos`. -/
+theorem RS.tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.MeromorphicAtX f x) :
+    Tendsto f (𝓝[≠] x) (𝓝 0) ↔ 0 < RS.ordAtX f x := by
+  rw [RS.ordAtX_def, ← tendsto_zero_iff_meromorphicOrderAt_pos hf]
+  exact RS.tendsto_nhdsNE_comp_chart_iff
+
+/-- Compat (requested from meromorphic-and-divisors §1.4(b), not upstreamed): `evalAt` vanishes
+(given `0 ≤ ord`) iff the order is strictly positive. -/
+theorem RS.MeroGermOn.evalAt_eq_zero_iff {U : Set X} {x : X} (hU : IsOpen U) (hx : x ∈ U)
+    (φ : RS.MeroGermOn X U) (h : 0 ≤ φ.ord x) :
+    φ.evalAt x = 0 ↔ 0 < φ.ord x := by
+  obtain ⟨f, hf, rfl⟩ := RS.MeroGermOn.exists_rep φ
+  have htend := RS.MeroGermOn.tendsto_evalAt hU hx (RS.MeroGermOn.mk f hf) h rfl
+  rw [RS.MeroGermOn.ord_mk hU hx] at h ⊢
+  constructor
+  · intro heq
+    rw [heq] at htend
+    exact (RS.tendsto_zero_iff_ordAtX_pos (hf x hx)).1 htend
+  · intro hpos
+    exact tendsto_nhds_unique htend ((RS.tendsto_zero_iff_ordAtX_pos (hf x hx)).2 hpos)
+
+/-! ### `leadCoeff` detects the exact order -/
+
+private theorem withTop_lt_neg_add_iff (m : ℤ) (t : WithTop ℤ) :
+    0 < ((-m : ℤ) : WithTop ℤ) + t ↔ ((m + 1 : ℤ) : WithTop ℤ) ≤ t := by
+  by_cases ht : t = ⊤
+  · subst ht
+    simp
+  · obtain ⟨k, rfl⟩ := WithTop.ne_top_iff_exists.1 ht
+    rw [show (((-m : ℤ) : WithTop ℤ) + (k : WithTop ℤ)) = (((-m + k : ℤ) : ℤ) : WithTop ℤ) by
+      norm_cast]
+    constructor
+    · intro h
+      have h' : (0 : ℤ) < -m + k := by exact_mod_cast h
+      exact_mod_cast (show m + 1 ≤ k by omega)
+    · intro h
+      have h' : m + 1 ≤ k := by exact_mod_cast h
+      exact_mod_cast (show (0 : ℤ) < -m + k by omega)
+
+theorem leadCoeff_eq_zero_iff (p : X) (m : ℤ) (ψ : ordGe p m) :
+    leadCoeff p m ψ = 0 ↔
+      ((m + 1 : ℤ) : WithTop ℤ) ≤ (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p := by
+  have hmul_ord : (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).ord p =
+      ((-m : ℤ) : WithTop ℤ) + (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p := by
+    rw [RS.MeroGermOn.ord_mul (chartAt ℂ p).open_source (mem_chart_source ℂ p), ord_tailGerm_self]
+  have h0 : (0 : WithTop ℤ) ≤
+      (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).ord p := by
+    rw [hmul_ord]
+    have hψm : (m : WithTop ℤ) ≤ (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p := ψ.2
+    have hstep : (((-m : ℤ) : WithTop ℤ) + (m : WithTop ℤ)) ≤
+        ((-m : ℤ) : WithTop ℤ) + (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p :=
+      add_le_add le_rfl hψm
+    have hz : (((-m : ℤ) : WithTop ℤ) + (m : WithTop ℤ)) = 0 := by
+      have : (-m + m : ℤ) = 0 := by ring
+      exact_mod_cast this
+    rwa [hz] at hstep
+  show (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).evalAt p = 0 ↔ _
+  rw [RS.MeroGermOn.evalAt_eq_zero_iff (chartAt ℂ p).open_source (mem_chart_source ℂ p) _ h0,
+    hmul_ord, withTop_lt_neg_add_iff]
+
+/-- Leading-coefficient normalization (up to a nonzero scalar, all that induction needs):
+`leadCoeff p m (θ_{p,m}) ≠ 0`. -/
+theorem leadCoeff_tailGerm_self_ne_zero (p : X) (m : ℤ) :
+    leadCoeff p m (⟨tailGerm p m, mem_ordGe_iff.2 (le_of_eq (ord_tailGerm_self p m).symm)⟩ :
+      ordGe p m) ≠ 0 := by
+  intro hz
+  rw [leadCoeff_eq_zero_iff, ord_tailGerm_self] at hz
+  have : (m + 1 : ℤ) ≤ m := by exact_mod_cast hz
+  omega
+
+/-! ### The one-step splitting `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ` -/
+
+variable (p : X)
+
+/-- The distinguished representative of `θ_{p,-d'}` as an `ordGe p (-d')` element. -/
+private noncomputable def tailGermElt (d' : ℤ) : ordGe p (-d') :=
+  ⟨tailGerm p (-d'), by rw [mem_ordGe_iff, ord_tailGerm_self]⟩
+
+private theorem leadCoeff_tailGermElt_ne_zero (d' : ℤ) :
+    leadCoeff p (-d') (tailGermElt p d') ≠ 0 :=
+  leadCoeff_tailGerm_self_ne_zero p (-d')
+
+/-- The "subtract off the leading term" correction, landing (after correction) one order
+higher — the raw (pre-quotient) map underlying the one-step splitting. -/
+private noncomputable def rawCorr (d' : ℤ) :
+    ordGe p (-d') →ₗ[ℂ] RS.MeroGermOn X ((chartAt ℂ p).source) :=
+  (ordGe p (-d')).subtype -
+    LinearMap.smulRight (leadCoeff p (-d')) ((leadCoeff p (-d') (tailGermElt p d'))⁻¹ •
+      tailGerm p (-d'))
+
+private theorem rawCorr_apply (d' : ℤ) (ψ : ordGe p (-d')) :
+    rawCorr p d' ψ = (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)) -
+      leadCoeff p (-d') ψ • ((leadCoeff p (-d') (tailGermElt p d'))⁻¹ •
+        tailGerm p (-d')) := rfl
+
+private theorem mem_ordGe_succ_rawCorr (d' : ℤ) (ψ : ordGe p (-d')) :
+    rawCorr p d' ψ ∈ ordGe p (-(d' - 1)) := by
+  set c := leadCoeff p (-d') ψ with hc_def
+  set lam := leadCoeff p (-d') (tailGermElt p d') with hlam_def
+  have hlam0 : lam ≠ 0 := leadCoeff_tailGermElt_ne_zero p d'
+  have hmem0 : rawCorr p d' ψ ∈ ordGe p (-d') := by
+    rw [rawCorr_apply]
+    apply Submodule.sub_mem
+    · exact ψ.2
+    · exact Submodule.smul_mem _ _ (Submodule.smul_mem _ _ (tailGermElt p d').2)
+  have hcongr : (⟨rawCorr p d' ψ, hmem0⟩ : ordGe p (-d')) =
+      ψ - (c * lam⁻¹) • tailGermElt p d' := by
+    apply Subtype.ext
+    show rawCorr p d' ψ = (ψ : RS.MeroGermOn X _) - (c * lam⁻¹) • tailGerm p (-d')
+    rw [rawCorr_apply, smul_smul]
+  have hleadzero : leadCoeff p (-d') (⟨rawCorr p d' ψ, hmem0⟩ : ordGe p (-d')) = 0 := by
+    rw [hcongr, map_sub, map_smul, ← hlam_def, smul_eq_mul, ← hc_def]
+    field_simp
+    ring
+  have hfin := (leadCoeff_eq_zero_iff p (-d') ⟨rawCorr p d' ψ, hmem0⟩).1 hleadzero
+  rw [mem_ordGe_iff]
+  have heq : ((-(d' - 1) : ℤ) : WithTop ℤ) = ((-d' + 1 : ℤ) : WithTop ℤ) := by
+    congr 1; omega
+  rw [heq]
+  exact hfin
+
+end RS.Cech

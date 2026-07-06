@@ -376,3 +376,134 @@
   `linear_combination` (for the plain `ℂ`-equation rearrangements) are the right tactics instead.
   Zero sorries.
 - [finiteness] Chain.lean trade decls FIXED (file now 401 lines, zero sorries; `scripts/check.sh Jacobian/Finiteness` passes) — `tradeDefect`/`tradeSpace`/`tradePi`/`tradeCompact` (Forster 14.6(b)'s subspace `L ⊆ Z¹(𝔘)×Z¹(𝔙)×C⁰(𝔚)` and its two Schwartz-cospan projections) delivered in the design §4.2 shapes VERBATIM (`tradeDefect := res_UW∘pr₁ − res_VW∘pr₂ − δ_W∘pr₃` as a CLM difference, `tradeSpace := (tradeDefect T).ker`, `tradePi = pr₂∘subtypeL`, `tradeCompact = resZ_UV∘pr₁∘subtypeL`), plus consumer API: `tradeDefect_apply` (rfl), `mem_tradeSpace_iff` (defect components vanish), `mem_tradeSpace_iff_eq` (Forster's `ζ = ξ + δη` per-`𝔚`-pair rearrangement, §5-step-2 shape), `tradePi_apply`/`tradeCompact_apply` (rfl), `CompleteSpace`/`NormedAddCommGroup`/`NormedSpace ℂ` instances on `↥(tradeSpace T)`, and `ShrinkChain.W_le_V`/`V_le_U`/`U_le_Ustar`/`W_le_U` (`Opens`-level `≤` forms). **ROOT CAUSE of the recorded blocker (gotcha for future units)**: NOT actually an `IsTopologicalAddGroup` timeout — the `Sub`-of-CLMs instance (`ContinuousLinearMap.sub`, needed to write the defect as `A − B − C`) re-synthesizes `AddCommGroup ↥(NZ1 …)` as a nested subgoal and must then defeq-check its `AddCommGroup.toAddCommMonoid` against the `Submodule.addCommMonoid` already baked into the goal's CLM type; the blind search finds the group instance along a non-canonical path (BCF-`instRing`-flavored) whose defeq check is REJECTED, so the candidate fails no matter the heartbeat budget (bumping to 4M could never help — it was a rejection, not a timeout; the previously reported `IsTopologicalAddGroup ↥(NZ1 T T.U)` failure was this same storm surfacing one class higher). FIX: register canonical shortcut instances right after `NZ1` — `noncomputable instance : AddCommGroup (NZ1 T P) := (NZ1 T P).addCommGroup`, ditto `IsTopologicalAddGroup := .topologicalAddGroup`, `NormedAddCommGroup := .normedAddCommGroup`, `NormedSpace ℂ := .normedSpace` — after which the design-shape `Sub` elaborates with an ordinary `synthInstance.maxHeartbeats 1000000` bump (`800000` on the ker/normed instances). Same shortcuts registered for `↥(tradeSpace T)`. RULE OF THUMB: for any `Submodule`-of-`Pi`-of-`Submodule`-typed carrier consumed by CLM combinators, pre-register the canonical `Submodule.*` structure instances by hand; bare `Pi`-of-`BddHoloOn` levels (`NC0`/`NC1`) need nothing. DOWNSTREAM VERIFIED (scratch, this session): `RS.schwartz_finite_cospan (u := tradePi T) (v := tradeCompact T)` and `RS.finiteDimensional_of_cospan` both type-check against the new declarations (800k bump), and element-level `Sub` on `↥(NZ1 T T.V)` works — TradeBounded/H1Finite §5/§6.5 consumption shapes viable as designed; `mem_tradeSpace_iff_eq` is the §5-step-2/6/8 workhorse. STILL DEFERRED (not instance-blocked; TradeBounded-gate work): design §4.4's `isCompactOperator_resZ_UV` (finite-`Pi` Montel assembly of CompactRestrict's single-chart lemma, §6.3 step 5) and `isCompactOperator_tradeCompact` (that + `IsCompactOperator.comp_clm` through `pr₁∘subtypeL`). Docstrings updated in `Chain.lean` (blocker note replaced by a resolution post-mortem) and `Finiteness.lean` (unit root).
+- [dbar] Jacobian/Dbar/DiskAcyclic.lean OK (235 lines, ~7-9s) — disk acyclicity of `𝒪_D` (design
+  D9, §4.8, §7.4), depending on sibling units `Jacobian.Cech.{Cochains,Refinement}` and
+  `Jacobian.Meromorphic`. DELIVERED: the `D = 0` case (`subsingleton_h1Cover_zero_of_isChartDisk`,
+  "no compactness needed") — every additive holomorphic cocycle on a finite cover of a chart disk
+  splits: holomorphic germ representatives (`MeroGermOn.holoRepr`) transported through the chart,
+  pointwise cocycle identity assembled from cech's `Z1.rel_res` + `MeroGermOn.evalAt_restrict`,
+  `PlanarCousin.exists_holo_splitting_ball` applied, pulled back to `X`, and reassembled into a
+  `C0` cochain witnessing `f ∈ B1` via `MeroGermOn.mk_holoRepr`/`mk_add`/`mk_neg`/`restrict_mk`.
+  Also two Compat helpers (`meromorphicOnX_of_contMDiffOn_omega`, `mk_mem_linSysOn_zero`).
+  DEVIATION (honestly reported, matches the design's own R3 risk call): the general-divisor twist
+  (`subsingleton_h1Cover_of_isChartDisk`, `[T2Space X][CompactSpace X]`, the finite-product
+  twisting germ) is NOT included — a substantial independent construction (twisted cochain maps
+  commuting with `d0`/`d1`/`restrictL`) that did not fit the remaining time budget; see the final
+  report. GOTCHAS for sibling builders: (1) cech's `FinCover`/`IsChartDisk`/`C0`/`Z1`/`B1`/
+  `H1Cover`/`d0`/`Z1.rel_res`/`subsingleton_h1Cover_iff` all live in `namespace RS.Cech` (NOT bare
+  `RS`) — need `open Cech` (inside `namespace RS`) or full `RS.Cech.` qualification; `LinSysOn`/
+  `MeroGermOn`/`Divisor`/`MeromorphicOnX` are bare `RS` (from `mero`). (2) dot-notation
+  (`h.foo`) immediately after an intermediate `.contMDiffAt`/similar call can fail to resolve
+  ("environment does not contain X.foo") even with an explicit `have h : ContMDiffAt ... := ...`
+  type ascription, because manifold defs like `ContMDiffAt`/`ContMDiffWithinAt` are reducible and
+  Lean's dot-notation dispatch sees through them to the unfolded `LiftPropWithinAt` head; fixed by
+  calling the FULL declaration name as a normal function (`ContMDiffAt.meromorphicAtX h2`) rather
+  than dot notation. (3) `MeroGermOn.ord_restrict`/`evalAt_restrict`'s `(hV : IsOpen V) (hU :
+  IsOpen U)` argument order is "smaller set first, bigger set second" (`restrict (h : V ⊆ U)`
+  narrows FROM `U` TO `V`) — easy to get backwards when `V` is a nested `⊓`-intersection and `U`
+  looks "more complex" than `V`. (4) `congrArg (fun g => MeroGermOn.evalAt g p) hEq` leaves an
+  unreduced `(fun g => g.evalAt p) lhs = (fun g => g.evalAt p) rhs` that plain `rw` cannot see
+  through (needs `dsimp only at` first, the usual lambda-vs-application beta trap). Zero sorries
+  in the delivered `D = 0` theorem.
+- [canon] Jacobian/CanonicalForms/MForm.lean OK (266 lines) — `MForm X` (D1, `chartAt`-indexed
+  coefficient family, `MeromorphicOn` coefficients, `deriv τ` transition rule with **no**
+  conjugate — mirrors dbar's `Form01` but type `(1,0)` not `(0,1)`); `MForm.ext`,
+  `Zero/Add/Neg/Sub/SMul ℂ/AddCommGroup/Module ℂ` (D2, pointwise, same proof shape as
+  `Form01`'s own instances); `MFormCoeffData`/`MForm.ofCoeffs` (D3, mirrors
+  `Form1CoeffData`/`Form1.ofCoeffs` but SIMPLER — no bundle/covector layer needed since `MForm`
+  isn't a bundled section — built via a from-scratch `rawCoeffAt`/`rawCoeffAt_eq` master-transport
+  lemma reusing `deriv_trans_comp`/`analyticAt_trans` (`Jacobian.Forms.Analyticity`) directly, no
+  mfderiv/tangentCoord defeq-crossing needed at all). Zero sorries. GOTCHA for siblings: `ω` is a
+  reserved `ContDiff`-scope token (the smoothness level) and cannot be reused as an ordinary
+  identifier once `open scoped ContDiff` is in effect — used `θ`/`η` for `MForm`/`Form1` variables
+  throughout the unit instead of the design doc's own `ω`/`ω₀` notation (a blind rename hits real
+  parse errors, not just style; Form01's docstring already flags this, worth a note in
+  `CONVENTIONS.md` for future builders). Also: `MeromorphicOn.const`'s `U` is an *implicit* named
+  arg (`{U : Set 𝕜}`), not positional — passing it positionally silently unifies wrong metavariables
+  (`NontriviallyNormedField (Set ℂ)` synthesis failures) instead of erroring cleanly; use
+  `MeromorphicOn.const (U := ...) c` or ascribe the type via a `have`.
+- [canon] Jacobian/CanonicalForms/OrdRes.lean OK (234 lines) — `MForm.ord`/`MForm.resAt` (D4, read
+  via fixed `chartAt`), chart-invariance corollaries `ord_eq_of_mem_source`/`resAt_eq_of_mem_source`
+  (via mathlib's `meromorphicOrderAt_comp_of_deriv_ne_zero` / built `resAt_comp_mul_deriv`);
+  the cross-point transport helper `coeffAt_eventuallyEq_of_mem_source` (new, `compat` read as a
+  neighborhood-level congruence — the engine behind both propagation lemmas below, reusable);
+  `eventually_ord_eq_top`/`eventually_ord_eq_zero` (mirrors `eventually_ordAtX_eq_top`/
+  `eventually_ordAtX_eq_zero`, `Predicates.lean:231/314`, with the extra chart-crossing layer
+  `MForm` needs that a bare global `ordAtX f` does not); `MForm.divisor`/`.degree` (D6, local
+  finiteness connectedness-free, mirrors `MeroGermOn.divisorOn`'s case split exactly). Zero
+  sorries. DEFERRED (documented in `Jacobian/CanonicalForms.lean`'s root docstring, NOT sorried):
+  `MForm.eq_zero_or_forall_ord_ne_top` (D5) — see the root docstring for the full writeup; briefly,
+  `meromorphicOrderAt f z₀ = ⊤` is a *punctured*-neighborhood fact (`f =ᶠ[𝓝[≠]z₀] 0`) and places no
+  constraint on `f z₀` itself, so "`ord = ⊤` everywhere ⟹ `θ = 0`" (`MForm.ext`-level, literal
+  pointwise equality) does not follow from order data alone without a canonical/junk-free
+  representative that `MForm` does not carry. This blocks `OneDimensional.lean` (D8) entirely (not
+  written) and cascades to D10/D11's second half/D12 — see root docstring.
+- [canon] Jacobian/CanonicalForms/Differential.lean OK (236 lines) — `deriv_comp_chart_congr` (+
+  helper `differentiableAt_comp_chart_of_mem_source`), the unit's central risk item (P1),
+  compiled essentially as spike-verified (`scratch_canon.lean` item 4) with a `by_cases` +
+  symmetric-argument assembly, ~45 lines, matching the design's own estimate exactly; `deriv_comp`'s
+  product comes out commuted from the design's stated order, needs a trailing `ring`. `ofForm1`/
+  `Form1.toMForm`/`ofForm1_ord_nonneg` (D7, holomorphic embedding, `compat` = `coeffIn_trans`
+  verbatim); `MForm.smul`/`SMul (ℳ X) (MForm X)`/`coeffAt_smul_mero` (via `holoRepr`, chart-crossing
+  meromorphy via `meromorphicAtX_iff_of_mem_source`); `MForm.d`/`coeffAt_d` (compat =
+  `deriv_comp_chart_congr` instantiated at `g := f.holoRepr`, essentially free once the general
+  lemma was in hand); `MForm.d_const`; `MForm.dlog`. Zero sorries. DEFERRED (documented in-file and
+  in the root docstring, NOT sorried): `MForm.smul`'s module laws (`smul_add`/`add_smul`),
+  `MForm.d_add`/`d_eq_zero_iff`, `MForm.resAt_dlog` — these need
+  `(f+g).holoRepr = f.holoRepr + g.holoRepr` pointwise, which genuinely FAILS at poles of the
+  summands (`evalAt_add`, `OrderEval.lean:168`, only holds when *both* summands have `0 ≤ ord`) —
+  the additive analogue of D5's junk-value issue. `d`/`dlog` themselves are unaffected (built from
+  `holoRepr` directly, no summation).
+- [canon] Jacobian/CanonicalForms/LinearSystems.lean OK (112 lines) — `MForm.OmegaSpace`/
+  `mem_omegaSpace_iff`/`MForm.i` (D11, first half only — defined ORDER-WISE, mirroring `LinSys`'s
+  own primary definition, rather than the design's divisor-level disjunctive carrier, specifically
+  so submodule closure reduces to two new small order-arithmetic lemmas `MForm.ord_add`/
+  `MForm.ord_smul` built here — junk-robust, no issue); `MLFormData`/`.Realizes`/`.totalRes`/
+  `.Realizes.resAt_eq` (D13, thin wrapper around residue-calculus's `PrincipalPartData`, using
+  `Finset.attach` to carry the dependent membership proof through the sum in `totalRes` — `‹_›`
+  anonymous-hypothesis search does NOT find `∀ x ∈ s, ...`'s own binder inside a `def`, use a named
+  `hx` argument instead). Zero sorries. DEFERRED (documented in-file and root docstring, NOT
+  sorried): `Ω_iso_linSys`/`i_eq_l_add_canonicalDivisorOf` (need `canonicalDivisorOf`, D10, itself
+  blocked on D8/D5) and `holomorphicMFormsEquiv`/`genus_eq_finrank_omegaSpace_zero` (D12 — its
+  *backward* direction hits the SAME junk-value issue as D5 independently, design's own §7 item 2
+  risk, sharper than stated there).
+- [canon] Jacobian/CanonicalForms.lean (unit root) OK (82 lines; `scripts/check.sh
+  Jacobian/CanonicalForms` passes, zero sorries across all 4 written files, 930 lines total).
+  NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add
+  `import Jacobian.CanonicalForms`. Centerpieces delivered: `MForm X` (D1, chart-family structure)
+  + `ord`/`resAt`/`divisor` (D4/D6, chart-invariance + connectedness-free local finiteness) +
+  `MForm.d`/`dlog` (D7, the pole-case-split `compat` — the unit's flagged top risk — fully closed)
+  + the `Form1 ↔ MForm` holomorphic embedding (D7/D12 forward half) + `OmegaSpace`/`i`/`MLFormData`
+  (D11/D13 gate-independent halves). NOT delivered (documented above, filed as genuine findings
+  rather than time-outs): the global zero-dichotomy `eq_zero_or_forall_ord_ne_top` (D5) — a
+  substantive junk-value subtlety in representing meromorphic 1-forms via raw chart coefficients
+  rather than germ classes, discovered during this build, not merely a missing computation — and
+  everything downstream of it (`OneDimensional.lean`/D8, `canonicalDivisorOf`/D10, `Ω_iso_linSys`/
+  D11-second-half, `holomorphicMFormsEquiv`/D12); `Existence.lean`/D9 (gated on
+  `Jacobian/Finiteness/`'s `Chi.lean`, not on disk — per task instructions left unwritten, not
+  sorried). Filed `docs/requests/meromorphic-and-divisors.md` item 6 (`Divisor.single`/
+  `degree_single`, needed by the unwritten `Existence.lean`). Notes for consumers: **laurent-tails**
+  gets `MForm`/`OmegaSpace`/`i`/`MLFormData` (its stated D11/D13 needs) but NOT `canonicalDivisorOf`
+  — will need to either fix its own reference `ω₀`/`K` directly (any `θ₀ ≠ 0 : MForm X` obtained
+  by other means) or wait for D5/D8/D10 to land; **residue-theorem** gets `MForm`/`resAt`/
+  `resAt_eq_of_mem_source`/`divisor` in full (no gap); **serre-duality-cech**/**riemann-roch**
+  will need D10/D11-second-half/D12 landing first — flagged as the key remaining gap for the
+  Riemann–Roch chain, distinct from (and in addition to) the finiteness-and-chi gate.
+- [dbar] Jacobian/Dbar.lean (unit root) OK (28 lines; `scripts/check.sh Jacobian/Dbar` passes,
+  zero sorries across all 8 files — unit COMPLETE except the honestly-deferred general-divisor
+  twist in DiskAcyclic.lean, see that file's entry above). Total 2190 lines across
+  Wirtinger(243)/CauchyKernel(451)/SolveDisk(429)/Form01(121)/Operator(437)/PlanarPoU(135)/
+  PlanarCousin(139)/DiskAcyclic(235)/root(28). NOT registered in `Jacobian.lean` per task hard
+  rule, orchestrator to add `import Jacobian.Dbar`. Notes for consumers: **dolbeault-comparison**
+  is the primary consumer (per the design doc) — it should reuse `Form01`/`dbar`/`IsDbarOn`/
+  `exists_dbar_solution_chart_ball` directly for its `H^{0,1}` Dolbeault-vs-Čech comparison, and
+  will likely want `Form01CoeffData`/`Form01.ofCoeffs` (assembling a global `(0,1)`-form from
+  local chart data) which this unit did NOT deliver (deferred, see Form01.lean's entry) — a
+  straightforward `conj`-decorated transcription of Forms' `Form1CoeffData`/`coeffInFun_toSection`
+  pattern (`Jacobian/Forms/OfCoeffs.lean`) using `analyticAt_trans`/`deriv_trans_comp`
+  (`Jacobian/Forms/Analyticity.lean`), per design §7.3. **finiteness-and-chi** may want
+  `exists_dbar_solution_ball`/`exists_holo_splitting_ball` for any planar Cousin-style
+  Banach-space work, though its current blocker (dolbeault's `Leray.lean`) is unrelated to this
+  unit. Any consumer needing the FULL (non-chart-disk) `H¹(X, 𝒪_D) = 0` Čech-cohomological
+  vanishing for GENERAL divisors `D` on general covers still needs the deferred
+  `subsingleton_h1Cover_of_isChartDisk` (general-divisor twist) — not delivered.
