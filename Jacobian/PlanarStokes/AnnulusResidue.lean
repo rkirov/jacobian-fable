@@ -10,6 +10,8 @@ import Mathlib.Topology.Algebra.Module.Determinant
 import Mathlib.Analysis.SpecialFunctions.Complex.Log
 import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import Mathlib.MeasureTheory.Measure.Haar.Unique
+import Mathlib.MeasureTheory.Group.MeasurableEquiv
 
 /-!
 # The annulus Stokes identity and the smeared residue theorem
@@ -664,10 +666,8 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
       have hgbar0 : wirtingerDbar g w = 0 := by
         rw [wirtingerDbar_congr_nhds g (fun _ => (0 : ℂ)) w hg0]
         simp [wirtingerDbar]
-      have hgval0 : g w = 0 := image_eq_zero_of_notMem_tsupport hwt
       rw [hgbar0, zero_mul, hv_def]
-      show g w * f w = 0
-      rw [hgval0, zero_mul]
+      exact wirtingerDbar_mul_eq_zero_of_notMem_tsupport hwt
   have harea_gf : (∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar g w * f w)
       = -π * g p * resAt f p := by
     rw [← harea]
@@ -691,4 +691,52 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
       rw [hgbar0, zero_mul]
   rw [hglobal_eq_annulus]
   exact harea_gf
+
+/-! ## Model-case regression check (`f = (·-p)⁻¹`, §8.4) -/
+
+/-- Model-case corollary (the verification the task asked for, `f = 1/(z-p)`, kept as a named
+sanity lemma / regression test on Atom 2's `-π` normalization constant) — proved a *second*,
+independent way, translating `RS.cauchyPompeiu` (dbar-solvability) through the measure-preserving
+involution `w ↦ p - w`, NOT as a corollary of Atom 2 itself. `hconst` is unused in this proof (kept
+only so the signature matches Atom 2's hypothesis list exactly): a simple pole is exactly the
+borderline order where the general-`g` and locally-constant-`g` formulas coincide (§8.4), so no
+local-constancy is actually needed in this special case. -/
+theorem integral_wirtingerDbar_mul_inv_sub_eq {g : ℂ → ℂ} {U : Set ℂ} {p : ℂ}
+    (hU : IsOpen U) (hpU : p ∈ U)
+    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U)
+    (hconst : g =ᶠ[nhds p] Function.const ℂ (g p)) :
+    ∫ w : ℂ, wirtingerDbar g w * (w - p)⁻¹ = -π * g p := by
+  have hg' : ContDiff ℝ 1 g := ContDiffOn.contDiff_of_hasCompactSupport hU hg hcs hsub
+  have hcp : ∫ w : ℂ, cauchyKernel w * wirtingerDbar g (p - w) = g p :=
+    cauchyPompeiu g hg' hcs p
+  have hme : MeasurableEmbedding (fun w : ℂ => p - w) := measurableEmbedding_subLeft p
+  have hmp : MeasureTheory.MeasurePreserving (fun w : ℂ => p - w)
+      (volume : Measure ℂ) volume := MeasureTheory.Measure.measurePreserving_sub_left volume p
+  have hpp : ∀ x : ℂ, p - (p - x) = x := fun x => by ring
+  -- Substitute `w ↦ p - w` (a measure-preserving involution of `ℂ`) in `hcp`.
+  have hcomp : ∫ x : ℂ, cauchyKernel (p - x) * wirtingerDbar g (p - (p - x))
+      = ∫ w : ℂ, cauchyKernel w * wirtingerDbar g (p - w) :=
+    hmp.integral_comp hme (fun w => cauchyKernel w * wirtingerDbar g (p - w))
+  rw [hcp] at hcomp
+  simp only [hpp] at hcomp
+  -- `hcomp : ∫ x, cauchyKernel (p - x) * wirtingerDbar g x = g p`
+  have hπne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  have hker : ∀ x : ℂ, cauchyKernel (p - x) * wirtingerDbar g x
+      = (-(Real.pi : ℂ)⁻¹) * (wirtingerDbar g x * (x - p)⁻¹) := by
+    intro x
+    have hxp : (p - x : ℂ) = -(x - p) := by ring
+    simp only [cauchyKernel, hxp]
+    rw [show (Real.pi : ℂ) * -(x - p) = -(Real.pi * (x - p)) by ring, inv_neg, mul_inv]
+    ring
+  simp_rw [hker] at hcomp
+  rw [MeasureTheory.integral_const_mul] at hcomp
+  -- `hcomp : -(π⁻¹) * ∫ x, wirtingerDbar g x * (x - p)⁻¹ = g p`
+  have hfin : (Real.pi : ℂ) * (-(Real.pi : ℂ)⁻¹ * ∫ x : ℂ, wirtingerDbar g x * (x - p)⁻¹)
+      = Real.pi * g p := by rw [hcomp]
+  rw [show (Real.pi : ℂ) * (-(Real.pi : ℂ)⁻¹ * ∫ x : ℂ, wirtingerDbar g x * (x - p)⁻¹)
+      = -(Real.pi * (Real.pi : ℂ)⁻¹) * ∫ x : ℂ, wirtingerDbar g x * (x - p)⁻¹ by ring,
+    mul_inv_cancel₀ hπne] at hfin
+  linear_combination -hfin
+
+end RS
 

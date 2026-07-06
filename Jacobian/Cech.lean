@@ -37,15 +37,18 @@ API summary (see `docs/design/cech-cohomology.md`):
 * **Skyscraper** (`Skyscraper.lean`): the Mittag-Leffler atom `mlClass` (`C1.MemLD`/`C1.retype`),
   its linearity and `D`-functoriality, and the vanishing criterion `mlClass_eq_zero_iff`
   (both directions — the `⇒` half uses `toH1_injective`).
-* **SixTerm** (`SixTerm.lean`): part (g) of the six-term skyscraper fragment —
-  `H1Incl_surjective` (no `H²`, no long exact sequence, no snake lemma), via `memLD_of_isAdapted`
-  + the general retype lemmas `C1.retype_mem_Z1'`/`h1CoverIncl_mk_retype`.
+* **SixTerm** (`SixTerm.lean`): the full six-term skyscraper fragment
+  `0 → L(D) → L(D') → Window D D' → H¹(D) → H¹(D') → 0` (design §6.9(c)-(g)) —
+  `exists_tail_approx` ("Lemma B", finite Laurent tails by iterated leading-coefficient
+  subtraction), the `Realizes` predicate + `windowDefect` (D7), `exists_realization`
+  (adapted-cover realization), `mlClass_eq_of_realizes` ("Lemma A", realization-independence),
+  the connecting map **`windowConnect : Window D D' →ₗ[ℂ] H1 D`** with its working form
+  `windowConnect_spec`, the exactness statements `exact_windowMap_windowConnect` /
+  `exact_windowConnect_H1Incl`, and `H1Incl_surjective` (part (g) — no `H²`, no long exact
+  sequence, no snake lemma), via `memLD_of_isAdapted` + the general retype lemmas
+  `C1.retype_mem_Z1'`/`h1CoverIncl_mk_retype`.
 
-**Known gap** (documented in-file, not silently dropped): the connecting map `windowConnect`,
-`exists_realization`, Lemma A, and the two exactness statements `exact_windowMap_windowConnect`/
-`exact_windowConnect_H1Incl` (design §6.9(c)-(f)) are **not proved in this unit** — see
-`Skyscraper.lean`'s file-end note. They need adapted-cover *realization* machinery beyond this
-unit's time budget; `H1Incl_surjective` (part (g), the fragment's last arrow) **is** proved, and
-does not depend on them. Every other export above (including Forster 12.4 injectivity and the
-window dimension counts, both previously deferred) is proved with zero sorries.
+The unit is **complete**: every export above (including Forster 12.4 injectivity, the window
+dimension counts, and the full six-term fragment, all previously deferred) is proved with zero
+sorries.
 -/

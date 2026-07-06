@@ -474,8 +474,8 @@ theorem Realizes.smul {𝒰 : FinCover (⊤ : Opens X)} (a : ℂ) {g : C0 D' �
     ⟨hqi, mem_chart_source ℂ (q : X)⟩
   rcases eq_or_ne a 0 with rfl | ha
   · have hw0 : WindowAt.mk (q : X) (D (q : X)) (D' (q : X)) ψ = 0 := by
-      rw [hψ, zero_smul]
-      rfl
+      rw [hψ]
+      exact zero_smul ℂ (w q)
     rw [WindowAt.mk_eq_zero_iff] at hw0
     have hg0 : ((0 : ℂ) • g) i = 0 := by rw [Pi.smul_apply, zero_smul]
     have hdz : windowDefect (((0 : ℂ) • g) i : RS.MeroGermOn X (𝒰.U i : Set X))
@@ -664,7 +664,8 @@ theorem exists_realization (h : D ≤ D') (w : Window D D') :
       (chartAt ℂ (hk.choose : X)).open_source hx]
     rcases eq_or_ne x (hk.choose : X) with rfl | hne
     · exact mem_ordGe_iff.1 (ψ hk.choose).2
-    · have h0 : 0 ≤ (ψ hk.choose : RS.MeroGermOn X _).ord x :=
+    · have h0 : 0 ≤
+          (ψ hk.choose : RS.MeroGermOn X ((chartAt ℂ (hk.choose : X)).source)).ord x :=
         hNord hk.choose x ((hmem_zone hk.choose k hk.choose_spec).1 hx) hne
       have hxS' : x ∉ S' := (hmem_zone hk.choose k hk.choose_spec).2 x hx hne
       rw [hD'0 x hxS']
@@ -909,14 +910,16 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
         (𝒱.U i).2.inter (chartAt ℂ (q : X)).open_source
       have hqmem : (q : X) ∈ (𝒱.U i : Set X) ∩ (chartAt ℂ (q : X)).source :=
         ⟨hi, mem_chart_source ℂ (q : X)⟩
+      have hIL : (𝒱.U i : Set X) ∩ (chartAt ℂ (q : X)).source ⊆ (𝒱.U i : Set X) :=
+        Set.inter_subset_left
       have hγord : ((-(D' (q : X)) : ℤ) : WithTop ℤ) ≤
-          (RS.MeroGermOn.restrict Set.inter_subset_left
+          (RS.MeroGermOn.restrict hIL
             (g' i : RS.MeroGermOn X (𝒱.U i : Set X))).ord (q : X) := by
-        rw [RS.MeroGermOn.ord_restrict Set.inter_subset_left hopen (𝒱.U i).2 hqmem]
+        rw [RS.MeroGermOn.ord_restrict hIL hopen (𝒱.U i).2 hqmem]
         exact (RS.mem_linSysOn_iff_of_isOpen (𝒱.U i).2).1 (g' i).2 (q : X) hi
       obtain ⟨ψ, hψb⟩ := exists_tail_approx (q : X) hopen Set.inter_subset_right hqmem
         (Function.locallyFinsuppWithin.le_def.1 h (q : X))
-        (RS.MeroGermOn.restrict Set.inter_subset_left
+        (RS.MeroGermOn.restrict hIL
           (g' i : RS.MeroGermOn X (𝒱.U i : Set X))) hγord
       exact ⟨i, hi, ψ, hψb⟩
     choose i hi ψ hψb using hbase
