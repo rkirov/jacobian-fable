@@ -94,7 +94,7 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
       rw [RS.MeroGermOn.restrict_restrict, hΦ]
     have hord := RS.MeroGermOn.ord_restrict (𝒰.le_base i) (𝒰.U i).2 Ω.2 hi (e Φ)
     rw [hrestr] at hord
-    rw [hord]
+    rw [← hord]
     exact (RS.mem_linSysOn_iff_of_isOpen (𝒰.U i).2).1 (f.1 i).2 x hi
   refine ⟨⟨e Φ, hΦmem⟩, ?_⟩
   apply Subtype.ext
@@ -129,7 +129,11 @@ theorem h0EquivLinSysOn_symm_apply_ord (φ : RS.LinSysOn D (Ω : Set X)) (i : Fi
 theorem linSysOn_top_eq_linSys : RS.LinSysOn D ((⊤ : Opens X) : Set X) = RS.LinSys D := by
   apply Submodule.ext
   intro φ
-  rw [RS.mem_linSysOn_iff_of_isOpen isOpen_univ, RS.mem_linSys_iff]
+  constructor
+  · intro h x
+    exact (RS.mem_linSysOn_iff_of_isOpen isOpen_univ).1 h x (Set.mem_univ x)
+  · intro h
+    exact (RS.mem_linSysOn_iff_of_isOpen isOpen_univ).2 (fun x _ => h x)
 
 /-- Global form: `H⁰(𝒰,D) ≃ L(D)` for covers of `X`. -/
 noncomputable def h0Equiv (𝒰 : FinCover (⊤ : Opens X)) :

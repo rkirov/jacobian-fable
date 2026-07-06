@@ -117,7 +117,7 @@
   `MDifferentiable.exists_eq_const_of_compactSpace` + `mdifferential_const`), `Subsingleton
   (Form1 X)` instance, `genus_eq_zero_of_simplyConnectedSpace`. Built FIRST per task order (does
   not need the perturbation lemma). Zero sorries.
-- [sphtop] Jacobian/SphereTopology/SimplyConnectedP1.lean OK (100 lines, ~5s) — ported the spike
+- [sphtop] Jacobian/SphereTopology/SimplyConnectedP1.lean OK (101 lines, ~5s) — ported the spike
   (`scratch_sphtop.lean`) verbatim for `isSimplyConnected_compl_infty`/`_compl_coeZero` +
   `PathConnectedSpace (OnePoint ℂ)`, then assembled `simplyConnectedSpace_onePoint` via
   `simply_connected_iff_loops_nullhomotopic` + `RS.Loop.exists_homotopic_avoiding` with the
@@ -128,10 +128,13 @@
   time this file was written, the fixer had ALREADY resolved `Perturb.lean`'s blocker sorry (see
   "Perturb.lean FIXED" above), so no `Loop.exists_homotopic_avoiding`-shaped risk materialized;
   docstring updated post-hoc to drop the now-stale caveat.
-- [sphtop] Jacobian/SphereTopology/Headline.lean OK (33 lines, ~4-6s) — `genus_eq_zero_of_homeo_sphere`,
+- [sphtop] Jacobian/SphereTopology/Headline.lean OK (34 lines, ~4-6s) — `genus_eq_zero_of_homeo_sphere`,
   the exact 3-line assembly per design §4 (`simplyConnectedSpace_of_homeoOnePoint` composed with
   `RS.P1.homeoSphere.symm`, then `genus_eq_zero_of_simplyConnectedSpace`). Zero sorries.
-- [sphtop] Jacobian/SphereTopology.lean (unit root) OK (44 lines; `scripts/check.sh
+- [sphtop] Jacobian/SphereTopology.lean (unit root) OK (45 lines; `scripts/check.sh
   Jacobian/SphereTopology` passes, zero sorries — unit COMPLETE, all 4 design files present,
-  362 lines total). NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add
+  360 lines total). NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add
   `import Jacobian.SphereTopology`.
+- [cech] Jacobian/Cech/Covers.lean OK (355 lines, ~5s) — FinCover Ω (D2), IsRefIdx/Preorder/chosenRefIdx (D3), FinCover.meet/IsDirectedOrder (pairwise meets via finProdFinEquiv), IsChartDisk/IsGood (D4), exists_chartDisk_basis/exists_chartDisk_closure_basis (§6.3), exists_good_refinement/exists_good_refinement_closure, FinCover.IsAdapted + exists_adapted_refinement (§6.2, deviation: added explicit `hS : ∀ p ∈ S, p ∈ Ω` hypothesis — see file docstring, needed since `FinCover Ω` members can't reach points outside `Ω`), FinCover.IsAdapted.not_mem_inf. Zero sorries.
+- [cech] Jacobian/Cech/Cochains.lean OK (244 lines, ~6s) — LinSysOn.restrictL + restrictL_restrictL/restrictL_id/ord_restrictL, MeroGermOn.congrSet [Compat], C0/C1/C2 as `abbrev` (not `def` — avoids instance/ext diamond friction), d0/d1/d0_apply/d1_apply/d1_comp_d0, Z1/B1/B1_le_Z1/mem_Z1_iff, H1Cover (`noncomputable abbrev`, same reason) + mk/mk_surjective/mk_eq_zero_iff/subsingleton_h1Cover_iff, Z1.ord_diag. Zero sorries.
+- [cech] Jacobian/Cech/H0.lean OK (143 lines, ~5s) — toC0/toC0'/toC0'_injective(via congrSet+glue_unique)/toC0'_surjective(via exists_glue)/toC0'_bijective, h0EquivLinSysOn (via LinearEquiv.ofBijective), h0EquivLinSysOn_symm_apply(_ord), linSysOn_top_eq_linSys (Opens.coe_top is rfl), h0Equiv (global H⁰≃L(D)). Zero sorries.
