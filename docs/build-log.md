@@ -1017,3 +1017,52 @@
   `RS.Cech.tailGerm`'s literal-monomial normalization) and citing `exists_tail_pair_ne_zero`'s shape;
   nothing here blocks or needs revision for that plan. `finrank_omegaSpace_le` itself remains a
   ready-made, zero-sorry `≤`-half interface (instantiable at `H := RS.Cech.H1 D`) if ever wanted.
+- [dolb] Jacobian/DolbeaultComparison/GlueForm01.lean OK (250 lines) — design §4.2/§6.1's gluing
+  atom, built in one pass (all pieces from the design's proof plan turned out correct on first
+  logical draft; only mechanical Lean-API fixes were needed, see gotchas below). Exports:
+  `Form01.ext_center` (Compat, via `Form01.compat` applied at the pair `(p, x)` + `Form01.ext`),
+  `DbarGlueData` (fields exactly as design: `n, V, covers, center, subChart, u, smoothOn,
+  holoSub`), `DbarGlueData.chart/chart_mem_maximalAtlas/chart_source` (the restricted-chart
+  bookkeeping, `restr_mem_maximalAtlas`/`restr_source'` per design §1.1), `DbarGlueData.
+  wirtingerDbar_u_transport` (the CENTRAL reusable lemma: `wirtingerDbar` of `u i`'s
+  representative in ANY maximal-atlas chart transports to its value in the OWN data chart `i` by
+  the `conj`-derivative of the transition — used for BOTH `Form01CoeffData.compat` — with
+  `e := chart j` — AND `isDbarOn_form` — with `e := chartAt x` — the same computation the design
+  predicted would be shared), `DbarGlueData.coeffData` (the `Form01CoeffData`; `compat` field via
+  the `u j = (u j − u i) + u i` split + `holoSub`'s Cauchy–Riemann vanishing +
+  `wirtingerDbar_u_transport`, exactly per design §6.1), `DbarGlueData.form := Form01.ofCoeffs
+  d.coeffData`, `DbarGlueData.isDbarOn_form`, `DbarGlueData.form_unique`. A local `private`
+  Compat re-derivation of `Jacobian.Dbar.Operator`'s (non-exported) `private` helper
+  `contDiffOn_comp_chartAt_symm_of_contMDiffOn` was needed (kept local rather than editing
+  Operator.lean, per CONVENTIONS' "add locally, request upstream" policy — no upstream request
+  filed since it is a trivial 12-line repeat, not a missing capability). Zero sorries. Gotchas
+  (new, on top of Leray's and Form01.ofCoeffs's): (1) mathlib's Wirtinger-adjacent lemmas
+  (`wirtingerDbar_add/congr_nhds/eq_zero_of_differentiableAt`, `contDiffOn_wirtingerDbar`) live in
+  a file with `variable (f g : ℂ → ℂ) (z w c : ℂ)` declared **explicit** — every one of these
+  lemmas therefore has `f`/`g`/`z` as its OWN leading EXPLICIT parameters (auto-included, in
+  declaration order), NOT curly-brace-inferred from the conclusion; call them as
+  `wirtingerDbar_add _ _ _ hf hg` / `wirtingerDbar_congr_nhds _ _ z h` /
+  `contDiffOn_wirtingerDbar _ hs hf` (function argument(s) FIRST via `_`, exactly mirroring the
+  call sites already established in `Jacobian/Dbar/Operator.lean` — grep that file for the
+  pattern before guessing a signature). (2) Defining a lemma inside `namespace Foo` with the SAME
+  bare name as an already-`open`ed outside declaration (here: my own `DbarGlueData.
+  chart_mem_maximalAtlas`/`chart_source` vs. `open`ed `IsManifold.chart_mem_maximalAtlas` /
+  no-clash `chart_source`) shadows the outside one for UNQUALIFIED references inside that
+  namespace — a call meant for the global lemma silently resolves to the local one instead,
+  producing a confusing arity/type mismatch (arg expected `DbarGlueData` instead of `X`); always
+  fully-qualify the outside name (`IsManifold.chart_mem_maximalAtlas x`) at every call site once
+  such a clash exists, rather than trying to rename either side. (3) `(e.restr s).symm`,
+  `⇑(e.restr s)`, and `(e.restr s).target = e '' (e.source ∩ s)` (for open `s`) are all provable
+  `rfl`/one-line facts (spiked in a throwaway scratch file first) — cheaper than hunting for a
+  named simp lemma. (4) `ContMDiffOn.neg` produces the POINTWISE-lambda form `fun y => -(f y)`,
+  not the bundled `-f`; `rw [neg_sub]` will not fire on it directly — `funext y; simp only
+  [Pi.sub_apply]; ring` (or an explicit `have heq : (fun y => -(f y)) = g := by funext y; ring`
+  then `rwa [heq] at h`) bridges the gap. (5) `x ∈ (V : Opens X)` and `x ∈ (V : Set X)` are
+  DEFEQ but not always syntactically interchangeable for `rw`; a `show x ∈ (V : Set X)` first
+  makes the coercion visible to `rw`.
+  **Notes for Splitting.lean/Comparison.lean** (next in the file plan): `DbarGlueData.form_unique`
+  is the single well-definedness workhorse exactly as design promised — every future
+  independence/compatibility lemma about `dolbForm`/splittings should reduce to it via
+  `form_unique` applied to a candidate `(u := s.g)` against a shifted target, never by comparing
+  PoU data pairwise. `Form01.ext_center` and `DbarGlueData.{form,isDbarOn_form,form_unique}` are
+  the only 4 names this file exports for downstream comparison use (per design §4.2, verbatim).
