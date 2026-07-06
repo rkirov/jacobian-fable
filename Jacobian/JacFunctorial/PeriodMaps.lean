@@ -80,7 +80,7 @@ theorem periodSubgroup_le_comap_pushforwardT (f : X → Y) (hf : ContMDiff 𝓘(
   exact AddSubgroup.le_topologicalClosure (periodSubgroup Y)
     (periodVector_mem_periodSubgroup (γ.map hf.continuous))
 
-set_option maxHeartbeats 4000000 in
+set_option maxHeartbeats 0 in
 /-- **`Jacobian.pushforward` (§8.4)**: the pushforward map between Jacobians associated to a
 holomorphic map of the underlying curves. -/
 noncomputable def Jacobian.pushforward (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
