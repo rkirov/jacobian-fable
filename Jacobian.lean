@@ -6,3 +6,4 @@ import Jacobian.LocalMultiplicity
 import Jacobian.Forms
 import Jacobian.MappingDegree
 import Jacobian.ProjectiveLine
+import Jacobian.ResidueCalculus
