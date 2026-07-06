@@ -89,3 +89,19 @@
   clean but FAILS the sorry-grep solely due to Perturb.lean's one documented blocker sorry —
   all 8 unit files individually build with zero errors; 7/8 are fully sorry-free. NOT registered
   in Jacobian.lean per task hard rule, orchestrator to add `import Jacobian.Path`.)
+- [paths] Perturb.lean FIXED (the single blocker `sorry` in exists_homotopic_avoiding /
+  Loop.exists_homotopic_avoiding is eliminated; scripts/check.sh Jacobian/Path now passes with
+  zero sorries. Route: (i) `homotopic_truncateOfLE_trans` — the R4 truncation-splitting lemma
+  `γ|[c,e] ≃ γ|[c,d] ⬝ γ|[d,e]` proved via `Path.Homotopy.reparam` with the explicit piecewise
+  clock `ρ u = if u ≤ 1/2 then min (2u) d else max (2u-1) d` and min/max ℝ-arithmetic;
+  (ii) `exists_homotopic_avoiding_aux` — downward induction on the number of remaining
+  ChartChain pieces, carrying a "lead-in" path inside chart-ball k from a point already off S to
+  the breakpoint γ.extend (t k): each step splits the tail with (i), picks a fresh breakpoint
+  off S in the chart image of the overlap of adjacent chart-ball domains (countable-complement
+  density, as in nonempty_open_diff_finite), connects with an arc pulled back through the chart,
+  perturbs the one-ball head via exists_homotopic_avoiding_of_ball, recurses on the tail with
+  lead-in arc.symm, and glues with Path.Homotopic.trans_assoc/trans_symm/refl_trans (new import
+  Mathlib.AlgebraicTopology.FundamentalGroupoid.Basic) + hcomp; base case feeds the whole
+  remaining truncation to the ball lemma since t k = 1 there. Statements unchanged. Also updated
+  the stale "partial/sorry" status paragraph in Jacobian/Path.lean's module doc, which itself
+  tripped check.sh's sorry-grep.)

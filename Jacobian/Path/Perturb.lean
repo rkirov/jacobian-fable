@@ -1,4 +1,5 @@
 import Jacobian.Path.Chain
+import Mathlib.AlgebraicTopology.FundamentalGroupoid.Basic
 
 /-!
 # Perturbing a path off a finite set (CC6)
@@ -11,6 +12,9 @@ Main declarations:
   still nonempty.
 * `RS.exists_homotopic_avoiding_of_ball` — the single-chart-ball base case (planar avoidance
   transported through the chart).
+* `RS.exists_homotopic_avoiding` / `RS.Loop.exists_homotopic_avoiding` — the general theorem:
+  any path (loop) with endpoints (basepoint) off a finite set `S` is homotopic rel endpoints to
+  one avoiding `S` entirely.
 -/
 
 open scoped ContDiff Manifold Topology unitInterval
@@ -125,54 +129,277 @@ theorem exists_homotopic_avoiding_of_ball {a b : X} (γ : Path a b)
   exact hSdisjoint (q t) (hqmem t) hzS
 
 /-!
-### The general (multi-chart) theorem — BLOCKED (design risk R4)
+### Splitting a truncation at an intermediate time (design §7 step 0, risk R4)
 
-`exists_homotopic_avoiding`/`Loop.exists_homotopic_avoiding` need, per the design's §7 proof plan,
-a strong induction on `ChartChain` length that at each step (a) inserts a *new* breakpoint value
-`b₁ := e.symm b₁'` chosen off `S` inside the shared chart-ball of two adjacent pieces
-(`nonempty_open_diff_finite` above supplies exactly this), then (b) re-decomposes `γ` at that new
-breakpoint via a homotopy `((γ.truncate 0 c).cast _ _).trans ((γ.truncate c 1).cast _ _)
-≃ γ` (rel endpoints), then (c) combines the (inductively) avoiding head/tail via
-`Path.Homotopy.hcomp`.
+`γ|[c,e] ≃ γ|[c,d] ⬝ γ|[d,e]` rel endpoints: the concatenation is the reparametrisation of
+`γ.truncateOfLE : Path (γ.extend c) (γ.extend e)` by the piecewise clock
+`ρ u = if u ≤ 1/2 then min (2u) d else max (2u - 1) d`, so `Path.Homotopy.reparam` applies.
+-/
 
-Step (b) — `homotopic_truncate_trans` — is the concentrated risk (R4). Worked out here precisely
-(more actionable than the design sketch) for whoever resumes this:
+private theorem homotopic_truncateOfLE_trans {Y : Type*} [TopologicalSpace Y] {x y : Y}
+    (γ : Path x y) {c d e : ℝ} (h0d : 0 ≤ d) (hd1 : d ≤ 1) (hcd : c ≤ d) (hde : d ≤ e) :
+    (γ.truncateOfLE (hcd.trans hde)).Homotopic
+      ((γ.truncateOfLE hcd).trans (γ.truncateOfLE hde)) := by
+  have hmem : ∀ u : ↥unitInterval,
+      (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d)
+        ∈ (unitInterval : Set ℝ) := by
+    intro u
+    split_ifs with h
+    · exact ⟨le_min (mul_nonneg zero_le_two u.2.1) h0d, (min_le_right _ _).trans hd1⟩
+    · exact ⟨h0d.trans (le_max_right _ _), max_le (by linarith [u.2.2]) hd1⟩
+  set ρ : ↥unitInterval → ↥unitInterval := fun u =>
+    ⟨if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d, hmem u⟩
+    with hρ_def
+  have hρcont : Continuous ρ := by
+    rw [hρ_def]
+    refine Continuous.subtype_mk ?_ _
+    refine Continuous.if_le ?_ ?_ continuous_subtype_val continuous_const ?_
+    · exact (continuous_const.mul continuous_subtype_val).min continuous_const
+    · exact ((continuous_const.mul continuous_subtype_val).sub continuous_const).max
+        continuous_const
+    · intro u hu
+      rw [hu]
+      norm_num [min_eq_right hd1, max_eq_right h0d]
+  have hρ0 : ρ 0 = 0 := by
+    apply Subtype.ext
+    show (if ((0 : ℝ)) ≤ 1 / 2 then min (2 * (0 : ℝ)) d else max (2 * (0 : ℝ) - 1) d) = (0 : ℝ)
+    rw [if_pos (by norm_num : (0 : ℝ) ≤ 1 / 2)]
+    norm_num [min_eq_left h0d]
+  have hρ1 : ρ 1 = 1 := by
+    apply Subtype.ext
+    show (if ((1 : ℝ)) ≤ 1 / 2 then min (2 * (1 : ℝ)) d else max (2 * (1 : ℝ) - 1) d) = (1 : ℝ)
+    rw [if_neg (by norm_num : ¬((1 : ℝ) ≤ 1 / 2))]
+    norm_num [max_eq_left hd1]
+  have hkey : (γ.truncateOfLE hcd).trans (γ.truncateOfLE hde) =
+      (γ.truncateOfLE (hcd.trans hde)).reparam ρ hρcont hρ0 hρ1 := by
+    ext u
+    rw [Path.trans_apply]
+    simp only [Path.coe_reparam, Function.comp_apply]
+    split_ifs with h
+    · show γ.extend (min (max (2 * (u : ℝ)) c) d) =
+        γ.extend (min (max ((ρ u : ↥unitInterval) : ℝ) c) e)
+      have hρu : ((ρ u : ↥unitInterval) : ℝ) = min (2 * (u : ℝ)) d := by
+        show (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
+        rw [if_pos h]
+      rw [hρu]
+      rcases le_total (2 * (u : ℝ)) d with hv | hv
+      · rw [min_eq_left hv, min_eq_left (max_le hv hcd),
+          min_eq_left ((max_le hv hcd).trans hde)]
+      · rw [min_eq_right hv, max_eq_left hcd, min_eq_right (hv.trans (le_max_left _ _)),
+          min_eq_left hde]
+    · show γ.extend (min (max (2 * (u : ℝ) - 1) d) e) =
+        γ.extend (min (max ((ρ u : ↥unitInterval) : ℝ) c) e)
+      have hρu : ((ρ u : ↥unitInterval) : ℝ) = max (2 * (u : ℝ) - 1) d := by
+        show (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
+        rw [if_neg h]
+      rw [hρu, max_eq_left (hcd.trans (le_max_right (2 * (u : ℝ) - 1) d))]
+  rw [hkey]
+  exact ⟨Path.Homotopy.reparam (γ.truncateOfLE (hcd.trans hde)) ρ hρcont hρ0 hρ1⟩
 
-* Let `h0c : 0 ≤ c`, `h1c : c ≤ 1`. Define
-  `head := (γ.truncate 0 c).cast (h1 : a = γ.extend (min 0 c)) rfl`, where
-  `h1 := by rw [min_eq_left h0c, γ.extend_zero]`, and
-  `tail := (γ.truncate c 1).cast (h2 : γ.extend c = γ.extend (min c 1)) γ.extend_one.symm`, where
-  `h2 := by rw [min_eq_left h1c]`. Then `head.trans tail : Path a b` typechecks with *no* further
-  casting (`head`'s target `γ.extend c` matches `tail`'s source on the nose).
-* Define `ρ : I → I` by `ρ u := if (u:ℝ) ≤ 1/2 then ⟨min (2*u) c, _⟩ else ⟨min (max (2*u-1) c) 1, _⟩`
-  (membership proofs: both branches land in `[0,1]` since `c ∈ [0,1]`). Show `Continuous ρ` via
-  `continuous_if_le` (the two branches agree at `u = 1/2`: `min (2*(1/2)) c = min 1 c` vs
-  `min (max 0 c) 1 = min c 1`; equal iff `c ≤ 1`, true). `ρ 0 = 0`, `ρ 1 = 1` by `norm_num` + `h0c`/
-  `h1c` (`min 0 c = 0`, `min (max 1 c) 1 = 1` since `c ≤ 1 ≤ 1`... check `max 1 c` when `c≤1`: `= 1`).
-* Prove `∀ u : I, (head.trans tail) u = γ.extend (ρ u)` via `Path.trans_apply` (splits on
-  `(u:ℝ) ≤ 1/2`, matching `ρ`'s own if-split) + the `truncate`/`cast` unfoldings
-  (`Path.cast_coe`, `Path.extend_apply`) — routine but long case-by-case `ℝ`-arithmetic
-  (`min`/`max` identities), the actual bulk of R4.
-* Conclude `head.trans tail = γ.reparam ρ hρcont hρ0 hρ1` via `Path.ext` (both sides have the
-  same underlying function `γ.extend ∘ (↑) ∘ ρ = γ ∘ ρ` on `I`), then
-  `(Path.Homotopy.reparam γ ρ hρcont hρ0 hρ1).cast rfl (by rw [← that Path.ext equality])` gives
-  `γ.Homotopic (head.trans tail)`.
+/-!
+### The general (multi-chart) theorem
 
-Given this, the outer induction (base case = `exists_homotopic_avoiding_of_ball` above applied to
-the whole chain when `C.n = 0`; inductive step = pick a fresh breakpoint via
-`nonempty_open_diff_finite`, split via the lemma above, apply the base case to the new `head`
-piece and the induction hypothesis to the re-clocked `tail` piece, combine via
-`Path.Homotopy.hcomp` and `Path.trans_range`) is mechanical. Not attempted here: genuinely
-time-boxed out (design's own R4 flag; gates only `abel-weak-solutions`, no other consumer of this
-unit). `nonempty_open_diff_finite` and `exists_homotopic_avoiding_of_ball` above are the
-ingredients a future pass needs; both are proved and sorry-free. -/
+Downward induction along a `ChartChain` (design §7 steps 1–3). The invariant carried by
+`exists_homotopic_avoiding_aux`: given a "lead-in" path `σ` from a point `q ∉ S` to the chain
+breakpoint `γ.extend (t k)`, lying entirely inside chart-ball `k`, the composite
+`σ ⬝ γ|[t k, 1]` is homotopic rel endpoints to an `S`-avoiding path. Each step splits off
+`γ|[t k, t (k+1)]` (via `homotopic_truncateOfLE_trans`), picks a *fresh* breakpoint `q' ∉ S`
+near `γ.extend (t (k+1))` inside the image of the overlap of chart-balls `k` and `k+1`
+(ℂ-minus-countable density through the chart, as in `nonempty_open_diff_finite`), connects it
+with an arc inside the overlap, perturbs the single-ball head via
+`exists_homotopic_avoiding_of_ball`, recurses on the tail, and glues with the groupoid-law
+homotopies (`Path.Homotopic.trans_assoc`/`trans_symm`/`refl_trans`).
+-/
+
+private theorem exists_homotopic_avoiding_aux {a b : X} (γ : Path a b) {S : Set X}
+    (hS : S.Finite) (hb : b ∉ S) (C : ChartChain γ) :
+    ∀ r k : ℕ, C.n ≤ k + r → ∀ hk1 : C.t k ≤ 1, ∀ (q : X) (p : Path q (γ.extend (C.t k))),
+      q ∉ S →
+      (∀ u : ↥unitInterval, p u ∈ (C.e k).source ∧ C.e k (p u) ∈ ball (C.c k) (C.r k)) →
+      ∃ τ : Path q (γ.extend 1),
+        (p.trans (γ.truncateOfLE hk1)).Homotopic τ ∧ Disjoint (Set.range ⇑τ) S := by
+  intro r
+  induction r with
+  | zero =>
+    -- all of `γ|[t k, 1]` still lies in chart-ball `k` (`t (k+1) = 1` already): one-ball case.
+    intro k hkn hk1 q p hq hp
+    have hb1 : γ.extend 1 ∉ S := by rw [γ.extend_one]; exact hb
+    have htr : ∀ u : ↥unitInterval, (γ.truncateOfLE hk1) u ∈ (C.e k).source ∧
+        C.e k ((γ.truncateOfLE hk1) u) ∈ ball (C.c k) (C.r k) := by
+      intro u
+      have hrfl : (γ.truncateOfLE hk1) u = γ.extend (min (max (u : ℝ) (C.t k)) 1) := rfl
+      rw [hrfl]
+      refine C.maps k _ ⟨le_min (le_max_right _ _) hk1, ?_⟩
+      rw [C.ht1 (k + 1) (by omega)]
+      exact min_le_right _ _
+    have hall : ∀ z ∈ Set.range ⇑(p.trans (γ.truncateOfLE hk1)),
+        z ∈ (C.e k).source ∧ C.e k z ∈ ball (C.c k) (C.r k) := by
+      intro z hz
+      rw [Path.trans_range] at hz
+      rcases hz with ⟨u, rfl⟩ | ⟨u, rfl⟩
+      · exact hp u
+      · exact htr u
+    exact exists_homotopic_avoiding_of_ball (p.trans (γ.truncateOfLE hk1)) (C.he k)
+      (C.ball_subset k) (fun z hz => (hall z hz).1)
+      (fun u => (hall _ (mem_range_self u)).2) hS hq hb1
+  | succ r ih =>
+    intro k hkn hk1 q p hq hp
+    have hcd : C.t k ≤ C.t (k + 1) := C.mono (Nat.le_succ k)
+    have h0d : (0 : ℝ) ≤ C.t (k + 1) := by
+      rw [← C.ht0]; exact C.mono (Nat.zero_le _)
+    have hd1 : C.t (k + 1) ≤ 1 := by
+      rw [← C.ht1 (k + 1 + C.n) (by omega)]
+      exact C.mono (by omega)
+    -- split the tail at the next breakpoint
+    have hdec := homotopic_truncateOfLE_trans γ h0d hd1 hcd hd1
+    -- the breakpoint value lies in both adjacent chart-ball domains
+    have hm0 : γ.extend (C.t (k + 1)) ∈ (C.e k).source ∧
+        C.e k (γ.extend (C.t (k + 1))) ∈ ball (C.c k) (C.r k) :=
+      C.maps k _ ⟨hcd, le_refl _⟩
+    have hm1 : γ.extend (C.t (k + 1)) ∈ (C.e (k + 1)).source ∧
+        C.e (k + 1) (γ.extend (C.t (k + 1))) ∈ ball (C.c (k + 1)) (C.r (k + 1)) :=
+      C.maps (k + 1) _ ⟨le_refl _, C.mono (Nat.le_succ _)⟩
+    -- the open overlap of the two chart-ball domains, and its chart image
+    set W : Set X := ((C.e k).source ∩ C.e k ⁻¹' ball (C.c k) (C.r k)) ∩
+        ((C.e (k + 1)).source ∩ C.e (k + 1) ⁻¹' ball (C.c (k + 1)) (C.r (k + 1))) with hW_def
+    have hWopen : IsOpen W := ((C.e k).isOpen_inter_preimage isOpen_ball).inter
+      ((C.e (k + 1)).isOpen_inter_preimage isOpen_ball)
+    have hmW : γ.extend (C.t (k + 1)) ∈ W := ⟨⟨hm0.1, hm0.2⟩, ⟨hm1.1, hm1.2⟩⟩
+    have hWsrc : W ⊆ (C.e (k + 1)).source := fun z hz => hz.2.1
+    have hVopen : IsOpen (C.e (k + 1) '' W) :=
+      (C.e (k + 1)).isOpen_image_of_subset_source hWopen hWsrc
+    obtain ⟨ε, hε, hballV⟩ := Metric.isOpen_iff.mp hVopen
+      (C.e (k + 1) (γ.extend (C.t (k + 1)))) ⟨γ.extend (C.t (k + 1)), hmW, rfl⟩
+    have hVtarget : C.e (k + 1) '' W ⊆ (C.e (k + 1)).target := by
+      rintro _ ⟨z, hz, rfl⟩
+      exact (C.e (k + 1)).map_source (hWsrc hz)
+    have hballtarget : ball (C.e (k + 1) (γ.extend (C.t (k + 1)))) ε ⊆ (C.e (k + 1)).target :=
+      hballV.trans hVtarget
+    -- a fresh breakpoint off `S`, found in the chart via countable-complement density
+    have hTcount : (C.e (k + 1) '' (S ∩ (C.e (k + 1)).source)).Countable :=
+      ((hS.inter_of_left (C.e (k + 1)).source).image (C.e (k + 1))).countable
+    obtain ⟨z', hz'T, hz'ball⟩ := (hTcount.dense_compl ℝ).exists_mem_open isOpen_ball
+      ⟨_, mem_ball_self hε⟩
+    -- a planar arc from the breakpoint's chart image to the fresh point, inside the small ball
+    obtain ⟨sg, hsg⟩ : JoinedIn (ball (C.e (k + 1) (γ.extend (C.t (k + 1)))) ε)
+        (C.e (k + 1) (γ.extend (C.t (k + 1)))) z' :=
+      ((convex_ball _ _).isPathConnected ⟨_, mem_ball_self hε⟩).joinedIn
+        _ (mem_ball_self hε) _ hz'ball
+    -- transport the arc back to `X`; it stays inside the overlap `W`
+    have hsgW : ∀ u : ↥unitInterval, (C.e (k + 1)).symm (sg u) ∈ W := by
+      intro u
+      obtain ⟨w, hw, hwe⟩ := hballV (hsg u)
+      rw [← hwe, (C.e (k + 1)).left_inv (hWsrc hw)]
+      exact hw
+    have hsgcont : Continuous fun u : ↥unitInterval => (C.e (k + 1)).symm (sg u) :=
+      ((C.e (k + 1)).continuousOn_symm.mono hballtarget).comp_continuous sg.continuous hsg
+    set arc : Path (γ.extend (C.t (k + 1))) ((C.e (k + 1)).symm z') :=
+      ⟨⟨fun u => (C.e (k + 1)).symm (sg u), hsgcont⟩,
+        by show (C.e (k + 1)).symm (sg 0) = _
+           rw [sg.source]; exact (C.e (k + 1)).left_inv hm1.1,
+        by show (C.e (k + 1)).symm (sg 1) = _
+           rw [sg.target]⟩ with harc_def
+    have hq'S : (C.e (k + 1)).symm z' ∉ S := by
+      intro hq'S
+      have hq'W : (C.e (k + 1)).symm z' ∈ W := by
+        have h1 := hsgW 1
+        rwa [sg.target] at h1
+      exact hz'T ⟨(C.e (k + 1)).symm z', ⟨hq'S, hWsrc hq'W⟩,
+        (C.e (k + 1)).right_inv (hballtarget hz'ball)⟩
+    -- head piece `σ ⬝ γ|[t k, t (k+1)] ⬝ arc` lies in chart-ball `k`: one-ball perturbation
+    have hmidD : ∀ u : ↥unitInterval, (γ.truncateOfLE hcd) u ∈ (C.e k).source ∧
+        C.e k ((γ.truncateOfLE hcd) u) ∈ ball (C.c k) (C.r k) := by
+      intro u
+      have hrfl : (γ.truncateOfLE hcd) u
+          = γ.extend (min (max (u : ℝ) (C.t k)) (C.t (k + 1))) := rfl
+      rw [hrfl]
+      exact C.maps k _ ⟨le_min (le_max_right _ _) hcd, min_le_right _ _⟩
+    have hheadD : ∀ z ∈ Set.range ⇑((p.trans (γ.truncateOfLE hcd)).trans arc),
+        z ∈ (C.e k).source ∧ C.e k z ∈ ball (C.c k) (C.r k) := by
+      intro z hz
+      rw [Path.trans_range, Path.trans_range] at hz
+      rcases hz with (⟨u, rfl⟩ | ⟨u, rfl⟩) | ⟨u, rfl⟩
+      · exact hp u
+      · exact hmidD u
+      · exact ⟨(hsgW u).1.1, (hsgW u).1.2⟩
+    obtain ⟨head', hheadhom, hheaddisj⟩ :=
+      exists_homotopic_avoiding_of_ball ((p.trans (γ.truncateOfLE hcd)).trans arc)
+        (C.he k) (C.ball_subset k) (fun z hz => (hheadD z hz).1)
+        (fun u => (hheadD _ (mem_range_self u)).2) hS hq hq'S
+    -- tail piece `arc.symm ⬝ γ|[t (k+1), 1]`: induction hypothesis with lead-in `arc.symm`
+    have harcsymmD : ∀ u : ↥unitInterval, arc.symm u ∈ (C.e (k + 1)).source ∧
+        C.e (k + 1) (arc.symm u) ∈ ball (C.c (k + 1)) (C.r (k + 1)) := by
+      intro u
+      have h1 : arc.symm u ∈ W := hsgW (unitInterval.symm u)
+      exact ⟨h1.2.1, h1.2.2⟩
+    obtain ⟨τ', hτ'hom, hτ'disj⟩ := ih (k + 1) (by omega) hd1 ((C.e (k + 1)).symm z')
+      arc.symm hq'S harcsymmD
+    refine ⟨head'.trans τ', ?_, ?_⟩
+    · -- homotopy bookkeeping: insert `arc ⬝ arc.symm` at the breakpoint and reassociate
+      have h1 : (p.trans (γ.truncateOfLE hk1)).Homotopic
+          (p.trans ((γ.truncateOfLE hcd).trans (γ.truncateOfLE hd1))) :=
+        (Path.Homotopic.refl p).hcomp hdec
+      have h2 : (p.trans ((γ.truncateOfLE hcd).trans (γ.truncateOfLE hd1))).Homotopic
+          ((p.trans (γ.truncateOfLE hcd)).trans (γ.truncateOfLE hd1)) :=
+        (Path.Homotopic.trans_assoc p (γ.truncateOfLE hcd) (γ.truncateOfLE hd1)).symm
+      have h3 : (arc.trans (arc.symm.trans (γ.truncateOfLE hd1))).Homotopic
+          (γ.truncateOfLE hd1) :=
+        ((Path.Homotopic.trans_assoc arc arc.symm (γ.truncateOfLE hd1)).symm.trans
+          ((Path.Homotopic.trans_symm arc).hcomp
+            (Path.Homotopic.refl (γ.truncateOfLE hd1)))).trans
+          (Path.Homotopic.refl_trans (γ.truncateOfLE hd1))
+      have h4 : ((p.trans (γ.truncateOfLE hcd)).trans (γ.truncateOfLE hd1)).Homotopic
+          (((p.trans (γ.truncateOfLE hcd)).trans arc).trans
+            (arc.symm.trans (γ.truncateOfLE hd1))) :=
+        ((Path.Homotopic.trans_assoc (p.trans (γ.truncateOfLE hcd)) arc
+          (arc.symm.trans (γ.truncateOfLE hd1))).trans
+          ((Path.Homotopic.refl (p.trans (γ.truncateOfLE hcd))).hcomp h3)).symm
+      have h5 : ((((p.trans (γ.truncateOfLE hcd)).trans arc)).trans
+          (arc.symm.trans (γ.truncateOfLE hd1))).Homotopic (head'.trans τ') :=
+        hheadhom.hcomp hτ'hom
+      exact ((h1.trans h2).trans h4).trans h5
+    · rw [Path.trans_range]
+      exact Set.disjoint_union_left.mpr ⟨hheaddisj, hτ'disj⟩
 
 theorem exists_homotopic_avoiding {a b : X} (γ : Path a b) {S : Set X} (hS : S.Finite)
     (ha : a ∉ S) (hb : b ∉ S) :
     ∃ γ' : Path a b, γ.Homotopic γ' ∧ Disjoint (Set.range ⇑γ') S := by
-  -- TODO(blocker): strong induction on `exists_chartChain γ`'s length; see the module-doc note
-  -- above (`homotopic_truncate_trans`, design R4) for the precise missing step.
-  sorry
+  obtain ⟨C⟩ := exists_chartChain γ
+  have h01 : C.t 0 ≤ 1 := by rw [C.ht0]; exact zero_le_one
+  have hstart : γ.extend (C.t 0) = a := by rw [C.ht0, γ.extend_zero]
+  set p0 : Path a (γ.extend (C.t 0)) := (Path.refl a).cast rfl hstart with hp0_def
+  have hp0D : ∀ u : ↥unitInterval, p0 u ∈ (C.e 0).source ∧
+      C.e 0 (p0 u) ∈ ball (C.c 0) (C.r 0) := by
+    intro u
+    have h1 : p0 u = γ.extend (C.t 0) := by
+      show a = γ.extend (C.t 0)
+      exact hstart.symm
+    rw [h1]
+    exact C.maps 0 _ ⟨le_refl _, C.mono (Nat.zero_le 1)⟩
+  obtain ⟨τ, hτhom, hτdisj⟩ := exists_homotopic_avoiding_aux γ hS hb C C.n 0
+    (by omega) h01 a p0 ha hp0D
+  refine ⟨τ.cast rfl γ.extend_one.symm, ?_, ?_⟩
+  · have hcast : ((p0.trans (γ.truncateOfLE h01)).cast rfl γ.extend_one.symm).Homotopic
+        (τ.cast rfl γ.extend_one.symm) :=
+      hτhom.pathCast rfl γ.extend_one.symm
+    have heq : (p0.trans (γ.truncateOfLE h01)).cast rfl γ.extend_one.symm =
+        (Path.refl a).trans γ := by
+      ext u
+      show (p0.trans (γ.truncateOfLE h01)) u = ((Path.refl a).trans γ) u
+      rw [Path.trans_apply, Path.trans_apply]
+      split_ifs with h
+      · rfl
+      · show γ.extend (min (max (2 * (u : ℝ) - 1) (C.t 0)) 1) = _
+        have h0' : (0 : ℝ) ≤ 2 * (u : ℝ) - 1 := by
+          have := not_le.mp h; linarith
+        have h1' : 2 * (u : ℝ) - 1 ≤ 1 := by linarith [u.2.2]
+        rw [C.ht0, max_eq_left h0', min_eq_left h1', γ.extend_apply ⟨h0', h1'⟩]
+    rw [heq] at hcast
+    exact (Path.Homotopic.refl_trans γ).symm.trans hcast
+  · have hre : Set.range ⇑(τ.cast rfl γ.extend_one.symm) = Set.range ⇑τ := by
+      rw [Path.cast_coe]
+    rw [hre]
+    exact hτdisj
 
 /-- Loop version (the blueprint's deliverable). -/
 theorem Loop.exists_homotopic_avoiding {x₀ : X} (γ : Path x₀ x₀) {S : Set X} (hS : S.Finite)
