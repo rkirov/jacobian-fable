@@ -355,3 +355,23 @@
   `if h : p ∈ s then ... else ...` inside a `noncomputable section` still needs a `classical`
   tactic call (or an ambient `Decidable` instance) even though the SECTION is noncomputable —
   `noncomputable` alone does not supply `Decidable`. Zero sorries.
+- [dbar] Jacobian/Dbar/PlanarPoU.lean OK (139 lines, ~5s) — finite smooth PoU on a planar open
+  set `V` subordinate to a finite open cover (design R5): shrink the cover in the (automatically
+  normal, being metrizable) subtype `↥V` via mathlib's `exists_subset_iUnion_closure_subset`,
+  push shrunk pieces back to `ℂ` (`IsOpen.isOpenMap_subtype_val`, `closure_subtype`), one bump
+  per piece via `IsOpen.exists_contDiff_support_eq` (exact `support`, not just containment), then
+  normalize by the sum (positive on `V` since the shrunk pieces still cover `V`). Confirmed via an
+  upstream investigation that mathlib's manifold `SmoothPartitionOfUnity` API is the WRONG tool
+  here (needs a closed base set, bundles into `M→ℝ` smooth maps) — the from-scratch route was the
+  right call. Also provides `contDiffOn_indicator_smul_of_eventually_zero` (extension-by-zero
+  helper used by `PlanarCousin.lean`). Zero sorries.
+- [dbar] Jacobian/Dbar/PlanarCousin.lean OK (115 lines, ~5-8s) — planar Cousin atoms (Forster
+  12.6/13.4): `exists_smooth_splitting` (PoU-weighted average splits a smooth additive cocycle on
+  a finite cover of an open set — `H¹ = 0` for the sheaf of smooth functions) and
+  `exists_holo_splitting_ball` (corrects the smooth splitting by a `∂̄`-solution from
+  `SolveDisk.exists_dbar_solution_ball` to land on a HOLOMORPHIC splitting on a ball — disk
+  Cousin I). Gotcha: several steps mix `ℝ`-scalar (`ψ`) against `ℂ`-valued (`f`) arithmetic where
+  neither `ring` nor `linarith` apply directly (`ring` doesn't cross the `smul` boundary,
+  `linarith` needs an order which `ℂ` lacks) — `module` (for the smul identity) and
+  `linear_combination` (for the plain `ℂ`-equation rearrangements) are the right tactics instead.
+  Zero sorries.
