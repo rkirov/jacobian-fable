@@ -1653,3 +1653,56 @@
   `Reduction.lean` updated: imports `Jacobian.CanonicalForms.Existence`, its local
   `MForm.d_ne_zero` proof removed (now resolves via that import, call site unchanged). Root
   docstring updated. Zero sorries; `scripts/check.sh Jacobian/ResidueTheorem` passes.
+- [abel] Jacobian/Abel/Loops.lean OK (94 lines) — `mem_periodSubgroup_iff_exists_loop`
+  (`AddSubgroup.closure_induction`, case tags `zero`/`add`/`neg` not `one`/`mul`/`inv` for the
+  additive version — a naming gotcha for siblings) and `exists_zeroPeriod_path` (loop
+  cancellation via `RS.period_conj` + linearity of `RS.pathIntegralₗ` through `(RS.basis X).ext`,
+  NOT `Basis.ext` unqualified — the real name is `Module.Basis.ext`, only reachable by dot
+  notation on a `Basis` term since the file nests `namespace Basis` inside `namespace Module`).
+  Zero sorries.
+- [abel] Jacobian/Abel/WeakToMero.lean OK (93 lines) — `wirtingerDbar_exp_neg_mul_eq_zero` (the
+  `∂̄F = 0` computation for `F := exp(-u)*f`; needed a NEW holomorphic-outer chain rule for
+  `wirtingerDbar` not present in `Dbar/Wirtinger.lean`, built here via mathlib's
+  `HasDerivAt.comp_hasFDerivAt` — `Complex.hasDerivAt_exp` composed with an arbitrary
+  `HasFDerivAt`, giving `∂̄(exp∘v) = exp(v z)·∂̄v`) and `genus_eq_zero_of_exists_simple_pole`
+  (Forster's necessity shortcut, a direct composition of two ALREADY-BUILT facts from
+  `proper-map-degree`/`sphere-topology`; confirms the design's finding that `form-trace-tower`
+  is not needed). Zero sorries.
+- [abel] Jacobian/Abel/Sufficiency.lean — `exists_mero_of_pathIntegral_mem` built through step 4
+  of the design's own proof plan (loop cancellation + weak-solution existence, both zero-sorry);
+  **ONE precisely-isolated `sorry`** for steps 5-7 (the Dolbeault-upgrade bridge): confirmed at
+  build time that `serre-duality-tails` (`Jacobian/TailDuality`, `resEquiv`/`i_neg_eq_h1`) has
+  **no directory on disk at all** — not "designed, not built", genuinely not started — and its
+  interface cannot even be stated without that unit's own vocabulary (`H1Tail`, `pairT`), so the
+  gap cannot be narrowed further by this builder (out of authorized scope: `Jacobian/Abel/` + the
+  one `Jacobian/AbelWeak/` rechart gap, not a whole sibling unit). Re-checked for its landing
+  twice during this session (once before starting, once at the end, per task instructions) —
+  still absent both times. `genus_eq_zero_of_pathIntegral_mem` composes it with the zero-sorry
+  necessity shortcut. **NOT built**: the `k`-point Finset generalization
+  (`exists_mero_of_periodVector_mem`) — did not fit this pass's time budget; mechanical
+  (`Finset`-indexed) once the two-point case's blocker clears, per the design's own estimate.
+- [abel] Jacobian/Abel/OfCurveInj.lean OK (structure; inherits `Sufficiency.lean`'s one `sorry`
+  transitively, no new one) — `Jacobian.ofCurve_inj'` (gated on
+  `[DiscreteTopology (RS.periodSubgroup X)]`, Forster 21.4(i) exactly, via
+  `AddSubgroup.isClosed_of_discrete` + `topologicalClosure_minimal`/`le_topologicalClosure`
+  antisymmetry — the design's own §9 spike, confirmed to compile as stated) and
+  `Jacobian.ofCurve_inj` (kept GATED here too, since the design's literal ungated final shape
+  cannot even be STATED — Lean has no way to synthesize `[DiscreteTopology (RS.periodSubgroup X)]`
+  for a general `X` — until `period-lattice-rank` registers it as a global `instance`; final
+  assembly's job, documented precisely in the root file, not new proof work once that instance
+  exists).
+- [abel] Jacobian/Abel.lean (unit root) — **PARTIAL UNIT**, one documented `sorry` (see above),
+  everything else zero sorries. `scripts/check.sh Jacobian/Abel` reports exactly the one flagged
+  line (`Sufficiency.lean:71`); `lake build Jacobian.Abel` (ignoring the sorry check) succeeds
+  end-to-end with no errors, confirming every file genuinely compiles. NOT registered in
+  `Jacobian.lean` per task hard rule. **Also closed, as separately authorized, the
+  `abel-weak-solutions` unit's own documented gap**: `Jacobian/AbelWeak/{Rechart,GeneralChain}.lean`
+  (695 lines together) — the general multi-chart `RS.AbelWeak.exists_weakSolutionOfPair`, zero
+  sorries, `scripts/check.sh Jacobian/AbelWeak` passes; see that unit's own root docstring and the
+  `[abelweak]` entry above for the full mathematical account (a removable-singularity-theorem
+  "rechart" lemma + a general order-additive `IsWeakSolutionAt.mul` + a chain induction handling
+  the path-revisits-its-basepoint edge case via `merge_two`/`merge_two'`/`chainFinish`/
+  `chainFinishSame`). **Notes for period-lattice-rank** (#31, primary consumer) and the final
+  `ofCurve_inj` assembly are recorded in full in `Jacobian/Abel.lean`'s own docstring (the
+  `k`-point export it needs is NOT built; the `DiscreteTopology` instances it should register;
+  the exact final-assembly discharge shape).
