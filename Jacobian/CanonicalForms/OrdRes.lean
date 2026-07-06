@@ -2,18 +2,20 @@ import Jacobian.CanonicalForms.MForm
 import Jacobian.ResidueCalculus
 
 /-!
-# `MForm.ord`/`resAt` (D4), chart-invariance, and `divisor` (D5/D6)
+# `MFormData.ord`/`resAt` (D4), chart-invariance, and `divisor` (D6) — data layer
 
-Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D4–D6, §4.2).
+Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D4–D6, §4.2). Everything here is
+stated for the RAW data carrier `MFormData` and descends to the quotient `MForm` in
+`Quotient.lean` (all reading maps are germ-at-the-chart-center facts, hence congruence-robust).
 
-* `MForm.ord`/`MForm.resAt` (D4): read directly via the *fixed* `chartAt`, needing no invariance
-  proof to be well-defined; `MForm.ord_eq_of_mem_source`/`MForm.resAt_eq_of_mem_source` supply the
+* `MFormData.ord`/`MFormData.resAt` (D4): read directly via the *fixed* `chartAt`, needing no invariance
+  proof to be well-defined; `MFormData.ord_eq_of_mem_source`/`MFormData.resAt_eq_of_mem_source` supply the
   "read in any maximal-atlas chart" corollary (chart-invariance, via
   `meromorphicOrderAt_comp_of_deriv_ne_zero`/`RS.resAt_comp_mul_deriv`).
-* `MForm.eventually_ord_eq_top`/`MForm.eventually_ord_eq_zero`: local propagation of the order,
+* `MFormData.eventually_ord_eq_top`/`MFormData.eventually_ord_eq_zero`: local propagation of the order,
   the chart-crossing analogues of `eventually_ordAtX_eq_top`/`eventually_ordAtX_eq_zero`
   (`Jacobian/Meromorphic/Predicates.lean`), via `compat`.
-* `MForm.divisor`/`MForm.degree` (D6): local finiteness is connectedness-free, mirroring
+* `MFormData.divisor`/`MFormData.degree` (D6): local finiteness is connectedness-free, mirroring
   `MeroGermOn.divisorOn`'s proof exactly.
 -/
 
@@ -26,23 +28,23 @@ namespace RS
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-namespace MForm
+namespace MFormData
 
 /-- D4: the order of `θ` at `x`, read via the (fixed) preferred chart at `x`. -/
-noncomputable def ord (θ : MForm X) (x : X) : WithTop ℤ :=
+noncomputable def ord (θ : MFormData X) (x : X) : WithTop ℤ :=
   meromorphicOrderAt (θ.coeffAt x) (chartAt ℂ x x)
 
 /-- D4: the residue of `θ` at `x`, read via the (fixed) preferred chart at `x`. -/
-noncomputable def resAt (θ : MForm X) (x : X) : ℂ :=
+noncomputable def resAt (θ : MFormData X) (x : X) : ℂ :=
   RS.resAt (θ.coeffAt x) (chartAt ℂ x x)
 
-theorem meromorphicAt_coeffAt (θ : MForm X) (x : X) :
+theorem meromorphicAt_coeffAt (θ : MFormData X) (x : X) :
     MeromorphicAt (θ.coeffAt x) (chartAt ℂ x x) :=
   θ.meromorphicOn_coeffAt x (chartAt ℂ x x) (mem_chart_target ℂ x)
 
-/-- A one-line corollary of `meromorphicOrderAt_eq_top_iff` (the `MForm`-level analogue of
+/-- A one-line corollary of `meromorphicOrderAt_eq_top_iff` (the `MFormData`-level analogue of
 `ordAtX_eq_top_iff`). -/
-theorem ord_eq_top_iff {θ : MForm X} {x : X} :
+theorem ord_eq_top_iff {θ : MFormData X} {x : X} :
     θ.ord x = ⊤ ↔ θ.coeffAt x =ᶠ[𝓝[≠] (chartAt ℂ x x)] (0 : ℂ → ℂ) :=
   meromorphicOrderAt_eq_top_iff
 
@@ -50,7 +52,7 @@ theorem ord_eq_top_iff {θ : MForm X} {x : X} :
 order of `θ` at `x` may be computed reading `θ.coeffAt x` through ANY maximal-atlas chart `e`
 valid at `x`, not just `chartAt ℂ x`. Not DAG-required by any current consumer, offered as a
 documented, non-blocking convenience (§4.2). -/
-theorem ord_eq_of_mem_source {θ : MForm X} {x : X} {e : OpenPartialHomeomorph X ℂ}
+theorem ord_eq_of_mem_source {θ : MFormData X} {x : X} {e : OpenPartialHomeomorph X ℂ}
     (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
     θ.ord x = meromorphicOrderAt (fun z => deriv (⇑(chartAt ℂ x) ∘ ⇑e.symm) z *
       θ.coeffAt x (chartAt ℂ x (e.symm z))) (e x) := by
@@ -72,7 +74,7 @@ theorem ord_eq_of_mem_source {θ : MForm X} {x : X} {e : OpenPartialHomeomorph X
 
 /-- Convenience (chart-invariance of `resAt`, via `RS.resAt_comp_mul_deriv`): the residue of `θ`
 at `x` may be computed reading `θ.coeffAt x` through ANY maximal-atlas chart `e` valid at `x`. -/
-theorem resAt_eq_of_mem_source {θ : MForm X} {x : X} {e : OpenPartialHomeomorph X ℂ}
+theorem resAt_eq_of_mem_source {θ : MFormData X} {x : X} {e : OpenPartialHomeomorph X ℂ}
     (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) (hx : x ∈ e.source) :
     θ.resAt x = RS.resAt (fun z => deriv (⇑(chartAt ℂ x) ∘ ⇑e.symm) z *
       θ.coeffAt x (chartAt ℂ x (e.symm z))) (e x) := by
@@ -91,7 +93,7 @@ theorem resAt_eq_of_mem_source {θ : MForm X} {x : X} {e : OpenPartialHomeomorph
 /-- Auxiliary cross-point transport: `θ.coeffAt y`, on a whole neighborhood of its own chart
 center, is given by the `compat` formula against `θ.coeffAt x` for any `x` with
 `y ∈ (chartAt ℂ x).source`. The engine behind `eventually_ord_eq_top`/`eventually_ord_eq_zero`. -/
-theorem coeffAt_eventuallyEq_of_mem_source (θ : MForm X) {x y : X}
+theorem coeffAt_eventuallyEq_of_mem_source (θ : MFormData X) {x y : X}
     (hy : y ∈ (chartAt ℂ x).source) :
     θ.coeffAt y =ᶠ[nhds (chartAt ℂ y y)] fun z => deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) z *
       θ.coeffAt x (chartAt ℂ x ((chartAt ℂ y).symm z)) := by
@@ -103,9 +105,36 @@ theorem coeffAt_eventuallyEq_of_mem_source (θ : MForm X) {x y : X}
   filter_upwards [hWopen.mem_nhds hzW] with z hz
   exact θ.compat x y z hz
 
-/-- `MForm.ord` propagates to `⊤` on a whole neighborhood, once it is `⊤` at the center (mirrors
+/-- **Cross-point order reading**: the order of `θ` at any point `p` of the chart source at `x`
+is the planar order of the single coefficient function `θ.coeffAt x` at the chart image
+`chartAt ℂ x p` — no transition factor survives (its order is `0`). This is the bridge that lets
+`OmegaSpace`-membership (a pointwise `ord` condition at every chart CENTER) control the
+coefficient at every TARGET point (D12's repair construction, `LinearSystems.lean`). -/
+theorem ord_eq_meromorphicOrderAt_of_mem_source (θ : MFormData X) {x p : X}
+    (hp : p ∈ (chartAt ℂ x).source) :
+    θ.ord p = meromorphicOrderAt (θ.coeffAt x) (chartAt ℂ x p) := by
+  obtain ⟨hσ, hσ'⟩ := analyticAt_transition (chart_mem_maximalAtlas p) (chart_mem_maximalAtlas x)
+    (mem_chart_source ℂ p) hp
+  -- hσ : AnalyticAt ℂ (chartAt x ∘ (chartAt p).symm) (chartAt p p), hσ' : deriv ≠ 0 there
+  have hcross := θ.coeffAt_eventuallyEq_of_mem_source hp
+  have hσc : (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ p).symm) (chartAt ℂ p p) = chartAt ℂ x p := by
+    simp only [Function.comp_apply]
+    rw [(chartAt ℂ p).left_inv (mem_chart_source ℂ p)]
+  calc θ.ord p
+      = meromorphicOrderAt (fun z => deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ p).symm) z *
+          θ.coeffAt x (chartAt ℂ x ((chartAt ℂ p).symm z))) (chartAt ℂ p p) :=
+        meromorphicOrderAt_congr (hcross.filter_mono nhdsWithin_le_nhds)
+    _ = meromorphicOrderAt (θ.coeffAt x ∘ (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ p).symm))
+          (chartAt ℂ p p) :=
+        meromorphicOrderAt_mul_of_ne_zero hσ.deriv hσ'
+    _ = meromorphicOrderAt (θ.coeffAt x)
+          ((⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ p).symm) (chartAt ℂ p p)) :=
+        meromorphicOrderAt_comp_of_deriv_ne_zero hσ hσ'
+    _ = meromorphicOrderAt (θ.coeffAt x) (chartAt ℂ x p) := by rw [hσc]
+
+/-- `MFormData.ord` propagates to `⊤` on a whole neighborhood, once it is `⊤` at the center (mirrors
 `eventually_ordAtX_eq_top`, `Predicates.lean:231`). -/
-theorem eventually_ord_eq_top [T1Space X] {θ : MForm X} {x : X} (h : θ.ord x = ⊤) :
+theorem eventually_ord_eq_top [T1Space X] {θ : MFormData X} {x : X} (h : θ.ord x = ⊤) :
     ∀ᶠ y in nhds x, θ.ord y = ⊤ := by
   have hf0 : θ.coeffAt x =ᶠ[𝓝[≠] (chartAt ℂ x x)] (0 : ℂ → ℂ) := ord_eq_top_iff.1 h
   have hf0' : ∀ᶠ w in 𝓝[≠] x, θ.coeffAt x (chartAt ℂ x w) = 0 :=
@@ -141,9 +170,9 @@ theorem eventually_ord_eq_top [T1Space X] {θ : MForm X} {x : X} (h : θ.ord x =
       rw [hz1, hz3 hz2, mul_zero]
     exact hall.filter_mono nhdsWithin_le_nhds
 
-/-- `MForm.ord` is eventually `0` away from a point where it is finite (mirrors
+/-- `MFormData.ord` is eventually `0` away from a point where it is finite (mirrors
 `eventually_ordAtX_eq_zero`, `Predicates.lean:314`). Feeds the local finiteness of `divisor`. -/
-theorem eventually_ord_eq_zero {θ : MForm X} {x : X} (h : θ.ord x ≠ ⊤) :
+theorem eventually_ord_eq_zero {θ : MFormData X} {x : X} (h : θ.ord x ≠ ⊤) :
     ∀ᶠ y in 𝓝[≠] x, θ.ord y = 0 := by
   have hf : MeromorphicAt (θ.coeffAt x) (chartAt ℂ x x) := θ.meromorphicAt_coeffAt x
   have h1 : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), AnalyticAt ℂ (θ.coeffAt x) z :=
@@ -185,7 +214,7 @@ theorem eventually_ord_eq_zero {θ : MForm X} {x : X} (h : θ.ord x ≠ ⊤) :
 
 /-- D6: the divisor of `θ` (local finiteness, connectedness-free — mirrors `MeroGermOn.divisorOn`
 exactly, `Divisor.lean:134`). -/
-noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MForm X) : Divisor X where
+noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : Divisor X where
   toFun x := (θ.ord x).untop₀
   supportWithinDomain' := by intro x _; trivial
   supportLocallyFiniteWithinDomain' := by
@@ -212,23 +241,23 @@ noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MForm X
         exact hyS (by rw [hWsub y hyW hyz]; exact WithTop.untop₀_zero)
       exact Set.Finite.subset (Set.finite_singleton z) hsub
 
-@[simp] theorem divisor_apply [T1Space X] [T2Space X] [CompactSpace X] (θ : MForm X) (x : X) :
+@[simp] theorem divisor_apply [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) (x : X) :
     θ.divisor x = (θ.ord x).untop₀ := rfl
 
 /-- D6: the degree of `θ`'s divisor. -/
-noncomputable def degree [T1Space X] [T2Space X] [CompactSpace X] (θ : MForm X) : ℤ :=
+noncomputable def degree [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : ℤ :=
   θ.divisor.degree
 
 @[simp] theorem divisor_zero [T1Space X] [T2Space X] [CompactSpace X] :
-    (0 : MForm X).divisor = 0 := by
+    (0 : MFormData X).divisor = 0 := by
   apply Function.locallyFinsuppWithin.ext
   intro y
-  have h0 : (0 : MForm X).ord y = ⊤ := by
+  have h0 : (0 : MFormData X).ord y = ⊤ := by
     show meromorphicOrderAt (0 : ℂ → ℂ) (chartAt ℂ y y) = ⊤
     simp
   rw [divisor_apply, h0]
   simp
 
-end MForm
+end MFormData
 
 end RS

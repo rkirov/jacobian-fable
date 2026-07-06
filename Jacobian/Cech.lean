@@ -3,8 +3,11 @@ import Jacobian.Cech.Cochains
 import Jacobian.Cech.H0
 import Jacobian.Cech.Refinement
 import Jacobian.Cech.Colimit
+import Jacobian.Cech.Injectivity
 import Jacobian.Cech.Window
+import Jacobian.Cech.WindowRank
 import Jacobian.Cech.Skyscraper
+import Jacobian.Cech.SixTerm
 
 /-!
 # cech-cohomology (CC8): `H¹(D)` as a directed colimit over finite covers (namespace `RS.Cech`)
@@ -23,16 +26,26 @@ API summary (see `docs/design/cech-cohomology.md`):
 * **Colimit** (`Colimit.lean`): **`H1 D`**, the directed colimit (CC8, frozen), `toH1`,
   `exists_rep(_good/_refined)`, `H1.induction_on`, `H1.lift` (universal property),
   `H1Incl` (`D`-monotone functoriality) with `H1Incl_id`/`H1Incl_comp`.
+* **Injectivity** (`Injectivity.lean`): **Forster 12.4** — `resH1_injective` (sheaf-axiom
+  gluing argument via `injPatch`/`exists_injGlue`), `toH1_injective`/`toH1_eq_zero_iff`,
+  `subsingleton_H1_iff`.
 * **Window** (`Window.lean`): `ordGe`/`tailGerm`/`leadCoeff`, `WindowAt`/`Window` (the abstract
   skyscraper data), `windowMap` and its exactness/injectivity against `L(D)`/`L(D')`.
+* **WindowRank** (`WindowRank.lean`): the `θ`-basis dimension counts `finrank_windowAt`
+  (via an explicit one-step splitting `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ`, no
+  independence/spanning argument) and `finrank_window`, plus the `FiniteDimensional` instances.
 * **Skyscraper** (`Skyscraper.lean`): the Mittag-Leffler atom `mlClass` (`C1.MemLD`/`C1.retype`),
-  its linearity and `D`-functoriality, and the vanishing criterion
-  `mlClass_eq_zero_of_exists`.
+  its linearity and `D`-functoriality, and the vanishing criterion `mlClass_eq_zero_iff`
+  (both directions — the `⇒` half uses `toH1_injective`).
+* **SixTerm** (`SixTerm.lean`): part (g) of the six-term skyscraper fragment —
+  `H1Incl_surjective` (no `H²`, no long exact sequence, no snake lemma), via `memLD_of_isAdapted`
+  + the general retype lemmas `C1.retype_mem_Z1'`/`h1CoverIncl_mk_retype`.
 
-**Known gaps** (documented in-file, not silently dropped): `resH1_injective`/`toH1_injective`
-(Forster 12.4) and `finrank_windowAt`/`finrank_window` (the `θ`-basis dimension count) are not
-proved in this unit — see `Refinement.lean`'s and `Window.lean`'s file-end notes. The full
-six-term skyscraper exactness (`windowConnect`, `exists_realization`, Lemma A) is recorded as an
-interface in `Skyscraper.lean`'s docstring, not proved. Every other export above is proved with
-zero sorries.
+**Known gap** (documented in-file, not silently dropped): the connecting map `windowConnect`,
+`exists_realization`, Lemma A, and the two exactness statements `exact_windowMap_windowConnect`/
+`exact_windowConnect_H1Incl` (design §6.9(c)-(f)) are **not proved in this unit** — see
+`Skyscraper.lean`'s file-end note. They need adapted-cover *realization* machinery beyond this
+unit's time budget; `H1Incl_surjective` (part (g), the fragment's last arrow) **is** proved, and
+does not depend on them. Every other export above (including Forster 12.4 injectivity and the
+window dimension counts, both previously deferred) is proved with zero sorries.
 -/

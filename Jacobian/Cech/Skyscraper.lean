@@ -14,11 +14,13 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.7).
 * `mlClass_eq_zero_iff`: the vanishing criterion (the "engine" — uses `H⁰ ≃ L(D')` gluing and
   `toH1`'s colimit description).
 
-**Recorded as interface, not proved here** (see the file-end note): the full six-term
-exactness (`windowConnect`, `exists_realization`, Lemma A, `exact_windowMap_windowConnect`,
-`exact_windowConnect_H1Incl`, `H1Incl_surjective`) — this needs adapted-cover realization
-machinery beyond this unit's remaining time budget. `mlClass`/`mlClass_eq_zero_iff` (the atom
-both the χ ledger and laurent-tails actually consume) are proved with zero sorries.
+`mlClass`/`mlClass_eq_zero_iff` (both directions — the `⇒` half uses `toH1_injective`, Forster
+12.4, from `Injectivity.lean`) are proved with zero sorries; both the χ ledger and laurent-tails'
+`T[D] → H¹(D)` map factor through `mlClass`. `H1Incl_surjective` (part (g) of the six-term
+fragment) is proved in `SixTerm.lean`. **Recorded as interface, not proved anywhere in this
+unit** (see `SixTerm.lean`'s file-end note): `windowConnect`, `exists_realization`, Lemma A,
+`exact_windowMap_windowConnect`, `exact_windowConnect_H1Incl` — these need adapted-cover
+*realization* machinery beyond this unit's remaining time budget.
 -/
 
 open scoped ContDiff Manifold
@@ -129,11 +131,10 @@ theorem H1Incl_mlClass (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemL
 
 /-! ### The vanishing criterion (§6.9(b), `⇐` half)
 
-The `⇒` half (and hence the full `mlClass_eq_zero_iff`) needs `toH1_injective` (Forster 12.4,
-`resH1_injective`), which is **not proved in this unit** (see `Refinement.lean`'s note) — it is
-not on the critical path of `dbar-solvability`/`dolbeault-comparison`. The `⇐` half below (a class
-realized by a global section vanishes) needs no injectivity and is what laurent-tails' truncation
-map `α_D` actually produces classes *from*; it is proved here with zero sorries. -/
+The `⇐` half below (a class realized by a global section vanishes) needs no injectivity and is
+what laurent-tails' truncation map `α_D` actually produces classes *from*; it is proved here with
+zero sorries. The `⇒` half (needing `toH1_injective`, Forster 12.4) is proved further down,
+after `Injectivity.lean`'s import — see `mlClass_eq_zero_iff` below. -/
 
 theorem mlClass_eq_zero_of_exists (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (φ : RS.LinSys D')
     (hφ : ∀ i : Fin 𝒰.n, ∀ x ∈ 𝒰.U i, (-(D x : ℤ) : WithTop ℤ) ≤

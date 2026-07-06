@@ -13,10 +13,10 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.5, §5).
 * `H1.lift`: the universal property (target for dolbeault-comparison's comparison map).
 * `H1Incl`: `D`-monotone functoriality (`H1 D →ₗ H1 D'` for `D ≤ D'`), via `Module.DirectLimit.map`.
 
-**Deferred** (Forster 12.4, `resH1_injective`, not yet proved — see `Refinement.lean`'s note):
-`toH1_injective`/`toH1_eq_zero_iff`/the `(⇒)` half of `subsingleton_H1_iff` are NOT exported here;
-`subsingleton_H1_of_good` (the direction actually needed downstream, via good-cover cofinality)
-does not need 12.4 and is proved.
+`toH1_injective`/`toH1_eq_zero_iff`/`subsingleton_H1_iff` (needing Forster 12.4,
+`resH1_injective`) are exported from `Injectivity.lean` instead, which imports this file;
+`subsingleton_H1_of_good` below (the direction actually needed downstream, via good-cover
+cofinality) does not need 12.4 and is proved here.
 -/
 
 open scoped ContDiff Manifold
@@ -269,7 +269,7 @@ theorem H1Incl_comp {D'' : RS.Divisor X} (h : D ≤ D') (h' : D' ≤ D'') :
 `toH1_surjective_of_isGood [CompactSpace X] {𝒰 : FinCover (⊤ : Opens X)} (h𝒰 : 𝒰.IsGood) :
     Function.Surjective (toH1 D 𝒰)`
 
-together with the (currently deferred) `toH1_injective` this is Forster 12.8. Its input, disk
+together with `toH1_injective` (`Injectivity.lean`) this is Forster 12.8. Its input, disk
 acyclicity `∀ (V : Opens X), IsChartDisk V → ∀ 𝒱 : FinCover V, Subsingleton (H1Cover D 𝒱)`, is
 owned by **dbar-solvability**; the surjectivity statement itself is owned by
 **dolbeault-comparison**. Neither is proved in this unit (§7).
