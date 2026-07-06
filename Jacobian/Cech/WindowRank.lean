@@ -215,7 +215,133 @@ private theorem bigMap_surjective (d d' : ℤ) : Function.Surjective (bigMap p d
     rw [corrMap_apply_coe, rawCorr_apply, hleadψ, ← hlam_def]
     show (ξ' : RS.MeroGermOn X ((chartAt ℂ p).source)) +
         (c * lam⁻¹) • tailGerm p (-d') - c • (lam⁻¹ • tailGerm p (-d')) = _
-    rw [smul_smul]
+    rw [smul_smul, add_sub_cancel_right, hξ'_def]
   rw [bigMap_apply, hleadψ, hcorrψ, hξχ]
+
+private theorem bigMap_ker_eq (d d' : ℤ) (h : d ≤ d' - 1) :
+    (ordGe p (-d)).comap (ordGe p (-d')).subtype = LinearMap.ker (bigMap p d d') := by
+  apply Submodule.ext
+  intro ψ
+  rw [LinearMap.mem_ker]
+  exact (bigMap_mem_ker_iff p d d' h ψ).symm
+
+/-- The one-step splitting: `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ` (Forster/Miranda's
+θ-basis induction step, packaged as an explicit `LinearEquiv` via `quotKerEquivRange` — no
+independence/spanning argument needed). -/
+private noncomputable def windowAtSuccEquiv (d d' : ℤ) (h : d ≤ d' - 1) :
+    WindowAt p d d' ≃ₗ[ℂ] WindowAt p d (d' - 1) × ℂ :=
+  (Submodule.quotEquivOfEq _ _ (bigMap_ker_eq p d d' h)).trans
+    ((LinearMap.quotKerEquivRange (bigMap p d d')).trans
+      (LinearEquiv.ofTop _ (LinearMap.range_eq_top.2 (bigMap_surjective p d d'))))
+
+/-! ### The dimension count, by induction on `(d' - d).toNat` -/
+
+private theorem finrank_windowAt_aux (p : X) (d : ℤ) (n : ℕ) :
+    FiniteDimensional ℂ (WindowAt p d (d + n)) ∧
+      Module.finrank ℂ (WindowAt p d (d + n)) = n := by
+  induction n with
+  | zero =>
+    have heq0 : (d + ((0 : ℕ) : ℤ) : ℤ) = d := by norm_num
+    rw [heq0]
+    have hsub : Subsingleton (WindowAt p d d) := by
+      refine ⟨fun a b => ?_⟩
+      have hsurj : Function.Surjective (WindowAt.mk p d d) := Submodule.mkQ_surjective _
+      obtain ⟨x, rfl⟩ := hsurj a
+      obtain ⟨y, rfl⟩ := hsurj b
+      have h1 := x.2
+      have h2 := y.2
+      rw [mem_ordGe_iff] at h1 h2
+      have hneg : ((-d : ℤ) : WithTop ℤ) ≤
+          (-(y : RS.MeroGermOn X ((chartAt ℂ p).source))).ord p := by
+        rw [RS.MeroGermOn.ord_neg]
+        exact h2
+      have hxy : ((-d : ℤ) : WithTop ℤ) ≤ ((x : RS.MeroGermOn X ((chartAt ℂ p).source)) -
+          (y : RS.MeroGermOn X ((chartAt ℂ p).source))).ord p := by
+        rw [sub_eq_add_neg]
+        calc ((-d : ℤ) : WithTop ℤ) = min ((-d : ℤ) : WithTop ℤ) ((-d : ℤ) : WithTop ℤ) := by
+              simp
+          _ ≤ min ((x : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p)
+              ((-(y : RS.MeroGermOn X ((chartAt ℂ p).source))).ord p) := min_le_min h1 hneg
+          _ ≤ ((x : RS.MeroGermOn X ((chartAt ℂ p).source)) +
+              (-(y : RS.MeroGermOn X ((chartAt ℂ p).source)))).ord p :=
+            RS.MeroGermOn.ord_add (chartAt ℂ p).open_source (mem_chart_source ℂ p) _ _
+      have hz : WindowAt.mk p d d (x - y) = 0 := by
+        rw [WindowAt.mk_eq_zero_iff]
+        exact hxy
+      rw [map_sub] at hz
+      exact sub_eq_zero.1 hz
+    exact ⟨by haveI := hsub; infer_instance, Module.finrank_zero_of_subsingleton⟩
+  | succ n ih =>
+    obtain ⟨ihFD, ihFR⟩ := ih
+    haveI := ihFD
+    have hstep : d + ((n : ℕ) + 1 : ℕ) - 1 = d + (n : ℕ) := by push_cast; ring
+    have hle : d ≤ d + ((n : ℕ) + 1 : ℕ) - 1 := by rw [hstep]; omega
+    have hequiv := windowAtSuccEquiv p d (d + ((n : ℕ) + 1 : ℕ)) hle
+    rw [hstep] at hequiv
+    refine ⟨?_, ?_⟩
+    · exact Module.Finite.equiv hequiv.symm
+    · rw [LinearEquiv.finrank_eq hequiv, Module.finrank_prod, ihFR, Module.finrank_self]
+
+theorem finrank_windowAt {p : X} {d d' : ℤ} (h : d ≤ d') :
+    Module.finrank ℂ (WindowAt p d d') = (d' - d).toNat := by
+  set n := (d' - d).toNat with hn_def
+  have hcast : (n : ℤ) = d' - d := Int.toNat_of_nonneg (by omega)
+  have hd' : d' = d + n := by omega
+  rw [hd']
+  exact (finrank_windowAt_aux p d n).2
+
+instance finiteDimensional_windowAt (p : X) {d d' : ℤ} (h : d ≤ d') :
+    FiniteDimensional ℂ (WindowAt p d d') := by
+  set n := (d' - d).toNat with hn_def
+  have hcast : (n : ℤ) = d' - d := Int.toNat_of_nonneg (by omega)
+  have hd' : d' = d + n := by omega
+  rw [hd']
+  exact (finrank_windowAt_aux p d n).1
+
+/-! ### `finrank_window`: the global (Pi-of-windows) dimension count -/
+
+variable [T2Space X] [CompactSpace X]
+
+instance finiteDimensional_window (D D' : RS.Divisor X) (h : D ≤ D') :
+    FiniteDimensional ℂ (Window D D') := by
+  haveI : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
+    finiteDimensional_windowAt (q : X) (Function.locallyFinsuppWithin.le_def.1 h q)
+  exact Module.Finite.pi
+
+theorem finrank_window {D D' : RS.Divisor X} (h : D ≤ D') :
+    Module.finrank ℂ (Window D D') = ((D' - D).degree).toNat := by
+  have hpt : ∀ q : diffSupp D D', (D : RS.Divisor X) q ≤ D' q := fun q =>
+    Function.locallyFinsuppWithin.le_def.1 h q
+  haveI : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
+    finiteDimensional_windowAt (q : X) (hpt q)
+  have hpi : Module.finrank ℂ (Window D D') =
+      ∑ q : diffSupp D D', Module.finrank ℂ (WindowAt (q : X) (D q) (D' q)) :=
+    Module.finrank_pi_fintype ℂ
+  rw [hpi]
+  have hsum1 : ∑ q : diffSupp D D', Module.finrank ℂ (WindowAt (q : X) (D q) (D' q)) =
+      ∑ q : diffSupp D D', (D' q - D q).toNat :=
+    Finset.sum_congr rfl (fun q _ => finrank_windowAt (hpt q))
+  rw [hsum1]
+  have hdegsub : (D' - D).support ⊆ (diffSupp D D' : Set X) := by
+    intro x hx
+    rw [Finset.mem_coe, mem_diffSupp_iff]
+    intro hcontra
+    apply hx
+    rw [Divisor.sub_apply, hcontra, sub_self]
+  have hdeg : (D' - D).degree = ∑ q ∈ diffSupp D D', (D' q - D q) := by
+    rw [Function.locallyFinsuppWithin.degree_eq_sum_of_subset hdegsub]
+    exact Finset.sum_congr rfl (fun q _ => Divisor.sub_apply D' D q)
+  have hcast : ((∑ q : diffSupp D D', (D' q - D q).toNat : ℕ) : ℤ) = (D' - D).degree := by
+    rw [hdeg]
+    push_cast
+    rw [Finset.sum_coe_sort (diffSupp D D') (fun q => ((D' q - D q).toNat : ℤ))]
+    apply Finset.sum_congr rfl
+    intro q hq
+    exact Int.toNat_of_nonneg (sub_nonneg.2 (hpt ⟨q, hq⟩))
+  have hnn : (0 : ℤ) ≤ (D' - D).degree := by
+    apply Function.locallyFinsuppWithin.degree_nonneg_of_nonneg
+    rw [sub_nonneg]
+    exact h
+  omega
 
 end RS.Cech

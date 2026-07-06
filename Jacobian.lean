@@ -16,3 +16,4 @@ import Jacobian.JacobianConstruction
 import Jacobian.Cech
 import Jacobian.Finiteness
 import Jacobian.Dbar
+import Jacobian.Monodromy
