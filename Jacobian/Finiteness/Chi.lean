@@ -64,46 +64,56 @@ noncomputable def chi [ConnectedSpace X] (D : RS.Divisor X) : ℤ := (RS.l D : �
 /-- The four rank-nullity applications along the six-term fragment
 `0 → L(D) → L(D') → Window D D' → H¹(D) → H¹(D') → 0`, packaged as two witness naturals `p, q`
 (`p` = the drop in `l` from `D` to `D'`, `q` = the drop in `h1` from `D` to `D'`). -/
+private theorem sixterm_rank1 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
+    RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (windowMap h)) := by
+  have hrn := LinearMap.finrank_range_add_finrank_ker (windowMap h)
+  have hexact : LinearMap.ker (windowMap h) =
+      LinearMap.range (Submodule.inclusion (RS.linSys_mono h)) :=
+    (LinearMap.exact_iff).1 (exact_inclusion_windowMap h)
+  rw [hexact] at hrn
+  have hrange_eq : Module.finrank ℂ
+      (LinearMap.range (Submodule.inclusion (RS.linSys_mono h))) = RS.l D := by
+    rw [RS.l]
+    exact (LinearEquiv.ofInjective _ (inclusion_injective h)).finrank_eq.symm
+  rw [hrange_eq] at hrn
+  show RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (windowMap h))
+  unfold RS.l at hrn ⊢
+  omega
+
+private theorem sixterm_rank2 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
+    Module.finrank ℂ (Window D D') = Module.finrank ℂ (LinearMap.range (windowMap h)) +
+      Module.finrank ℂ (LinearMap.range (windowConnect h)) := by
+  haveI hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
+  have hrn := LinearMap.finrank_range_add_finrank_ker (windowConnect h)
+  have hexact : LinearMap.ker (windowConnect h) = LinearMap.range (windowMap h) :=
+    (LinearMap.exact_iff).1 (exact_windowMap_windowConnect h)
+  rw [hexact] at hrn
+  omega
+
+set_option maxHeartbeats 1000000 in
+private theorem sixterm_rank3 {D D' : RS.Divisor X} (h : D ≤ D') :
+    h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D' := by
+  have hrn := LinearMap.finrank_range_add_finrank_ker (H1Incl D h)
+  have hexact : LinearMap.ker (H1Incl D h) = LinearMap.range (windowConnect h) :=
+    (LinearMap.exact_iff).1 (exact_windowConnect_H1Incl h)
+  rw [hexact] at hrn
+  have hsurj : LinearMap.range (H1Incl D h) = ⊤ :=
+    LinearMap.range_eq_top.2 (H1Incl_surjective h)
+  have hrange_eq : Module.finrank ℂ (LinearMap.range (H1Incl D h)) = h1 D' := by
+    rw [hsurj]
+    show Module.finrank ℂ (⊤ : Submodule ℂ (H1 D')) = Module.finrank ℂ (H1 D')
+    exact finrank_top ℂ (H1 D')
+  rw [hrange_eq] at hrn
+  show h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D'
+  unfold RS.Finiteness.h1 at hrn ⊢
+  omega
+
 theorem sixterm_ranks [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     ∃ p q : ℕ, RS.l D' = RS.l D + p ∧ Module.finrank ℂ (Window D D') = p + q ∧
-      h1 D = q + h1 D' := by
-  haveI hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
-  set p : ℕ := Module.finrank ℂ (LinearMap.range (windowMap h)) with hp_def
-  set q : ℕ := Module.finrank ℂ (LinearMap.range (windowConnect h)) with hq_def
-  refine ⟨p, q, ?_, ?_, ?_⟩
-  · have hrn := LinearMap.finrank_range_add_finrank_ker (windowMap h)
-    have hexact : LinearMap.ker (windowMap h) =
-        LinearMap.range (Submodule.inclusion (RS.linSys_mono h)) :=
-      (LinearMap.exact_iff).1 (exact_inclusion_windowMap h)
-    rw [hexact] at hrn
-    have hrange_eq : Module.finrank ℂ
-        (LinearMap.range (Submodule.inclusion (RS.linSys_mono h))) = RS.l D := by
-      rw [RS.l]
-      exact (LinearEquiv.ofInjective _ (inclusion_injective h)).finrank_eq.symm
-    rw [hrange_eq] at hrn
-    rw [← hp_def] at hrn
-    show RS.l D' = RS.l D + p
-    unfold RS.l
-    omega
-  · have hrn := LinearMap.finrank_range_add_finrank_ker (windowConnect h)
-    have hexact : LinearMap.ker (windowConnect h) = LinearMap.range (windowMap h) :=
-      (LinearMap.exact_iff).1 (exact_windowMap_windowConnect h)
-    rw [hexact, ← hp_def, ← hq_def] at hrn
-    omega
-  · have hrn := LinearMap.finrank_range_add_finrank_ker (H1Incl D h)
-    have hexact : LinearMap.ker (H1Incl D h) = LinearMap.range (windowConnect h) :=
-      (LinearMap.exact_iff).1 (exact_windowConnect_H1Incl h)
-    rw [hexact, ← hq_def] at hrn
-    have hsurj : LinearMap.range (H1Incl D h) = ⊤ :=
-      LinearMap.range_eq_top.2 (H1Incl_surjective h)
-    have hrange_eq : Module.finrank ℂ (LinearMap.range (H1Incl D h)) = h1 D' := by
-      rw [hsurj]
-      show Module.finrank ℂ (⊤ : Submodule ℂ (H1 D')) = Module.finrank ℂ (H1 D')
-      exact Module.finrank_top ℂ (H1 D')
-    rw [hrange_eq] at hrn
-    show h1 D = q + h1 D'
-    unfold RS.Finiteness.h1
-    omega
+      h1 D = q + h1 D' :=
+  ⟨Module.finrank ℂ (LinearMap.range (windowMap h)),
+    Module.finrank ℂ (LinearMap.range (windowConnect h)),
+    sixterm_rank1 h, sixterm_rank2 h, sixterm_rank3 h⟩
 
 theorem l_mono [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') : RS.l D ≤ RS.l D' := by
   obtain ⟨p, q, hp, -, -⟩ := sixterm_ranks h

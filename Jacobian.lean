@@ -22,3 +22,4 @@ import Jacobian.PlanarStokes
 import Jacobian.SerrePairing
 import Jacobian.AbelWeak
 import Jacobian.DolbeaultComparison
+import Jacobian.ResidueTheorem

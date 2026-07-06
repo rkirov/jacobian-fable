@@ -2,13 +2,16 @@ import Jacobian.Finiteness.Schwartz
 import Jacobian.Finiteness.BddHolo
 import Jacobian.Finiteness.CompactRestrict
 import Jacobian.Finiteness.Chain
+import Jacobian.Finiteness.TradeBounded
+import Jacobian.Finiteness.H1Finite
+import Jacobian.Finiteness.Chi
 
 /-!
 # finiteness-and-chi: `FiniteDimensional H¹(X, O_D)` via Schwartz/Montel (namespace `RS`/`RS.Finiteness`)
 
-API summary (see `docs/design/finiteness-and-chi.md`). **Partial delivery**: 4 of 7 design files
-are written (all gate-free per the design's §3 file plan); `TradeBounded.lean`, `H1Finite.lean`,
-`Chi.lean` are NOT written (gated — see "What remains" below). No file uses the forbidden tactic.
+API summary (see `docs/design/finiteness-and-chi.md`). **Unit COMPLETE**: all 7 design files are
+written, zero sorries, `scripts/check.sh Jacobian/Finiteness` passes. No file uses the
+forbidden tactic.
 
 * **`Schwartz.lean`** (namespace `RS`, pure Banach — zero project imports):
   `schwartz_finite_cospan` (the L. Schwartz perturbation lemma, cospan/span form: a compact
@@ -43,28 +46,30 @@ are written (all gate-free per the design's §3 file plan); `TradeBounded.lean`,
   `mem_tradeSpace_iff`/`mem_tradeSpace_iff_eq`, and the two Schwartz-cospan projections
   `tradePi`/`tradeCompact`.
 
-## What remains (gated; honest scope note for the continuation builder)
+* **`TradeBounded.lean`** (the gated centerpiece): `isCompactOperator_resZ_UV`/
+  `isCompactOperator_tradeCompact` (§4.4's finite-`Pi` Montel assembly, closing out `Chain.lean`'s
+  deferred obligation); the Banach ↔ Čech germ bridges `toGermZ1`/`boundZ1`/`boundZ1C0` (D5,
+  via `coverOfP` — a `rfl`-equal stand-in for `T.coverU`/`T.coverV`/`T.coverW` that sidesteps a
+  hard `isDefEq` wall on nested `LinSysOn`/`MeroGermOn` ascriptions, see the file's docstrings on
+  `starPairMem`/`starPairGerm`/`cC1`/`wPairMem` for the general pattern); `trade_evalAt` (the
+  "repr_cocycle" pointwise evaluation of `exists_trade`'s conclusion); **`tradePi_surjective`**
+  (Forster 14.6(a) upgraded to the Banach layer — the Schwartz surjectivity input); `classMap`
+  (§5 step 8) with its two Schwartz-consumer properties `classMap_tradeDiff_eq_zero` and
+  **`classMap_surjective`** (§5 step 9).
 
-Per the task's gate: `TradeBounded.lean`/`H1Finite.lean`/`Chi.lean` need cech's `Colimit`/`Window`/
-`Skyscraper` (now BUILT — the cech gate opened during this session) **and** the not-yet-built
-`dolbeault-comparison` unit's `Leray.lean` exports (`exists_trade`, `toH1_surjective_of_isGood`,
-`h1CoverEquiv`; no `Jacobian/DolbeaultComparison/` directory exists yet). Since `dolbeault` is
-still entirely absent, these three files are not written (not merely gated by an easy check —
-there is nothing to import).
+* **`H1Finite.lean`**: `finiteDimensional_h1Cover_W` (the Schwartz cospan assembly at a fixed
+  `ShrinkChain`) ⇒ **`finiteDimensional_H1_zero`** (`FiniteDimensional ℂ (H1 (0 : Divisor X))`,
+  Forster §14's headline) ⇒ **`finiteDimensional_H1`** (`FiniteDimensional ℂ (H1 D)` for ALL `D`,
+  §7, via cech's six-term skyscraper fragment — decision D2, NOT twisted norms). Records the
+  `addCommGroup_H1` Compat instance (`AddCommGroup (H1 D)` does not resolve by plain
+  `inferInstance` in this codebase — a documented cech gotcha; supplied explicitly via
+  `Module.DirectLimit.addCommGroup`).
 
-`Chain.lean`'s `tradeDefect`/`tradeSpace`/`tradePi`/`tradeCompact` (Forster's 14.6(b) subspace
-`L` and its two Schwartz-cospan projections) ARE now delivered — the former
-`IsTopologicalAddGroup`-instance-resolution wall was diagnosed and resolved by registering
-canonical `Submodule.*` instance shortcuts on `↥(NZ1 T P)`/`↥(tradeSpace T)` (full post-mortem
-in the note at the end of `Chain.lean`; the §5/§6.5 Schwartz consumption shapes were verified
-to type-check against them). The two `IsCompactOperator` assembly lemmas the design's §4.4
-lists (`isCompactOperator_resZ_UV`, `isCompactOperator_tradeCompact`) remain deferred — no
-longer instance-blocked, but their finite-`Pi`/product Montel assembly (§6.3 step 5) belongs
-with the `TradeBounded.lean`-gate work.
-
-None of `χ` ledger (`Chi.lean`), the all-`D` finiteness bookkeeping, or the
-`FiniteDimensional ℂ (H1 (0 : Divisor X))` headline instance are delivered — all live downstream
-of the gates above. `canonical-forms`/`riemann-roch` cannot yet consume this unit; a
-continuation builder should (once dolbeault lands) write
-`TradeBounded.lean`/`H1Finite.lean`/`Chi.lean` per the design's §5–§8 proof plans.
+* **`Chi.lean`**: `finiteDimensional_linSys` (`FiniteDimensional ℂ (LinSys D)` for ALL `D`, same
+  six-term recipe applied to `windowMap`); the χ ledger `h1 D`/`chi D := (l D : ℤ) − (h1 D : ℤ)`;
+  `sixterm_ranks` (the shared rank-nullity bookkeeping); `chi_of_le`/`chi_single_add`/
+  `chi_eq_chi_zero_add_degree` (the ledger identities); **`chi_zero_add_degree_le_l`**/
+  **`exists_ne_zero_mem_linSys`** (the Riemann-inequality seed, exact names canonical-forms' §D9
+  Existence gate consumes); `l_mono`/`l_le_l_add_degree`/`h1_le_of_le`/`h1_le_h1_add_degree`
+  (monotonicity corollaries).
 -/
