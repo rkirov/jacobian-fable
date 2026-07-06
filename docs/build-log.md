@@ -47,3 +47,24 @@
 - [p1] Jacobian/ProjectiveLine.lean (unit root) OK (41 lines, ~5s; scripts/check.sh Jacobian/ProjectiveLine passes, zero sorries — unit COMPLETE; NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add `import Jacobian.ProjectiveLine`). Scoped notation `ℙ¹ := OnePoint ℂ` in `RS.P1`. No `docs/requests/` additions needed — all consumed upstream APIs (Surface's `ChartedSpaceKit`/`Bridges`, Forms' `Coeffs`/`Genus`) matched the design doc exactly.
 - [residue] MittagLeffler.lean OK (245 lines, ~6.5s) — PrincipalPartData (as a Submodule-subtype, free AddCommGroup/Module), Realizes, toFun, totalRes, ofMeromorphicOn + realizes_ofMeromorphicOn, Realizes.add/smul/sub_orderAt_nonneg, realizes_zero_iff, zero sorries
 - [residue] Jacobian/ResidueCalculus.lean (unit root) OK (41 lines; scripts/check.sh Jacobian/ResidueCalculus passes, zero sorries — unit COMPLETE: TaylorCoeff 235, LaurentCoeff 383, PrincipalPart 236, Residue 376, ChangeOfVariables 160, IntegralBridge 174, GermFunctionals 86, MittagLeffler 245 lines, 1936 total)
+- [mero] Jacobian/Meromorphic/Predicates.lean OK (342 lines, ~6s) — MeromorphicAtX/OnX, ordAtX, chart-transport workhorse `eventually_nhdsNE_iff_comp_chart` (+ apply/eventuallyEq/tendsto specializations), chart invariance, arithmetic, classification, CC4 compat. Zero sorries.
+- [mero] Jacobian/Meromorphic/CodiscreteBridge.lean OK (160 lines, ~5s) — D2 bridge (mem_codiscreteWithin_iff_of_isOpen + specializations), codiscreteWithin_neBot, NeBot(codiscrete X) instance, congr_codiscreteWithin, analyticAt_codiscreteWithin, meromorphic identity dichotomy (clopen argument via eventually_ordAtX_eq_top/eventually_ordAtX_eq_zero), codiscrete_setOf_ne_zero. Zero sorries.
+- [mero] Jacobian/Meromorphic/GermSpace.lean OK (231 lines, ~6s) — Algebra ℂ (Germ l ℂ) Compat via Algebra.ofModule, meroGermSubalgebra, MeroGermOn/ℳ X, mk/mk_eq_mk/exists_rep/ind/mk_add.../algebraMap_mk, restrictGerm + MeroGermOn.restrict as AlgHom, restrict_mk/restrict_restrict/restrict_id, algebraMap_injective. Zero sorries.
+- [mero] Jacobian/Meromorphic/OrderEval.lean OK (329 lines, ~7s) — ord (liftOn descent) + calculus, evalAt (D5) + tendsto_evalAt/algebra, holoRepr + holoRepr_eventuallyEq_nhdsNE (unconditional-on-ord, via MeromorphicAt.eventually_analyticAt) + holoRepr_contMDiffAt (toMeromorphicNFAt route per design §6.5) + mk_holoRepr, continuousAt/tendsto_cobounded exports. Zero sorries.
+- [paths] Jacobian/Path/Planar.lean OK (185 lines; disk primitives via mathlib HasPrimitives,
+  local uniqueness, Convex.isPathConnected_diff_countable adapted from
+  Set.Countable.isPathConnected_compl_of_one_lt_rank, exists_homotopy_range_subset_of_convex)
+- [paths] Jacobian/Path/LocalPrimitive.lean OK (255 lines; IsPrimitiveAlongMap + mono/add_const/
+  congr/congr_map/continuousOn/comp/rechart/sub_eq_sub/glue + isPrimitiveAlongMap_of_ball helper;
+  uses RS.analyticAt_trans from Forms/Analyticity.lean per Forms builder's deviation note, not
+  the requested analyticOnNhd_transition which was not exported)
+- [paths] Jacobian/Path/Chain.lean OK (84 lines; ChartChain + exists_chartChain via
+  exists_monotone_Icc_subset_open_cover_unitInterval)
+- [paths] Jacobian/Path/Continuation.lean OK (341 lines; exists_isPrimitiveAlong via ChartChain
+  induction + clampI upgrade to univ, pathIntegral + pathIntegral_eq, pathIntegral_refl/symm/
+  trans/reparam/cast, pathIntegral_add/smul/zero_form, pathIntegralₗ)
+- [paths] Jacobian/Path/Bridge.lean OK (110 lines; pathIntegral_eq_intervalIntegral single-chart
+  C1 bridge via FTC-2 (intervalIntegral.integral_eq_sub_of_hasDeriv_right_of_le), and
+  pathIntegral_mdifferential FTC-along-a-path for mdifferential)
+- [mero] Jacobian/Meromorphic/Field.lean OK (90 lines, ~5s) — Inv (pointwise, unconditional), mk_inv, ord_inv, Mero.ord_ne_top/ord_eq_top_iff (identity dichotomy corollary), Mero.mul_inv_cancel, Field (ℳ X) instance. Zero sorries.
+- [mero] Jacobian/Meromorphic/Divisor.lean OK (315 lines, ~6s) — Function.locallyFinsuppWithin.degree Compat (+ degree_zero/add/neg/mono/nonneg_of_nonneg), Divisor X abbrev, MeroGermOn.divisorOn (local finiteness via eventually_ordAtX_eq_top/eq_zero, §6.3 plan), divisor total map + algebra (mul/inv/smul/algebraMap/min_divisor_le_divisor_add), divisor_nonneg_iff (unconditional, via untop₀_nonneg), compactness finiteness (finite_support_divisor, finite_setOf_ord_neg/pos, eventually_ord_eq_zero). Zero sorries.
