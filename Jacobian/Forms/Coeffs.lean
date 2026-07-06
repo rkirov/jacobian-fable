@@ -206,6 +206,7 @@ theorem Form1.ext_coeffAt {η η' : Form1 X} (h : ∀ x, coeffAt x η = coeffAt 
 
 open IsManifold
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The transition map between two charts, as read in the maximal atlas, is `C^ω` (hence
 differentiable) at every point of the image of the overlap. -/
 theorem differentiableAt_trans {e e' : OpenPartialHomeomorph X ℂ}

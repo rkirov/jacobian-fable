@@ -3,6 +3,7 @@ Blueprint unit: residue-calculus. Taylor-coefficient extractor via iterated `dsl
 -/
 import Mathlib.Analysis.Analytic.IsolatedZeros
 import Mathlib.Analysis.Calculus.DSlope
+import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Complex.Basic
 
 /-!
@@ -14,7 +15,7 @@ power series `p` it equals `p.coeff j` (`RS.HasFPowerSeriesAt.taylorCoeffAt_eq`)
 
 Main exports:
 * `RS.taylorCoeffAt_congr` — dependence on the `𝓝 z₀`-germ only;
-* `RS.taylorCoeffAt_fun_add` / `_const_mul` / `_sub` / `_fun_sum` — ℂ-linearity on analytic germs;
+* `RS.taylorCoeffAt_add` / `_const_mul` / `_sub` / `_fun_sum` — ℂ-linearity on analytic germs;
 * `RS.taylorCoeffAt_sub_pow_mul`, `RS.taylorCoeffAt_monomial` — the monomial shift workhorse;
 * `RS.AnalyticAt.exists_taylor_remainder` — exact, pointwise Taylor remainder factorization.
 -/
@@ -34,9 +35,7 @@ noncomputable def taylorCoeffAt (g : ℂ → ℂ) (z₀ : ℂ) (j : ℕ) : ℂ :
 @[simp] theorem taylorCoeffAt_zero_apply : taylorCoeffAt g z₀ 0 = g z₀ := rfl
 
 theorem taylorCoeffAt_succ (j : ℕ) :
-    taylorCoeffAt g z₀ (j + 1) = taylorCoeffAt (dslope g z₀) z₀ j := by
-  simp only [taylorCoeffAt, Function.iterate_succ_apply]
-  rfl
+    taylorCoeffAt g z₀ (j + 1) = taylorCoeffAt (dslope g z₀) z₀ j := rfl
 
 /-- `dslope` iterates of analytic germs are analytic. -/
 theorem AnalyticAt.iterate_dslope (hg : AnalyticAt ℂ g z₀) (j : ℕ) :
@@ -68,7 +67,7 @@ theorem taylorCoeffAt_congr (hfg : f =ᶠ[𝓝 z₀] g) (j : ℕ) :
   | zero => exact hfg.eq_of_nhds
   | succ j ih =>
     rw [taylorCoeffAt_succ, taylorCoeffAt_succ]
-    exact ih hfg.dslope_eq
+    exact ih (Filter.EventuallyEq.dslope_eq hfg)
 
 theorem dslope_const_mul (c : ℂ) (g : ℂ → ℂ) (z₀ : ℂ) :
     dslope (fun z => c * g z) z₀ = fun b => c * dslope g z₀ b := by
@@ -113,8 +112,9 @@ theorem taylorCoeffAt_add (hf : AnalyticAt ℂ f z₀) (hg : AnalyticAt ℂ g z�
     taylorCoeffAt (f + g) z₀ j = taylorCoeffAt f z₀ j + taylorCoeffAt g z₀ j := by
   obtain ⟨p, hp⟩ := hf
   obtain ⟨q, hq⟩ := hg
-  rw [hp.taylorCoeffAt_eq, hq.taylorCoeffAt_eq, (hp.add hq).taylorCoeffAt_eq j]
-  simp [FormalMultilinearSeries.coeff]
+  rw [HasFPowerSeriesAt.taylorCoeffAt_eq (hp.add hq) j,
+    HasFPowerSeriesAt.taylorCoeffAt_eq hp j, HasFPowerSeriesAt.taylorCoeffAt_eq hq j]
+  rfl
 
 theorem taylorCoeffAt_fun_add (hf : AnalyticAt ℂ f z₀) (hg : AnalyticAt ℂ g z₀) (j : ℕ) :
     taylorCoeffAt (fun z => f z + g z) z₀ j = taylorCoeffAt f z₀ j + taylorCoeffAt g z₀ j :=
@@ -122,14 +122,17 @@ theorem taylorCoeffAt_fun_add (hf : AnalyticAt ℂ f z₀) (hg : AnalyticAt ℂ 
 
 theorem taylorCoeffAt_sub (hf : AnalyticAt ℂ f z₀) (hg : AnalyticAt ℂ g z₀) (j : ℕ) :
     taylorCoeffAt (fun z => f z - g z) z₀ j = taylorCoeffAt f z₀ j - taylorCoeffAt g z₀ j := by
-  simp only [sub_eq_add_neg]
-  rw [taylorCoeffAt_fun_add hf hg.neg, taylorCoeffAt_neg]
+  have hneg : AnalyticAt ℂ (fun z => -g z) z₀ := by fun_prop
+  have h2 := taylorCoeffAt_fun_add (g := fun z => -g z) hf hneg j
+  rw [taylorCoeffAt_neg] at h2
+  have h1 : (fun z => f z - g z) = fun z => f z + -g z := by funext z; ring
+  rw [h1, h2, sub_eq_add_neg]
 
 theorem taylorCoeffAt_fun_sum {ι : Type*} {s : Finset ι} {G : ι → ℂ → ℂ}
     (hG : ∀ i ∈ s, AnalyticAt ℂ (G i) z₀) (j : ℕ) :
     taylorCoeffAt (fun z => ∑ i ∈ s, G i z) z₀ j = ∑ i ∈ s, taylorCoeffAt (G i) z₀ j := by
   classical
-  induction s with
+  induction s using Finset.induction with
   | empty => simp
   | insert a s ha ih =>
     have hstep : (fun z => ∑ i ∈ insert a s, G i z)
@@ -145,9 +148,9 @@ theorem dslope_sub_mul (hF : DifferentiableAt ℂ F z₀) :
   funext b
   rcases eq_or_ne b z₀ with rfl | hbz
   · rw [dslope_same]
-    have h1 : HasDerivAt (fun z => (z - z₀) * F z)
-        (1 * F z₀ + (z₀ - z₀) * deriv F z₀) z₀ :=
-      ((hasDerivAt_id z₀).sub_const z₀).mul hF.hasDerivAt
+    have h1 : HasDerivAt (fun z => (z - b) * F z)
+        (1 * F b + (b - b) * deriv F b) b :=
+      ((hasDerivAt_id b).sub_const b).mul hF.hasDerivAt
     simpa using h1.deriv
   · have h2 := dslope_sub_smul_of_ne F hbz
     simpa only [smul_eq_mul] using h2
@@ -167,14 +170,14 @@ theorem taylorCoeffAt_sub_pow_mul (hg : AnalyticAt ℂ g z₀) (d j : ℕ) :
       have hfun : (fun z => (z - z₀) ^ (d + 1) * g z)
           = fun z => (z - z₀) * ((z - z₀) ^ d * g z) := by
         funext z; ring
-      have hdiff : DifferentiableAt ℂ (fun z => (z - z₀) ^ d * g z) z₀ :=
-        ((differentiableAt_id.sub_const z₀).pow d).mul hg.differentiableAt
+      have hg' : DifferentiableAt ℂ g z₀ := hg.differentiableAt
+      have hdiff : DifferentiableAt ℂ (fun z => (z - z₀) ^ d * g z) z₀ := by fun_prop
       rw [hfun, taylorCoeffAt_succ, dslope_sub_mul hdiff, ih j]
       simp only [Nat.succ_lt_succ_iff, Nat.succ_sub_succ]
 
 @[simp] theorem taylorCoeffAt_monomial (d j : ℕ) :
     taylorCoeffAt (fun z => (z - z₀) ^ d) z₀ j = if j = d then 1 else 0 := by
-  have h := taylorCoeffAt_sub_pow_mul (g := fun _ => (1 : ℂ)) analyticAt_const d j
+  have h := taylorCoeffAt_sub_pow_mul (g := fun _ => (1 : ℂ)) (z₀ := z₀) analyticAt_const d j
   simp only [mul_one] at h
   rw [h, taylorCoeffAt_const]
   split_ifs <;> first | rfl | omega
@@ -187,16 +190,17 @@ theorem AnalyticAt.exists_taylor_remainder (hg : AnalyticAt ℂ g z₀) (m : ℕ
       ∀ z, g z = (∑ d ∈ Finset.range m, taylorCoeffAt g z₀ d * (z - z₀) ^ d)
         + (z - z₀) ^ m * r z := by
   classical
-  set P : ℂ → ℂ := fun z => ∑ d ∈ Finset.range m, taylorCoeffAt g z₀ d * (z - z₀) ^ d with hP
-  have hPan : AnalyticAt ℂ P z₀ :=
+  obtain ⟨G, hGdef⟩ : ∃ G : ℂ → ℂ,
+      G = fun z => g z - ∑ d ∈ Finset.range m, taylorCoeffAt g z₀ d * (z - z₀) ^ d := ⟨_, rfl⟩
+  have hPan : AnalyticAt ℂ
+      (fun z => ∑ d ∈ Finset.range m, taylorCoeffAt g z₀ d * (z - z₀) ^ d) z₀ :=
     Finset.analyticAt_fun_sum _ fun d _ => by fun_prop
-  set G : ℂ → ℂ := fun z => g z - P z with hGdef
-  have hGan : AnalyticAt ℂ G z₀ := hg.sub hPan
+  have hGan : AnalyticAt ℂ G z₀ := by rw [hGdef]; exact hg.sub hPan
   -- Taylor coefficients of `G` vanish below `m`.
   have hGcoeff : ∀ j, taylorCoeffAt G z₀ j
       = taylorCoeffAt g z₀ j - (if j < m then taylorCoeffAt g z₀ j else 0) := by
     intro j
-    rw [hGdef, taylorCoeffAt_sub hg hPan, hP]
+    rw [hGdef, taylorCoeffAt_sub hg hPan]
     congr 1
     rw [taylorCoeffAt_fun_sum (fun d _ => by fun_prop) j]
     have hterm : ∀ d ∈ Finset.range m,
@@ -205,34 +209,27 @@ theorem AnalyticAt.exists_taylor_remainder (hg : AnalyticAt ℂ g z₀) (m : ℕ
       intro d _
       rw [taylorCoeffAt_const_mul, taylorCoeffAt_monomial]
       split_ifs <;> simp
-    rw [Finset.sum_congr rfl hterm, Finset.sum_ite_eq, Finset.mem_range]
-  refine ⟨(Function.swap dslope z₀)^[m] G, hGan.iterate_dslope m, ?_, ?_⟩
-  case refine_2 =>
-    intro z
-    have hpt := pow_sub_smul_iterate_dslope_of_zero (f := G) (a := z₀) m
-      (fun k hk => by
-        have h0 := hGcoeff k
-        rw [if_pos hk, sub_self] at h0
-        exact h0) z
-    rw [smul_eq_mul] at hpt
-    have : G z = g z - P z := rfl
-    rw [hpt, this]
+    rw [Finset.sum_congr rfl hterm, Finset.sum_ite_eq]
+    simp only [Finset.mem_range]
+  have hzero : ∀ k < m, (Function.swap dslope z₀)^[k] G z₀ = 0 := by
+    intro k hk
+    have h0 := hGcoeff k
+    rw [if_pos hk, sub_self] at h0
+    exact h0
+  have h1 : (fun z => (z - z₀) ^ m * (Function.swap dslope z₀)^[m] G z) = G := by
+    funext z
+    have hpt := pow_sub_smul_iterate_dslope_of_zero (f := G) (a := z₀) m hzero z
+    rwa [smul_eq_mul] at hpt
+  refine ⟨(Function.swap dslope z₀)^[m] G, AnalyticAt.iterate_dslope hGan m, ?_, ?_⟩
+  · intro j
+    have h2 := taylorCoeffAt_sub_pow_mul (AnalyticAt.iterate_dslope hGan m) m (j + m)
+    rw [h1, hGcoeff (j + m)] at h2
+    simp only [if_neg (show ¬ j + m < m by omega), sub_zero, Nat.add_sub_cancel] at h2
+    exact h2.symm
+  · intro z
+    have hpt := congrFun h1 z
+    rw [hpt]
+    simp only [hGdef]
     ring
-  case refine_1 =>
-    intro j
-    have hran : AnalyticAt ℂ ((Function.swap dslope z₀)^[m] G) z₀ := hGan.iterate_dslope m
-    have h1 : (fun z => (z - z₀) ^ m * (Function.swap dslope z₀)^[m] G z) = G := by
-      funext z
-      have hpt := pow_sub_smul_iterate_dslope_of_zero (f := G) (a := z₀) m
-        (fun k hk => by
-          have h0 := hGcoeff k
-          rw [if_pos hk, sub_self] at h0
-          exact h0) z
-      rw [smul_eq_mul] at hpt
-      exact hpt
-    have h2 := taylorCoeffAt_sub_pow_mul hran m (j + m)
-    rw [h1, hGcoeff] at h2
-    rw [if_neg (by omega : ¬ j + m < m), Nat.add_sub_cancel] at h2
-    simpa using h2.symm
 
 end RS
