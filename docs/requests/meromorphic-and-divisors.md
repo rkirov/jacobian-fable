@@ -56,3 +56,19 @@ marked `Compat` section — nothing blocks either unit.
    `ordAtX_eq_of_mem_source`, `ordAtX_of_contMDiffAt_eq_zero`,
    `MeromorphicOnX.eventuallyEq_zero_or_forall_ordAtX_ne_top`,
    `MeromorphicOnX.codiscrete_setOf_ne_zero`, `eventuallyEq_codiscrete_iff`.
+
+---
+
+## From dbar-solvability (designer; see `docs/design/dbar-solvability.md` §8)
+
+4. **Analytic ⇒ mero + nonnegative order** (for our `DiskAcyclic.lean` germ transport):
+   (a) `meromorphicOnX_of_contMDiffOn_omega (hU : IsOpen U) (hu : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω u U) :
+       MeromorphicOnX u U`;
+   (b) for such `u`, `∀ x ∈ U, 0 ≤ (MeroGermOn.mk u ‹_›).ord x` (equivalently
+       `0 ≤ ordAtX u x`), so `mk u ∈ LinSysOn 0 U`.
+   Both are chart-transport one-liners over mathlib's `AnalyticAt.meromorphicAt` /
+   `meromorphicOrderAt`-nonneg-of-analytic lemmas (`Analysis/Meromorphic/Order.lean`). If not
+   absorbed, we prove them locally in a marked `Compat` section of `Jacobian/Dbar/DiskAcyclic.lean`
+   — no blocking either way.
+5. **(nice-to-have)** an `Iff.rfl`-grade `mem_linSysOn_iff : φ ∈ LinSysOn D U ↔ ∀ x ∈ U,
+   (-(D x) : WithTop ℤ) ≤ φ.ord x` unfolding lemma, so consumers never touch the carrier.
