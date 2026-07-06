@@ -27,3 +27,4 @@ import Jacobian.CanonicalForms
 import Jacobian.LaurentTail
 import Jacobian.JacFunctorial
 import Jacobian.Abel
+import Jacobian.TailDuality
