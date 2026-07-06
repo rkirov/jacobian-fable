@@ -2,25 +2,32 @@ import Jacobian.Forms
 import Jacobian.Meromorphic
 
 /-!
-# `MForm X`: meromorphic 1-forms as chart-coefficient families (D1–D3)
+# `MFormData X`: raw chart-coefficient families for meromorphic 1-forms (D1–D3, data layer)
 
 Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D1–D3, §4.1). Blueprint: "Meromorphic
 1-form systems and the canonical divisor `K`."
 
-`MForm X` is the meromorphic analogue of `Form1`'s chart-coefficient API (`Jacobian/Forms/Coeffs.lean`)
-and of dbar's `Form01` (`Jacobian/Dbar/Form01.lean`): a `chartAt`-indexed family of coefficient
-functions, junk-zero off the chart target, `MeromorphicOn` the target (mathlib's *unconditional*
-generalization of `Form01`'s `ContDiffOn`/`Form1`'s `AnalyticOnNhd`, allowing poles), related on
-chart overlaps by the CC1-style transition rule `coeffAt y z = deriv (chartAt x ∘ (chartAt y).symm) z
-* coeffAt x (...)` — **no conjugate** (a meromorphic 1-form is still type `(1,0)`, unlike `Form01`'s
+`MFormData X` is the RAW DATA CARRIER for meromorphic 1-forms: the meromorphic analogue of
+`Form1`'s chart-coefficient API (`Jacobian/Forms/Coeffs.lean`) and of dbar's `Form01`
+(`Jacobian/Dbar/Form01.lean`) — a `chartAt`-indexed family of coefficient functions, junk-zero off
+the chart target, `MeromorphicOn` the target (mathlib's *unconditional* generalization of
+`Form01`'s `ContDiffOn`/`Form1`'s `AnalyticOnNhd`, allowing poles), related on chart overlaps by
+the CC1-style transition rule `coeffAt y z = deriv (chartAt x ∘ (chartAt y).symm) z *
+coeffAt x (...)` — **no conjugate** (a meromorphic 1-form is still type `(1,0)`, unlike `Form01`'s
 `(0,1)`-conjugate rule).
 
+**Raw equality on `MFormData` is too fine** (meromorphic coefficient functions carry junk values
+at poles, so "`ord = ⊤` everywhere" does not pin the raw values): the ACTUAL meromorphic-1-form
+type is the quotient `RS.MForm X` by codiscrete/germ agreement (`Quotient.lean`, the same CC3
+pattern as `ℳ X := MeroGermOn X univ`). Everything in this file is the foundation the quotient
+descends from.
+
 Main declarations:
-* `RS.MForm X` — the structure (D1); `RS.MForm.ext`, `Zero`/`Add`/`Neg`/`Sub`/`SMul ℂ`/
+* `RS.MFormData X` — the structure (D1); `RS.MFormData.ext`, `Zero`/`Add`/`Neg`/`Sub`/`SMul ℂ`/
   `AddCommGroup`/`Module ℂ` instances (D2), pointwise on `coeffAt`.
-* `RS.MFormCoeffData X ι` / `RS.MForm.ofCoeffs` (D3) — the arbitrary-chart-family constructor,
+* `RS.MFormCoeffData X ι` / `RS.MFormData.ofCoeffs` (D3) — the arbitrary-chart-family constructor,
   mirroring `Form1CoeffData`/`Form1.ofCoeffs` (`Jacobian/Forms/OfCoeffs.lean`) with
-  `AnalyticOnNhd ↦ MeromorphicOn`; not used by `MForm.d`/`dlog` (built directly against `chartAt`
+  `AnalyticOnNhd ↦ MeromorphicOn`; not used by `MFormData.d`/`dlog` (built directly against `chartAt`
   in `Differential.lean`), offered for future covering-family constructions (e.g. laurent-tails).
 -/
 
@@ -35,7 +42,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-- A meromorphic 1-form on `X`: the meromorphic analogue of `Form1`'s `coeffIn` API and
 `Form01`'s chart-family structure, generalized to allow poles (D1). -/
-structure MForm (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
+structure MFormData (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] where
   /-- The coefficient function in the preferred chart at each point. -/
   coeffAt : X → ℂ → ℂ
@@ -45,11 +52,11 @@ structure MForm (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
     coeffAt y z = deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) z *
       coeffAt x (chartAt ℂ x ((chartAt ℂ y).symm z))
 
-namespace MForm
+namespace MFormData
 
 /-- A meromorphic 1-form is determined by its preferred-chart coefficients on chart targets. -/
 @[ext]
-theorem ext {θ η : MForm X}
+theorem ext {θ η : MFormData X}
     (h : ∀ x, ∀ z ∈ (chartAt ℂ x).target, θ.coeffAt x z = η.coeffAt x z) : θ = η := by
   have hcoeff : θ.coeffAt = η.coeffAt := by
     funext x z
@@ -62,32 +69,32 @@ theorem ext {θ η : MForm X}
   subst hcoeff
   rfl
 
-instance : Zero (MForm X) where
+instance : Zero (MFormData X) where
   zero := ⟨fun _ _ => 0, fun _ _ _ => rfl,
     fun x => (MeromorphicOn.const (U := (chartAt ℂ x).target) (0 : ℂ) : MeromorphicOn _ _),
     fun _ _ _ _ => by simp⟩
 
-instance : Add (MForm X) where
+instance : Add (MFormData X) where
   add θ η := ⟨fun x z => θ.coeffAt x z + η.coeffAt x z,
     fun x z hz => by
       dsimp only; rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, add_zero],
     fun x => (θ.meromorphicOn_coeffAt x).add (η.meromorphicOn_coeffAt x),
     fun x y z hz => by dsimp only; rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
 
-instance : Neg (MForm X) where
+instance : Neg (MFormData X) where
   neg θ := ⟨fun x z => -θ.coeffAt x z,
     fun x z hz => by dsimp only; rw [θ.coeffAt_zero_off x z hz, neg_zero],
     fun x => (θ.meromorphicOn_coeffAt x).neg,
     fun x y z hz => by dsimp only; rw [θ.compat x y z hz]; ring⟩
 
-instance : Sub (MForm X) where
+instance : Sub (MFormData X) where
   sub θ η := ⟨fun x z => θ.coeffAt x z - η.coeffAt x z,
     fun x z hz => by
       dsimp only; rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, sub_zero],
     fun x => (θ.meromorphicOn_coeffAt x).sub (η.meromorphicOn_coeffAt x),
     fun x y z hz => by dsimp only; rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
 
-instance : SMul ℂ (MForm X) where
+instance : SMul ℂ (MFormData X) where
   smul c θ := ⟨fun x z => c * θ.coeffAt x z,
     fun x z hz => by dsimp only; rw [θ.coeffAt_zero_off x z hz, mul_zero],
     fun x => by
@@ -96,21 +103,21 @@ instance : SMul ℂ (MForm X) where
       exact hc.mul (θ.meromorphicOn_coeffAt x),
     fun x y z hz => by dsimp only; rw [θ.compat x y z hz]; ring⟩
 
-@[simp] theorem coeffAt_zero (x : X) (z : ℂ) : (0 : MForm X).coeffAt x z = 0 := rfl
+@[simp] theorem coeffAt_zero (x : X) (z : ℂ) : (0 : MFormData X).coeffAt x z = 0 := rfl
 
-@[simp] theorem coeffAt_add (θ η : MForm X) (x : X) (z : ℂ) :
+@[simp] theorem coeffAt_add (θ η : MFormData X) (x : X) (z : ℂ) :
     (θ + η).coeffAt x z = θ.coeffAt x z + η.coeffAt x z := rfl
 
-@[simp] theorem coeffAt_neg (θ : MForm X) (x : X) (z : ℂ) :
+@[simp] theorem coeffAt_neg (θ : MFormData X) (x : X) (z : ℂ) :
     (-θ).coeffAt x z = -θ.coeffAt x z := rfl
 
-@[simp] theorem coeffAt_sub (θ η : MForm X) (x : X) (z : ℂ) :
+@[simp] theorem coeffAt_sub (θ η : MFormData X) (x : X) (z : ℂ) :
     (θ - η).coeffAt x z = θ.coeffAt x z - η.coeffAt x z := rfl
 
-@[simp] theorem coeffAt_smul (c : ℂ) (θ : MForm X) (x : X) (z : ℂ) :
+@[simp] theorem coeffAt_smul (c : ℂ) (θ : MFormData X) (x : X) (z : ℂ) :
     (c • θ).coeffAt x z = c * θ.coeffAt x z := rfl
 
-instance : AddCommGroup (MForm X) where
+instance : AddCommGroup (MFormData X) where
   add_assoc a b c := by ext x z _; simp; ring
   zero_add a := by ext x z _; simp
   add_zero a := by ext x z _; simp
@@ -120,7 +127,7 @@ instance : AddCommGroup (MForm X) where
   nsmul := nsmulRec
   zsmul := zsmulRec
 
-instance : Module ℂ (MForm X) where
+instance : Module ℂ (MFormData X) where
   smul_zero a := by ext x z _; simp
   smul_add a b c := by ext x z _; simp; ring
   add_smul a b c := by ext x z _; simp; ring
@@ -128,9 +135,9 @@ instance : Module ℂ (MForm X) where
   one_smul a := by ext x z _; simp
   mul_smul a b c := by ext x z _; simp; ring
 
-end MForm
+end MFormData
 
-/-! ### D3: constructing `MForm` from arbitrary compatible chart data -/
+/-! ### D3: constructing `MFormData` from arbitrary compatible chart data -/
 
 /-- Compatible meromorphic coefficient data for a meromorphic 1-form, over a covering family of
 `ω`-maximal-atlas charts (mirrors `Form1CoeffData`, `MeromorphicOn` in place of `AnalyticOnNhd`). -/
@@ -157,7 +164,7 @@ theorem mem_source_idx (x : X) : x ∈ (D.chart (D.idx x)).source := (D.exists_m
 
 /-- The coefficient of the assembled family, read through an arbitrary maximal-atlas chart `e'`,
 using the per-point chosen index (mirrors `Form1CoeffData.toSection`, without the bundle layer:
-`MForm` has no covector-bundle backing, so this formula IS the assembled coefficient directly). -/
+`MFormData` has no covector-bundle backing, so this formula IS the assembled coefficient directly). -/
 noncomputable def rawCoeffAt (e' : OpenPartialHomeomorph X ℂ) (z : ℂ) : ℂ :=
   deriv (⇑(D.chart (D.idx (e'.symm z))) ∘ ⇑e'.symm) z *
     D.coeff (D.idx (e'.symm z)) (D.chart (D.idx (e'.symm z)) (e'.symm z))
@@ -204,10 +211,10 @@ theorem meromorphicAt_rawCoeffAt (e' : OpenPartialHomeomorph X ℂ)
 
 end MFormCoeffData
 
-namespace MForm
+namespace MFormData
 
-/-- Assemble an `MForm` from compatible chart-coefficient data (D3, mirrors `Form1.ofCoeffs`). -/
-noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MForm X where
+/-- Assemble an `MFormData` from compatible chart-coefficient data (D3, mirrors `Form1.ofCoeffs`). -/
+noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X where
   coeffAt x z := if z ∈ (chartAt ℂ x).target then D.rawCoeffAt (chartAt ℂ x) z else 0
   coeffAt_zero_off x z hz := if_neg hz
   meromorphicOn_coeffAt x := by
@@ -243,13 +250,13 @@ noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MForm X wher
     rw [h1, h3, h2]
     ring
 
-/-- The coefficient of `MForm.ofCoeffs D` in the `i`-th chart of the data, read at a point of the
+/-- The coefficient of `MFormData.ofCoeffs D` in the `i`-th chart of the data, read at a point of the
 preferred chart at `x`, is the given coefficient transported by the transition derivative
 (mirrors `Form1.coeffAt_ofCoeffs`). -/
 theorem coeffAt_ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) {x : X} {i : ι}
     (_hx : x ∈ (D.chart i).source) {z : ℂ}
     (hz : z ∈ ⇑(chartAt ℂ x) '' ((D.chart i).source ∩ (chartAt ℂ x).source)) :
-    (MForm.ofCoeffs D).coeffAt x z =
+    (MFormData.ofCoeffs D).coeffAt x z =
       deriv (⇑(D.chart i) ∘ ⇑(chartAt ℂ x).symm) z *
         D.coeff i (D.chart i ((chartAt ℂ x).symm z)) := by
   obtain ⟨p, hp, rfl⟩ := hz
@@ -261,6 +268,6 @@ theorem coeffAt_ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) {x : X} {i : ι}
   rw [if_pos hxt]
   exact D.rawCoeffAt_eq (chart_mem_maximalAtlas x) i hxt hp'
 
-end MForm
+end MFormData
 
 end RS

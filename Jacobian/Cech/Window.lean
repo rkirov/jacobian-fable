@@ -14,10 +14,10 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.6).
 * `diffSupp`, `Window D D'`: the skyscraper `⊕_q ℂ^{(D'−D)(q)}` in abstract form.
 * `windowMap`: the truncation `L(D') → Window D D'` (purely structural).
 
-**Not proved here** (deferred, see the file-end note): `finrank_windowAt`/`finrank_window`, the
-explicit dimension counts via a `θ`-basis (design §6.8's induction argument) — these are
-finiteness-and-chi's χ-ledger inputs; the *structural* exactness needed for the six-term
-fragment (`Skyscraper.lean`) does not depend on them.
+The explicit dimension counts `finrank_windowAt`/`finrank_window` (finiteness-and-chi's χ-ledger
+inputs) are exported from `WindowRank.lean` instead, via a one-step splitting
+`WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ` and induction (no `θ`-basis/independence argument
+needed); the *structural* exactness in this file does not depend on them.
 -/
 
 open scoped ContDiff Manifold Topology
@@ -221,18 +221,19 @@ theorem inclusion_injective {D D' : RS.Divisor X} (h : D ≤ D') :
   Submodule.inclusion_injective (RS.linSys_mono h)
 
 /-!
-### Not proved in this unit
+### Dimension counts: see `WindowRank.lean`
 
 `finrank_windowAt (h : d ≤ d') : Module.finrank ℂ (WindowAt p d d') = (d' - d).toNat` and
-`finrank_window (h : D ≤ D') : Module.finrank ℂ (Window D D') = ((D' - D).degree).toNat`
-(design §6.8: an explicit `θ_{p,m}`-basis, independence by a minimal-index leading-coefficient
-argument, spanning by strong induction on `d' - d`) are **not proved here** — the basis/induction
-argument did not fit the time budget for this unit. `FiniteDimensional ℂ (WindowAt p d d')` is
-deferred along with it. Every other export in this file (`ordGe`, `tailGerm`, `leadCoeff`,
-`WindowAt`, `Window`, `windowMap` and its exactness/injectivity) is proved with zero sorries and
-does not depend on the dimension counts. finiteness-and-chi (the consumer of the χ-ledger) will
-need to supply these two lemmas; the `θ`-basis proof plan is recorded verbatim in the design doc
-§6.8 for whoever picks this up.
+`finrank_window (h : D ≤ D') : Module.finrank ℂ (Window D D') = ((D' - D).degree).toNat`,
+plus the `FiniteDimensional` instances, are proved in `WindowRank.lean` (which imports this
+file) — via a one-step splitting `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ`
+(`LinearMap.quotKerEquivRange` on an explicit "subtract off the leading term" map) and induction
+on `(d' - d).toNat`, **not** the `θ`-basis/independence argument originally planned in design
+§6.8 (that argument needed `leadCoeff` to be defined on the whole numerator `ordGe p (-d')` for
+every basis index simultaneously, which it isn't; the one-step splitting sidesteps this by only
+ever using `leadCoeff p (-d')`, which *is* defined on the whole numerator). Every export in
+*this* file (`ordGe`, `tailGerm`, `leadCoeff`, `WindowAt`, `Window`, `windowMap` and its
+exactness/injectivity) is proved with zero sorries and does not depend on the dimension counts.
 -/
 
 end RS.Cech

@@ -555,3 +555,79 @@
   Jacobian/Monodromy` passes, zero sorries — unit COMPLETE). NB: `Jacobian.lean` was NOT touched
   (out of scope per this builder's hard rules) — the root import registration is left for
   whoever assembles `Jacobian/Challenge.lean` / integrates units, or a future pass.
+- [cech] Continuation pass on `Jacobian/Cech/` — closed two of the three deferred gaps in full,
+  the third partially. `scripts/check.sh Jacobian/Cech` passes: builds clean, **zero sorries**
+  across all 10 files + root (2528 lines, up from 1728). New files: `Injectivity.lean` (269),
+  `WindowRank.lean` (347), `SixTerm.lean` (97); minimal docstring-only edits to
+  `Refinement.lean`/`Colimit.lean`/`Window.lean`/`Skyscraper.lean` to retarget their "deferred"
+  notes at the new files (no proof code in those four files was touched).
+  1. **Forster 12.4 injectivity** (`Injectivity.lean`) — **CLOSED**. `resH1_injective` via the
+     sheaf-axiom gluing plan (§6.7): `injPatch`/`injPatch_compat` (the local candidate
+     `f(i,τk) − g(k)` and its overlap compatibility, proved via `Z1.rel_res` at a constructed
+     meet-of-opens `Wraw`, exploiting that `Opens.⊓`'s coercion is *the same term* as `Set.∩`
+     by `rfl` so Set-level and Opens-level inequality proofs interchange freely),
+     `exists_injGlue` (`MeroGermOn.exists_glue` assembly per member `𝒰.U i`),
+     `d0_injGlue_eq_neg` (the glued cochain is a coboundary witness for `−f`, a harmless sign
+     artifact of `injPatch`'s convention — resolved by witnessing `B1` with `−ψ`). Then
+     `toH1_injective`/`toH1_eq_zero_iff`/`subsingleton_H1_iff` via
+     `Module.DirectLimit.exists_eq_of_of_eq` + `resH1_injective` (deliberately avoided
+     `of.zero_exact`+subtraction: `AddCommGroup (H1 D)`/`AddGroup (H1 D)` fails plain
+     `inferInstance` in this codebase — a genuine higher-order-instance gap in resolving
+     `∀ 𝒰, AddCommGroup (H1Cover D 𝒰)` for `Module.DirectLimit`'s `addCommGroup` instance; the
+     subtraction-free `exists_eq_of_of_eq` route sidesteps it entirely). **Bonus**: the `⇒` half
+     of `mlClass_eq_zero_iff` (added to `Skyscraper.lean`, needs `D ≤ D'` as an explicit
+     hypothesis not shown in the design's abbreviated pseudocode) — via `toH1_injective` +
+     `H0.lean`'s `toC0'_surjective` gluing, exactly per design §6.9(b).
+  2. **Window dimension counts** (`WindowRank.lean`) — **CLOSED**, but via a *different* proof
+     route than design §6.8's planned `θ`-basis/`Basis.mk` independence-and-spanning argument:
+     that argument needs `leadCoeff p m` defined on the *whole* numerator `ordGe p (-d')` for
+     every index `m` simultaneously, but `leadCoeff p m`'s domain is `ordGe p m` — only the
+     bottom index `m = -d'` has domain literally equal to the numerator. Route taken instead: an
+     explicit one-step splitting `WindowAt p d d' ≃ₗ WindowAt p d (d'-1) × ℂ` via
+     `LinearMap.quotKerEquivRange` on a "subtract off the leading term at `-d'`" map
+     (`rawCorr`/`corrMap`/`bigMap`), then induction on `(d'-d).toNat` (base case: `d'=d`, cover
+     is a subsingleton by an `ord_add`/`ord_neg` argument; successor: the splitting +
+     `Module.finrank_prod` + `Module.finrank_self`). Needed two Compat lemmas not upstreamed
+     from meromorphic-and-divisors (filed in `docs/requests/meromorphic-and-divisors.md`):
+     `tendsto_zero_iff_ordAtX_pos` and `MeroGermOn.evalAt_eq_zero_iff`, both chart-transported
+     from mathlib's `tendsto_zero_iff_meromorphicOrderAt_pos`; from those, `leadCoeff_eq_zero_iff`
+     (leadCoeff detects the exact order) and `leadCoeff_tailGerm_self_ne_zero` (nonzero, NOT
+     literally `= 1` — the induction only needs nonzero, scaled by `lam⁻¹` throughout, which
+     avoided a much harder "prove it's exactly 1" germ-equality argument). `finrank_window` (the
+     `Window D D'` product) via `Module.finrank_pi_fintype` + `Finset.sum_coe_sort` bridging the
+     `Fintype`-sum over `↥(diffSupp D D')` to the `Finset`-sum defining `degree`, plus
+     `Int.toNat_of_nonneg`/`omega` bookkeeping. `FiniteDimensional` instances for both
+     `WindowAt`/`Window` included (gated on `d ≤ d'`/`D ≤ D'` per the design).
+  3. **Six-term skyscraper fragment** (`SixTerm.lean`) — **PARTIAL**. Closed: `H1Incl_surjective`
+     (part (g), "no `H²`, no long exact sequence, no snake lemma" per the design) — every class
+     of `H1 D'` is, on a cover adapted to `diffSupp D D'` (`exists_adapted_refinement`), already
+     represented by a genuine `Z1 D`-cocycle: diagonal components vanish to order `⊤`
+     (`Z1.ord_diag`), off-diagonal components avoid the finite set where `D ≠ D'`
+     (`FinCover.IsAdapted.not_mem_inf`) so the `D'`-bound literally *is* the `D`-bound there
+     (`memLD_of_isAdapted`); retyping and `D`-including is then a wash (`C1.retype_mem_Z1'`, the
+     general non-coboundary version of `Skyscraper.lean`'s `C1.retype_mem_Z1`;
+     `h1CoverIncl_mk_retype`). NOT closed (recorded as interface, per the task's "independent
+     items, move on" rule after this was clearly the long pole): `windowConnect`,
+     `exists_realization`, Lemma A, `exact_windowMap_windowConnect`,
+     `exact_windowConnect_H1Incl` (design §6.9(c)-(f)) — these need the adapted-cover
+     *realization* machinery (choosing local Laurent representatives, gluing them into a
+     `C0 D' 𝒰` per window vector, and the cover-independence Lemma A comparing two such
+     realizations on a common refinement), which is a multi-hour undertaking in its own right
+     and did not fit this pass's remaining budget.
+
+  **Notes for finiteness-and-chi**: `finrank_window`/`finiteDimensional_window`/
+  `finiteDimensional_windowAt`/`toH1_injective`/`H1Incl_surjective` are all now available with
+  the exact signatures your design doc's §1 dependency list expects. **Blocking gap**: your
+  `H1Finite.lean` step 2 (`FiniteDimensional ℂ (H1 D)` for general `D`, via
+  `exact_windowConnect_H1Incl` identifying `ker (H1Incl h) = range (windowConnect h)`) needs
+  `windowConnect`/`exact_windowConnect_H1Incl`, which are NOT built — you will need to either
+  build them yourselves (the design §6.9(c)-(f) proof plan is unchanged and still believed
+  correct) or find an alternate route to that one instance. Step 1
+  (`FiniteDimensional ℂ (H1 D')` via `H1Incl_surjective`) and the χ-ledger's `finrank_window`
+  input are fully unblocked.
+  **Notes for dolbeault-comparison**: `toH1_injective` (hence Forster 12.8 modulo your own
+  `toH1_surjective_of_isGood`) is now available.
+  **Notes for laurent-tails**: `mlClass_eq_zero_iff` now has both directions (its `⇒` half was
+  your explicitly named consumption target); `windowConnect` as a *template* is still not built
+  here, so if you need the connecting map itself (not just `mlClass`), you are also blocked on
+  the same §6.9(c)-(f) gap as finiteness-and-chi.

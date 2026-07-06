@@ -1,7 +1,7 @@
 import Jacobian.Cech.H0
 
 /-!
-# Refinement maps, 12.3 independence, 12.4 injectivity (CC8)
+# Refinement maps, 12.3 independence (CC8)
 
 Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.4, proof plans §6.4–§6.7).
 
@@ -11,7 +11,9 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.4, proof plans §6.4
 * `resZ1`/`resH1`: the induced maps on cocycles / cover-level `H¹`.
 * `resH1_indep` (Forster 12.3): the induced `H¹`-map does not depend on the chosen refinement
   index — the `DirectedSystem` key for `Colimit.lean`.
-* `resH1_injective` (Forster 12.4): refinement maps are injective on `H¹` (sheaf axioms only).
+
+**Forster 12.4** (`resH1_injective`/`toH1_injective`) has landed — see `Injectivity.lean`
+(sheaf-axiom gluing argument via `injPatch`/`exists_injGlue`, no analysis).
 -/
 
 open scoped ContDiff Manifold

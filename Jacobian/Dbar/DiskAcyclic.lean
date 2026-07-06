@@ -232,4 +232,246 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
   rw [← hd0h]
   exact LinearMap.mem_range_self _ _
 
+/-! ### General-divisor twist: `subsingleton_h1Cover_of_isChartDisk`
+
+The remaining honestly-deferred piece from the DEVIATION note above (§D9(b) of
+`docs/design/dbar-solvability.md`): the general-divisor case, needed by
+`dolbeault-comparison/Leray.lean`'s member-splitting step. Built here under that unit's
+SPECIAL AUTHORIZATION (the cross-unit dependencies were present, it was deferred on time, not
+difficulty). Route: a finite Weierstrass-factor germ `t` on `V` with `ord t = D` there
+(`t w := ∏_{a ∈ S} (w - e a) ^ D a`, `S := D.support ∩ V`, pulled back through the chart
+`e := chartAt ℂ x₀`); multiplying a `D`-cocycle by (restrictions of) `t` gives a `0`-cocycle,
+reducing to `subsingleton_h1Cover_zero_of_isChartDisk` above; dividing a `0`-splitting by `t`
+gives back a `D`-splitting. -/
+
+section Twist
+
+variable [T2Space X] [CompactSpace X]
+
+/-- **MAIN deliverable** (owed to cech §7 / consumed by dolbeault-comparison's Leray 12.8):
+disk acyclicity of the Čech complex of `𝒪_D` on chart disks, for an ARBITRARY divisor `D`. -/
+theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (D : Divisor X)
+    (𝒱 : FinCover V) : Subsingleton (H1Cover D 𝒱) := by
+  rw [subsingleton_h1Cover_iff]
+  intro f hf
+  obtain ⟨x₀, r, hr, hx₀, hVs, hVim⟩ := hV
+  set e := chartAt ℂ x₀ with he_def
+  have heatlas : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas x₀
+  classical
+  -- The finite twisting set `S := D.support ∩ V`.
+  have hSfin : (D.support ∩ (V : Set X)).Finite :=
+    (D.finiteSupport isCompact_univ).subset Set.inter_subset_left
+  set S : Finset X := hSfin.toFinset with hS_def
+  have hSmem : ∀ {a : X}, a ∈ S ↔ D a ≠ 0 ∧ a ∈ (V : Set X) := by
+    intro a; rw [hS_def, hSfin.mem_toFinset]; exact Iff.rfl
+  have hSsubV : ∀ a ∈ S, a ∈ (V : Set X) := fun a ha => (hSmem.1 ha).2
+  -- The Weierstrass-factor function on the chart target.
+  set q : ℂ → ℂ := fun w => ∏ a ∈ S, (w - e a) ^ (D a) with hq_def
+  have hq_eq : q = ∏ a ∈ S, (fun w : ℂ => (w - e a) ^ (D a)) := by
+    funext w; rw [hq_def, Finset.prod_apply]
+  have hq_mero : ∀ z : ℂ, MeromorphicAt q z := by
+    rw [hq_eq]
+    exact fun z => MeromorphicAt.prod fun a _ =>
+      MeromorphicAt.zpow ((analyticAt_id.sub analyticAt_const).meromorphicAt) (D a)
+  -- Transport `q ∘ e ∘ e.symm = q` near `e x` for `x ∈ V`.
+  have hEq : ∀ {x : X}, x ∈ (V : Set X) → (q ∘ e ∘ e.symm) =ᶠ[nhds (e x)] q := by
+    intro x hx
+    have h2 : ∀ᶠ z in nhds (e x), e (e.symm z) = z := by
+      filter_upwards [e.open_target.eventually_mem (e.map_source (hVs hx))] with z hz
+        using e.right_inv hz
+    filter_upwards [h2] with z hz
+    show q (e (e.symm z)) = q z
+    rw [hz]
+  have hqe_mero : MeromorphicOnX (q ∘ e) (V : Set X) := by
+    intro x hx
+    rw [meromorphicAtX_iff_of_mem_source heatlas (hVs hx)]
+    exact MeromorphicAt.congr (hq_mero (e x)) ((hEq hx).symm.filter_mono nhdsWithin_le_nhds)
+  set t : MeroGermOn X (V : Set X) := MeroGermOn.mk (q ∘ e) hqe_mero with ht_def
+  -- The order of a single Weierstrass atom.
+  have hatom : ∀ {x : X}, x ∈ (V : Set X) → ∀ {a : X}, a ∈ S →
+      meromorphicOrderAt (fun w => (w - e a) ^ (D a)) (e x) =
+        if a = x then (D x : WithTop ℤ) else 0 := by
+    intro x hx a ha
+    by_cases hax : a = x
+    · subst hax
+      rw [if_pos rfl]
+      exact meromorphicOrderAt_zpow_id_sub_const
+    · rw [if_neg hax]
+      have hane : e a ≠ e x := fun heq => hax (e.injOn (hVs (hSsubV a ha)) (hVs hx) heq)
+      have hval : (e x - e a) ≠ 0 := sub_ne_zero.mpr (Ne.symm hane)
+      have hanalytic : AnalyticAt ℂ (fun w => w - e a) (e x) := analyticAt_id.sub analyticAt_const
+      have hzpow : AnalyticAt ℂ (fun w => (w - e a) ^ (D a)) (e x) := hanalytic.zpow hval
+      rw [hzpow.meromorphicOrderAt_eq, hzpow.analyticOrderAt_eq_zero.mpr (zpow_ne_zero _ hval)]
+      rfl
+  -- The order of `t` on `V`: `ord t x = D x`.
+  have hord_t : ∀ {x : X}, x ∈ (V : Set X) → t.ord x = (D x : WithTop ℤ) := by
+    intro x hx
+    rw [ht_def, ord_mk V.2 hx, ordAtX_eq_of_mem_source heatlas (hVs hx)]
+    have hcong : meromorphicOrderAt ((q ∘ e) ∘ e.symm) (e x) = meromorphicOrderAt q (e x) :=
+      meromorphicOrderAt_congr ((hEq hx).filter_mono nhdsWithin_le_nhds)
+    rw [hcong, hq_eq]
+    have hmerAtoms : ∀ a ∈ S, MeromorphicAt (fun w => (w - e a) ^ (D a)) (e x) := fun a _ =>
+      MeromorphicAt.zpow ((analyticAt_id.sub analyticAt_const).meromorphicAt) (D a)
+    rw [meromorphicOrderAt_prod hmerAtoms, Finset.sum_congr rfl fun a ha => hatom hx ha,
+      Finset.sum_ite_eq' S x (fun _ : X => (D x : WithTop ℤ))]
+    by_cases hxS : x ∈ S
+    · rw [if_pos hxS]
+    · rw [if_neg hxS]
+      have hDx0 : D x = 0 := by
+        by_contra hDx
+        exact hxS (hSmem.2 ⟨hDx, hx⟩)
+      rw [hDx0]; rfl
+  -- Cancellation `t * t⁻¹ = 1` (off the finite set `S`, codiscreteWithin `V`).
+  have ht_mul_inv : t * t⁻¹ = 1 := by
+    rw [ht_def, MeroGermOn.mk_inv, MeroGermOn.mk_mul, ← MeroGermOn.mk_one (U := (V : Set X))]
+    apply MeroGermOn.mk_eq_mk.2
+    rw [eventuallyEq_codiscreteWithin_iff_of_isOpen V.2]
+    intro x hxV
+    have hclosed : IsClosed ((S.erase x : Finset X) : Set X) := (S.erase x).isClosed
+    have hnbhd : (V : Set X) ∩ ((S.erase x : Finset X) : Set X)ᶜ ∈ nhds x :=
+      IsOpen.mem_nhds (V.2.inter hclosed.isOpen_compl) ⟨hxV, Finset.not_mem_erase x S⟩
+    have hpunct : (V : Set X) ∩ ((S.erase x : Finset X) : Set X)ᶜ ∈ nhdsWithin x {x}ᶜ :=
+      mem_nhdsWithin_of_mem_nhds hnbhd
+    filter_upwards [hpunct, Filter.self_mem_nhdsWithin] with y hy hyne
+    have hyV : y ∈ (V : Set X) := hy.1
+    have hyS : y ∉ (S.erase x : Finset X) := by simpa using hy.2
+    have hyS' : y ∉ S := fun hmem => hyS (Finset.mem_erase.mpr ⟨hyne, hmem⟩)
+    show (q ∘ e) y * ((q ∘ e) y)⁻¹ = 1
+    apply mul_inv_cancel₀
+    show q (e y) ≠ 0
+    rw [hq_def]
+    apply Finset.prod_ne_zero_iff.mpr
+    intro a ha
+    apply zpow_ne_zero
+    refine sub_ne_zero.mpr fun heq => hyS' ?_
+    have hya := e.injOn (hVs hyV) (hVs (hSsubV a ha)) heq
+    exact hya ▸ ha
+  -- Twist the `D`-cocycle `f` into a `0`-cocycle `g`.
+  set W : Fin 𝒱.n × Fin 𝒱.n → Opens X := fun p => 𝒱.U p.1 ⊓ 𝒱.U p.2 with hW_def
+  have hWleV : ∀ p, W p ≤ V := fun p => inf_le_left.trans (𝒱.le_base p.1)
+  have hmem_g : ∀ p : Fin 𝒱.n × Fin 𝒱.n,
+      (RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)) ∈
+        RS.LinSysOn (0 : Divisor X) (W p : Set X) := by
+    intro p
+    rw [mem_linSysOn_iff_of_isOpen (W p).2]
+    intro x hx
+    have hordmul : (RS.MeroGermOn.restrict (hWleV p) t *
+        (f p : RS.MeroGermOn X (W p : Set X))).ord x =
+        (RS.MeroGermOn.restrict (hWleV p) t).ord x +
+          (f p : RS.MeroGermOn X (W p : Set X)).ord x :=
+      RS.MeroGermOn.ord_mul (W p).2 hx _ _
+    rw [hordmul, RS.MeroGermOn.ord_restrict (hWleV p) (W p).2 V.2 hx, hord_t (hWleV p hx)]
+    have hfp : ((-(D x) : ℤ) : WithTop ℤ) ≤ (f p : RS.MeroGermOn X (W p : Set X)).ord x :=
+      (mem_linSysOn_iff_of_isOpen (W p).2).1 (f p).2 x hx
+    have hz0 : ((-(0 : Divisor X) x : ℤ) : WithTop ℤ) = 0 := by simp
+    have hcancel : ((D x : ℤ) : WithTop ℤ) + ((-(D x) : ℤ) : WithTop ℤ) = 0 := by
+      rw [← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero]
+    rw [hz0, ← hcancel]
+    exact add_le_add_left hfp _
+  set g : C1 (0 : Divisor X) 𝒱 := fun p =>
+    ⟨(RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)), hmem_g p⟩
+    with hg_def
+  have hg_coe : ∀ p, (g p : RS.MeroGermOn X (W p : Set X)) =
+      (RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)) := fun _ => rfl
+  have hg_Z1 : g ∈ Z1 (0 : Divisor X) 𝒱 := by
+    rw [mem_Z1_iff]
+    rintro ⟨i, j, k⟩
+    apply Subtype.ext
+    rw [d1_apply]
+    set Uijk : Opens X := 𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k with hUijk_def
+    have hUijkV : Uijk ≤ V := (inf_le_left.trans inf_le_left).trans (𝒱.le_base i)
+    have hbc : Uijk ≤ 𝒱.U j ⊓ 𝒱.U k := le_inf (inf_le_left.trans inf_le_right) inf_le_right
+    have hac : Uijk ≤ 𝒱.U i ⊓ 𝒱.U k := le_inf (inf_le_left.trans inf_le_left) inf_le_right
+    have hab : Uijk ≤ 𝒱.U i ⊓ 𝒱.U j := inf_le_left
+    have key := Z1.rel_res D hf i j k (le_refl Uijk) hbc hac hab
+    have hval : (LinSysOn.restrictL D hbc (f (j, k)) : RS.MeroGermOn X (Uijk : Set X)) -
+        (LinSysOn.restrictL D hac (f (i, k)) : RS.MeroGermOn X (Uijk : Set X)) +
+        (LinSysOn.restrictL D hab (f (i, j)) : RS.MeroGermOn X (Uijk : Set X)) = 0 := by
+      have hcast := congrArg Subtype.val key
+      simpa using hcast
+    rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe] at hval
+    show (LinSysOn.restrictL (0 : Divisor X) hbc (g (j, k)) : RS.MeroGermOn X (Uijk : Set X)) -
+        (LinSysOn.restrictL (0 : Divisor X) hac (g (i, k)) : RS.MeroGermOn X (Uijk : Set X)) +
+        (LinSysOn.restrictL (0 : Divisor X) hab (g (i, j)) : RS.MeroGermOn X (Uijk : Set X)) = 0
+    rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe, hg_coe, hg_coe, hg_coe,
+      map_mul, map_mul, map_mul, MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict,
+      MeroGermOn.restrict_restrict]
+    have hcomb : (RS.MeroGermOn.restrict hUijkV t) *
+          (RS.MeroGermOn.restrict hbc (f (j, k) : RS.MeroGermOn X (W (j, k) : Set X))) -
+        (RS.MeroGermOn.restrict hUijkV t) *
+          (RS.MeroGermOn.restrict hac (f (i, k) : RS.MeroGermOn X (W (i, k) : Set X))) +
+        (RS.MeroGermOn.restrict hUijkV t) *
+          (RS.MeroGermOn.restrict hab (f (i, j) : RS.MeroGermOn X (W (i, j) : Set X))) =
+        (RS.MeroGermOn.restrict hUijkV t) *
+          ((RS.MeroGermOn.restrict hbc (f (j, k) : RS.MeroGermOn X (W (j, k) : Set X))) -
+            (RS.MeroGermOn.restrict hac (f (i, k) : RS.MeroGermOn X (W (i, k) : Set X))) +
+            (RS.MeroGermOn.restrict hab (f (i, j) : RS.MeroGermOn X (W (i, j) : Set X)))) := by
+      ring
+    rw [hcomb, hval, mul_zero]
+  -- Apply the `D = 0` case to split `g`, then untwist the splitting for `f`.
+  have hgB1 : (g : C1 (0 : Divisor X) 𝒱) ∈ B1 (0 : Divisor X) 𝒱 :=
+    (subsingleton_h1Cover_iff.mp
+      (subsingleton_h1Cover_zero_of_isChartDisk ⟨x₀, r, hr, hx₀, hVs, hVim⟩ 𝒱)) hg_Z1
+  obtain ⟨h, hdh⟩ := hgB1
+  have hUiV : ∀ i : Fin 𝒱.n, 𝒱.U i ≤ V := 𝒱.le_base
+  have hmem_h' : ∀ i : Fin 𝒱.n,
+      (RS.MeroGermOn.restrict (hUiV i) t⁻¹) * (h i : RS.MeroGermOn X (𝒱.U i : Set X)) ∈
+        RS.LinSysOn D (𝒱.U i : Set X) := by
+    intro i
+    rw [mem_linSysOn_iff_of_isOpen (𝒱.U i).2]
+    intro x hx
+    have hordmul : (RS.MeroGermOn.restrict (hUiV i) t⁻¹ *
+        (h i : RS.MeroGermOn X (𝒱.U i : Set X))).ord x =
+        (RS.MeroGermOn.restrict (hUiV i) t⁻¹).ord x +
+          (h i : RS.MeroGermOn X (𝒱.U i : Set X)).ord x :=
+      RS.MeroGermOn.ord_mul (𝒱.U i).2 hx _ _
+    rw [hordmul, RS.MeroGermOn.ord_restrict (hUiV i) (𝒱.U i).2 V.2 hx,
+      RS.MeroGermOn.ord_inv V.2 (hUiV i hx) t, hord_t (hUiV i hx)]
+    have hhi : (0 : WithTop ℤ) ≤ (h i : RS.MeroGermOn X (𝒱.U i : Set X)).ord x := by
+      have hmem := (mem_linSysOn_iff_of_isOpen (𝒱.U i).2).1 (h i).2 x hx
+      simpa using hmem
+    have hz : (-(D x : ℤ) : WithTop ℤ) = (-(D x : ℤ) : WithTop ℤ) + 0 := (add_zero _).symm
+    rw [hz]
+    exact add_le_add_left hhi _
+  set h' : C0 D 𝒱 := fun i =>
+    ⟨(RS.MeroGermOn.restrict (hUiV i) t⁻¹) * (h i : RS.MeroGermOn X (𝒱.U i : Set X)), hmem_h' i⟩
+    with hh'_def
+  have hh'_coe : ∀ i, (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) =
+      (RS.MeroGermOn.restrict (hUiV i) t⁻¹) * (h i : RS.MeroGermOn X (𝒱.U i : Set X)) :=
+    fun _ => rfl
+  have ht_inv_mul : t⁻¹ * t = 1 := (mul_comm t⁻¹ t).trans ht_mul_inv
+  have hd0h' : d0 D 𝒱 h' = (f : C1 D 𝒱) := by
+    funext p
+    obtain ⟨i, j⟩ := p
+    apply Subtype.ext
+    rw [d0_apply]
+    show (LinSysOn.restrictL D inf_le_right (h' j) :
+          RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) -
+        (LinSysOn.restrictL D inf_le_left (h' i) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
+      (f (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X))
+    have hgeq : (LinSysOn.restrictL (0 : Divisor X) inf_le_right (g j) :
+          RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) -
+        (LinSysOn.restrictL (0 : Divisor X) inf_le_left (g i) :
+          RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
+        (g (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) := by
+      have hcg := congrFun hdh (i, j)
+      rw [d0_apply] at hcg
+      exact hcg
+    rw [restrictL_apply_coe, restrictL_apply_coe] at hgeq
+    rw [restrictL_apply_coe, restrictL_apply_coe, hh'_coe, hh'_coe, map_mul, map_mul,
+      MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict]
+    have hWij : W (i, j) ≤ V := hWleV (i, j)
+    have hcomb : (RS.MeroGermOn.restrict hWij t⁻¹) *
+          (RS.MeroGermOn.restrict inf_le_right (h j : RS.MeroGermOn X (𝒱.U j : Set X))) -
+        (RS.MeroGermOn.restrict hWij t⁻¹) *
+          (RS.MeroGermOn.restrict inf_le_left (h i : RS.MeroGermOn X (𝒱.U i : Set X))) =
+        (RS.MeroGermOn.restrict hWij t⁻¹) *
+          ((RS.MeroGermOn.restrict inf_le_right (h j : RS.MeroGermOn X (𝒱.U j : Set X))) -
+            (RS.MeroGermOn.restrict inf_le_left (h i : RS.MeroGermOn X (𝒱.U i : Set X)))) := by
+      ring
+    rw [hcomb, hgeq, hg_coe, ← mul_assoc, ← map_mul, ht_inv_mul, map_one, one_mul]
+  exact ⟨h', hd0h'⟩
+
+end Twist
+
 end RS
