@@ -37,10 +37,15 @@ and trace of holomorphic `1`-forms.
   `RS.periodSubgroup_le_comap_pushforwardT` (`hT` for the pushforward direction — **exact**
   membership, no closure/density needed, via `pathIntegral_pullback` + the basepoint-flexible
   `periodVector_mem_periodSubgroup`), and the assembly **`Jacobian.pushforward`** via
-  `Jacobian.inducedHom`. (Elaborating `Jacobian.pushforward`'s definition needs a large
-  `set_option maxHeartbeats` bump — the accumulated proof terms from `Form1.pullback` make the
-  final `T`/`hT` unification expensive, though it does terminate; ~4M heartbeats, several minutes
-  of wall time under load.)
+  `Jacobian.inducedHom`. **UNIVERSE WARNING** (hard-won, cost hours of build time to diagnose):
+  `Jacobian.inducedHom` is declared for `X Y : Type u` in the SAME universe
+  (`JacobianConstruction/Functorial.lean`). Instantiating it at `X : Type*`/`Y : Type*` (distinct
+  universe metavariables) does not fail cleanly — the elaborator grinds through `ULift`/quotient
+  defeq indefinitely (>40 minutes of CPU observed, never finishing) instead of reporting the
+  universe mismatch. `Jacobian.pushforward`/`pushforward_contMDiff` therefore fix one shared
+  `Type u` for both surfaces (elaborates in milliseconds stated that way). The same constraint
+  binds the final assembly; a cross-universe `Jacobian.inducedHom` (lifting the two `ULift`
+  shells to different universes) is possible upstream if ever needed.
 * **`Jacobian/JacFunctorial/Challenge.lean`**: `Jacobian.pushforward_contMDiff` (holomorphy of the
   pushforward map, free from `jacobian-construction`'s `Jacobian.contMDiff_inducedHom`).
 

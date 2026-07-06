@@ -24,6 +24,8 @@ noncomputable section
 
 namespace RS
 
+universe u
+
 variable (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
@@ -80,16 +82,27 @@ theorem periodSubgroup_le_comap_pushforwardT (f : X → Y) (hf : ContMDiff 𝓘(
   exact AddSubgroup.le_topologicalClosure (periodSubgroup Y)
     (periodVector_mem_periodSubgroup (γ.map hf.continuous))
 
-set_option maxHeartbeats 0 in
+section SameUniverse
+
+/- **Universe warning** (hard-won): `Jacobian.inducedHom` (`JacobianConstruction/Functorial.lean`)
+is declared for `X Y : Type u` in the SAME universe. Instantiating it with `X : Type*`/`Y : Type*`
+(distinct universe metavariables) does not fail cleanly — the elaborator grinds through
+`ULift`/quotient defeq for tens of minutes before hitting the heartbeat limit. Everything below
+therefore fixes ONE universe `u` for both surfaces, matching `Functorial.lean`'s own convention.
+(A cross-universe generalization is possible upstream — the two `ULift` shells can lift to
+different universes — but is `jacobian-construction`'s call, not this unit's.) -/
+variable {X' : Type u} [TopologicalSpace X'] [T2Space X'] [CompactSpace X'] [ConnectedSpace X']
+  [ChartedSpace ℂ X'] [IsManifold 𝓘(ℂ) ω X']
+variable {Y' : Type u} [TopologicalSpace Y'] [T2Space Y'] [CompactSpace Y'] [ConnectedSpace Y']
+  [ChartedSpace ℂ Y'] [IsManifold 𝓘(ℂ) ω Y']
+
 /-- **`Jacobian.pushforward` (§8.4)**: the pushforward map between Jacobians associated to a
-holomorphic map of the underlying curves. (`maxHeartbeats 0`: elaborating this bare `def` —
-unifying `Jacobian.inducedHom`'s implicit `T` from `hT`'s type through the `Jacobian`/`Jac₀`
-quotient abbrevs — takes ~8-9 minutes of wall time on an otherwise-idle machine. Do NOT "help"
-by passing `T` explicitly (`(T := pushforwardT f hf)`): the named-argument elaboration path is
-dramatically SLOWER, not faster — measured >40 minutes before being killed.) -/
-noncomputable def Jacobian.pushforward (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
-    Jacobian X →ₜ+ Jacobian Y :=
+holomorphic map of the underlying curves. -/
+noncomputable def Jacobian.pushforward (f : X' → Y') (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
+    Jacobian X' →ₜ+ Jacobian Y' :=
   Jacobian.inducedHom (periodSubgroup_le_comap_pushforwardT f hf)
+
+end SameUniverse
 
 end RS
 

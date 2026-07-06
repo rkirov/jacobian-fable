@@ -1232,15 +1232,20 @@
   `pathIntegral_pullback`), `periodSubgroup_le_comap_pushforwardT` (`hT`, exact membership via
   the basepoint-flexible `periodVector_mem_periodSubgroup` — no closure/density needed, matching
   the design's own "easy direction" assessment), and the assembly `Jacobian.pushforward` via
-  `Jacobian.inducedHom`. GOTCHA for siblings: eliaborating `Jacobian.pushforward`'s *definition*
-  (not any proof about it — the bare `def`) needs a very large `set_option maxHeartbeats`
-  (default 200000 was nowhere near enough; landed at unbounded/`4000000`, several minutes of wall
-  time under concurrent-agent CPU/memory load) — the accumulated size of `Form1.pullback`'s own
-  proof terms makes the final `T`/`hT` unification against `Jacobian.inducedHom`'s implicit `T`
-  expensive. Zero sorries.
-- [jfun] Jacobian/JacFunctorial/Challenge.lean OK (36 lines) — `Jacobian.pushforward_contMDiff`
-  (free one-liner from `Jacobian.contMDiff_inducedHom`, same `maxHeartbeats` bump as
-  `PeriodMaps.lean`). Zero sorries.
+  `Jacobian.inducedHom`. **UNIVERSE GOTCHA for siblings (hard-won — cost hours of misdiagnosed
+  build time, initially blamed on heartbeats):** `Jacobian.inducedHom`
+  (`JacobianConstruction/Functorial.lean`) is declared for `X Y : Type u` in the SAME universe.
+  Instantiating it at `X : Type*`/`Y : Type*` (which allocate DISTINCT universe metavariables
+  u_1/u_2) does not fail cleanly with a universe error — the elaborator instead grinds through
+  `ULift`/quotient `isDefEq` unfolding indefinitely (>40 min CPU observed without terminating;
+  no `maxHeartbeats` value helps, `0` just runs forever). Fix: declare ONE shared `universe u`
+  and put both surfaces in `Type u` for any declaration mentioning `Jacobian X` and `Jacobian Y`
+  together — elaboration then takes milliseconds, no heartbeat bump needed at all. (The
+  `scratch_jfun.lean` spike had silently sidestepped this by using `{X Y : Type}` — Type 0 —
+  which is why the design phase never saw it.) Zero sorries.
+- [jfun] Jacobian/JacFunctorial/Challenge.lean OK (49 lines) — `Jacobian.pushforward_contMDiff`
+  (free one-liner from `Jacobian.contMDiff_inducedHom`; same shared-universe convention as
+  `PeriodMaps.lean`, see the universe gotcha above). Zero sorries.
 - [jfun] Jacobian/JacFunctorial.lean (unit root) — API docstring + LEDGER written; imports all
   five files above. **Unit INCOMPLETE, by design/necessity, not oversight**: `Form1.trace`
   (branch-point analyticity — the naive `traceZkForm` value at a branch coordinate does not equal
@@ -1254,10 +1259,12 @@
   ABSENT from `Jacobian/JacobianConstruction/Torus.lean` — the design doc's claim that a request
   was filed for these is stale, `docs/requests/jacobian-construction.md` does not exist) are
   **not built**, reported loudly per the stuck→blocker protocol rather than left as silent gaps
-  or filled with sorries (so `scripts/check.sh Jacobian/JacFunctorial` passes cleanly on what IS
-  delivered: the full pullback-of-forms + path-integral-naturality + pushforward-on-Jacobians
-  chain, zero sorries). NOT registered in `Jacobian.lean` per task hard rule. Full detail and
-  recommended next steps in the builder's final report.
+  or filled with sorries — request NOW actually filed at `docs/requests/jacobian-construction.md`,
+  and the `Compat` chart-bridge lemmas flagged at `docs/requests/holomorphic-forms.md`.
+  **`scripts/check.sh Jacobian/JacFunctorial` PASSES**: builds clean (2917 jobs), zero sorries
+  across all 5 files + root (774 lines) — the full pullback-of-forms + path-integral-naturality +
+  pushforward-on-Jacobians chain is delivered complete. NOT registered in `Jacobian.lean` per
+  task hard rule. Full detail and recommended next steps in the builder's final report.
 - [ltails] Jacobian/LaurentTail/TailSpace.lean OK (150 lines, was 154 — a small net simplification)
   — continuation build. `TailAt p D` changed from a plain `def` to **`abbrev`** (matching `T D`'s
   own D2 convention exactly), and its two hand-written `instAddCommGroupTailAt`/`instModuleTailAt`
