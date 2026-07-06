@@ -16,7 +16,7 @@ that the corrected sequence converges locally uniformly to a solution on the who
 -/
 
 open MeasureTheory Metric Set Complex Filter Topology
-open scoped Convolution ContDiff
+open scoped Convolution ContDiff NNReal
 
 noncomputable section
 
@@ -171,20 +171,20 @@ private def SolveState (hR : 0 < R) (n : ℕ) : Type :=
 private def solveState0 (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) : SolveState g c R hR 0 :=
   ⟨solveF g c R hR hg 0, solveF_cd g c R hR hg 0, solveF_dbar_eq g c R hR hg 0⟩
 
-private theorem partialSum_eq_poly (p : FormalMultilinearSeries ℂ ℂ ℂ) (m : ℕ) (x : ℂ) :
-    p.partialSum m x = ∑ k ∈ Finset.range m, x ^ k * p.coeff k := by
-  unfold FormalMultilinearSeries.partialSum
-  refine Finset.sum_congr rfl fun k _ => ?_
-  rw [p.apply_eq_pow_smul_coeff, smul_eq_mul]
-
 private theorem differentiable_partialSum (p : FormalMultilinearSeries ℂ ℂ ℂ) (m : ℕ) :
     Differentiable ℂ (fun x => p.partialSum m x) := by
-  have heq : (fun x => p.partialSum m x) = fun x => ∑ k ∈ Finset.range m, x ^ k * p.coeff k :=
-    funext (partialSum_eq_poly p m)
-  rw [heq]
-  apply Differentiable.sum
-  intro k _
-  exact (differentiable_pow k).mul (differentiable_const (p.coeff k))
+  induction m with
+  | zero => simpa [FormalMultilinearSeries.partialSum] using differentiable_const (0 : ℂ)
+  | succ k ih =>
+    have hstep : (fun x => p.partialSum (k + 1) x) =
+        fun x => p.partialSum k x + x ^ k * p.coeff k := by
+      funext x
+      show ∑ j ∈ Finset.range (k + 1), p j (fun _ : Fin j => x) = _
+      rw [Finset.sum_range_succ]
+      congr 1
+      rw [p.apply_eq_pow_smul_coeff, smul_eq_mul]
+    rw [hstep]
+    exact ih.add ((differentiable_pow k).mul (differentiable_const _))
 
 /-- The recursive step: given a solution `Fn` valid up to `ρ (n+1)`, produce a corrected solution
 valid up to `ρ (n+2)`, within `(1/2)^(n+1)` of `Fn` on the smaller closed ball `closedBall c (ρ n)`
@@ -243,21 +243,22 @@ private def solveStepData (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n
   have hbound_ev : ∀ᶠ k in atTop, ∀ y ∈ ball c ρaux, dist ((fn1 - Fn) y) (p.partialSum k (y - c)) <
       (1 / 2 : ℝ) ^ (n + 1) :=
     (tendstoUniformlyOn_iff.1 htendsto) ((1 / 2 : ℝ) ^ (n + 1)) (by positivity)
-  obtain ⟨m, hm⟩ := eventually_atTop.1 hbound_ev
+  set m := (eventually_atTop.1 hbound_ev).choose with hm_def
+  have hm := (eventually_atTop.1 hbound_ev).choose_spec
   set Pm : ℂ → ℂ := fun w => p.partialSum m (w - c) with hPm_def
   have hPm_diff : Differentiable ℂ Pm := by
     have := differentiable_partialSum p m
     exact this.comp (differentiable_id.sub_const c)
   have hPm_cd : ContDiff ℝ ∞ Pm := by
-    have h1 : AnalyticOnNhd ℂ Pm Set.univ := hPm_diff.analyticOnNhd isOpen_univ
+    have h1 : AnalyticOnNhd ℂ Pm Set.univ := hPm_diff.differentiableOn.analyticOnNhd isOpen_univ
     have h2 : ∀ w, AnalyticAt ℂ Pm w := fun w => h1 w (mem_univ w)
     exact contDiff_iff_contDiffAt.2 fun w => ((h2 w).restrictScalars (𝕜 := ℝ)).contDiffAt
   have hPm_dbar0 : ∀ w, wirtingerDbar Pm w = 0 := fun w =>
     wirtingerDbar_eq_zero_of_differentiableAt Pm w (hPm_diff w)
   refine ⟨fn1 - Pm, hfn1_cd.sub hPm_cd, ?_, ?_⟩
   · intro w hw
-    rw [wirtingerDbar_sub fn1 Pm w (hfn1_cd.differentiable (by norm_num) w) (hPm_diff w).differentiableAt,
-      hfn1_dbar hw, hPm_dbar0, sub_zero]
+    rw [wirtingerDbar_sub fn1 Pm w (hfn1_cd.differentiable (by norm_num) w)
+      ((hPm_diff w).restrictScalars (𝕜 := ℝ)), hfn1_dbar hw, hPm_dbar0, sub_zero]
   · intro w hw
     have hwaux : w ∈ ball c ρaux := closedBall_subset_ball hρn_lt_aux hw
     have := hm m le_rfl w hwaux
@@ -266,10 +267,163 @@ private def solveStepData (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n
     rw [heq]
     exact this.le
 
+private def solveState (g : ℂ → ℂ) (c : ℂ) (R : ℝ) (hR : 0 < R)
+    (hg : ContDiffOn ℝ ∞ g (ball c R)) : ∀ n, SolveState g c R hR n
+  | 0 => solveState0 g c R hR hg
+  | (k + 1) =>
+    ⟨(solveStepData g c R hR hg k (solveState g c R hR hg k)).1,
+      (solveStepData g c R hR hg k (solveState g c R hR hg k)).2.1,
+      (solveStepData g c R hR hg k (solveState g c R hR hg k)).2.2.1⟩
+
+private theorem solveState_succ (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ) :
+    (solveState g c R hR hg (n + 1)).1 =
+      (solveStepData g c R hR hg n (solveState g c R hR hg n)).1 := rfl
+
+private theorem solveState_bound (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ)
+    (w : ℂ) (hw : w ∈ closedBall c (solveRho R n)) :
+    ‖(solveState g c R hR hg (n + 1)).1 w - (solveState g c R hR hg n).1 w‖ ≤ (1 / 2 : ℝ) ^ (n + 1) := by
+  rw [solveState_succ]
+  exact (solveStepData g c R hR hg n (solveState g c R hR hg n)).2.2.2 w hw
+
 /-- Forster 13.2: Dolbeault's lemma on a finite open disk. -/
 theorem exists_dbar_solution_ball (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) :
     ∃ u : ℂ → ℂ, ContDiffOn ℝ ∞ u (ball c R) ∧
       ∀ z ∈ ball c R, wirtingerDbar u z = g z := by
-  sorry
+  classical
+  set Fseq : ℕ → ℂ → ℂ := fun n => (solveState g c R hR hg n).1 with hFseq_def
+  have hFseq_cd : ∀ n, ContDiff ℝ ∞ (Fseq n) := fun n => (solveState g c R hR hg n).2.1
+  have hFseq_dbar : ∀ n, Set.EqOn (wirtingerDbar (Fseq n)) g (closedBall c (solveRho R (n + 1))) :=
+    fun n => (solveState g c R hR hg n).2.2
+  have hFseq_bound : ∀ n w, w ∈ closedBall c (solveRho R n) →
+      ‖Fseq (n + 1) w - Fseq n w‖ ≤ (1 / 2 : ℝ) ^ (n + 1) := fun n =>
+    solveState_bound g c R hR hg n
+  have hle_closedBall : ∀ n m w, n ≤ m → w ∈ ball c (solveRho R n) →
+      w ∈ closedBall c (solveRho R m) := by
+    intro n m w hnm hw
+    rw [mem_ball] at hw
+    rw [mem_closedBall]
+    have hmono : solveRho R n ≤ solveRho R m := solveRho_mono R hR hnm
+    linarith
+  -- pointwise convergence
+  have hconv : ∀ z ∈ ball c R, ∃ L : ℂ, Tendsto (fun n => Fseq n z) atTop (𝓝 L) := by
+    intro z hz
+    rw [mem_ball] at hz
+    obtain ⟨N, hN⟩ := exists_solveRho_gt R hR hz
+    have hcauchy_shift : CauchySeq (fun k => Fseq (N + k) z) := by
+      apply cauchySeq_of_le_geometric (1 / 2) ((1 / 2 : ℝ) ^ (N + 1)) (by norm_num)
+      intro k
+      rw [dist_eq_norm]
+      have hb := hFseq_bound (N + k) z
+        (hle_closedBall N (N + k) z (Nat.le_add_right N k) (by rw [mem_ball]; linarith))
+      calc ‖Fseq (N + k) z - Fseq (N + k + 1) z‖ = ‖Fseq (N + k + 1) z - Fseq (N + k) z‖ :=
+            norm_sub_rev _ _
+        _ ≤ (1 / 2 : ℝ) ^ (N + k + 1) := hb
+        _ = (1 / 2 : ℝ) ^ (N + 1) * (1 / 2 : ℝ) ^ k := by ring
+    obtain ⟨L, hL⟩ := cauchySeq_tendsto_of_complete hcauchy_shift
+    have hL' : Tendsto (fun k => Fseq (k + N) z) atTop (𝓝 L) := by
+      simpa [Nat.add_comm] using hL
+    exact ⟨L, (tendsto_add_atTop_iff_nat N).1 hL'⟩
+  set u : ℂ → ℂ := fun z =>
+      if h : ∃ L, Tendsto (fun n => Fseq n z) atTop (𝓝 L) then h.choose else 0 with hu_def
+  have hu_tendsto : ∀ z ∈ ball c R, Tendsto (fun n => Fseq n z) atTop (𝓝 (u z)) := by
+    intro z hz
+    have h := hconv z hz
+    simp only [hu_def, dif_pos h]
+    exact h.choose_spec
+  have hmain : ∀ z ∈ ball c R, ContDiffAt ℝ ∞ u z ∧ wirtingerDbar u z = g z := by
+    intro z hz
+    obtain ⟨N, hN⟩ := exists_solveRho_gt R hR (mem_ball.1 hz)
+    set BN := ball c (solveRho R N) with hBN_def
+    have hzBN : z ∈ BN := by rw [hBN_def, mem_ball]; exact hN
+    have hBN_subR : BN ⊆ ball c R := ball_subset_ball (solveRho_lt_R R hR N).le
+    set fN : ℕ → ℂ → ℂ := fun j => Fseq (N + j + 1) - Fseq (N + j) with hfN_def
+    have hfN_bound : ∀ j, ∀ w ∈ BN, ‖fN j w‖ ≤ (1 / 2 : ℝ) ^ (N + j + 1) := by
+      intro j w hw
+      have hwc := hle_closedBall N (N + j) w (Nat.le_add_right N j) hw
+      simpa [hfN_def] using hFseq_bound (N + j) w hwc
+    have hsummable : Summable (fun j : ℕ => (1 / 2 : ℝ) ^ (N + j + 1)) := by
+      have heq : (fun j : ℕ => (1 / 2 : ℝ) ^ (N + j + 1)) =
+          fun j => (1 / 2 : ℝ) ^ (N + 1) * (1 / 2 : ℝ) ^ j := by funext j; ring
+      rw [heq]
+      exact Summable.mul_left _ (summable_geometric_of_lt_one (by norm_num) (by norm_num))
+    have htend : TendstoUniformlyOn (fun m w => ∑ j ∈ Finset.range m, fN j w)
+        (fun w => ∑' j, fN j w) atTop BN := tendstoUniformlyOn_tsum_nat hsummable hfN_bound
+    have htelescope : ∀ m w, ∑ j ∈ Finset.range m, fN j w = Fseq (N + m) w - Fseq N w := by
+      intro m w
+      induction m with
+      | zero => simp
+      | succ k ih =>
+        rw [Finset.sum_range_succ, ih]
+        simp only [hfN_def, Pi.sub_apply]
+        ring
+    set TN : ℂ → ℂ := fun w => ∑' j, fN j w with hTN_def
+    have htend' : TendstoUniformlyOn (fun m w => Fseq (N + m) w - Fseq N w) TN atTop BN := by
+      have heq : (fun m w => ∑ j ∈ Finset.range m, fN j w) =
+          (fun m w => Fseq (N + m) w - Fseq N w) := by
+        funext m w; exact htelescope m w
+      rwa [heq] at htend
+    have hpartial_diff : ∀ m, DifferentiableOn ℂ (fun w => Fseq (N + m) w - Fseq N w) BN := by
+      intro m
+      have heq : (fun w => Fseq (N + m) w - Fseq N w) = Fseq (N + m) - Fseq N := rfl
+      rw [heq]
+      apply differentiableOn_of_wirtingerDbar_eq_zero _ isOpen_ball
+      · intro w _
+        exact ((hFseq_cd (N + m)).differentiable (by norm_num) w).sub
+          ((hFseq_cd N).differentiable (by norm_num) w)
+      · intro w hw
+        have hw1 := hle_closedBall N (N + m + 1) w (Nat.le_add_right N (m + 1)) hw
+        have hw2 := hle_closedBall N (N + 1) w (Nat.le_add_right N 1) hw
+        rw [wirtingerDbar_sub (Fseq (N + m)) (Fseq N) w
+          ((hFseq_cd (N + m)).differentiable (by norm_num) w)
+          ((hFseq_cd N).differentiable (by norm_num) w),
+          hFseq_dbar (N + m) hw1, hFseq_dbar N hw2, sub_self]
+    have hTN_diff : DifferentiableOn ℂ TN BN := by
+      have h1 : TendstoLocallyUniformlyOn (fun m w => Fseq (N + m) w - Fseq N w) TN atTop BN :=
+        htend'.tendstoLocallyUniformlyOn
+      exact h1.differentiableOn (Filter.Eventually.of_forall hpartial_diff) isOpen_ball
+    have hTN_eq : ∀ w ∈ BN, TN w = u w - Fseq N w := by
+      intro w hw
+      have hw_summable : Summable (fun j => fN j w) :=
+        Summable.of_norm_bounded hsummable (fun j => hfN_bound j w hw)
+      have h1 : Tendsto (fun m => ∑ j ∈ Finset.range m, fN j w) atTop (𝓝 (TN w)) :=
+        hw_summable.hasSum.tendsto_sum_nat
+      simp only [htelescope] at h1
+      have h2 : Tendsto (fun m => Fseq (N + m) w - Fseq N w) atTop (𝓝 (u w - Fseq N w)) := by
+        have h3 : Tendsto (fun m => Fseq (m + N) w) atTop (𝓝 (u w)) :=
+          (tendsto_add_atTop_iff_nat N).2 (hu_tendsto w (hBN_subR hw))
+        have h4 : Tendsto (fun m => Fseq (N + m) w) atTop (𝓝 (u w)) := by
+          simpa [Nat.add_comm] using h3
+        exact h4.sub tendsto_const_nhds
+      exact tendsto_nhds_unique h1 h2
+    have hu_eqOn : Set.EqOn u (fun w => Fseq N w + TN w) BN := by
+      intro w hw
+      show u w = Fseq N w + TN w
+      rw [hTN_eq w hw]
+      ring
+    have hTN_cdOn : ContDiffOn ℝ ∞ TN BN := by
+      have h1 : AnalyticOnNhd ℂ TN BN := hTN_diff.analyticOnNhd isOpen_ball
+      intro w hw
+      exact (((h1 w hw).restrictScalars (𝕜 := ℝ)).contDiffAt).contDiffWithinAt
+    have hu_cdOn : ContDiffOn ℝ ∞ u BN := by
+      have hsum_cdOn : ContDiffOn ℝ ∞ (fun w => Fseq N w + TN w) BN :=
+        (hFseq_cd N).contDiffOn.add hTN_cdOn
+      exact hsum_cdOn.congr hu_eqOn
+    refine ⟨(hu_cdOn z hzBN).contDiffAt (isOpen_ball.mem_nhds hzBN), ?_⟩
+    have hu_dbar0 : wirtingerDbar u z = 0 + wirtingerDbar (Fseq N) z := by
+      have hcong : wirtingerDbar u z = wirtingerDbar (Fseq N + TN) z := by
+        have heq : (fun w => Fseq N w + TN w) = Fseq N + TN := rfl
+        rw [← heq]
+        exact wirtingerDbar_congr_nhds u (fun w => Fseq N w + TN w) z
+          (Filter.eventuallyEq_of_mem (isOpen_ball.mem_nhds hzBN) hu_eqOn)
+      have hTN_diffAt_R : DifferentiableAt ℝ TN z :=
+        ((hTN_diff z hzBN).differentiableAt (isOpen_ball.mem_nhds hzBN)).restrictScalars (𝕜 := ℝ)
+      rw [hcong, wirtingerDbar_add (Fseq N) TN z
+        ((hFseq_cd N).differentiable (by norm_num) z) hTN_diffAt_R,
+        wirtingerDbar_eq_zero_of_differentiableAt TN z
+          ((hTN_diff z hzBN).differentiableAt (isOpen_ball.mem_nhds hzBN))]
+      ring
+    rw [hu_dbar0, zero_add]
+    exact hFseq_dbar N (hle_closedBall N (N + 1) z (Nat.le_add_right N 1) hzBN)
+  exact ⟨u, fun z hz => (hmain z hz).1.contDiffWithinAt, fun z hz => (hmain z hz).2⟩
 
 end RS

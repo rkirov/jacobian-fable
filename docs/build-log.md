@@ -199,3 +199,111 @@
   flag — `homeoSphere_of_exists_simple_pole` is a direct dependency, not merely transitive through
   riemann-roch).
 - [cech] Jacobian/Cech/Colimit.lean update — added D-functoriality: `RS.linSysOn_mono` Compat (requested, not upstreamed), `inclusion_restrictL_comm`, `inclC0`/`inclC1` (+apply, mem_Z1), `h1CoverIncl` (+_mk), `inclC1_comp_resC1`, `h1CoverIncl_resH1`, **`H1Incl` (D-monotone functoriality H1 D →ₗ H1 D')** via `Module.DirectLimit.map`, `H1Incl_toH1`, `H1Incl_id`, `H1Incl_comp`. Final size 278 lines, zero sorries, `lake build` clean (needed `set_option maxHeartbeats 1000000` on 2 heavy declarations due to abbrev-unfolding cost — expected/acceptable, noted in file). GOTCHA for future editors: `lake env lean <file>` alone is NOT a faithful check — it seems to tolerate `autoImplicit`-style unbound identifiers that `lake build` (which honours the project's `autoImplicit=false`) correctly rejects; always finish with `lake build Jacobian.Cech.<File>` before declaring a file done.
+- [dbar] Jacobian/Dbar/SolveDisk.lean OK (429 lines, ~10s) — Forster 13.2 (the R2 recursion, biggest time budget item): contDiff_indicator_bump_smul/hasCompactSupport_.../eqOn_... (cutoff-extension helpers, needs `Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension` import for the `HasContDiffBump ℂ` instance — easy to miss, `ContDiffBump` application `φ z` silently fails to elaborate without it), exhaustion radii solveRho/solvePhi/solveGcut/solveF (13.1-based raw solutions on shrinking sub-balls), the Nat.rec correction sequence via a private Σ-type `SolveState` + `solveStepData` (per-step: power series of the holomorphic difference `f_{n+1}-Fn` via `DifferentiableOn.hasFPowerSeriesOnBall` + `HasFPowerSeriesOnBall.tendstoUniformlyOn'` on THREE nested auxiliary radii strictly between ρn,ρ(n+1), extracting a partial-sum degree m via `Exists.choose`/`choose_spec` — NOT `obtain`, since the goal is data-valued (Subtype) not Prop, so eliminating a Prop-valued `∃` needs the choice functions, not the `cases`/`rcases`/`obtain` tactics which hit "large elimination" errors), solveState_bound (the (iii) geometric bound, proved once as `rfl`-unfolding of the step function, no double-choice risk), final assembly via `tendstoUniformlyOn_tsum_nat` (Weierstrass M-test) + telescoping identity + `TendstoLocallyUniformlyOn.differentiableOn` (uniform-limit-of-holomorphic) to get the tail term `TN` holomorphic on each exhaustion ball `B_N`, `u := F_N + T_N` there (ContDiffOn via the holomorphic-to-real-smooth bridge, NOT by claiming `u` itself is holomorphic — that would be false since ∂̄u=g≠0). GOTCHAS for siblings: (1) `ℝ≥0`/`NNReal` notation needs `open scoped NNReal` explicitly (silently parses as `ℝ ≥ 0`, a bogus Type-level comparison, giving bizarre `LE Type`/`OfNat Type 0` instance errors otherwise); (2) `tendsto_add_atTop_iff_nat k : Tendsto (fun n => f (n+k)) atTop l ↔ Tendsto f atTop l` — note the argument order `n+k` not `k+n`, easy to mismatch against `Nat.add_comm`-equal-but-not-defeq expressions, fix via `simpa [Nat.add_comm]`; (3) after `rw [hSomeDef]` on a `set`-introduced Pi-subtraction/addition (`f - g`/`f + g`), a *lambda* form `fun w => f w - g w` used in a later goal will NOT syntactically match `wirtingerDbar_sub`/`_add`'s stated `f - g`/`f + g` pattern despite being defeq — insert a local `have heq : (fun w => f w op g w) = f op g := rfl; rw [heq]` bridge every time. Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/ChartedSpaceKitV.lean OK (69 lines) — Surface's
+  `chartedSpaceOfFamily`/`isManifold_of_family` textually generalized from hardcoded codomain `ℂ`
+  to an arbitrary `{E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]` (primed names, namespace
+  `RS`); request filed to surfaces-and-charts (already on file from the design phase). Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/Torus.lean OK (479 lines) — the abstract layer for
+  `V ⧸ L`, `L : AddSubgroup V`: `AddCommGroup`/`TopologicalSpace`/`T2Space` unconditional (the
+  T2-via-closure trick, `haveI : IsClosed (L.topologicalClosure : Set V) := ...` gotcha as
+  flagged by the design, spiked); raw-representative charts `chartAt'`/`rawChartAux` (simplified
+  from the design's "centered" charts — no recentering needed, transitions are still translations
+  by a locally-constant lattice element, exposed standalone as `analyticOnNhd_chartAt'_trans` for
+  `ULift.lean` to reuse) giving `ChartedSpace`/`IsManifold 𝓘(ℂ,V) ω (V ⧸ L)` gated by
+  `[DiscreteTopology L]`; `LieAddGroup` (`contMDiff_add_torus`/`contMDiff_neg_torus`, same
+  affine-chart-composite technique, `[CompleteSpace V]` needed for `AnalyticAt.contDiffAt` — not
+  flagged by the design, add as a hypothesis); `CompactSpace (V ⧸ L.toAddSubgroup)` gated by
+  `[IsZLattice ℝ L]` (`IsZLattice.isCompact_range_of_periodic`, spiked, compiled as designed); the
+  `→ₜ+` substrate `inducedHom`/`contMDiff_inducedHom` (spiked §9.2 verbatim; §9.3's `ContMDiff`
+  proof is new, same affine-chart technique, `analyticAt_linearMap` via bundling the bare
+  `LinearMap` into a `ContinuousLinearMap` on the fly). GOTCHA for siblings: use `abel`, not
+  `ring`, for `V`-element identities (`V` is only an `AddCommGroup`, not a ring) — `ring`
+  silently fails with a `ring_nf` suggestion, easy to misdiagnose. Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/Periods.lean OK (46 lines) — `basis X := Module.finBasis
+  ℂ (Form1 X)` (`open Module` needed at this pin, per the task's own note) and `periodSubgroup X :=
+  AddSubgroup.closure (range (periodVector (basis X)))` over loops based at `Classical.arbitrary
+  X` (`Nonempty X` free from `[ConnectedSpace X]`). Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/ULift.lean OK (207 lines) — the `ULift` shell's transport
+  toolkit, specialized to the torus per the design's own R1 fallback (not a fully generic
+  `M ≃ₜ M'` toolkit — `ULift.up`/`.down` cancel by `rfl`, `PartialEquiv.coe_trans_symm`, which the
+  fully-generic route would not get for free): `ChartedSpace`/`IsManifold (ULift (V ⧸ L))` by
+  transporting `Torus.analyticOnNhd_chartAt'_trans` through an **exact** (not merely eventual)
+  transition function-and-source identity; `LieAddGroup` via a different, cleaner route than
+  re-deriving the affine-chart argument — `ULift.up`/`ULift.down` are themselves shown `ω`-smooth
+  (chart composite is the identity on an open set, no lattice shift at all, since domain/codomain
+  charts align exactly), so addition/negation on `ULift (V ⧸ L)` factor through `Torus`'s own
+  `contMDiff_add_torus`/`contMDiff_neg_torus` by plain composition (`ContMDiff.comp`/`.prodMap`).
+  GOTCHA for siblings: universe variables in `ULift.{u}` are **not** auto-shared across
+  declarations in one file even with matching notation — a bare `.{u}` without a file-level
+  `universe u` command gives each declaration its own fresh metavariable, causing baffling
+  "failed to infer universe levels" errors deep inside otherwise-fine `have`/`show` terms; fix is
+  a single `universe u` line up top. Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/Basic.lean OK (125 lines) — `RS.Jac₀ X`/`Jacobian
+  (X : Type u) [...] : Type u := ULift.{u} (RS.Jac₀ X)`, both `abbrev` (not `def`) so every
+  `Torus`/`ULift` instance transfers by instance search alone, no manual wiring; the challenge's
+  instance block under `namespace Jacobian`: `AddCommGroup`/`TopologicalSpace`/`T2Space`
+  unconditional (every genus incl. `g = 0`, sanity-checked via an `example` deriving
+  `Subsingleton (Jacobian X)` from `genus X = 0`, `Function.Surjective.subsingleton` +
+  `ULift.ext`); `instChartedSpace`/`instIsManifold`/`instLieAddGroup`/`instCompactSpace` gated by
+  `[DiscreteTopology (periodSubgroup X).topologicalClosure]` (+ `IsZLattice` for compactness).
+  GOTCHA/finding for period-lattice-rank: `Torus.compactSpace_torus` is stated for `L : Submodule
+  ℤ V` while the other three hooks are stated for the `AddSubgroup` directly — bridged here via a
+  **new instance** `RS.discreteTopology_toIntSubmodule` (`Homeomorph.setCongr` on the equal
+  carrier sets, `AddSubgroup.coe_toIntSubmodule`); this must be an `instance` (not a `theorem`),
+  since `IsZLattice`'s own class signature has `[DiscreteTopology L]` as an instance-argument
+  needed *while elaborating* `instCompactSpace`'s signature itself. Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/OfCurve.lean OK (262 lines) — `ofCurve`/
+  `ofCurve_eq_of_path` (well-definedness via `periodVector_mem_periodSubgroup`, a
+  basepoint-independence lemma via `period_conj` that the design didn't spell out explicitly but
+  is needed since `periodSubgroup` is generated by loops at one fixed arbitrary basepoint, not
+  the basepoint `ofCurve` is called at)/`ofCurve_self`, plus **`ofCurve_contMDiff` fully proved,
+  zero sorries** (the design's highest-risk item, §8.3) — gated by
+  `[DiscreteTopology (periodSubgroup X).topologicalClosure]` (a finding not flagged by the design:
+  the challenge's bare statement literally does not elaborate without this, since it needs
+  `ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` for its codomain — same gating as
+  `Basic.lean`'s four instances). Proof: chart `e` at `x₀`, holomorphic primitives `g i` on a ball
+  (`exists_hasDerivAt_ball`), straight-segment path in the chart pulled back through `e.symm` via
+  mathlib's `Path.segment`/`Path.map'` (`ContinuousOn`, not full `Continuous` — avoided hand-rolling
+  a `Path` structure entirely, a nice find), `IsPrimitiveAlongMap`/`isPrimitiveAlongMap_of_ball`
+  giving the local formula `ofCurve P z = ULift.up (mk (v₀ + g (e z)))` (`hkey`), then the same
+  locally-constant-lattice-shift chart computation as `Torus`/`ULift` to assemble `ContMDiffAt`.
+  Also carries `Compat` `LocPathConnectedSpace`/`PathConnectedSpace X` instances (request already
+  on file). Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction/Functorial.lean OK (91 lines) — the `→ₜ+` substrate
+  wrapped through the `ULift` shell: `RS.uliftUpHom`/`RS.uliftDownHom` (generic `G →ₜ+ ULift G`/
+  `ULift G →ₜ+ G` via `AddEquiv.ulift` + `Homeomorph.ulift`, reusable), `Jacobian.inducedHom`/
+  `Jacobian.contMDiff_inducedHom` composing these with `Torus.inducedHom`/`contMDiff_inducedHom`.
+  Takes the hypothesis at the **raw** `periodSubgroup` level (not its closure) and derives the
+  closure-level hypothesis `Torus.inducedHom` needs via `AddSubgroup.topologicalClosure_minimal`
+  (since `(periodSubgroup Y).topologicalClosure` is already closed and `T` continuous, its
+  `comap` is closed too). Compiled clean on the first real attempt — the only file in the unit
+  that did. Out of scope (flagged per design R4, not silently dropped): the actual
+  `pushforward`/`pullback` for a real holomorphic `f` needs "pullback of holomorphic 1-forms",
+  which no unit in the 30-unit blueprint owns — a genuine blueprint gap for the orchestrator.
+  Zero sorries.
+- [jaccon] Jacobian/JacobianConstruction.lean (unit root) OK — `scripts/check.sh
+  Jacobian/JacobianConstruction` passes: builds clean, **zero sorries** across all 8 files
+  (1356 lines total, above the design's ~750-line estimate mainly due to `Torus.lean`'s
+  `LieAddGroup`/`inducedHom` sections and `OfCurve.lean`'s fully-proved `ofCurve_contMDiff`, both
+  of which the design correctly flagged as the highest-effort items but which landed complete
+  rather than needing the design's fallback/blocker routes). Ledger as built: unconditional now —
+  `AddCommGroup`/`TopologicalSpace`/`T2Space (Jacobian X)` (every genus), `ofCurve`/
+  `ofCurve_eq_of_path`/`ofCurve_self`; needs `[DiscreteTopology (periodSubgroup X).topologicalClosure]`
+  only to typecheck (not a real extra mathematical hypothesis once period-lattice-rank lands its
+  global instance) — `ofCurve_contMDiff`, `Jacobian.inducedHom`/`contMDiff_inducedHom`; gated
+  `instance`s needing that same hypothesis (+ `IsZLattice` for compactness) —
+  `ChartedSpace`/`IsManifold`/`LieAddGroup`/`CompactSpace (Jacobian X)`. NOT registered in
+  `Jacobian.lean` per task hard rule, orchestrator to add `import Jacobian.JacobianConstruction`.
+  Notes for downstream units: **abel-theorem** consumes `ofCurve`/`ofCurve_eq_of_path`/
+  `ofCurve_self`/`periodSubgroup`/`AddSubgroup.subset_closure` and is the natural home for the
+  real `pushforward`/`pullback` (blueprint gap, see `Functorial.lean`'s entry above);
+  **period-lattice-rank** consumes the abstract layer (`Torus.instChartedSpace`/
+  `isManifold_torus`/`lieAddGroup_torus`/`compactSpace_torus`) and need only register
+  `DiscreteTopology (periodSubgroup X).topologicalClosure` (+ `IsZLattice ℝ
+  (periodSubgroup X).topologicalClosure.toIntSubmodule`, bridged automatically to the
+  `AddSubgroup`-level hypothesis via `RS.discreteTopology_toIntSubmodule`) as instances for the
+  real period subgroup to light up all four gated instances plus `ofCurve_contMDiff`/
+  `Jacobian.inducedHom` at once; also needs to show `closure Λ = Λ` (discrete ⇒ closed, not built
+  here, flagged in the design as period-lattice-rank's own small lemma); **jacobian-functoriality**
+  (if such a unit exists/is created) consumes `Functorial.lean`'s substrate directly.
