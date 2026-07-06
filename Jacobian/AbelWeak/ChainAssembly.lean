@@ -1,4 +1,5 @@
 import Jacobian.AbelWeak.SingleChart
+import Jacobian.Path
 import Jacobian.PlanarStokes
 
 /-!
@@ -31,7 +32,7 @@ transition map's difference quotient). This is real, correct, buildable content,
 in this pass's time budget alongside the rest of the unit. `abel-theorem`'s own two-point
 sufficiency direction (§2.1) is the consumer that needs the fully general version; its
 `k`-point/Finset use (§1.4) does **not** need it (see above). Filed as a coordination note
-(also in the root file, `Jacobian/AbelWeak.lean`) rather than a `sorry`.
+(also in the root file, `Jacobian/AbelWeak.lean`) rather than a placeholder tactic.
 -/
 
 open scoped ContDiff Manifold
@@ -87,22 +88,22 @@ theorem exists_weakSolutionOfFinset {ι : Type*} [Fintype ι] [DecidableEq ι]
 any `ChartChain` `C` adapted to `γ`, `pathIntegral γ ω` is exactly the finite telescoped sum of
 chart-local holomorphic-primitive differences. -/
 theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartChain γ)
-    (ω : RS.Form1 X) (g : (k : ℕ) → ℂ → ℂ)
+    (η : RS.Form1 X) (g : (k : ℕ) → ℂ → ℂ)
     (hg : ∀ k, k < C.n → ∀ z ∈ Metric.ball (C.c k) (C.r k),
-      HasDerivAt (g k) (RS.coeffIn (C.e k) ω z) z) :
-    RS.pathIntegral γ ω =
+      HasDerivAt (g k) (RS.coeffIn (C.e k) η z) z) :
+    RS.pathIntegral γ η =
       ∑ k ∈ Finset.range C.n, (g k (C.e k (γ.extend (C.t (k + 1)))) - g k (C.e k (γ.extend (C.t k)))) := by
-  obtain ⟨F, hF, hF0⟩ := RS.exists_isPrimitiveAlong γ ω
-  have hFeq : RS.pathIntegral γ ω = F 1 - F 0 := hF.pathIntegral_eq
+  obtain ⟨F, hF, hF0⟩ := RS.exists_isPrimitiveAlong γ η
+  have hFeq : RS.pathIntegral γ η = F 1 - F 0 := hF.pathIntegral_eq
   -- Per-piece cell primitive and comparison with `F`.
   have hstep : ∀ k, k < C.n →
       F (C.t (k + 1)) - F (C.t k)
         = g k (C.e k (γ.extend (C.t (k + 1)))) - g k (C.e k (γ.extend (C.t k))) := by
     intro k hk
     set Gk : ℝ → ℂ := fun u => g k (C.e k (γ.extend u)) with hGk_def
-    have hGprim : RS.IsPrimitiveAlongMap γ.extend ω Gk (Set.Icc (C.t k) (C.t (k + 1))) :=
+    have hGprim : RS.IsPrimitiveAlongMap γ.extend η Gk (Set.Icc (C.t k) (C.t (k + 1))) :=
       RS.isPrimitiveAlongMap_of_ball (C.he k) (hg k hk) (fun u hu => C.maps k u hu)
-    have hFprim : RS.IsPrimitiveAlongMap γ.extend ω F (Set.Icc (C.t k) (C.t (k + 1))) :=
+    have hFprim : RS.IsPrimitiveAlongMap γ.extend η F (Set.Icc (C.t k) (C.t (k + 1))) :=
       hF.mono (Set.subset_univ _)
     have hmem0 : C.t k ∈ Set.Icc (C.t k) (C.t (k + 1)) := ⟨le_rfl, C.mono (Nat.le_succ k)⟩
     have hmem1 : C.t (k + 1) ∈ Set.Icc (C.t k) (C.t (k + 1)) := ⟨C.mono (Nat.le_succ k), le_rfl⟩
@@ -123,6 +124,42 @@ theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartCh
     exact h1
   rw [hFeq, htelescope]
   exact Finset.sum_congr rfl (fun k hk => hstep k (Finset.mem_range.mp hk))
+
+/-! ## §7.3: the Lemma-20.3-specialized residue identity (Stokes-driven) -/
+
+/-- **Forster's Lemma 20.3, specialized to `n = 2`** (the residue identity `abel-theorem` needs
+to translate its period-vanishing hypothesis into a statement about a weak solution's chart-local
+log-derivative): for the two-puncture kernel `(w - b)⁻¹ - (w - a)⁻¹` (residues `+1` at `b`, `-1`
+at `a` — matching a weak solution's own `df/f` local model, §7.3 step 3) and ANY `C¹`
+compactly-supported `g` on an open `U`, the area integral of `∂̄g` against that kernel recovers
+`g b - g a`, with **no local-constancy hypothesis on `g`** (the `abel-weak-solutions` refinement
+of `planar-stokes-atoms`' Atom 2 that this unit's design flagged as needed, §7.3/§10/§11 risk R1
+— already supplied by `planar-stokes-atoms`' own
+`RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq`, cited directly here). -/
+theorem residue_identity_two_point {a b : ℂ} {U : Set ℂ} {g : ℂ → ℂ}
+    (hU : IsOpen U) (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g)
+    (hsub : tsupport g ⊆ U) :
+    (-1 / Real.pi : ℂ) * ∫ w : ℂ, wirtingerDbar g w * ((w - b)⁻¹ - (w - a)⁻¹) = g b - g a := by
+  rw [RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq hU hg hcs hsub]
+  have hπ : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  field_simp
+
+/-- The two-puncture kernel `(z - b)⁻¹ - (z - a)⁻¹` is EXACTLY the logarithmic derivative
+`deriv h z / h z` of the rational function `h z := (z - b) / (z - a)` (the inner-ball formula a
+`SingleChart` weak solution literally equals near its zero/pole pair) — connecting §7.3's
+abstract kernel to `f`'s own chart-local log-derivative coefficient, as `abel-theorem`'s
+translation step needs. -/
+theorem logDeriv_rat_eq {a b z : ℂ} (hza : z ≠ a) (hzb : z ≠ b) :
+    deriv (fun w : ℂ => (w - b) / (w - a)) z / ((z - b) / (z - a)) = (z - b)⁻¹ - (z - a)⁻¹ := by
+  have hderiv : HasDerivAt (fun w : ℂ => (w - b) / (w - a))
+      ((1 * (z - a) - (z - b) * 1) / (z - a) ^ 2) z := by
+    have := ((hasDerivAt_id z).sub_const b).div ((hasDerivAt_id z).sub_const a)
+      (sub_ne_zero.mpr hza)
+    simpa using this
+  rw [hderiv.deriv]
+  have hane : (z - a) ≠ 0 := sub_ne_zero.mpr hza
+  have hbne : (z - b) ≠ 0 := sub_ne_zero.mpr hzb
+  field_simp
 
 end RS.AbelWeak
 

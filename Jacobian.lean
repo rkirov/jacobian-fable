@@ -20,3 +20,4 @@ import Jacobian.Monodromy
 import Jacobian.FormTrace
 import Jacobian.PlanarStokes
 import Jacobian.SerrePairing
+import Jacobian.AbelWeak

@@ -34,4 +34,4 @@ example (R : ℂ → ℂ) (S : Finset ℂ) (hRtailMero : MeromorphicOn (fun z =>
       have hp : AnalyticAt ℂ (fun w : ℂ => w ^ 2) w0 := by fun_prop
       exact hp.meromorphicAt.inv.neg
     have := hsq.mul hcomp
-    simpa [Function.comp] using this
+    exact this.congr (Filter.Eventually.of_forall fun w => by simp [Function.comp_def])

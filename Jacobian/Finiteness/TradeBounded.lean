@@ -125,6 +125,59 @@ theorem LinSysOn.ord_nonneg {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     simp [Function.locallyFinsuppWithin.coe_zero]
   rwa [h0, neg_zero] at h
 
+/-- The "repr\_cocycle" pattern (dolbeault §6.2): a `Z1`-cocycle relation, evaluated pointwise. -/
+theorem Z1.rel_res_evalAt {𝒰 : FinCover (⊤ : Opens X)} {f : C1 (0 : RS.Divisor X) 𝒰}
+    (hf : f ∈ Z1 (0 : RS.Divisor X) 𝒰) (a b c : Fin 𝒰.n) {z : X}
+    (hbc : z ∈ (𝒰.U b ⊓ 𝒰.U c : Opens X)) (hac : z ∈ (𝒰.U a ⊓ 𝒰.U c : Opens X))
+    (hab : z ∈ (𝒰.U a ⊓ 𝒰.U b : Opens X)) :
+    (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X)).evalAt z
+      - (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X)).evalAt z
+      + (f (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)).evalAt z = 0 := by
+  have hopen : IsOpen ((𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) : Set X) := (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c).2
+  have hzabc : z ∈ (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) := ⟨hab, hbc.2⟩
+  have hbc' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U b ⊓ 𝒰.U c :=
+    le_inf (inf_le_left.trans inf_le_right) inf_le_right
+  have hac' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U a ⊓ 𝒰.U c :=
+    le_inf (inf_le_left.trans inf_le_left) inf_le_right
+  have hab' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U a ⊓ 𝒰.U b := inf_le_left
+  have hzero : d1 (0 : RS.Divisor X) 𝒰 f (a, b, c) = 0 := (mem_Z1_iff _ _ _).1 hf (a, b, c)
+  rw [d1_apply] at hzero
+  have hcoe : RS.MeroGermOn.restrict hbc' (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
+      - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))
+      + RS.MeroGermOn.restrict hab' (f (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)) = 0 := by
+    have hcast := congrArg Subtype.val hzero
+    simpa using hcast
+  have hnn_A : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
+      RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))).ord z := by
+    rw [RS.MeroGermOn.ord_restrict hbc' hopen (𝒰.U b ⊓ 𝒰.U c).2 hzabc]
+    exact LinSysOn.ord_nonneg (𝒰.U b ⊓ 𝒰.U c).2 hbc (f (b, c))
+  have hnn_B : 0 ≤ (RS.MeroGermOn.restrict hac' (f (a, c) :
+      RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
+    rw [RS.MeroGermOn.ord_restrict hac' hopen (𝒰.U a ⊓ 𝒰.U c).2 hzabc]
+    exact LinSysOn.ord_nonneg (𝒰.U a ⊓ 𝒰.U c).2 hac (f (a, c))
+  have hnn_C : 0 ≤ (RS.MeroGermOn.restrict hab' (f (a, b) :
+      RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X))).ord z := by
+    rw [RS.MeroGermOn.ord_restrict hab' hopen (𝒰.U a ⊓ 𝒰.U b).2 hzabc]
+    exact LinSysOn.ord_nonneg (𝒰.U a ⊓ 𝒰.U b).2 hab (f (a, b))
+  have hnn_AB : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
+        RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
+      - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
+    rw [sub_eq_add_neg]
+    refine le_trans (le_min hnn_A ?_)
+      (RS.MeroGermOn.ord_add hopen hzabc _ (-RS.MeroGermOn.restrict hac'
+        (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))))
+    rw [RS.MeroGermOn.ord_neg]
+    exact hnn_B
+  have heval : (RS.MeroGermOn.restrict hbc' (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
+        - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).evalAt z
+      + (RS.MeroGermOn.restrict hab' (f (a, b) :
+          RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X))).evalAt z = 0 := by
+    rw [← MeroGermOn.evalAt_add hopen hzabc hnn_AB hnn_C, hcoe, MeroGermOn.evalAt_zero hopen hzabc]
+  rw [MeroGermOn.evalAt_sub hopen hzabc hnn_A hnn_B] at heval
+  rwa [RS.MeroGermOn.evalAt_restrict hbc' hopen (𝒰.U b ⊓ 𝒰.U c).2 hzabc,
+    RS.MeroGermOn.evalAt_restrict hac' hopen (𝒰.U a ⊓ 𝒰.U c).2 hzabc,
+    RS.MeroGermOn.evalAt_restrict hab' hopen (𝒰.U a ⊓ 𝒰.U b).2 hzabc] at heval
+
 end EvalAtCompat
 
 /-! ### §5: the germ ↔ Banach bridges at a cover level (D5) -/
@@ -217,10 +270,6 @@ noncomputable def starPairGerm (F : Z1 (0 : RS.Divisor X) T.coverStar) (i j : Fi
     RS.MeroGermOn X ((T.Ustar i ⊓ T.Ustar j : Opens X) : Set X) :=
   starPairMem T F i j
 
-theorem starPairGerm_eq (F : Z1 (0 : RS.Divisor X) T.coverStar) (i j : Fin T.n) :
-    starPairGerm T F i j = ((F : C1 (0 : RS.Divisor X) T.coverStar) (i, j) :
-      RS.LinSysOn (0 : RS.Divisor X) ((T.Ustar i ⊓ T.Ustar j : Opens X) : Set X)) := rfl
-
 theorem boundZ1_apply_eq_evalAt {P : Fin T.n → Opens X}
     (h : ∀ i, closure (P i : Set X) ⊆ (T.Ustar i : Set X)) (F : Z1 (0 : RS.Divisor X) T.coverStar)
     (i j : Fin T.n) (z : ↥((P i ⊓ P j : Opens X) : Set X)) :
@@ -228,6 +277,30 @@ theorem boundZ1_apply_eq_evalAt {P : Fin T.n → Opens X}
       (starPairGerm T F i j).evalAt (z : X) := by
   rw [boundZ1, restrictGerm_apply]
   rfl
+
+/-- **§5 step 5's `NZ1`-membership**: the de-germified cochain is a genuine bounded cocycle
+(the "repr\_cocycle" pattern: evaluate `F`'s germ cocycle relation pointwise). -/
+theorem boundZ1_mem_NZ1 {P : Fin T.n → Opens X}
+    (h : ∀ i, closure (P i : Set X) ⊆ (T.Ustar i : Set X)) (F : Z1 (0 : RS.Divisor X) T.coverStar) :
+    boundZ1 T h F ∈ NZ1 T P := by
+  rw [mem_NZ1_iff]
+  rintro ⟨a, b, c⟩
+  rw [d1NC_apply]
+  apply Subtype.ext
+  apply BoundedContinuousFunction.ext
+  intro z
+  simp only [Submodule.coe_add, Submodule.coe_sub, ZeroMemClass.coe_zero,
+    BoundedContinuousFunction.coe_add, BoundedContinuousFunction.coe_sub, Pi.add_apply,
+    Pi.sub_apply, BoundedContinuousFunction.coe_zero, Pi.zero_apply, restrictCLM_apply_coe]
+  rw [boundZ1_apply_eq_evalAt, boundZ1_apply_eq_evalAt, boundZ1_apply_eq_evalAt]
+  have hzP : (z : X) ∈ (P a ⊓ P b ⊓ P c : Opens X) := z.2
+  have hza : (z : X) ∈ P a := hzP.1.1
+  have hzb : (z : X) ∈ P b := hzP.1.2
+  have hzc : (z : X) ∈ P c := hzP.2
+  have hzUa : (z : X) ∈ T.Ustar a := (subset_closure.trans (h a)) hza
+  have hzUb : (z : X) ∈ T.Ustar b := (subset_closure.trans (h b)) hzb
+  have hzUc : (z : X) ∈ T.Ustar c := (subset_closure.trans (h c)) hzc
+  exact Z1.rel_res_evalAt F.2 a b c ⟨hzUb, hzUc⟩ ⟨hzUa, hzUc⟩ ⟨hzUa, hzUb⟩
 
 /-- De-germification of a `0`-cochain down onto the `W`-level (§5 step 5, second half). -/
 noncomputable def boundZ1C0 (g : C0 (0 : RS.Divisor X) T.coverV) : NC0 T T.W :=
@@ -249,59 +322,102 @@ theorem boundZ1C0_apply_eq_evalAt (g : C0 (0 : RS.Divisor X) T.coverV) (i : Fin 
   rw [boundZ1C0, restrictGerm_apply]
   rfl
 
-/-- The "repr\_cocycle" pattern (dolbeault §6.2): a `Z1`-cocycle relation, evaluated pointwise. -/
-theorem Z1.rel_res_evalAt {𝒰 : FinCover (⊤ : Opens X)} {f : C1 (0 : RS.Divisor X) 𝒰}
-    (hf : f ∈ Z1 (0 : RS.Divisor X) 𝒰) (a b c : Fin 𝒰.n) {z : X}
-    (hbc : z ∈ (𝒰.U b ⊓ 𝒰.U c : Opens X)) (hac : z ∈ (𝒰.U a ⊓ 𝒰.U c : Opens X))
-    (hab : z ∈ (𝒰.U a ⊓ 𝒰.U b : Opens X)) :
-    (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X)).evalAt z
-      - (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X)).evalAt z
-      + (f (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)).evalAt z = 0 := by
-  have hopen : IsOpen ((𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) : Set X) := (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c).2
-  have hzabc : z ∈ (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) := ⟨hab, hbc.2⟩
-  have hbc' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U b ⊓ 𝒰.U c :=
-    le_inf (inf_le_left.trans inf_le_right) inf_le_right
-  have hac' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U a ⊓ 𝒰.U c :=
-    le_inf (inf_le_left.trans inf_le_left) inf_le_right
-  have hab' : (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c : Opens X) ≤ 𝒰.U a ⊓ 𝒰.U b := inf_le_left
-  have hzero : d1 (0 : RS.Divisor X) 𝒰 f (a, b, c) = 0 := (mem_Z1_iff _ _ _).1 hf (a, b, c)
-  rw [d1_apply] at hzero
-  have hcoe : RS.MeroGermOn.restrict hbc' (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
-      - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))
-      + RS.MeroGermOn.restrict hab' (f (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)) = 0 := by
-    have hcast := congrArg Subtype.val hzero
-    simpa using hcast
-  have hnn_A : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
-      RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))).ord z := by
-    rw [RS.MeroGermOn.ord_restrict hbc' hopen (𝒰.U b ⊓ 𝒰.U c).2 hzabc]
-    exact LinSysOn.ord_nonneg (𝒰.U b ⊓ 𝒰.U c).2 hbc (f (b, c))
-  have hnn_B : 0 ≤ (RS.MeroGermOn.restrict hac' (f (a, c) :
-      RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
-    rw [RS.MeroGermOn.ord_restrict hac' hopen (𝒰.U a ⊓ 𝒰.U c).2 hzabc]
-    exact LinSysOn.ord_nonneg (𝒰.U a ⊓ 𝒰.U c).2 hac (f (a, c))
-  have hnn_C : 0 ≤ (RS.MeroGermOn.restrict hab' (f (a, b) :
-      RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X))).ord z := by
-    rw [RS.MeroGermOn.ord_restrict hab' hopen (𝒰.U a ⊓ 𝒰.U b).2 hzabc]
-    exact LinSysOn.ord_nonneg (𝒰.U a ⊓ 𝒰.U b).2 hab (f (a, b))
-  have hnn_AB : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
-        RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
-      - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
+/-- **The trade equation, evaluated pointwise** (the "repr\_cocycle" pattern applied to
+`exists_trade`'s conclusion): reads off a scalar identity relating the good-cover cocycle `F`,
+the traded cocycle `f`, and the coboundary witness `g` at a point. Reused for both
+`tradePi_surjective` (§5 steps 5–6, at level `V`) and `classMap_surjective` (§5 step 9, at
+level `W`). -/
+theorem trade_evalAt {𝒱 : FinCover (⊤ : Opens X)} {τ : Fin 𝒱.n → Fin T.n}
+    (hτ : IsRefIdx T.coverStar 𝒱 τ) (F : Z1 (0 : RS.Divisor X) T.coverStar)
+    (f : C1 (0 : RS.Divisor X) 𝒱) (g : C0 (0 : RS.Divisor X) 𝒱)
+    (hFg : (resZ1 (0 : RS.Divisor X) τ hτ F : C1 (0 : RS.Divisor X) 𝒱) = f + d0 (0 : RS.Divisor X) 𝒱 g)
+    (α β : Fin 𝒱.n) {z : X} (hz : z ∈ (𝒱.U α ⊓ 𝒱.U β : Opens X)) :
+    (starPairGerm T F (τ α) (τ β)).evalAt z =
+      (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)).evalAt z
+        + ((g β : RS.MeroGermOn X (𝒱.U β : Set X)).evalAt z
+          - (g α : RS.MeroGermOn X (𝒱.U α : Set X)).evalAt z) := by
+  have hLopen : IsOpen ((𝒱.U α ⊓ 𝒱.U β : Opens X) : Set X) := (𝒱.U α ⊓ 𝒱.U β).2
+  have hza : (z : X) ∈ 𝒱.U α := hz.1
+  have hzb : (z : X) ∈ 𝒱.U β := hz.2
+  have hpt : (resZ1 (0 : RS.Divisor X) τ hτ F : C1 (0 : RS.Divisor X) 𝒱) (α, β) =
+      f (α, β) + d0 (0 : RS.Divisor X) 𝒱 g (α, β) := congrFun hFg (α, β)
+  rw [resZ1_apply_coe, resC1_apply, d0_apply] at hpt
+  have hcoe := congrArg Subtype.val hpt
+  simp only [Submodule.coe_add, Submodule.coe_sub, restrictL_apply_coe] at hcoe
+  have hnn_f : 0 ≤ (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)).ord z :=
+    LinSysOn.ord_nonneg hLopen hz (f (α, β))
+  have hnn_gb : 0 ≤ (g β : RS.MeroGermOn X (𝒱.U β : Set X)).ord z :=
+    LinSysOn.ord_nonneg (𝒱.U β).2 hzb (g β)
+  have hnn_ga : 0 ≤ (g α : RS.MeroGermOn X (𝒱.U α : Set X)).ord z :=
+    LinSysOn.ord_nonneg (𝒱.U α).2 hza (g α)
+  have hnn_gb' : 0 ≤ (RS.MeroGermOn.restrict (inf_le_right : 𝒱.U α ⊓ 𝒱.U β ≤ 𝒱.U β)
+      (g β : RS.MeroGermOn X (𝒱.U β : Set X))).ord z := by
+    rw [RS.MeroGermOn.ord_restrict inf_le_right hLopen (𝒱.U β).2 hz]; exact hnn_gb
+  have hnn_ga' : 0 ≤ (RS.MeroGermOn.restrict (inf_le_left : 𝒱.U α ⊓ 𝒱.U β ≤ 𝒱.U α)
+      (g α : RS.MeroGermOn X (𝒱.U α : Set X))).ord z := by
+    rw [RS.MeroGermOn.ord_restrict inf_le_left hLopen (𝒱.U α).2 hz]; exact hnn_ga
+  have hnn_sub : 0 ≤ (RS.MeroGermOn.restrict (inf_le_right : 𝒱.U α ⊓ 𝒱.U β ≤ 𝒱.U β) (g β :
+        RS.MeroGermOn X (𝒱.U β : Set X))
+      - RS.MeroGermOn.restrict (inf_le_left : 𝒱.U α ⊓ 𝒱.U β ≤ 𝒱.U α) (g α :
+        RS.MeroGermOn X (𝒱.U α : Set X))).ord z := by
     rw [sub_eq_add_neg]
-    refine le_trans (le_min hnn_A ?_)
-      (RS.MeroGermOn.ord_add hopen hzabc _ (-RS.MeroGermOn.restrict hac'
-        (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))))
+    refine le_trans (le_min hnn_gb' ?_) (RS.MeroGermOn.ord_add hLopen hz _ _)
     rw [RS.MeroGermOn.ord_neg]
-    exact hnn_B
-  have heval : (RS.MeroGermOn.restrict hbc' (f (b, c) : RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
-        - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).evalAt z
-      + (RS.MeroGermOn.restrict hab' (f (a, b) :
-          RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X))).evalAt z = 0 := by
-    rw [← MeroGermOn.evalAt_add hopen hzabc hnn_AB hnn_C, hcoe, MeroGermOn.evalAt_zero hopen hzabc]
-  rw [MeroGermOn.evalAt_sub hopen hzabc hnn_A hnn_B] at heval
-  rwa [RS.MeroGermOn.evalAt_restrict hbc' hopen (𝒰.U b ⊓ 𝒰.U c).2 hzabc,
-    RS.MeroGermOn.evalAt_restrict hac' hopen (𝒰.U a ⊓ 𝒰.U c).2 hzabc,
-    RS.MeroGermOn.evalAt_restrict hab' hopen (𝒰.U a ⊓ 𝒰.U b).2 hzabc] at heval
+    exact hnn_ga'
+  have hcongr := congrArg (fun ψ : RS.MeroGermOn X ((𝒱.U α ⊓ 𝒱.U β : Opens X) : Set X) =>
+    ψ.evalAt z) hcoe
+  simp only at hcongr
+  rw [MeroGermOn.evalAt_add hLopen hz hnn_f hnn_sub,
+    MeroGermOn.evalAt_sub hLopen hz hnn_gb' hnn_ga',
+    RS.MeroGermOn.evalAt_restrict inf_le_right hLopen (𝒱.U β).2 hz,
+    RS.MeroGermOn.evalAt_restrict inf_le_left hLopen (𝒱.U α).2 hz] at hcongr
+  rw [RS.MeroGermOn.evalAt_restrict (inf_le_inf (hτ α) (hτ β)) hLopen
+    (T.Ustar (τ α) ⊓ T.Ustar (τ β)).2 hz] at hcongr
+  exact hcongr
 
 end GermBridge
+
+/-! ### §5 steps 4–6: `tradePi_surjective` (the qualitative trade, Banach layer) -/
+
+variable [T1Space X] [T2Space X] [CompactSpace X]
+
+/-- **§5's centerpiece**: the trade projection `π : L →L Z¹(𝔙)` is onto (Forster 14.6(a) upgraded
+to the Banach layer). -/
+theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T) := by
+  intro ξ
+  obtain ⟨F, g, hFg⟩ := exists_trade (0 : RS.Divisor X) T.good_star id T.ref_star_V
+    (toGermZ1 T T.V T.covers_V ξ)
+  have hζmem : boundZ1 T T.closure_U_subset F ∈ NZ1 T T.U := boundZ1_mem_NZ1 T T.closure_U_subset F
+  set ζ : NZ1 T T.U := ⟨boundZ1 T T.closure_U_subset F, hζmem⟩ with hζ_def
+  set η : NC0 T T.W := boundZ1C0 T g with hη_def
+  have hmem : (ζ, ξ, η) ∈ tradeSpace T := by
+    rw [mem_tradeSpace_iff_eq]
+    rintro ⟨α, β⟩
+    apply Subtype.ext
+    simp only [Submodule.coe_add, Submodule.coe_sub]
+    apply BoundedContinuousFunction.ext
+    intro z
+    simp only [restrictCLM_apply_coe]
+    have hzeq : (ζ.1 : NC1 T T.U) (α, β) = boundZ1 T T.closure_U_subset F (α, β) := rfl
+    rw [hzeq, boundZ1_apply_eq_evalAt]
+    have hηβ : η β = boundZ1C0 T g β := rfl
+    have hηα : η α = boundZ1C0 T g α := rfl
+    rw [hηβ, hηα, boundZ1C0_apply_eq_evalAt, boundZ1C0_apply_eq_evalAt]
+    have hξeval : (ξ (α, β) : ↥((T.V α ⊓ T.V β : Set X)) →ᵇ ℂ)
+        (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z) =
+        (toGerm (T.V α ⊓ T.V β) (ξ (α, β))).evalAt
+          ((Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z : X)) :=
+      (evalAt_toGerm (ξ (α, β))
+        (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2).symm
+    rw [hξeval]
+    have hcgerm : (toGerm (T.V α ⊓ T.V β) (ξ (α, β))) =
+        ((toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X) (coverOfP T T.V T.covers_V))
+          (α, β) : RS.MeroGermOn X (T.V α ⊓ T.V β : Set X)) := by
+      rw [toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
+    rw [hcgerm]
+    exact (trade_evalAt T T.ref_star_V F (toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X)
+        T.coverV) g hFg α β ⟨(Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.1,
+          (Set.inclusion (inf_le_inf (T.W_le_V α) (T.W_le_V β)) z).2.2⟩).symm
+  exact ⟨⟨(ζ, ξ, η), hmem⟩, rfl⟩
 
 end RS.Finiteness
