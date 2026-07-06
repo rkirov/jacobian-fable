@@ -707,3 +707,28 @@
   unit) gets `trace_const_mul_pullback`/`trace_pullback_eq_degree_smul_of_regular` (the latter
   regular-value-only, same caveat). `serre-duality-tails`: unaffected, nothing DAG-wired here
   (confirmed by the design's own §0.3 audit, independently reconfirmed).
+- [dolb] Jacobian/Dbar/DiskAcyclic.lean UPDATED (474 lines, was 235) — added the general-divisor
+  twist `subsingleton_h1Cover_of_isChartDisk` (D9(b) of dbar-solvability's design, honestly
+  deferred by the dbar builder, built here under dolbeault-comparison's SPECIAL AUTHORIZATION
+  since Leray.lean's member-splitting step needs disk acyclicity at arbitrary `D`, not just 0).
+  Route: Weierstrass-factor germ `t := mk (q∘e) _` on the chart disk `V` with
+  `q w := ∏ a ∈ S, (w - e a)^(D a)` (`S := D.support ∩ V`, finite via `[T2Space X][CompactSpace X]`
+  + `Function.locallyFinsuppWithin.finiteSupport`), `ord t x = D x` on `V` (via
+  `ordAtX_eq_of_mem_source` chart-transport + `meromorphicOrderAt_prod` +
+  `meromorphicOrderAt_zpow_id_sub_const`/analytic-nonvanishing-atom order-0 case, `Finset.sum_ite_eq'`
+  to collapse the sum); `t * t⁻¹ = 1` via `compl_finite_mem_codiscreteWithin` (finite complement is
+  codiscreteWithin ANY set, no connectedness needed) + a punctured-neighborhood argument excluding
+  `S.erase x`. Main proof: twist `f ∈ Z1 D 𝒱` by (restrictions of) `t` into `g ∈ Z1 0 𝒱` (cocycle
+  identity via `Z1.rel_res` + `MeroGermOn.restrict`'s `AlgHom.map_mul`/`restrict_restrict` factoring
+  out the common `t`-factor, `ring` to reassociate), apply the already-built
+  `subsingleton_h1Cover_zero_of_isChartDisk` to split `g = d0 h`, then untwist by `t⁻¹` to get
+  `f = d0 h'`. Zero sorries; `scripts/check.sh Jacobian/Dbar` passes (2964 jobs, unit still
+  COMPLETE). Gotcha for siblings: `rw` on `Iff`-valued lemmas with under-determined implicit
+  Submodule/set arguments (`mem_linSysOn_iff_of_isOpen`, `eventuallyEq_codiscreteWithin_iff_of_isOpen`)
+  can fail to unify even when a direct term application (`(lemma args).2 ?_` via `refine`) succeeds
+  instantly — prefer `refine (lemma args).2 ?_` over `rw [lemma args]` for iff-lemmas with a
+  Set/Submodule-valued implicit that only gets pinned by the surrounding expected type. Also: bare
+  `inf_le_left`/`inf_le_right` used directly inside a `show`/`have`-with-explicit-type statement can
+  leave one lattice-meet operand as a stuck metavariable (elaboration doesn't see the type ascription
+  in time) — name them as separate `have hij_r : A ⊓ B ≤ B := inf_le_right` first, matching the
+  existing codebase's `hbc/hac/hab` convention throughout `Cech/`.
