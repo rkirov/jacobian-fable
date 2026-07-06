@@ -1,4 +1,5 @@
 import Jacobian.Cech.Window
+import Jacobian.Cech.Injectivity
 
 /-!
 # The Mittag-Leffler atom and the skyscraper fragment (CC8, D7, proof plan §6.9)
@@ -167,5 +168,74 @@ theorem mlClass_eq_zero_of_exists (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     rw [H1Cover.mk_eq_zero_iff]
     exact ⟨h, hkey.symm⟩
   rw [hz, map_zero]
+
+/-! ### The vanishing criterion (§6.9(b), `⇒` half): now unlocked by `toH1_injective` (12.4). -/
+
+/-- **§6.9(b)**: the full vanishing criterion for `mlClass` — `toH1_injective` spares us any
+refinement: a coboundary witness for `retype (d0 g)` already lives on `𝒰` itself. -/
+theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) :
+    mlClass 𝒰 g hg = 0 ↔ ∃ φ : RS.LinSys D', ∀ i : Fin 𝒰.n, ∀ x ∈ 𝒰.U i,
+      (-(D x : ℤ) : WithTop ℤ) ≤ ((g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
+        RS.MeroGermOn.restrict (𝒰.le_base i) (φ : RS.MeroGermOn X (Set.univ : Set X))).ord x := by
+  constructor
+  swap
+  · rintro ⟨φ, hφ⟩
+    exact mlClass_eq_zero_of_exists g hg φ hφ
+  intro hz
+  rw [mlClass] at hz
+  have hz' : H1Cover.mk D 𝒰 (⟨C1.retype (d0 D' 𝒰 g) hg, C1.retype_mem_Z1 hg⟩ : Z1 D 𝒰) = 0 :=
+    toH1_injective D 𝒰 (by rw [hz, map_zero])
+  rw [H1Cover.mk_eq_zero_iff] at hz'
+  obtain ⟨hc, hhc⟩ := hz'
+  -- `hhc : d0 D 𝒰 hc = C1.retype (d0 D' 𝒰 g) hg` (as `C1 D 𝒰` elements).
+  have hincl_retype : ∀ p : Fin 𝒰.n × Fin 𝒰.n,
+      Submodule.inclusion (RS.linSysOn_mono h) (C1.retype (d0 D' 𝒰 g) hg p) =
+        d0 D' 𝒰 g p := by
+    intro p
+    apply Subtype.ext
+    rw [Submodule.coe_inclusion, C1.retype_apply_coe]
+  set k : C0 D' 𝒰 := fun i => (g i) - Submodule.inclusion (RS.linSysOn_mono h) (hc i) with hk_def
+  have hk0 : d0 D' 𝒰 k = 0 := by
+    funext p
+    obtain ⟨i, j⟩ := p
+    show d0 D' 𝒰 k (i, j) = (0 : C1 D' 𝒰) (i, j)
+    rw [Pi.zero_apply, d0_apply]
+    have step1 : LinSysOn.restrictL D' (inf_le_right : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U j) (k j) -
+        LinSysOn.restrictL D' (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U i) (k i) =
+        (LinSysOn.restrictL D' inf_le_right (g j) - LinSysOn.restrictL D' inf_le_left (g i)) -
+        (Submodule.inclusion (RS.linSysOn_mono h) (LinSysOn.restrictL D inf_le_right (hc j)) -
+          Submodule.inclusion (RS.linSysOn_mono h) (LinSysOn.restrictL D inf_le_left (hc i))) := by
+      show LinSysOn.restrictL D' inf_le_right
+            (g j - Submodule.inclusion (RS.linSysOn_mono h) (hc j)) -
+          LinSysOn.restrictL D' inf_le_left
+            (g i - Submodule.inclusion (RS.linSysOn_mono h) (hc i)) = _
+      rw [map_sub, map_sub, inclusion_restrictL_comm D inf_le_right h (hc j),
+        inclusion_restrictL_comm D inf_le_left h (hc i)]
+      abel
+    rw [step1]
+    have step2 : Submodule.inclusion (RS.linSysOn_mono h) (LinSysOn.restrictL D inf_le_right (hc j)) -
+        Submodule.inclusion (RS.linSysOn_mono h) (LinSysOn.restrictL D inf_le_left (hc i)) =
+        Submodule.inclusion (RS.linSysOn_mono h) (d0 D 𝒰 hc (i, j)) := by
+      rw [d0_apply, map_sub]
+    rw [step2, congrFun hhc (i, j), hincl_retype, d0_apply, sub_self]
+  obtain ⟨ψ, hψ⟩ := toC0'_surjective D' 𝒰 ⟨k, hk0⟩
+  have hψ' : toC0 D' 𝒰 ψ = k := congrArg Subtype.val hψ
+  have hψi : ∀ i, LinSysOn.restrictL D' (𝒰.le_base i) ψ = k i := fun i =>
+    congrFun hψ' i
+  have hmemφ : (ψ : RS.MeroGermOn X (Set.univ : Set X)) ∈ RS.LinSys D' := by
+    have hψ2 := ψ.2
+    rwa [← linSysOn_top_eq_linSys D']
+  refine ⟨⟨(ψ : RS.MeroGermOn X (Set.univ : Set X)), hmemφ⟩, fun i x hx => ?_⟩
+  have hrel : (k i : RS.MeroGermOn X (𝒰.U i : Set X)) =
+      (g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
+        (Submodule.inclusion (RS.linSysOn_mono h) (hc i) : RS.MeroGermOn X (𝒰.U i : Set X)) := by
+    show ((g i - Submodule.inclusion (RS.linSysOn_mono h) (hc i) : RS.LinSysOn D' _) :
+      RS.MeroGermOn X (𝒰.U i : Set X)) = _
+    rw [Submodule.coe_sub]
+  show (-(D x : ℤ) : WithTop ℤ) ≤
+      ((g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
+        RS.MeroGermOn.restrict (𝒰.le_base i) (ψ : RS.MeroGermOn X (Set.univ : Set X))).ord x
+  rw [← restrictL_apply_coe, hψi i, hrel, sub_sub_cancel, Submodule.coe_inclusion]
+  exact (RS.mem_linSysOn_iff_of_isOpen (𝒰.U i).isOpen).1 (hc i).2 x hx
 
 end RS.Cech

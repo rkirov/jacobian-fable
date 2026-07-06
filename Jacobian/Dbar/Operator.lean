@@ -44,7 +44,7 @@ namespace SmoothC
 
 instance : FunLike (SmoothC X) X ℂ where
   coe f := f.1
-  coe_injective' f g h := Subtype.ext h
+  coe_injective' _ _ h := Subtype.ext h
 
 theorem contMDiff (f : SmoothC X) : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑f) := f.2
 
@@ -330,5 +330,108 @@ theorem contMDiffOn_omega_of_isDbarOn_zero {u : X → ℂ} {s : Set X} (hs : IsO
     (contMDiffOn_iff_analyticOnNhd_of_subset_source (chart_mem_atlas ℂ x₀)
       inter_subset_right (hs.inter (chartAt ℂ x₀).open_source)).2 hanalytic
   exact (hOn.contMDiffAt ((hs.inter (chartAt ℂ x₀).open_source).mem_nhds hxs₀)).contMDiffWithinAt
+
+/-- Deliverable (v): two smooth solutions of the same `∂̄`-equation differ by a holomorphic
+function. -/
+theorem contMDiffOn_omega_sub_of_isDbarOn {u v : X → ℂ} {η : Form01 X} {s : Set X}
+    (hs : IsOpen s) (hu : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u s)
+    (hv : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ v s) (h1 : IsDbarOn u η s) (h2 : IsDbarOn v η s) :
+    ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (u - v) s := by
+  have hzero : IsDbarOn (u - v) 0 s := by
+    intro x hx
+    have hequ : (u - v) ∘ ⇑(chartAt ℂ x).symm
+        = (u ∘ ⇑(chartAt ℂ x).symm) - (v ∘ ⇑(chartAt ℂ x).symm) := by funext w; simp
+    have hud : DifferentiableAt ℝ (u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+      (contMDiffAt_real_iff_contDiffAt.1
+        ((hu x hx).contMDiffAt (hs.mem_nhds hx))).differentiableAt (by norm_num)
+    have hvd : DifferentiableAt ℝ (v ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+      (contMDiffAt_real_iff_contDiffAt.1
+        ((hv x hx).contMDiffAt (hs.mem_nhds hx))).differentiableAt (by norm_num)
+    show wirtingerDbar ((u - v) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = 0
+    rw [hequ, wirtingerDbar_sub _ _ (chartAt ℂ x x) hud hvd, h1 x hx, h2 x hx, sub_self]
+  have hcd : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (u - v) s := fun x hx => (hu x hx).sub (hv x hx)
+  exact contMDiffOn_omega_of_isDbarOn_zero hs hcd hzero
+
+/-! ### Chart-disk solvability -/
+
+/-- Deliverable (vi): Forster 13.2, transported through a chart — `∂̄` is surjective from
+`SmoothC`-representatives onto `Form01` data supported in a chart disk. -/
+theorem exists_dbar_solution_chart_ball {x₀ : X} {r : ℝ} (hr : 0 < r) {V : Set X}
+    (hVs : V ⊆ (chartAt ℂ x₀).source)
+    (hVim : ⇑(chartAt ℂ x₀) '' V = Metric.ball (chartAt ℂ x₀ x₀) r) (η : Form01 X) :
+    ∃ u : X → ℂ, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u V ∧ IsDbarOn u η V := by
+  classical
+  have hballsub : Metric.ball (chartAt ℂ x₀ x₀) r ⊆ (chartAt ℂ x₀).target := by
+    rw [← hVim]; rintro w ⟨y, hy, rfl⟩; exact (chartAt ℂ x₀).map_source (hVs hy)
+  have hg_cd : ContDiffOn ℝ ∞ (η.coeffAt x₀) (Metric.ball (chartAt ℂ x₀ x₀) r) :=
+    (η.contDiffOn_coeffAt x₀).mono hballsub
+  obtain ⟨U, hU_cd, hU_dbar⟩ := exists_dbar_solution_ball (η.coeffAt x₀) (chartAt ℂ x₀ x₀) r hr hg_cd
+  have hVeq : V = (chartAt ℂ x₀).source ∩ ⇑(chartAt ℂ x₀) ⁻¹' (Metric.ball (chartAt ℂ x₀ x₀) r) := by
+    apply Set.Subset.antisymm
+    · intro x hx
+      exact ⟨hVs hx, hVim ▸ Set.mem_image_of_mem _ hx⟩
+    · intro x hx
+      rw [← hVim] at hx
+      obtain ⟨y, hy, hxy⟩ := hx.2
+      rwa [(chartAt ℂ x₀).injOn hx.1 (hVs hy) hxy.symm]
+  have hVopen : IsOpen V := by
+    rw [hVeq]
+    exact (chartAt ℂ x₀).continuousOn.isOpen_inter_preimage (chartAt ℂ x₀).open_source
+      Metric.isOpen_ball
+  refine ⟨fun x => if _ : x ∈ V then U (chartAt ℂ x₀ x) else 0, ?_, ?_⟩
+  · intro x hx
+    have heq : (fun x => if _ : x ∈ V then U (chartAt ℂ x₀ x) else 0) =ᶠ[nhds x]
+        (U ∘ ⇑(chartAt ℂ x₀)) := by
+      filter_upwards [hVopen.mem_nhds hx] with w hw
+      simp [hw]
+    apply ContMDiffWithinAt.congr_of_eventuallyEq _
+      (Filter.EventuallyEq.filter_mono heq nhdsWithin_le_nhds) (by simp [hx])
+    apply ContMDiffAt.contMDiffWithinAt
+    have h1 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑(chartAt ℂ x₀)) x := by
+      have h2 := contMDiffOn_extChartAt (I := 𝓘(ℝ, ℂ)) (x := x₀) (n := (∞ : ℕ∞ω))
+      have h3 : (extChartAt 𝓘(ℝ, ℂ) x₀ : X → ℂ) = ⇑(chartAt ℂ x₀) := rfl
+      rw [h3] at h2
+      exact h2.contMDiffAt ((chartAt ℂ x₀).open_source.mem_nhds (hVs hx))
+    have h4 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ U (chartAt ℂ x₀ x) :=
+      hU_cd.contMDiffOn.contMDiffAt
+        (Metric.isOpen_ball.mem_nhds (hVim ▸ Set.mem_image_of_mem _ hx))
+    exact h4.comp x h1
+  · intro x hx
+    set u : X → ℂ := fun x => if _ : x ∈ V then U (chartAt ℂ x₀ x) else 0 with hu_def
+    show wirtingerDbar (u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = η.coeffAt x (chartAt ℂ x x)
+    have hxx₀ : x ∈ (chartAt ℂ x₀).source := hVs hx
+    set τ : ℂ → ℂ := ⇑(chartAt ℂ x₀) ∘ ⇑(chartAt ℂ x).symm with hτ_def
+    have hzs : (chartAt ℂ x).symm (chartAt ℂ x x) ∈ (chartAt ℂ x₀).source := by
+      rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]; exact hxx₀
+    have hτ_an : AnalyticAt ℂ τ (chartAt ℂ x x) :=
+      analyticAt_trans (chart_mem_maximalAtlas x₀) (chart_mem_maximalAtlas x)
+        (mem_chart_target ℂ x) hzs
+    have hτ_diff : DifferentiableAt ℂ τ (chartAt ℂ x x) := hτ_an.differentiableAt
+    have hτ_pt : τ (chartAt ℂ x x) = chartAt ℂ x₀ x := by
+      simp only [hτ_def, Function.comp_apply, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+    have hU_diff : DifferentiableAt ℝ U (τ (chartAt ℂ x x)) := by
+      rw [hτ_pt]
+      exact (hU_cd.contDiffAt
+        (Metric.isOpen_ball.mem_nhds (hVim ▸ Set.mem_image_of_mem _ hx))).differentiableAt
+        (by norm_num)
+    have hWopen : IsOpen (⇑(chartAt ℂ x) '' (V ∩ (chartAt ℂ x).source)) :=
+      (chartAt ℂ x).isOpen_image_of_subset_source (hVopen.inter (chartAt ℂ x).open_source)
+        inter_subset_right
+    have hzW : chartAt ℂ x x ∈ ⇑(chartAt ℂ x) '' (V ∩ (chartAt ℂ x).source) :=
+      ⟨x, ⟨hx, mem_chart_source ℂ x⟩, rfl⟩
+    have heq : (u ∘ ⇑(chartAt ℂ x).symm) =ᶠ[nhds (chartAt ℂ x x)] U ∘ τ := by
+      filter_upwards [hWopen.mem_nhds hzW] with w hw
+      obtain ⟨q, ⟨hqV, hqx⟩, rfl⟩ := hw
+      simp only [hu_def, Function.comp_apply, (chartAt ℂ x).left_inv hqx, hτ_def]
+      rw [dif_pos hqV]
+    rw [wirtingerDbar_congr_nhds _ _ (chartAt ℂ x x) heq,
+      wirtingerDbar_comp_differentiableAt U (chartAt ℂ x x) hU_diff hτ_diff, hτ_pt]
+    have hUdbar_pt : wirtingerDbar U (chartAt ℂ x₀ x) = η.coeffAt x₀ (chartAt ℂ x₀ x) :=
+      hU_dbar (chartAt ℂ x₀ x) (hVim ▸ Set.mem_image_of_mem _ hx)
+    rw [hUdbar_pt]
+    have hcompat := η.compat x₀ x (chartAt ℂ x x) ⟨x, ⟨hxx₀, mem_chart_source ℂ x⟩, rfl⟩
+    rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)] at hcompat
+    rw [← hτ_def] at hcompat
+    exact hcompat.symm
 
 end RS
