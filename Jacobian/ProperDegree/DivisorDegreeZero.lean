@@ -14,8 +14,9 @@ unconditional discharge of `Meromorphic/LinearSystem.lean`'s conditional
 landed, so the design's §3.2 proof plan was a ~110–150 line self-contained re-derivation of the
 zeros-equal-poles finsum identity (§5 R1's documented fallback). By build time
 `ArgumentPrinciple.lean` HAD landed (`finsum_ordAtX_eq_zero`/`sum_ordAtX_eq_zero_of_finite`/
-`finsum_ordAtX_eq_zero'`, all sorry-free), so per the design's own adapter note this file uses the
-"cite instead of reprove" short route: `divisor_degree_eq_zero`'s only remaining work is (a) the
+`finsum_ordAtX_eq_zero'`, all complete with zero admitted gaps), so per the design's own adapter
+note this file uses the "cite instead of reprove" short route: `divisor_degree_eq_zero`'s only
+remaining work is (a) the
 constancy case split translating `ℳ X`-nonconstancy to `MTrace.NotEventuallyConstX`, and (b)
 matching `Divisor.degree`'s `Finset`-sum shape to the finsum via
 `Function.locallyFinsuppWithin.degree_eq_sum_of_subset` (`Meromorphic/Divisor.lean`) — both purely

@@ -11,3 +11,4 @@ import Jacobian.Meromorphic
 import Jacobian.Path
 import Jacobian.SphereTopology
 import Jacobian.MeromorphicTrace
+import Jacobian.ProperDegree

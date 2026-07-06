@@ -27,7 +27,7 @@ three named maps; the Banach files (`Chain.lean`, `CompactRestrict.lean`) never 
 `MeroGermOn` internals directly, and the germ files never touch `→ᵇ` internals.
 -/
 
-open scoped ContDiff Manifold BoundedContinuousFunction
+open scoped ContDiff Manifold BoundedContinuousFunction Classical
 open Set Filter Topology TopologicalSpace Metric
 
 namespace RS.Finiteness
@@ -36,6 +36,37 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-! ### `BddHoloOn` -/
 
+/-- Compat: sum of `ContMDiffOn ω` functions `X → ℂ` on an open set (chart-local via the
+Surface bridge + `AnalyticAt.add`). -/
+theorem contMDiffOn_add {U : Set X} (hU : IsOpen U) {g₁ g₂ : X → ℂ}
+    (h1 : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g₁ U) (h2 : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g₂ U) :
+    ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (g₁ + g₂) U := by
+  intro x hx
+  have hc1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₁ x := h1.contMDiffAt (hU.mem_nhds hx)
+  have hc2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₂ x := h2.contMDiffAt (hU.mem_nhds hx)
+  have ha1 : AnalyticAt ℂ (g₁ ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
+    RS.contMDiffAt_iff_analyticAt.1 hc1
+  have ha2 : AnalyticAt ℂ (g₂ ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
+    RS.contMDiffAt_iff_analyticAt.1 hc2
+  have heq : (g₁ + g₂) ∘ (extChartAt 𝓘(ℂ) x).symm
+      = (g₁ ∘ (extChartAt 𝓘(ℂ) x).symm) + (g₂ ∘ (extChartAt 𝓘(ℂ) x).symm) := rfl
+  have ha : AnalyticAt ℂ ((g₁ + g₂) ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) := by
+    rw [heq]; exact ha1.add ha2
+  exact (RS.contMDiffAt_iff_analyticAt.2 ha).contMDiffWithinAt
+
+/-- Compat: scalar multiple of a `ContMDiffOn ω` function `X → ℂ` on an open set. -/
+theorem contMDiffOn_const_smul {U : Set X} (hU : IsOpen U) (c : ℂ) {g : X → ℂ}
+    (hg : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g U) : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (c • g) U := by
+  intro x hx
+  have hc : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g x := hg.contMDiffAt (hU.mem_nhds hx)
+  have ha : AnalyticAt ℂ (g ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
+    RS.contMDiffAt_iff_analyticAt.1 hc
+  have ha' : AnalyticAt ℂ (c • (g ∘ (extChartAt 𝓘(ℂ) x).symm)) (extChartAt 𝓘(ℂ) x x) := ha.const_smul
+  have heq : (c • g) ∘ (extChartAt 𝓘(ℂ) x).symm = c • (g ∘ (extChartAt 𝓘(ℂ) x).symm) := rfl
+  have ha2 : AnalyticAt ℂ ((c • g) ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) := by
+    rw [heq]; exact ha'
+  exact (RS.contMDiffAt_iff_analyticAt.2 ha2).contMDiffWithinAt
+
 /-- Bounded-holomorphic elements: BCF on the open subtype agreeing with a holomorphic function
 on `S`. -/
 noncomputable def BddHoloOn (S : Opens X) : Submodule ℂ (↥(S : Set X) →ᵇ ℂ) where
@@ -43,29 +74,10 @@ noncomputable def BddHoloOn (S : Opens X) : Submodule ℂ (↥(S : Set X) →ᵇ
   zero_mem' := ⟨fun _ => 0, contMDiffOn_const, fun _ => rfl⟩
   add_mem' := by
     rintro f₁ f₂ ⟨g₁, hg₁, hfg₁⟩ ⟨g₂, hg₂, hfg₂⟩
-    refine ⟨g₁ + g₂, ?_, fun z => by
-      show (f₁ + f₂) z = g₁ z + g₂ z
-      rw [BoundedContinuousFunction.add_apply, hfg₁, hfg₂]⟩
-    intro x hx
-    have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₁ x := hg₁.contMDiffAt (S.2.mem_nhds hx)
-    have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g₂ x := hg₂.contMDiffAt (S.2.mem_nhds hx)
-    have heq : (g₁ + g₂) ∘ (extChartAt 𝓘(ℂ) x).symm =
-        (fun z => (g₁ ∘ (extChartAt 𝓘(ℂ) x).symm) z + (g₂ ∘ (extChartAt 𝓘(ℂ) x).symm) z) := rfl
-    refine ((RS.contMDiffAt_iff_analyticAt).2 ?_).contMDiffWithinAt
-    rw [heq]
-    exact ((RS.contMDiffAt_iff_analyticAt).1 h1).add ((RS.contMDiffAt_iff_analyticAt).1 h2)
+    exact ⟨g₁ + g₂, contMDiffOn_add S.2 hg₁ hg₂, fun z => by simp [hfg₁, hfg₂]⟩
   smul_mem' := by
     rintro c f ⟨g, hg, hfg⟩
-    refine ⟨c • g, ?_, fun z => by
-      show (c • f) z = c • g z
-      rw [BoundedContinuousFunction.coe_smul, Pi.smul_apply, hfg]⟩
-    intro x hx
-    have h1 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g x := hg.contMDiffAt (S.2.mem_nhds hx)
-    have heq : (c • g) ∘ (extChartAt 𝓘(ℂ) x).symm =
-        (fun z => c • (g ∘ (extChartAt 𝓘(ℂ) x).symm) z) := rfl
-    refine ((RS.contMDiffAt_iff_analyticAt).2 ?_).contMDiffWithinAt
-    rw [heq]
-    exact ((RS.contMDiffAt_iff_analyticAt).1 h1).const_smul
+    exact ⟨c • g, contMDiffOn_const_smul S.2 c hg, fun z => by simp [hfg]⟩
 
 theorem mem_bddHoloOn_iff {S : Opens X} {f : ↥(S : Set X) →ᵇ ℂ} :
     f ∈ BddHoloOn S ↔ ∃ g : X → ℂ, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g (S : Set X) ∧
@@ -167,9 +179,8 @@ noncomputable def restrictCLM {S' S : Opens X} (h : S' ≤ S) : BddHoloOn S →L
 
 theorem norm_restrictCLM_apply_le {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     ‖restrictCLM h f‖ ≤ ‖f‖ := by
-  have := (restrictCLM h).le_of_opNorm_le (C := 1) ?_ f
-  · simpa using this
-  · exact LinearMap.mkContinuous_norm_le _ zero_le_one _
+  show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
+  exact BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ (norm_nonneg _) _
 
 /-! ### `toGerm`: germification (D5) -/
 
@@ -190,31 +201,31 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
   toFun f := MeroGermOn.mk f.2.choose
     (fun x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx)))
   map_add' f₁ f₂ := by
+    rw [MeroGermOn.mk_add]
     apply mk_eq_mk_of_eqOn S.2
     intro x hx
     show (f₁ + f₂ : BddHoloOn S).2.choose x = f₁.2.choose x + f₂.2.choose x
     have e12 := (f₁ + f₂ : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
     have e1 := f₁.2.choose_spec.2 ⟨x, hx⟩
     have e2 := f₂.2.choose_spec.2 ⟨x, hx⟩
-    have : (f₁ + f₂ : BddHoloOn S).val ⟨x, hx⟩
+    have hval : (f₁ + f₂ : BddHoloOn S).val ⟨x, hx⟩
         = (f₁ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ + (f₂ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
-    rw [← e12, this, e1, e2]
+    rw [← e12, hval, e1, e2]
   map_smul' c f := by
+    rw [MeroGermOn.mk_smul]
     apply mk_eq_mk_of_eqOn S.2
     intro x hx
-    show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
+    show (c • f : BddHoloOn S).2.choose x = (c • f.2.choose) x
     have ecf := (c • f : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
     have ef := f.2.choose_spec.2 ⟨x, hx⟩
-    have : (c • f : BddHoloOn S).val ⟨x, hx⟩ = c • (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
-    rw [← ecf, this, ef]
-    rfl
+    have hval : (c • f : BddHoloOn S).val ⟨x, hx⟩ = c • (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
+    show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
+    rw [← ecf, hval, ef]
 
 theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
     toGerm S f ∈ RS.LinSysOn (0 : RS.Divisor X) (S : Set X) := by
-  rw [RS.mem_linSysOn_iff_of_isOpen S.2]
-  intro x hx
+  refine (RS.mem_linSysOn_iff_of_isOpen S.2).2 (fun x hx => ?_)
   have h0 : (0 : RS.Divisor X) x = 0 := by
-    show (0 : RS.Divisor X) x = 0
     simp [Function.locallyFinsuppWithin.coe_zero]
   show ((-(0 : RS.Divisor X) x : ℤ) : WithTop ℤ) ≤ (toGerm S f).ord x
   rw [h0]
@@ -223,14 +234,15 @@ theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
   simpa using RS.ContMDiffAt.ordAtX_nonneg (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
 
 theorem evalAt_toGerm {S : Opens X} (f : BddHoloOn S) {x : X} (hx : x ∈ S) :
-    (toGerm S f).evalAt x = f ⟨x, hx⟩ := by
-  show (MeroGermOn.mk f.2.choose _).evalAt x = f ⟨x, hx⟩
+    (toGerm S f).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := by
+  show (MeroGermOn.mk f.2.choose _).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩
   rw [RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
     (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))]
   exact (f.2.choose_spec.2 ⟨x, hx⟩).symm
 
 theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     toGerm S' (restrictCLM h f) = RS.MeroGermOn.restrict h (toGerm S f) := by
+  rw [RS.MeroGermOn.restrict_mk]
   apply mk_eq_mk_of_eqOn S'.2
   intro x hx
   show (restrictCLM h f).2.choose x = f.2.choose x
@@ -238,12 +250,6 @@ theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
   have e2 : (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) ⟨x, hx⟩ = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, h hx⟩ := rfl
   have e3 := f.2.choose_spec.2 (⟨x, h hx⟩ : ↥(S : Set X))
   rw [← e1, e2, e3]
-
-theorem restrict_toGerm_eq {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
-    RS.MeroGermOn.restrict h (toGerm S f) = MeroGermOn.mk f.2.choose
-      (fun x hx => RS.ContMDiffAt.meromorphicAtX
-        ((f.2.choose_spec.1.mono h).contMDiffAt (S'.2.mem_nhds hx))) :=
-  RS.MeroGermOn.restrict_mk h
 
 /-! ### `restrictGerm`: de-germification (D5) -/
 
@@ -282,6 +288,7 @@ theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
     (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) :
     toGerm S' (restrictGerm hc φ) =
       RS.MeroGermOn.restrict (le_of_closure hc) (φ : RS.MeroGermOn X (S : Set X)) := by
+  rw [← RS.MeroGermOn.mk_holoRepr S.2 (φ : RS.MeroGermOn X (S : Set X)), RS.MeroGermOn.restrict_mk]
   apply mk_eq_mk_of_eqOn S'.2
   intro x hx
   show (restrictGerm hc φ).2.choose x = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x
@@ -296,7 +303,6 @@ theorem restrictGerm_toGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
   apply Subtype.ext
   apply BoundedContinuousFunction.ext
   intro z
-  show RS.MeroGermOn.holoRepr (toGerm S f) z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
   show (toGerm S f).evalAt z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
   rw [evalAt_toGerm f (le_of_closure hc z.2)]
 

@@ -148,3 +148,53 @@
 - [mtrace] Jacobian/MeromorphicTrace/ArgumentPrinciple.lean OK (134 lines, ~6s) — **THE argument principle** `finsum_ordAtX_eq_zero` (P3) via `fiberMultSum_eq_degree` at `↑0`/`∞` on `ℙ¹` (mapping-degree's counting engine, NOT the residue theorem/Stokes per the design's explicit routing warning), `toP1_eq_coe_zero_iff_ordAtX_pos` translation helper (order-`0`-exactly excluded via `tendsto_ne_zero_of_meromorphicOrderAt_eq_zero`), `sum_ordAtX_eq_zero_of_finite` (Finset form), `finsum_ordAtX_eq_zero'` (raw `NotEventuallyConstX` wrapper). Zero sorries. This is the exact lemma `proper-map-degree` needs for `deg(divisor f)=0` (see downstream note in the unit root file).
 - [mtrace] Jacobian/MeromorphicTrace/FunctionTrace.lean OK (125 lines, ~6-8s) — `trace` (D7, `Tr_F h`, correctly guarded via `if hS : Nonempty (FiberStack F y₀)` per the design's own §5.7 "design correction", no hypotheses on the def itself), `trace_of_forall_eq` (R2 junk guard, FULLY resolved including the case the design worried might stay an "open sub-case" — via a short `infinite_of_chartedSpace_complex` argument: `X` charted over `ℂ` + perfect (`RS.nhdsNE_neBot`) + nonempty (`ConnectedSpace`) ⟹ infinite, ruling out `Nonempty(FiberStack (const) y₀)` at the constant value by a cardinality contradiction). **Scope decision** (design §7 Risks 2/7, exercised as sanctioned): `meromorphicAtX_trace`/`trace_of_regular`/`trace_well_defined` NOT proved — all need `trace`'s well-definedness against the arbitrary `FiberStack` choice (design's flagged risk R1); this build traced the gap one level further than the design (documented resolution route: routing through the naive fibre sum `∑ᶠx∈F⁻¹{y},h x`, which needs a `mapping-degree`-style bijection argument, `LocalConstancy.lean`'s `bijOn_e` pattern, not completed) but did not finish it. Zero sorries in this file (the gap is reported via the module docstring, not a `sorry`).
 - [mtrace] Jacobian/MeromorphicTrace.lean (unit root) OK (70 lines; `lake build Jacobian.MeromorphicTrace` passes; `scripts/check.sh Jacobian/MeromorphicTrace` reports the one PlanarTrace.lean `sorry` (P6, `laurentCoeffAt_traceZk`) as the sole failure — flagged loudly, see PlanarTrace.lean's entry above and the final handoff notes). NOT registered in `Jacobian.lean` per task hard rule. All argument-principle/order-multiplicity/`toP1` content (cluster 1) is complete with zero sorries and ready for `proper-map-degree`; `traceZk`'s existence-as-meromorphic (P4/P5) is complete and ready for `form-trace-tower`; `Tr_F h`'s definition and junk guard are ready, its meromorphy is the one open item for `form-trace-tower`, alongside `laurentCoeffAt_traceZk`.
+- [pmd] Jacobian/ProperDegree/ChallengeDegree.lean OK (60 lines, ~4s) — `_root_.ContMDiff.degree`
+  (challenge signature, `docs/Jacobian_challenge.lean:147`) as a `rfl`-wrapper over
+  `RS.degree`/`RS.MappingDegree`, plus `degree_eq`/`degree_of_forall_eq`/`degree_comp` restated in
+  wrapper form. **Deviation from the design doc**: the design's §3.1 sketch declared
+  `variable {f : X → Y}` (implicit); the challenge file's own preamble declares `f` **explicit**
+  (`variable (f : X → Y) (hf : ContMDiff ...)`, confirmed load-bearing by `pushforward_pullback`'s
+  RHS `(ContMDiff.degree f hf) • P`, applying `f` positionally) — corrected here to match the
+  target signature verbatim; `f` explicit throughout this file. `[Nonempty Y]` discharged for
+  free via `ConnectedSpace.toNonempty`. Zero sorries.
+- [pmd] Jacobian/ProperDegree/DivisorDegreeZero.lean OK (94 lines, ~4-5s) — `divisor_degree_eq_zero`
+  (THE argument principle in `Divisor`/`ℳ X` terms), `sum_ord_eq_zero_of_finite` (Finset
+  corollary), `linSys_eq_bot_of_degree_neg'` (the unconditional discharge of
+  `Meromorphic/LinearSystem.lean:206`'s conditional `linSys_eq_bot_of_degree_neg`, primed to avoid
+  a namespace clash). **`Jacobian/MeromorphicTrace/ArgumentPrinciple.lean` had ALREADY landed** by
+  build time (contrary to the design doc's design-time assumption that it was still missing), so
+  per the design's own §5 R1 adapter note this file used the short "cite instead of reprove" route
+  citing `MTrace.finsum_ordAtX_eq_zero'`/`MTrace.sum_ordAtX_eq_zero_of_finite` directly, NOT the
+  ~110–150 line self-contained fallback the design also provided — the design's own fallback was
+  not needed/exercised. Remaining work: (a) a constancy case split translating `ℳ X`-nonconstancy
+  (`φ ≠ algebraMap c` for all `c`) to mtrace's raw `NotEventuallyConstX f`, and (b) matching
+  `Divisor.degree`'s `Finset`-sum shape to the finsum via
+  `Function.locallyFinsuppWithin.degree_eq_sum_of_subset`, using `Mero.ord_ne_top` (connected-surface
+  identity theorem: `φ ≠ 0` ⟹ `ord ≠ ⊤` everywhere, `Meromorphic/Field.lean`) to rule out the
+  `⊤`-order edge case in the Finset-membership direction. GOTCHA hit twice: `rw`/`push_neg`-style
+  rewriting of an `Iff`/`Eq` lemma directly under a bare `≠` (`Ne`) goal fails ("did not find
+  occurrence") even when the printed goal shows the exact pattern — the workaround used throughout
+  is `intro hcontra` first (turning the `Ne` into a plain hypothesis-producing goal), then `rw`
+  works on the resulting bare `Eq`/`Iff` normally; noted for siblings hitting the same shape. Zero
+  sorries.
+- [pmd] Jacobian/ProperDegree/GenusZeroFinisher.lean OK (79 lines, ~5-6s) —
+  `homeoSphere_of_exists_simple_pole` (a single simple pole ⇒ `RS.MTrace.toP1 f` has degree `1` ⇒
+  `X ≃ₜ ℙ¹ ≃ₜ S²`, via `RS.homeomorphOfDegreeEqOne`/`RS.P1.homeoSphere`), assembled entirely from
+  `MappingDegree`/`MeromorphicTrace.OrderMultiplicity`/`ProjectiveLine.Sphere` — zero dependency on
+  `ArgumentPrinciple.lean` (nonconstancy is witnessed directly by the pole location `Q` via surface
+  perfectness `RS.nhdsNE_neBot`/`self_mem_nhdsWithin`, cheaper than the general codiscrete
+  argument), matching the design's own risk note that this file is independent of the mtrace-timing
+  risk. Hit the same `rw`-under-`Ne` gotcha as `DivisorDegreeZero.lean` (see that entry); same
+  `intro`-first workaround applied. Zero sorries. This was the safest file in the unit, as the
+  design anticipated.
+- [pmd] Jacobian/ProperDegree.lean (unit root) OK (48 lines; `scripts/check.sh
+  Jacobian/ProperDegree` passes, zero sorries — unit COMPLETE, all 3 design files present + root,
+  282 lines total, well under the design's ~370–460 line estimate, mainly because
+  `ArgumentPrinciple.lean`'s early landing eliminated the need for `DivisorDegreeZero.lean`'s
+  self-contained fallback route). NOT registered in `Jacobian.lean` per task hard rule, orchestrator
+  to add `import Jacobian.ProperDegree`. DAG correction recorded in the root docstring (drop
+  `Builds on: monodromy`, per the design doc's §2; the real edges are `mapping-degree,
+  meromorphic-and-divisors, meromorphic-trace, projective-line`). Recommend the orchestrator also
+  add `proper-map-degree` to `genus-zero-headline`'s `Builds on:` list (design doc §2, non-blocking
+  flag — `homeoSphere_of_exists_simple_pole` is a direct dependency, not merely transitive through
+  riemann-roch).

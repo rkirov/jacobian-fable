@@ -39,23 +39,22 @@ theorem homeoSphere_of_exists_simple_pole (φ : ℳ X) (Q : X) (hpole : φ.ord Q
     intro x hx
     have := hreg x hx
     rwa [MeroGermOn.ord_mk isOpen_univ (mem_univ x)] at this
-  set F := MTrace.toP1 f with hF_def
-  have hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F := MTrace.toP1_contMDiff hf
+  have hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (MTrace.toP1 f) := MTrace.toP1_contMDiff hf
   have hpoleneg : RS.ordAtX f Q < 0 := by rw [hpole']; decide
-  have hFQ : F Q = (∞ : OnePoint ℂ) := MTrace.toP1_eq_infty_iff.2 hpoleneg
+  have hFQ : MTrace.toP1 f Q = (∞ : OnePoint ℂ) := MTrace.toP1_eq_infty_iff.2 hpoleneg
   -- Nonconstancy: `Q` maps to `∞` but some other point (perfectness gives one) does not.
-  have hne : ¬ ∃ c, ∀ x, F x = c := by
+  have hne : ¬ ∃ c, ∀ x, MTrace.toP1 f x = c := by
     rintro ⟨c, hc⟩
     obtain ⟨x₀, hx₀⟩ := Filter.nonempty_of_mem (self_mem_nhdsWithin (a := Q) (s := ({Q}ᶜ : Set X)))
-    have h1 : F x₀ = c := hc x₀
-    have h2 : F Q = c := hc Q
+    have h1 : MTrace.toP1 f x₀ = c := hc x₀
+    have h2 : MTrace.toP1 f Q = c := hc Q
     rw [hFQ] at h2
-    have h3 : F x₀ ≠ (∞ : OnePoint ℂ) := by
-      rw [MTrace.toP1_eq_infty_iff]
-      exact not_lt.2 (hreg' x₀ hx₀)
-    exact h3 (h1.trans h2)
+    have h3 : MTrace.toP1 f x₀ ≠ (∞ : OnePoint ℂ) := by
+      intro hcontra
+      exact (not_lt.2 (hreg' x₀ hx₀)) (MTrace.toP1_eq_infty_iff.1 hcontra)
+    exact h3 (h1.trans h2.symm)
   -- The fiber over `∞` is exactly `{Q}`.
-  have hfibereq : F ⁻¹' {(∞ : OnePoint ℂ)} = ({Q} : Set X) := by
+  have hfibereq : MTrace.toP1 f ⁻¹' {(∞ : OnePoint ℂ)} = ({Q} : Set X) := by
     ext x
     simp only [Set.mem_preimage, Set.mem_singleton_iff]
     constructor
@@ -66,14 +65,14 @@ theorem homeoSphere_of_exists_simple_pole (φ : ℳ X) (Q : X) (hpole : φ.ord Q
     · rintro rfl
       exact hFQ
   -- `multiplicity F Q = 1` (the order of the simple pole, made positive).
-  have hmultQ : RS.multiplicity F Q = 1 := by
-    have hkey : (RS.multiplicity F Q : ℤ) = -(RS.ordAtX f Q).untop₀ :=
+  have hmultQ : RS.multiplicity (MTrace.toP1 f) Q = 1 := by
+    have hkey : (RS.multiplicity (MTrace.toP1 f) Q : ℤ) = -(RS.ordAtX f Q).untop₀ :=
       MTrace.multiplicity_toP1_of_ordAtX_neg hf hpoleneg
     rw [hpole'] at hkey
-    have : (RS.multiplicity F Q : ℤ) = 1 := by rw [hkey]; decide
+    have : (RS.multiplicity (MTrace.toP1 f) Q : ℤ) = 1 := by rw [hkey]; decide
     exact_mod_cast this
   -- `degree F = 1`.
-  have hdeg1 : RS.degree F = 1 := by
+  have hdeg1 : RS.degree (MTrace.toP1 f) = 1 := by
     rw [← RS.fiberMultSum_eq_degree hF hne (∞ : OnePoint ℂ), RS.fiberMultSum_def, hfibereq,
       finsum_mem_singleton]
     exact hmultQ
