@@ -41,9 +41,10 @@ variable {f : X → ℂ} {x : X}
 value along the punctured neighborhood elsewhere. Total (junk elsewhere for non-meromorphic `f`);
 the honest content is `toP1_contMDiff`. -/
 noncomputable def toP1 (f : X → ℂ) (x : X) : OnePoint ℂ :=
-  if 0 ≤ RS.ordAtX f x then ((Filter.limUnder (𝓝[≠] x) f : ℂ) : OnePoint ℂ) else ∞
+  if 0 ≤ RS.ordAtX f x then ((Filter.limUnder (𝓝[≠] x) f : ℂ) : OnePoint ℂ) else (∞ : OnePoint ℂ)
 
-theorem toP1_eq_infty_iff : toP1 f x = ∞ ↔ RS.ordAtX f x < 0 := by
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
+theorem toP1_eq_infty_iff : toP1 f x = (∞ : OnePoint ℂ) ↔ RS.ordAtX f x < 0 := by
   unfold toP1
   split_ifs with h
   · simp only [OnePoint.coe_ne_infty, false_iff]
@@ -51,6 +52,7 @@ theorem toP1_eq_infty_iff : toP1 f x = ∞ ↔ RS.ordAtX f x < 0 := by
   · simp only [not_le] at h
     simp [h]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ) ω X] in
 theorem toP1_eq_coe_iff {c : ℂ} :
     toP1 f x = (c : OnePoint ℂ) ↔ 0 ≤ RS.ordAtX f x ∧ Filter.limUnder (𝓝[≠] x) f = c := by
   unfold toP1
@@ -76,7 +78,7 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
     have hrep : RS.MeroGermOn.mk f' hf'mero = φ := RS.MeroGermOn.mk_holoRepr isOpen_univ φ
     rw [← RS.MeroGermOn.ord_mk isOpen_univ (mem_univ y) (f := f') (hf := hf'mero), hrep]
   have heq_germ : ∀ y, f =ᶠ[𝓝[≠] y] f' :=
-    fun y => RS.MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ y) φ rfl
+    fun y => (RS.MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ y) φ rfl).symm
   have htoP1_eq : toP1 f = toP1 f' := by
     funext y
     have hordeq : RS.ordAtX f y = RS.ordAtX f' y := RS.ordAtX_congr (heq_germ y)
@@ -84,37 +86,49 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
       RS.limUnder_congr (heq_germ y)
     unfold toP1
     rw [hordeq, hlimeq]
+  -- Pointwise fact: wherever `0 ≤ ordAtX f' z`, `toP1 f' z = ↑(f' z)` (no "isolated" propagation
+  -- needed *pointwise*: `holoRepr_contMDiffAt` gives continuity of `f'` AT that point directly).
+  have hpointwise : ∀ z, 0 ≤ RS.ordAtX f' z → toP1 f' z = ((f' z : ℂ) : OnePoint ℂ) := by
+    intro z hz
+    have hordφz : 0 ≤ φ.ord z := (hordf' z) ▸ hz
+    have hcz : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f' z :=
+      RS.MeroGermOn.holoRepr_contMDiffAt isOpen_univ (mem_univ z) hordφz
+    rw [toP1_eq_coe_iff]
+    exact ⟨hz, (hcz.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).limUnder_eq⟩
   rw [htoP1_eq]
   intro y
   by_cases h0 : 0 ≤ RS.ordAtX f' y
-  · -- Regular case: `f'` is honestly `ContMDiffAt` here, so `toP1 f'` is its "no poles" lift.
+  · -- Regular case (order finite ≥0, or ⊤): `toP1 f' = ↑∘f'` on a *full* neighborhood of `y`
+    -- (isolated zeros/poles, `eventually_ordAtX_eq_top`/`eventually_ordAtX_eq_zero`), so
+    -- `toP1 f'` inherits `ContMDiffAt` from `f'` via `ContMDiffAt.onePointCoe` + congr.
     have hordφ : 0 ≤ φ.ord y := (hordf' y) ▸ h0
     have hcy : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f' y :=
       RS.MeroGermOn.holoRepr_contMDiffAt isOpen_univ (mem_univ y) hordφ
-    have hval : toP1 f' y = ((f' y : ℂ) : OnePoint ℂ) := by
-      rw [toP1_eq_coe_iff]
-      exact ⟨h0, (hcy.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).limUnder_eq⟩
-    rw [hval]
-    exact hcy.onePointCoe
+    have heqfull : toP1 f' =ᶠ[𝓝 y] fun z => ((f' z : ℂ) : OnePoint ℂ) := by
+      by_cases htop : RS.ordAtX f' y = ⊤
+      · filter_upwards [RS.eventually_ordAtX_eq_top htop] with z hz
+        exact hpointwise z (hz ▸ le_top)
+      · have hreg : ∀ᶠ z in 𝓝[≠] y, RS.ordAtX f' z = 0 :=
+          RS.eventually_ordAtX_eq_zero (hf'mero y (mem_univ y)) htop
+        rw [eventually_nhdsWithin_iff] at hreg
+        filter_upwards [hreg] with z hz
+        rcases eq_or_ne z y with rfl | hzy
+        · exact hpointwise z h0
+        · exact hpointwise z (hz hzy ▸ le_rfl)
+    exact ContMDiffAt.congr_of_eventuallyEq (RS.P1.ContMDiffAt.onePointCoe hcy) heqfull
   · -- Pole case: adapt `RS.P1.contMDiffAt_of_pole`'s (planar) proof to the manifold `X`.
     have hordlt : RS.ordAtX f' y < 0 := not_le.1 h0
     set e := chartAt ℂ y with he_def
     set c := e y with hc_def
-    have hg : MeromorphicAt (f' ∘ e.symm) c := hf' y (mem_univ y)
+    have hg : MeromorphicAt (f' ∘ e.symm) c := hf'mero y (mem_univ y)
     have hordg : meromorphicOrderAt (f' ∘ e.symm) c < 0 := hordlt
     have heq : ∀ᶠ z in 𝓝[≠] y, toP1 f' z = ((f' z : ℂ) : OnePoint ℂ) := by
-      have hne_top : RS.ordAtX f' y ≠ ⊤ := hordlt.ne_top
       have hreg : ∀ᶠ z in 𝓝[≠] y, RS.ordAtX f' z = 0 :=
-        RS.eventually_ordAtX_eq_zero (hf' y (mem_univ y)) hne_top
+        RS.eventually_ordAtX_eq_zero (hf'mero y (mem_univ y)) hordlt.ne_top
       filter_upwards [hreg] with z hz
-      have h0z : 0 ≤ RS.ordAtX f' z := hz ▸ le_rfl
-      have hordφz : 0 ≤ φ.ord z := (hordf' z) ▸ h0z
-      have hcz : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f' z :=
-        RS.MeroGermOn.holoRepr_contMDiffAt isOpen_univ (mem_univ z) hordφz
-      rw [toP1_eq_coe_iff]
-      exact ⟨h0z, (hcz.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).limUnder_eq⟩
+      exact hpointwise z (hz ▸ le_rfl)
     have hcobdd : Tendsto f' (𝓝[≠] y) (Bornology.cobounded ℂ) :=
-      (RS.tendsto_cobounded_iff_ordAtX_neg (hf' y (mem_univ y))).2 hordlt
+      (RS.tendsto_cobounded_iff_ordAtX_neg (hf'mero y (mem_univ y))).2 hordlt
     have hpunc : Tendsto (toP1 f') (𝓝[≠] y) (𝓝 (∞ : OnePoint ℂ)) := by
       rw [Filter.tendsto_congr' heq]
       exact RS.P1.tendsto_coe_cobounded.comp hcobdd
@@ -144,5 +158,74 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
       rw [show e.symm c = y from e.left_inv (mem_chart_source ℂ y), hFinf,
         RS.P1.invChart_apply_infty]
     exact AnalyticAt.of_meromorphicOrderAt_pos hpos hvalz
+
+/-! ### Nonconstancy (D3) -/
+
+/-- The natural raw-function nonconstancy hypothesis: `f` is not codiscretely equal to any single
+constant. (What callers holding `ℳ X` nonzero-ness will have once that field is in hand; stated
+here germ-level so we do not need it.) -/
+def NotEventuallyConstX (f : X → ℂ) : Prop := ∀ c : ℂ, ¬ (fun x => f x - c) =ᶠ[codiscrete X] 0
+
+/-- If a globally meromorphic `g` has *strictly positive* order at *every* point, `g` is
+codiscretely `0`: a point where the order is finite (`≠ ⊤`) would force order `0` at nearby
+points (`eventually_ordAtX_eq_zero`), contradicting positivity there; so the order is `⊤`
+everywhere. -/
+private theorem eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos {g : X → ℂ}
+    (hg : MeromorphicOnX g Set.univ) (hpos : ∀ x, 0 < RS.ordAtX g x) :
+    g =ᶠ[codiscrete X] 0 := by
+  have htop : ∀ x, RS.ordAtX g x = ⊤ := by
+    intro x
+    by_contra hne
+    have hnear := RS.eventually_ordAtX_eq_zero (hg x (mem_univ x)) hne
+    obtain ⟨y, hy⟩ := hnear.exists
+    exact absurd hy (hpos y).ne'
+  exact RS.eventuallyEq_codiscrete_iff.2 (fun x => RS.ordAtX_eq_top_iff.1 (htop x))
+
+/-- The translation: an everywhere-meromorphic `f` on connected `X` that is not codiscretely a
+constant induces a nonconstant `toP1 f`. Both degenerate cases (`toP1 f ≡ ↑c` and `toP1 f ≡ ∞`)
+are ruled out by the SAME `eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos` engine, applied to
+`f - c` (finite case) resp. `f⁻¹` (the `∞` case, via `ordAtX_inv` unconditional). -/
+theorem toP1_not_const (hf : MeromorphicOnX f Set.univ) (hnc : NotEventuallyConstX f) :
+    ¬ ∃ c, ∀ x, toP1 f x = c := by
+  rintro ⟨c, hc⟩
+  induction c using OnePoint.rec with
+  | infty =>
+    have hfinv_mero : MeromorphicOnX f⁻¹ Set.univ := hf.inv
+    have hpos : ∀ x, 0 < RS.ordAtX f⁻¹ x := by
+      intro x
+      have h1 : RS.ordAtX f x < 0 := toP1_eq_infty_iff.1 (hc x)
+      rw [RS.ordAtX_inv]
+      exact LinearOrderedAddCommGroupWithTop.neg_pos.2 (Or.inl h1)
+    have hz : f⁻¹ =ᶠ[codiscrete X] 0 :=
+      eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos hfinv_mero hpos
+    have hz' : f =ᶠ[codiscrete X] 0 := by
+      rw [RS.eventuallyEq_codiscrete_iff] at hz ⊢
+      intro x
+      filter_upwards [hz x] with y hy
+      simpa using congrArg Inv.inv hy
+    exact hnc 0 (by simpa using hz')
+  | coe c₀ =>
+    have hmerosub : MeromorphicOnX (f - fun _ => c₀) Set.univ :=
+      hf.sub (meromorphicOnX_const c₀ Set.univ)
+    have hpos : ∀ x, 0 < RS.ordAtX (f - fun _ => c₀) x := by
+      intro x
+      obtain ⟨h1a, h1b⟩ := toP1_eq_coe_iff.1 (hc x)
+      obtain ⟨d, hd⟩ := (RS.tendsto_nhds_iff_ordAtX_nonneg (hf x (mem_univ x))).2 h1a
+      have hdc : d = c₀ := hd.limUnder_eq.symm.trans h1b
+      rw [hdc] at hd
+      have htend : Tendsto (f - fun _ => c₀) (𝓝[≠] x) (𝓝 0) := by
+        have hconst : Tendsto (fun _ : X => c₀) (𝓝[≠] x) (𝓝 c₀) := tendsto_const_nhds
+        have := hd.sub hconst
+        simpa using this
+      have htend' : Tendsto ((f - fun _ => c₀) ∘ (chartAt ℂ x).symm)
+          (𝓝[≠] (chartAt ℂ x x)) (𝓝 0) := RS.tendsto_nhdsNE_comp_chart_iff.1 htend
+      exact (tendsto_zero_iff_meromorphicOrderAt_pos (hmerosub x (mem_univ x))).1 htend'
+    have hz : (f - fun _ => c₀) =ᶠ[codiscrete X] 0 :=
+      eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos hmerosub hpos
+    apply hnc c₀
+    rw [RS.eventuallyEq_codiscrete_iff] at hz ⊢
+    intro x
+    filter_upwards [hz x] with y hy
+    simpa using hy
 
 end RS.MTrace

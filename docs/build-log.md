@@ -105,3 +105,33 @@
   remaining truncation to the ball lemma since t k = 1 there. Statements unchanged. Also updated
   the stale "partial/sorry" status paragraph in Jacobian/Path.lean's module doc, which itself
   tripped check.sh's sorry-grep.)
+- [sphtop] Jacobian/SphereTopology/GlobalPrimitive.lean OK (180 lines, ~7s) — the genus-0 engine:
+  `contMDiff_and_mdifferential_eq_of_isPrimitiveAlongMap_id` (rechart + `AnalyticAt.congr` +
+  `contMDiffAt_iff_analyticAt_comp_chartAt` + `Filter.EventuallyEq.deriv_eq`/`HasDerivAt.deriv`
+  coefficient matching), `exists_isPrimitiveAlongMap_id` (global primitive via `pathIntegral` from
+  a base point; well-definedness via `pathIntegral_eq_of_simplyConnected`; the chart-local
+  straight-segment argument built from mathlib's `Path.segment`/`Path.map'`/`Path.cast` combinators
+  — cleaner than the design's hand-rolled-path sketch, and avoids needing the `clampI`-composition
+  boost since `Path.map'.extend` lands in `Set.range` of the underlying segment unconditionally),
+  `form1_eq_zero_of_simplyConnectedSpace` (Forster 10.5, via
+  `MDifferentiable.exists_eq_const_of_compactSpace` + `mdifferential_const`), `Subsingleton
+  (Form1 X)` instance, `genus_eq_zero_of_simplyConnectedSpace`. Built FIRST per task order (does
+  not need the perturbation lemma). Zero sorries.
+- [sphtop] Jacobian/SphereTopology/SimplyConnectedP1.lean OK (100 lines, ~5s) — ported the spike
+  (`scratch_sphtop.lean`) verbatim for `isSimplyConnected_compl_infty`/`_compl_coeZero` +
+  `PathConnectedSpace (OnePoint ℂ)`, then assembled `simplyConnectedSpace_onePoint` via
+  `simply_connected_iff_loops_nullhomotopic` + `RS.Loop.exists_homotopic_avoiding` with the
+  basepoint case split (`x = ∞` uses `S := {↑0}`, else `S := {∞}`) +
+  `isSimplyConnected_iff_exists_homotopy_refl_forall_mem` + `Path.Homotopic.trans`, plus
+  `simplyConnectedSpace_of_homeoOnePoint`/`simplyConnectedSpace_sphere`. Built LAST per task order
+  (needed the perturbation lemma). Compiled clean on the first attempt with zero sorries — by the
+  time this file was written, the fixer had ALREADY resolved `Perturb.lean`'s blocker sorry (see
+  "Perturb.lean FIXED" above), so no `Loop.exists_homotopic_avoiding`-shaped risk materialized;
+  docstring updated post-hoc to drop the now-stale caveat.
+- [sphtop] Jacobian/SphereTopology/Headline.lean OK (33 lines, ~4-6s) — `genus_eq_zero_of_homeo_sphere`,
+  the exact 3-line assembly per design §4 (`simplyConnectedSpace_of_homeoOnePoint` composed with
+  `RS.P1.homeoSphere.symm`, then `genus_eq_zero_of_simplyConnectedSpace`). Zero sorries.
+- [sphtop] Jacobian/SphereTopology.lean (unit root) OK (44 lines; `scripts/check.sh
+  Jacobian/SphereTopology` passes, zero sorries — unit COMPLETE, all 4 design files present,
+  362 lines total). NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add
+  `import Jacobian.SphereTopology`.

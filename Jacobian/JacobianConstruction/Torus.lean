@@ -4,33 +4,33 @@ import Mathlib.Topology.Algebra.ContinuousMonoidHom
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Geometry.Manifold.Algebra.LieGroup
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
+import Mathlib.Analysis.Analytic.Linear
 
 /-!
 # The abstract torus layer: `V ⧸ L` for `L : AddSubgroup V`
 
 Unit: jacobian-construction (`docs/design/jacobian-construction.md` §3–§9). This is the reusable
-core of the whole unit: for a (possibly infinite-rank in principle, but always instantiated at
-`Fin n → ℂ`) complex normed space `V` and an additive subgroup `L`, we build:
+core of the whole unit: for a complex normed space `V` (always instantiated at `Fin n → ℂ`) and an
+additive subgroup `L`, we build:
 
 * `AddCommGroup`/`TopologicalSpace`/`T2Space (V ⧸ L)` — **for every `L`**, no discreteness needed
   (§3, the T2-via-closure trick, spiked).
 * `ChartedSpace V (V ⧸ L)` / `IsManifold 𝓘(ℂ, V) ω (V ⧸ L)` — needs `[DiscreteTopology L]` (§4).
-  Charts are the **raw representative** charts: `chartAt' L x` sends a class near `x` to its
-  unique representative in a fixed injectivity ball around `x` (a simplification of the design's
+  Charts are **raw representative** charts: `chartAt' L x` sends a class near `x` to its unique
+  representative in a fixed injectivity ball around `x` (a simplification of the design's
   "centered" charts — the transition maps are still exactly translations by a locally-constant
   lattice element, which is all that is needed; no recentering bookkeeping required).
 * `LieAddGroup 𝓘(ℂ, V) ω (V ⧸ L)` — same hypothesis (§5): in the raw charts, addition/negation
-  read as the identity (no lattice shift at all is needed once the codomain chart representative
-  is chosen to be the sum/negation of the domain representatives).
-* `CompactSpace (V ⧸ L)` — needs the full `IsZLattice ℝ L.toIntSubmodule` (§6, the
+  read as translation by a (possibly nonzero, but always locally-constant) lattice element, hence
+  affine, hence analytic.
+* `CompactSpace (V ⧸ L)` — needs the full `IsZLattice ℝ L` (§6, the
   `IsZLattice.isCompact_range_of_periodic` trick, spiked).
 * The `→ₜ+` functoriality substrate `inducedHom` (§9.2, spiked) and its `ContMDiff`-ness (§9.3).
 
-These are genuine theorems with typeclass hypotheses (`[DiscreteTopology L]`,
-`[IsZLattice ℝ L.toIntSubmodule]`); they are **not** instances registered unconditionally (Lean
-cannot discharge these hypotheses automatically for an arbitrary `L`), so downstream units
-(period-lattice-rank) `instance`-ify them once discreteness/full-rank are established for the
-actual period subgroup.
+These are genuine theorems/instances *gated* by typeclass hypotheses (`[DiscreteTopology L]`,
+`[IsZLattice ℝ L]`); Lean cannot discharge these hypotheses for an arbitrary `L`, so they only
+fire once a caller supplies them — which is exactly the hook period-lattice-rank uses once it
+establishes discreteness/full-rank for the actual period subgroup.
 -/
 
 open scoped ContDiff Manifold Pointwise
@@ -84,8 +84,8 @@ theorem exists_uniform_injRadius :
   have hballmem : (ℓ : V) ∈ ball (0 : V) r := by
     rw [mem_ball, dist_eq_norm, sub_zero]
     linarith
-  have : (⟨ℓ, hℓL⟩ : L) ∈ (Subtype.val : L → V) ⁻¹' U := hballU hballmem
-  have h0' := hUsub this
+  have hmem : (⟨ℓ, hℓL⟩ : L) ∈ (Subtype.val : L → V) ⁻¹' U := hballU hballmem
+  have h0' := hUsub hmem
   exact hℓne (by simpa using h0')
 
 /-- A choice of uniform injectivity radius for `L`. -/
@@ -109,7 +109,7 @@ theorem mk_injOn_ball (x : V) :
     have h2 : ‖x - z₂‖ < injRadius L := by
       rw [mem_ball, dist_eq_norm] at hz₂
       rwa [norm_sub_rev]
-    calc ‖z₁ - z₂‖ = ‖(z₁ - x) + (x - z₂)‖ := by ring_nf
+    calc ‖z₁ - z₂‖ = ‖(z₁ - x) + (x - z₂)‖ := by rw [show (z₁ - x) + (x - z₂) = z₁ - z₂ from by abel]
       _ ≤ ‖z₁ - x‖ + ‖x - z₂‖ := norm_add_le _ _
       _ < injRadius L + injRadius L := add_lt_add h1 h2
       _ = 2 * injRadius L := by ring
@@ -155,8 +155,7 @@ theorem chartAt'_apply_mk {x z : V} (hz : z ∈ ball x (injRadius L)) :
 
 /-- If `w + ℓ` lands in the ball around `x'` for some `ℓ ∈ L`, the chart at `x'` reads the class
 of `w` as `w + ℓ`. This is the single computation underlying every transition/smoothness proof
-below (with `ℓ = 0` in the "aligned representative" cases, and a genuine lattice element in the
-general atlas-transition case). -/
+below. -/
 theorem chartAt'_eq_add_of_mem_ball {x' w ℓ : V} (hℓ : ℓ ∈ L)
     (hmem : w + ℓ ∈ ball x' (injRadius L)) :
     chartAt' L x' (QuotientAddGroup.mk w) = w + ℓ := by
@@ -193,6 +192,25 @@ instance instChartedSpace : ChartedSpace V (V ⧸ L) :=
 @[simp] theorem chartAt_eq (q : V ⧸ L) :
     chartAt V q = chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q) := rfl
 
+/-- The canonical chart at `q`, evaluated at any point, agrees with `chartAt'` at the same
+representative. -/
+theorem extChartAt_apply_eq (q q' : V ⧸ L) :
+    extChartAt 𝓘(ℂ, V) q q' = chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q) q' := by
+  rw [extChartAt_coe, Function.comp_apply, modelWithCornersSelf_coe, id_eq, chartAt_eq]
+
+theorem extChartAt_symm_apply_eq (q : V ⧸ L) (w : V) :
+    (extChartAt 𝓘(ℂ, V) q).symm w = QuotientAddGroup.mk w := by
+  rw [extChartAt_coe_symm, Function.comp_apply, modelWithCornersSelf_coe_symm, id_eq, chartAt_eq]
+  rfl
+
+theorem extChartAt_self_eq (q : V ⧸ L) :
+    extChartAt 𝓘(ℂ, V) q q = Function.surjInv QuotientAddGroup.mk_surjective q := by
+  rw [extChartAt_apply_eq]
+  set x := Function.surjInv QuotientAddGroup.mk_surjective q
+  have hxq : (QuotientAddGroup.mk x : V ⧸ L) = q := Function.surjInv_eq _ q
+  nth_rewrite 1 [← hxq]
+  exact chartAt'_apply_mk L (Metric.mem_ball_self (injRadius_pos L))
+
 end Chart
 
 /-! ## §4.3. `IsManifold`: transitions are translations by a locally-constant lattice element -/
@@ -201,114 +219,236 @@ section Manifold
 
 variable (L : AddSubgroup V) [DiscreteTopology L]
 
-/-- The transition map between two raw representative charts is, near any point of the overlap,
-translation by a fixed (locally-constant) lattice element. -/
-theorem isManifold_torus :
-    @IsManifold ℂ _ V _ _ V _ 𝓘(ℂ, V) ω (V ⧸ L) _ (instChartedSpace L) := by
+/-- The torus `V ⧸ L` is an `ω`-manifold modelled on `V` (raw representative charts; transitions
+are translations by a locally-constant lattice element). -/
+instance isManifold_torus : IsManifold 𝓘(ℂ, V) ω (V ⧸ L) := by
   apply isManifold_of_family' (chartAt' L)
     (fun q => Function.surjInv QuotientAddGroup.mk_surjective q) (chartAt'_mem_source L)
   intro x x' w hw
   rw [OpenPartialHomeomorph.trans_source] at hw
   obtain ⟨hw1, hw2⟩ := hw
   rw [chartAt'_symm, rawChartAux_source] at hw1
-  rw [chartAt'_symm, rawChartAux_apply, Set.mem_preimage, chartAt'_source] at hw2
+  rw [chartAt'_symm, Set.mem_preimage, rawChartAux_apply, chartAt'_source] at hw2
   obtain ⟨z', hz', hzeq⟩ := hw2
   set ℓ := z' - w with hℓ_def
   have hℓL : ℓ ∈ L := by
-    rw [hℓ_def]
     have := (QuotientAddGroup.eq_iff_sub_mem (x := z') (y := w)).mp hzeq
-    simpa using this
+    simpa [hℓ_def] using this
   have hmem : w + ℓ ∈ ball x' (injRadius L) := by
-    have : w + ℓ = z' := by rw [hℓ_def]; ring
-    rwa [this]
+    have hzw : w + ℓ = z' := by rw [hℓ_def]; abel
+    rwa [hzw]
   have heq : (chartAt' L x).symm ≫ₕ chartAt' L x' =ᶠ[𝓝 w] (fun w => w + ℓ) := by
-    have := chartAt'_eventuallyEq_add L hℓL hmem
-    filter_upwards [this] with w' hw'
+    filter_upwards [chartAt'_eventuallyEq_add L hℓL hmem] with w' hw'
     rw [OpenPartialHomeomorph.trans_apply, chartAt'_symm, rawChartAux_apply]
     exact hw'
   exact (analyticAt_id.add analyticAt_const).congr heq.symm
 
 end Manifold
 
-/-! ## §5. `LieAddGroup`: addition/negation read as the identity in aligned charts -/
+/-! ## §5. `LieAddGroup`: addition/negation are affine in the raw charts -/
 
-section LieGroup
+section LieGroupAux
 
 variable (L : AddSubgroup V) [DiscreteTopology L]
 
 theorem continuous_add_torus : Continuous (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) := by
-  haveI : L.Normal := inferInstance
   haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
 
 theorem continuous_neg_torus : Continuous (fun q : V ⧸ L => -q) := by
-  haveI : L.Normal := inferInstance
   haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
 
+/-- Addition on the torus is `ω`-smooth: in aligned raw charts (codomain chart representative
+chosen at a fixed lattice offset from the sum of the domain representatives), the chart composite
+is affine. -/
 theorem contMDiff_add_torus :
-    haveI := instChartedSpace L; haveI := isManifold_torus L
     ContMDiff (𝓘(ℂ, V).prod 𝓘(ℂ, V)) 𝓘(ℂ, V) ω (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) := by
-  haveI := instChartedSpace L
-  haveI := isManifold_torus L
   rintro ⟨q₁, q₂⟩
   set x₁ := Function.surjInv QuotientAddGroup.mk_surjective q₁ with hx₁_def
   set x₂ := Function.surjInv QuotientAddGroup.mk_surjective q₂ with hx₂_def
+  set x₃ := Function.surjInv QuotientAddGroup.mk_surjective (q₁ + q₂) with hx₃_def
   have hx₁q : (QuotientAddGroup.mk x₁ : V ⧸ L) = q₁ := Function.surjInv_eq _ q₁
   have hx₂q : (QuotientAddGroup.mk x₂ : V ⧸ L) = q₂ := Function.surjInv_eq _ q₂
+  have hx₃q : (QuotientAddGroup.mk x₃ : V ⧸ L) = q₁ + q₂ := Function.surjInv_eq _ (q₁ + q₂)
+  have hsum : (QuotientAddGroup.mk (x₁ + x₂) : V ⧸ L) = q₁ + q₂ := by
+    rw [QuotientAddGroup.mk_add, hx₁q, hx₂q]
+  set ℓ := x₃ - (x₁ + x₂) with hℓ_def
+  have hℓL' : ℓ ∈ L := by
+    have heq : (QuotientAddGroup.mk x₃ : V ⧸ L) = QuotientAddGroup.mk (x₁ + x₂) := by
+      rw [hx₃q, hsum]
+    have := (QuotientAddGroup.eq_iff_sub_mem).mp heq
+    simpa [hℓ_def] using this
   rw [contMDiffAt_iff]
   refine ⟨(continuous_add_torus L).continuousAt, ?_⟩
-  rw [ModelWithCorners.range_prod, modelWithCornersSelf_coe, Set.range_id,
-    modelWithCornersSelf_coe, Set.range_id, Set.univ_prod_univ, contDiffWithinAt_univ]
-  have heq : writtenInExtChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) 𝓘(ℂ, V) (q₁, q₂)
-      (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) =ᶠ[𝓝 (extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)
-        (q₁, q₂))] (fun p : V × V => p.1 + p.2) := by
-    have hball : ball x₁ (injRadius L) ×ˢ ball x₂ (injRadius L) ∈ 𝓝 (x₁, x₂) :=
-      (Metric.isOpen_ball.prod Metric.isOpen_ball).mem_nhds
-        ⟨Metric.mem_ball_self (injRadius_pos L), Metric.mem_ball_self (injRadius_pos L)⟩
-    have hballε : ∃ ε > 0, ball x₁ ε ×ˢ ball x₂ ε ⊆
-        ball x₁ (injRadius L) ×ˢ ball x₂ (injRadius L) ∩
-          {p : V × V | p.1 + p.2 ∈ ball (x₁ + x₂) (injRadius L)} := by
-      have hopen : IsOpen (ball x₁ (injRadius L) ×ˢ ball x₂ (injRadius L) ∩
-          {p : V × V | p.1 + p.2 ∈ ball (x₁ + x₂) (injRadius L)}) := by
-        refine (Metric.isOpen_ball.prod Metric.isOpen_ball).inter ?_
-        exact Metric.isOpen_ball.preimage (continuous_fst.add continuous_snd)
-      have hmemInt : (x₁, x₂) ∈ ball x₁ (injRadius L) ×ˢ ball x₂ (injRadius L) ∩
-          {p : V × V | p.1 + p.2 ∈ ball (x₁ + x₂) (injRadius L)} :=
-        ⟨⟨Metric.mem_ball_self (injRadius_pos L), Metric.mem_ball_self (injRadius_pos L)⟩,
-          Metric.mem_ball_self (injRadius_pos L)⟩
-      obtain ⟨ε, hε, hεsub⟩ := Metric.isOpen_iff.mp hopen (x₁, x₂) hmemInt
-      refine ⟨ε, hε, fun p hp => hεsub ?_⟩
-      rw [Metric.mem_ball, Prod.dist_eq] at hp
-      rw [Metric.mem_ball, Prod.dist_eq]
-      exact ⟨(le_max_left _ _).trans_lt hp, (le_max_right _ _).trans_lt hp⟩
-    obtain ⟨ε, hε, hεsub⟩ := hballε
-    have hnhdsx : ball x₁ ε ×ˢ ball x₂ ε ∈ 𝓝 (x₁, x₂) :=
-      (Metric.isOpen_ball.prod Metric.isOpen_ball).mem_nhds
-        ⟨Metric.mem_ball_self hε, Metric.mem_ball_self hε⟩
-    have hchart_eq : extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂) (q₁, q₂) = (x₁, x₂) := by
-      rw [extChartAt_prod]
-      show (extChartAt 𝓘(ℂ,V) q₁ q₁, extChartAt 𝓘(ℂ,V) q₂ q₂) = (x₁, x₂)
-      have e1 : extChartAt 𝓘(ℂ, V) q₁ q₁ = x₁ := by
-        rw [extChartAt_coe]
-        show (𝓘(ℂ, V) (chartAt V q₁ q₁) : V) = x₁
-        rw [modelWithCornersSelf_coe]
-        show chartAt V q₁ q₁ = x₁
-        rw [chartAt_eq, ← hx₁_def, ← hx₁q]
-        exact chartAt'_apply_mk L (Metric.mem_ball_self (injRadius_pos L))
-      have e2 : extChartAt 𝓘(ℂ, V) q₂ q₂ = x₂ := by
-        rw [extChartAt_coe]
-        show (𝓘(ℂ, V) (chartAt V q₂ q₂) : V) = x₂
-        rw [modelWithCornersSelf_coe]
-        show chartAt V q₂ q₂ = x₂
-        rw [chartAt_eq, ← hx₂_def, ← hx₂q]
-        exact chartAt'_apply_mk L (Metric.mem_ball_self (injRadius_pos L))
-      rw [e1, e2]
-    rw [hchart_eq]
-    have hprodMap : ContinuousMap.homeomorphOfConst (α := V × V) := trivial -- placeholder, removed below
-    sorry
-  sorry
+  rw [ModelWithCorners.range_prod, modelWithCornersSelf_coe, Set.range_id, Set.univ_prod_univ,
+    contDiffWithinAt_univ]
+  have hpt : extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂) (q₁, q₂) = (x₁, x₂) := by
+    rw [extChartAt_prod]
+    show (extChartAt 𝓘(ℂ, V) q₁ q₁, extChartAt 𝓘(ℂ, V) q₂ q₂) = (x₁, x₂)
+    rw [extChartAt_self_eq L q₁, extChartAt_self_eq L q₂]
+  rw [hpt]
+  have hfunc : writtenInExtChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) 𝓘(ℂ, V) (q₁, q₂)
+      (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) = fun p : V × V =>
+        chartAt' L x₃ (QuotientAddGroup.mk (p.1 + p.2)) := by
+    funext p
+    show extChartAt 𝓘(ℂ, V) (q₁ + q₂)
+        ((fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2)
+          ((extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p)) = _
+    rw [extChartAt_apply_eq]
+    congr 1
+    rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe_symm]
+    show (extChartAt 𝓘(ℂ, V) q₁).symm p.1 + (extChartAt 𝓘(ℂ, V) q₂).symm p.2
+      = QuotientAddGroup.mk (p.1 + p.2)
+    rw [extChartAt_symm_apply_eq, extChartAt_symm_apply_eq, QuotientAddGroup.mk_add]
+  rw [hfunc]
+  have hAnalytic : AnalyticAt ℂ (fun p : V × V => p.1 + p.2 + ℓ) (x₁, x₂) :=
+    (analyticAt_fst.add analyticAt_snd).add analyticAt_const
+  have hmemball : x₁ + x₂ + ℓ ∈ ball x₃ (injRadius L) := by
+    have hval : x₁ + x₂ + ℓ = x₃ := by rw [hℓ_def]; abel
+    rw [hval]
+    exact Metric.mem_ball_self (injRadius_pos L)
+  have hEv : (fun w => chartAt' L x₃ (QuotientAddGroup.mk w)) =ᶠ[𝓝 (x₁ + x₂)]
+      (fun w => w + ℓ) := chartAt'_eventuallyEq_add L hℓL' hmemball
+  have hcont : Tendsto (fun p : V × V => p.1 + p.2) (𝓝 (x₁, x₂)) (𝓝 (x₁ + x₂)) := by fun_prop
+  exact hAnalytic.congr (hcont.eventually hEv).symm
 
-end LieGroup
+/-- Negation on the torus is `ω`-smooth: same affine-chart-composite argument as addition. -/
+theorem contMDiff_neg_torus : ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V) ω (fun q : V ⧸ L => -q) := by
+  intro q
+  set x := Function.surjInv QuotientAddGroup.mk_surjective q with hx_def
+  set x' := Function.surjInv QuotientAddGroup.mk_surjective (-q) with hx'_def
+  have hxq : (QuotientAddGroup.mk x : V ⧸ L) = q := Function.surjInv_eq _ q
+  have hx'q : (QuotientAddGroup.mk x' : V ⧸ L) = -q := Function.surjInv_eq _ (-q)
+  set ℓ := x' - -x with hℓ_def
+  have hℓL : ℓ ∈ L := by
+    have heq : (QuotientAddGroup.mk x' : V ⧸ L) = QuotientAddGroup.mk (-x) := by
+      rw [hx'q, QuotientAddGroup.mk_neg, hxq]
+    have := (QuotientAddGroup.eq_iff_sub_mem).mp heq
+    simpa [hℓ_def] using this
+  rw [contMDiffAt_iff]
+  refine ⟨(continuous_neg_torus L).continuousAt, ?_⟩
+  rw [modelWithCornersSelf_coe, Set.range_id, contDiffWithinAt_univ]
+  have hpt : extChartAt 𝓘(ℂ, V) q q = x := extChartAt_self_eq L q
+  rw [hpt]
+  have hfunc : writtenInExtChartAt 𝓘(ℂ, V) 𝓘(ℂ, V) q (fun q : V ⧸ L => -q)
+      = fun w : V => chartAt' L x' (QuotientAddGroup.mk (-w)) := by
+    funext w
+    show extChartAt 𝓘(ℂ, V) (-q) (-(extChartAt 𝓘(ℂ, V) q).symm w) = _
+    rw [extChartAt_symm_apply_eq, QuotientAddGroup.mk_neg, extChartAt_apply_eq]
+  rw [hfunc]
+  have hAnalytic : AnalyticAt ℂ (fun w : V => -w + ℓ) x :=
+    (analyticAt_id.neg).add analyticAt_const
+  have hmemball : -x + ℓ ∈ ball x' (injRadius L) := by
+    have hval : -x + ℓ = x' := by rw [hℓ_def]; abel
+    rw [hval]
+    exact Metric.mem_ball_self (injRadius_pos L)
+  have hEv : (fun w => chartAt' L x' (QuotientAddGroup.mk w)) =ᶠ[𝓝 (-x)]
+      (fun w => w + ℓ) := chartAt'_eventuallyEq_add L hℓL hmemball
+  have hcont : Tendsto (fun w : V => -w) (𝓝 x) (𝓝 (-x)) := by fun_prop
+  exact hAnalytic.congr (hcont.eventually hEv).symm
+
+/-- The torus `V ⧸ L` is an additive Lie group. -/
+instance lieAddGroup_torus : LieAddGroup 𝓘(ℂ, V) ω (V ⧸ L) :=
+  { contMDiff_add := contMDiff_add_torus L
+    contMDiff_neg := contMDiff_neg_torus L }
+
+end LieGroupAux
+
+/-! ## §6. `CompactSpace`, given the full-rank hypothesis -/
+
+section Compact
+
+variable (L : Submodule ℤ V) [DiscreteTopology L]
+
+/-- The torus `V ⧸ L.toAddSubgroup` is compact, given that `L` is a full-rank `ℤ`-lattice
+(`IsZLattice ℝ L`): a periodic continuous map onto a normed space has compact range. -/
+instance compactSpace_torus [NormedSpace ℝ V] [FiniteDimensional ℝ V] [IsZLattice ℝ L] :
+    CompactSpace (V ⧸ L.toAddSubgroup) := by
+  have hper : ∀ z w, w ∈ (L.toAddSubgroup : AddSubgroup V) →
+      (QuotientAddGroup.mk (z + w) : V ⧸ L.toAddSubgroup) = QuotientAddGroup.mk z := by
+    intro z w hw
+    rw [QuotientAddGroup.eq_iff_sub_mem]
+    simpa using (AddSubgroup.neg_mem _ hw)
+  have hcpt := IsZLattice.isCompact_range_of_periodic (F := V ⧸ L.toAddSubgroup) L
+    (QuotientAddGroup.mk (s := L.toAddSubgroup)) QuotientAddGroup.continuous_mk hper
+  rw [Set.range_eq_univ.mpr (QuotientAddGroup.mk_surjective)] at hcpt
+  exact isCompact_univ_iff.mp hcpt
+
+end Compact
+
+/-! ## §9. The `→ₜ+` functoriality substrate -/
+
+section InducedHom
+
+variable {V' : Type*} [NormedAddCommGroup V'] [NormedSpace ℂ V']
+  [FiniteDimensional ℂ V] [FiniteDimensional ℂ V']
+
+/-- The `→ₜ+` functoriality substrate: a `ℂ`-linear map `T : V →ₗ[ℂ] V'` with `L ≤ L'.comap T`
+induces a continuous additive homomorphism on the quotients. -/
+def inducedHom (L : AddSubgroup V) (L' : AddSubgroup V') (T : V →ₗ[ℂ] V')
+    (hT : L ≤ L'.comap T.toAddMonoidHom) : (V ⧸ L) →ₜ+ (V' ⧸ L') :=
+  { QuotientAddGroup.map L L' T.toAddMonoidHom hT with
+    continuous_toFun := by
+      rw [(QuotientAddGroup.isQuotientMap_mk (N := L)).continuous_iff]
+      have heq : (QuotientAddGroup.map L L' T.toAddMonoidHom hT) ∘ QuotientAddGroup.mk =
+          QuotientAddGroup.mk ∘ T :=
+        funext fun x => QuotientAddGroup.map_mk L L' T.toAddMonoidHom hT x
+      rw [heq]
+      exact QuotientAddGroup.continuous_mk.comp T.continuous_of_finiteDimensional }
+
+@[simp] theorem inducedHom_apply_mk {L : AddSubgroup V} {L' : AddSubgroup V'}
+    {T : V →ₗ[ℂ] V'} (hT : L ≤ L'.comap T.toAddMonoidHom) (x : V) :
+    inducedHom L L' T hT (QuotientAddGroup.mk x) = QuotientAddGroup.mk (T x) :=
+  QuotientAddGroup.map_mk L L' T.toAddMonoidHom hT x
+
+/-- Any `ℂ`-linear map between finite-dimensional normed spaces is entire (analytic at every
+point): it is continuous (finite-dimensional domain), hence bounded, hence its own convergent
+power series. -/
+theorem analyticAt_linearMap (T : V →ₗ[ℂ] V') (x : V) : AnalyticAt ℂ (⇑T) x :=
+  (⟨T, T.continuous_of_finiteDimensional⟩ : V →L[ℂ] V').analyticAt x
+
+/-- The induced map on tori is `ω`-smooth, given discreteness of both lattices (needed for the
+manifold structure on either side; no further hypothesis on `T`/`hT` beyond linearity). -/
+theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
+    [DiscreteTopology L] [DiscreteTopology L']
+    {T : V →ₗ[ℂ] V'} (hT : L ≤ L'.comap T.toAddMonoidHom) :
+    ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V') ω (inducedHom L L' T hT) := by
+  intro q
+  set x := Function.surjInv QuotientAddGroup.mk_surjective q with hx_def
+  set y := Function.surjInv QuotientAddGroup.mk_surjective (inducedHom L L' T hT q) with hy_def
+  have hxq : (QuotientAddGroup.mk x : V ⧸ L) = q := Function.surjInv_eq _ q
+  have hyq : (QuotientAddGroup.mk y : V' ⧸ L') = inducedHom L L' T hT q :=
+    Function.surjInv_eq _ _
+  set ℓ := y - T x with hℓ_def
+  have hℓL' : ℓ ∈ L' := by
+    have heq : (QuotientAddGroup.mk y : V' ⧸ L') = QuotientAddGroup.mk (T x) := by
+      rw [hyq, ← hxq, inducedHom_apply_mk]
+    have := (QuotientAddGroup.eq_iff_sub_mem).mp heq
+    simpa [hℓ_def] using this
+  rw [contMDiffAt_iff]
+  refine ⟨(inducedHom L L' T hT).continuous.continuousAt, ?_⟩
+  rw [modelWithCornersSelf_coe, Set.range_id, contDiffWithinAt_univ]
+  have hpt : extChartAt 𝓘(ℂ, V) q q = x := extChartAt_self_eq L q
+  rw [hpt]
+  have hfunc : writtenInExtChartAt 𝓘(ℂ, V) 𝓘(ℂ, V') q (inducedHom L L' T hT)
+      = fun w : V => chartAt' L' y (QuotientAddGroup.mk (T w)) := by
+    funext w
+    show extChartAt 𝓘(ℂ, V') (inducedHom L L' T hT q)
+        (inducedHom L L' T hT ((extChartAt 𝓘(ℂ, V) q).symm w)) = _
+    rw [extChartAt_symm_apply_eq, inducedHom_apply_mk, extChartAt_apply_eq]
+  rw [hfunc]
+  have hAnalytic : AnalyticAt ℂ (fun w : V => T w + ℓ) x :=
+    (analyticAt_linearMap T x).add analyticAt_const
+  have hmemball : T x + ℓ ∈ ball y (injRadius L') := by
+    have hval : T x + ℓ = y := by rw [hℓ_def]; abel
+    rw [hval]
+    exact Metric.mem_ball_self (injRadius_pos L')
+  have hEv : (fun w => chartAt' L' y (QuotientAddGroup.mk w)) =ᶠ[𝓝 (T x)]
+      (fun w => w + ℓ) := chartAt'_eventuallyEq_add L' hℓL' hmemball
+  have hcont : Tendsto (⇑T) (𝓝 x) (𝓝 (T x)) := T.continuous_of_finiteDimensional.continuousAt
+  exact hAnalytic.congr (hcont.eventually hEv).symm
+
+end InducedHom
 
 end RS
