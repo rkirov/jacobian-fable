@@ -33,3 +33,17 @@
    `coeffIn_mdifferential` (EqOn `deriv (f ∘ ↑e.symm)` on `e.target`),
    `contMDiffAt_iff_analyticAt_comp` (we use it with `F := ℂ` at `chartAt`-charts in
    `pathIntegral_mdifferential`).
+
+## From jacobian-construction (design phase, 2026-07-06, non-blocking)
+
+1. **`genus` must stay definitionally `Module.finrank ℂ (RS.Form1 X)`, no wrapper.** We set
+   `basis X := Module.finBasis ℂ (Form1 X) : Basis (Fin (Module.finrank ℂ (Form1 X))) ℂ (Form1 X)`
+   (`Mathlib/LinearAlgebra/Dimension/Free.lean:286`) and need this to *definitionally* equal
+   `Basis (Fin (genus X)) ℂ (Form1 X)` (no `finCongr`/cast) for the challenge's
+   `Fin (genus X) → ℂ` type to line up. As long as `Genus.lean`'s `def genus X := Module.finrank ℂ
+   (RS.Form1 X)` is literally that expression (per your design doc §2.1), this is `rfl` — just
+   confirming you won't wrap it in anything.
+2. **`FiniteDimensional ℂ (Form1 X)` instance** (§2.6 of your doc) is all we need for
+   `Module.finBasis` (`[Module.Finite ℂ (Form1 X)]`); `[Module.Free ℂ (Form1 X)]` is automatic
+   (`Module.Free.of_divisionRing`, every vector space over a field is free) — no action needed
+   from you, just confirming the dependency shape.
