@@ -68,3 +68,14 @@
   pathIntegral_mdifferential FTC-along-a-path for mdifferential)
 - [mero] Jacobian/Meromorphic/Field.lean OK (90 lines, ~5s) — Inv (pointwise, unconditional), mk_inv, ord_inv, Mero.ord_ne_top/ord_eq_top_iff (identity dichotomy corollary), Mero.mul_inv_cancel, Field (ℳ X) instance. Zero sorries.
 - [mero] Jacobian/Meromorphic/Divisor.lean OK (315 lines, ~6s) — Function.locallyFinsuppWithin.degree Compat (+ degree_zero/add/neg/mono/nonneg_of_nonneg), Divisor X abbrev, MeroGermOn.divisorOn (local finiteness via eventually_ordAtX_eq_top/eq_zero, §6.3 plan), divisor total map + algebra (mul/inv/smul/algebraMap/min_divisor_le_divisor_add), divisor_nonneg_iff (unconditional, via untop₀_nonneg), compactness finiteness (finite_support_divisor, finite_setOf_ord_neg/pos, eventually_ord_eq_zero). Zero sorries.
+- [paths] Jacobian/Path/HomotopySquare.lean OK (462 lines; gridK/GridChain/exists_gridChain (2D
+  Lebesgue grid via exists_monotone_Icc_subset_open_cover_unitInterval_prod_self), product hcov/
+  preconnected helpers, row assembly + column stacking induction, exists_primitive_along_square
+  (the centerpiece), pathIntegral_congr_homotopic, pathIntegralQ(+trans),
+  pathIntegral_congr_freeHomotopic, pathIntegral_eq_of_simplyConnected,
+  period_eq_zero_of_homotopic_refl)
+- [mero] Jacobian/Meromorphic/Gluing.lean OK (74 lines, ~6s) — MeroGermOn.exists_glue/glue_unique (§6.6 sheaf gluing via holoRepr pointwise rigidity, no coherence lemma). Zero sorries.
+- [mero] Jacobian/Meromorphic/LinSysMulEquiv.lean OK (61 lines, ~7s) — mul_mem_linSys_sub_divisor + linSysMulEquiv (L(D) ≃ₗ[ℂ] L(D - divisor φ) via LinearEquiv.ofLinear, §6.7). Zero sorries.
+- [mero] Jacobian/Meromorphic.lean (unit root) OK (scripts/check.sh Jacobian/Meromorphic passes, zero sorries — unit COMPLETE, all 10 files + design doc's six hard proof plans §6.1-§6.7 including gluing and linSysMulEquiv). NOT registered in Jacobian.lean per task hard rule.
+- [paths] Jacobian/Path/Periods.lean OK (75 lines; period/period_trans/symm/refl/
+  congr_homotopic/conj, periodVector + trans/symm/refl)
