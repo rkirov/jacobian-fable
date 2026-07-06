@@ -15,3 +15,4 @@ import Jacobian.ProperDegree
 import Jacobian.JacobianConstruction
 import Jacobian.Cech
 import Jacobian.Finiteness
+import Jacobian.Dbar

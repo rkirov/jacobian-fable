@@ -146,4 +146,76 @@ private theorem mem_ordGe_succ_rawCorr (d' : ℤ) (ψ : ordGe p (-d')) :
   rw [heq]
   exact hfin
 
+private theorem rawCorr_eq_of_leadCoeff_eq_zero (d' : ℤ) (ψ : ordGe p (-d'))
+    (h0 : leadCoeff p (-d') ψ = 0) :
+    rawCorr p d' ψ = (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)) := by
+  rw [rawCorr_apply, h0, zero_smul, sub_zero]
+
+/-- The one-step correction map, landing in the window numerator one order higher. -/
+private noncomputable def corrMap (d' : ℤ) : ordGe p (-d') →ₗ[ℂ] ordGe p (-(d' - 1)) :=
+  LinearMap.codRestrict (ordGe p (-(d' - 1))) (rawCorr p d') (mem_ordGe_succ_rawCorr p d')
+
+private theorem corrMap_apply_coe (d' : ℤ) (ψ : ordGe p (-d')) :
+    (corrMap p d' ψ : RS.MeroGermOn X ((chartAt ℂ p).source)) = rawCorr p d' ψ := rfl
+
+/-- The one-step splitting map `ordGe p (-d') → WindowAt p d (d'-1) × ℂ`. -/
+private noncomputable def bigMap (d d' : ℤ) : ordGe p (-d') →ₗ[ℂ] WindowAt p d (d' - 1) × ℂ :=
+  ((WindowAt.mk p d (d' - 1)).comp (corrMap p d')).prod (leadCoeff p (-d'))
+
+private theorem bigMap_apply (d d' : ℤ) (ψ : ordGe p (-d')) :
+    bigMap p d d' ψ = (WindowAt.mk p d (d' - 1) (corrMap p d' ψ), leadCoeff p (-d') ψ) := rfl
+
+private theorem bigMap_mem_ker_iff (d d' : ℤ) (h : d ≤ d' - 1) (ψ : ordGe p (-d')) :
+    bigMap p d d' ψ = 0 ↔ ψ ∈ (ordGe p (-d)).comap (ordGe p (-d')).subtype := by
+  rw [Submodule.mem_comap, mem_ordGe_iff, bigMap_apply, Prod.mk_eq_zero]
+  constructor
+  · rintro ⟨hmk, hlc⟩
+    rw [WindowAt.mk_eq_zero_iff, corrMap_apply_coe,
+      rawCorr_eq_of_leadCoeff_eq_zero p d' ψ hlc] at hmk
+    exact hmk
+  · intro hord
+    have hlc : leadCoeff p (-d') ψ = 0 := by
+      rw [leadCoeff_eq_zero_iff]
+      have h1 : ((-(d' - 1) : ℤ) : WithTop ℤ) ≤ ((-d : ℤ) : WithTop ℤ) := by
+        exact_mod_cast (show -(d' - 1) ≤ -d by omega)
+      have h2 : ((-d' + 1 : ℤ) : WithTop ℤ) = ((-(d' - 1) : ℤ) : WithTop ℤ) := by
+        congr 1; omega
+      rw [h2]
+      exact h1.trans hord
+    refine ⟨?_, hlc⟩
+    rw [WindowAt.mk_eq_zero_iff, corrMap_apply_coe, rawCorr_eq_of_leadCoeff_eq_zero p d' ψ hlc]
+    exact hord
+
+private theorem bigMap_surjective (d d' : ℤ) : Function.Surjective (bigMap p d d') := by
+  rintro ⟨χ, c⟩
+  have hξsurj : Function.Surjective (WindowAt.mk p d (d' - 1)) := Submodule.mkQ_surjective _
+  obtain ⟨ξ, hξχ⟩ := hξsurj χ
+  set lam := leadCoeff p (-d') (tailGermElt p d') with hlam_def
+  have hlam0 : lam ≠ 0 := leadCoeff_tailGermElt_ne_zero p d'
+  have hξmem' : ((-d' : ℤ) : WithTop ℤ) ≤ (ξ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p := by
+    have h1 : ((-d' : ℤ) : WithTop ℤ) ≤ ((-(d' - 1) : ℤ) : WithTop ℤ) := by
+      exact_mod_cast (show -d' ≤ -(d' - 1) by omega)
+    exact h1.trans ξ.2
+  set ξ' : ordGe p (-d') := ⟨(ξ : RS.MeroGermOn X ((chartAt ℂ p).source)), mem_ordGe_iff.2 hξmem'⟩
+    with hξ'_def
+  set ψ : ordGe p (-d') := ξ' + (c * lam⁻¹) • tailGermElt p d' with hψ_def
+  refine ⟨ψ, ?_⟩
+  have hleadψ : leadCoeff p (-d') ψ = c := by
+    rw [hψ_def, map_add, map_smul, ← hlam_def]
+    have hleadξ' : leadCoeff p (-d') ξ' = 0 := by
+      rw [leadCoeff_eq_zero_iff]
+      show _ ≤ (ξ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p
+      have h2 : ((-d' + 1 : ℤ) : WithTop ℤ) = ((-(d' - 1) : ℤ) : WithTop ℤ) := by
+        congr 1; omega
+      rw [h2]
+      exact ξ.2
+    rw [hleadξ', zero_add, smul_eq_mul, mul_assoc, inv_mul_cancel₀ hlam0, mul_one]
+  have hcorrψ : corrMap p d' ψ = ξ := by
+    apply Subtype.ext
+    rw [corrMap_apply_coe, rawCorr_apply, hleadψ, ← hlam_def]
+    show (ξ' : RS.MeroGermOn X ((chartAt ℂ p).source)) +
+        (c * lam⁻¹) • tailGerm p (-d') - c • (lam⁻¹ • tailGerm p (-d')) = _
+    rw [smul_smul]
+  rw [bigMap_apply, hleadψ, hcorrψ, hξχ]
+
 end RS.Cech

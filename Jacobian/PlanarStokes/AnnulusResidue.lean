@@ -441,9 +441,12 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     -- Convert the RHS iterated integral to a set integral over `Rec`.
     have hiter_to_set : (∫ x : ℝ in a..b, ∫ y : ℝ in (0 : ℝ)..(2 * π),
         I • f' ((x : ℂ) + y * I) 1 - f' ((x : ℂ) + y * I) I) = ∫ ζ in Rec, I • f' ζ 1 - f' ζ I := by
+      have hHi' : IntegrableOn (fun ζ => I • f' ζ 1 - f' ζ I)
+          (Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π))) := by
+        rw [← hRec_def]; exact hHi
+      have := (setIntegral_reProdIm_eq_intervalIntegral hab.le Real.two_pi_pos.le hHi').symm
       rw [hRec_def]
-      exact (setIntegral_reProdIm_eq_intervalIntegral hab.le Real.two_pi_pos.le
-        (hRec_def ▸ hHi)).symm
+      exact this
     rw [hiter_to_set] at hrect
     -- Pointwise, on `RecOpen`, the integrand matches `2i·normSq(exp ζ)·wirtingerDbar u (τ ζ)`.
     have hpt : ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
