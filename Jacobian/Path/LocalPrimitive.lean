@@ -20,6 +20,9 @@ Main declarations:
 * `.glue` — the junction argument: primitives on `s₁`, `s₂` agreeing at a point of the (preconnected)
   overlap glue to a primitive on `s₁ ∪ s₂`, provided `s₁`/`s₂` cover `𝓝[s₁∪s₂]`-neighborhoods of
   every point (`hcov`).
+* `isPrimitiveAlongMap_of_ball` — the constant-chart primitive `g ∘ e ∘ K` on a set mapped by `K`
+  into a single chart-ball; the reusable "cell primitive" atom for the 1D chain induction
+  (`Continuation.lean`) and the 2D grid (`HomotopySquare.lean`).
 -/
 
 open scoped ContDiff Manifold Topology
@@ -67,7 +70,8 @@ theorem IsPrimitiveAlongMap.congr_map {K' : α → X} (h : IsPrimitiveAlongMap K
     (hKK' : Set.EqOn K K' s) : IsPrimitiveAlongMap K' η F s := by
   intro a ha
   obtain ⟨e, he, hKa, g, hg, hF⟩ := h a ha
-  refine ⟨e, he, by rw [← hKK' ha]; exact hKa, g, hg, ?_⟩
+  have hKaa : K a = K' a := hKK' ha
+  refine ⟨e, he, by rw [← hKaa]; exact hKa, g, by rw [← hKaa]; exact hg, ?_⟩
   filter_upwards [hF, self_mem_nhdsWithin] with b hb hbs
   rw [← hKK' hbs]
   exact hb
@@ -77,12 +81,15 @@ theorem IsPrimitiveAlongMap.continuousOn (h : IsPrimitiveAlongMap K η F s)
   intro a ha
   obtain ⟨e, he, hKa, g, hg, hF⟩ := h a ha
   have hgc : ContinuousAt g (e (K a)) := hg.self_of_nhds.continuousAt
-  have hec : ContinuousWithinAt (fun b => e (K b)) s a :=
-    (e.continuousAt hKa).comp_continuousWithinAt (hK a ha)
-  have hcomp : ContinuousWithinAt (g ∘ fun b => e (K b)) s a := hgc.comp_continuousWithinAt hec
-  have heq : F =ᶠ[𝓝[s] a] (g ∘ fun b => e (K b)) := by
+  have hec : Tendsto (e ∘ K) (𝓝[s] a) (𝓝 (e (K a))) :=
+    ((e.continuousOn.continuousAt (e.open_source.mem_nhds hKa)).tendsto).comp (hK a ha).tendsto
+  have hcomp : Tendsto (g ∘ (e ∘ K)) (𝓝[s] a) (𝓝 (g (e (K a)))) := hgc.tendsto.comp hec
+  have heq : F =ᶠ[𝓝[s] a] (g ∘ (e ∘ K)) := by
     filter_upwards [hF] with b hb using hb.2
-  exact hcomp.congr_of_eventuallyEq_of_mem heq ha
+  have hFa : F a = g (e (K a)) := (hF.self_of_nhdsWithin ha).2
+  show Tendsto F (𝓝[s] a) (𝓝 (F a))
+  rw [hFa]
+  exact Tendsto.congr' heq.symm hcomp
 
 /-- Composition / restriction along a continuous map of parameter spaces. -/
 theorem IsPrimitiveAlongMap.comp {β : Type*} [TopologicalSpace β]
@@ -123,7 +130,7 @@ theorem IsPrimitiveAlongMap.rechart (h : IsPrimitiveAlongMap K η F s) (ha : a �
       htendsto.eventually hg
     have hτderiv : ∀ᶠ z in 𝓝 (e' (K a)), HasDerivAt τ (deriv τ z) z := by
       filter_upwards [hτan] with z hz using hz.differentiableAt.hasDerivAt
-    have hcoeff : ∀ᶠ z in 𝓝 (e' (K a)), coeffIn e' η z = coeffIn e η (τ z) * deriv τ z := by
+    have hcoeff : ∀ᶠ z in 𝓝 (e' (K a)), coeffIn e' η z = deriv τ z * coeffIn e η (τ z) := by
       filter_upwards [hWopen.mem_nhds hzW] with z hz
       obtain ⟨q, hq, rfl⟩ := hz
       exact coeffIn_trans he he' η ⟨q, hq, rfl⟩
@@ -132,13 +139,13 @@ theorem IsPrimitiveAlongMap.rechart (h : IsPrimitiveAlongMap K η F s) (ha : a �
     rw [hz3, mul_comm]
     exact hcomp
   · have hWopen : IsOpen (e.source ∩ e'.source) := e.open_source.inter e'.open_source
-    have hmem : a ∈ e.source ∩ e'.source := ⟨hKae, hKa⟩
+    have hmem : K a ∈ e.source ∩ e'.source := ⟨hKae, hKa⟩
     filter_upwards [hF, hK.tendsto.eventually (hWopen.mem_nhds hmem)] with b hb hbmem
     refine ⟨hbmem.2, ?_⟩
     rw [hb.2]
-    show g (τ (e' (K b))) = g (e (K b))
+    show g (e (K b)) = g (τ (e' (K b)))
     congr 1
-    show e (e'.symm (e' (K b))) = e (K b)
+    show e (K b) = e (e'.symm (e' (K b)))
     rw [e'.left_inv hbmem.2]
 
 /-- **Uniqueness up to a constant.** Chart overlaps need not be connected; primitives are only
@@ -151,17 +158,22 @@ theorem IsPrimitiveAlongMap.sub_eq_sub (hs : IsPreconnected s) (hK : ContinuousO
     rintro ⟨c, hc⟩
     obtain ⟨e₁, he₁, hKc, g₁, hg₁, hF₁⟩ := h₁ c hc
     obtain ⟨g₂', hg₂', hF₂⟩ := h₂.rechart hc (hK.continuousWithinAt hc) he₁ hKc
+    have hFc1 : F₁ c = g₁ (e₁ (K c)) := (hF₁.self_of_nhdsWithin hc).2
+    have hFc2 : F₂ c = g₂' (e₁ (K c)) := (hF₂.self_of_nhdsWithin hc).2
     set z₀ : ℂ := e₁ (K c) with hz₀_def
     set g₂'' : ℂ → ℂ := fun z => g₂' z + (g₁ z₀ - g₂' z₀) with hg₂''_def
     have hshift : ∀ᶠ z in 𝓝 z₀, HasDerivAt g₂'' (coeffIn e₁ η z) z := by
       filter_upwards [hg₂'] with z hz using hz.add_const _
     have heq : g₁ =ᶠ[𝓝 z₀] g₂'' := eventuallyEq_of_hasDerivAt_eq hg₁ hshift (by simp [hg₂''_def])
     have hcont : ContinuousWithinAt (fun b => e₁ (K b)) s c :=
-      (e₁.continuousAt hKc).comp_continuousWithinAt (hK.continuousWithinAt hc)
+      (e₁.continuousOn.continuousAt (e₁.open_source.mem_nhds hKc)).comp_continuousWithinAt
+        (hK.continuousWithinAt hc)
     have heqb : ∀ᶠ b in 𝓝[s] c, F₁ b - F₂ b = F₁ c - F₂ c := by
       filter_upwards [hF₁, hF₂, hcont.tendsto.eventually heq] with b hb1 hb2 hb3
-      rw [hb1.2, hb2.2, hg₂''_def] at *
-      rw [hb3]
+      calc F₁ b - F₂ b = g₁ (e₁ (K b)) - g₂' (e₁ (K b)) := by rw [hb1.2, hb2.2]
+        _ = g₂'' (e₁ (K b)) - g₂' (e₁ (K b)) := by rw [hb3]
+        _ = g₁ z₀ - g₂' z₀ := by simp [hg₂''_def]
+        _ = F₁ c - F₂ c := by rw [hFc1, hFc2]
     show ∀ᶠ y : s in 𝓝 (⟨c, hc⟩ : s), F₁ (y : α) - F₂ (y : α) = F₁ c - F₂ c
     rw [nhds_subtype_eq_comap_nhdsWithin s ⟨c, hc⟩, Filter.eventually_comap]
     filter_upwards [heqb] with b hb y hy
@@ -199,8 +211,8 @@ theorem IsPrimitiveAlongMap.glue [∀ a, Decidable (a ∈ s)]
   · have ha2 : a ∈ t := mem_of_mem_nhdsWithin ha hmem
     obtain ⟨e, he, hKa, g, hg, hF⟩ := h₂ a ha2
     refine ⟨e, he, hKa, g, hg, ?_⟩
-    filter_upwards [hF.filter_mono (nhdsWithin_le_of_mem hmem)] with b hb
-    exact ⟨hb.1, by rw [hpw2 b hb.1, hb.2]⟩
+    filter_upwards [hF.filter_mono (nhdsWithin_le_of_mem hmem), hmem] with b hb hbt
+    exact ⟨hb.1, by rw [hpw2 b hbt, hb.2]⟩
   · obtain ⟨ha1, ha2⟩ := hmem
     obtain ⟨e, he, hKa, g₁, hg₁, hF₁⟩ := h₁ a ha1
     have hKcont : ContinuousWithinAt K (s ∪ t) a := hK a ha
@@ -217,11 +229,26 @@ theorem IsPrimitiveAlongMap.glue [∀ a, Decidable (a ∈ s)]
     · filter_upwards [hF₁, self_mem_nhdsWithin] with b hb hbs1
       exact ⟨hb.1, by rw [Set.piecewise_eq_of_mem _ _ _ hbs1, hb.2]⟩
     · have hcontK2 : ContinuousWithinAt (fun b => e (K b)) t a :=
-        (e.continuousAt hKa).comp_continuousWithinAt (hKcont.mono subset_union_right)
+        (e.continuousOn.continuousAt (e.open_source.mem_nhds hKa)).comp_continuousWithinAt
+          (hKcont.mono subset_union_right)
       filter_upwards [hF₂, self_mem_nhdsWithin, hcontK2.tendsto.eventually heq] with b hb hbs2 hbeq
       refine ⟨hb.1, ?_⟩
       rw [hpw2 b hbs2, hb.2]
       exact hbeq.symm
+
+/-- Constant-chart primitive: if `K` maps all of `s` into a single chart `e`, with image inside
+a ball `ball c r ⊆ e.target` on which `g` is a planar primitive of `coeffIn e η`, then
+`g ∘ e ∘ K` is a primitive of `η` along `K` on `s`. Used by the 1D chain-continuation induction
+and the 2D grid (cell primitives). -/
+theorem isPrimitiveAlongMap_of_ball {e : OpenPartialHomeomorph X ℂ}
+    (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) {c : ℂ} {r : ℝ} {g : ℂ → ℂ}
+    (hg : ∀ z ∈ ball c r, HasDerivAt g (coeffIn e η z) z)
+    (hmaps : ∀ a ∈ s, K a ∈ e.source ∧ e (K a) ∈ ball c r) :
+    IsPrimitiveAlongMap K η (fun a => g (e (K a))) s := by
+  intro a ha
+  refine ⟨e, he, (hmaps a ha).1, g, ?_, ?_⟩
+  · filter_upwards [isOpen_ball.mem_nhds (hmaps a ha).2] with z hz using hg z hz
+  · filter_upwards [self_mem_nhdsWithin] with b hb using ⟨(hmaps b hb).1, rfl⟩
 
 end RS
 
