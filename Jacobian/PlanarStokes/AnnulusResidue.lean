@@ -692,19 +692,26 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
   rw [hglobal_eq_annulus]
   exact harea_gf
 
-/-! ## Model-case regression check (`f = (·-p)⁻¹`, §8.4) -/
+/-! ## Model-case regression check (`f = (·-p)⁻¹`, §8.4), and the abel-weak-solutions refinement -/
 
 /-- Model-case corollary (the verification the task asked for, `f = 1/(z-p)`, kept as a named
 sanity lemma / regression test on Atom 2's `-π` normalization constant) — proved a *second*,
 independent way, translating `RS.cauchyPompeiu` (dbar-solvability) through the measure-preserving
-involution `w ↦ p - w`, NOT as a corollary of Atom 2 itself. `hconst` is unused in this proof (kept
-only so the signature matches Atom 2's hypothesis list exactly): a simple pole is exactly the
-borderline order where the general-`g` and locally-constant-`g` formulas coincide (§8.4), so no
-local-constancy is actually needed in this special case. -/
+involution `w ↦ p - w`, NOT as a corollary of Atom 2 itself.
+
+**Deviation from the design's §5.3 signature**: the frozen design states this lemma with the same
+`hpU`/`hconst` hypotheses as Atom 2, "for signature parity" only. Both are provably UNUSED in this
+proof (neither name appears in the tactic block below) — exactly as the design's own §8.4 already
+observes ("a simple pole is exactly the borderline order where the general-`g` and locally-
+constant-`g` formulas coincide... with no local-constancy hypothesis on `g` needed at all in this
+special case"). Dropped here because `abel-weak-solutions` (this unit's downstream consumer,
+`docs/design/abel-weak-solutions.md` §7.3/§10/§11 risk R1) needs *exactly* this hypothesis-free
+form: its `g` is a genuine holomorphic primitive, not locally constant near its punctures, so it
+cannot supply `hconst`. See `integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` below for the exact
+two-puncture shape that unit's Lemma 20.3 step assembles. -/
 theorem integral_wirtingerDbar_mul_inv_sub_eq {g : ℂ → ℂ} {U : Set ℂ} {p : ℂ}
-    (hU : IsOpen U) (hpU : p ∈ U)
-    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U)
-    (hconst : g =ᶠ[nhds p] Function.const ℂ (g p)) :
+    (hU : IsOpen U)
+    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
     ∫ w : ℂ, wirtingerDbar g w * (w - p)⁻¹ = -π * g p := by
   have hg' : ContDiff ℝ 1 g := ContDiffOn.contDiff_of_hasCompactSupport hU hg hcs hsub
   have hcp : ∫ w : ℂ, cauchyKernel w * wirtingerDbar g (p - w) = g p :=
@@ -737,6 +744,72 @@ theorem integral_wirtingerDbar_mul_inv_sub_eq {g : ℂ → ℂ} {U : Set ℂ} {p
       = -(Real.pi * (Real.pi : ℂ)⁻¹) * ∫ x : ℂ, wirtingerDbar g x * (x - p)⁻¹ by ring,
     mul_inv_cancel₀ hπne] at hfin
   linear_combination -hfin
+
+/-- The `wirtingerDbar g · (·-p)⁻¹` integrand of the model-case identity above is integrable
+(needed to combine several single-puncture instances of `integral_wirtingerDbar_mul_inv_sub_eq`
+into one multi-puncture identity — `integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` below).
+Proved the same way: transport the convolution-integrability fact already available for
+`cauchyKernel * wirtingerDbar g (p - ·)` (`HasCompactSupport.convolutionExists_right`, the same
+mathlib fact `RS.cauchyPompeiu`'s own proof relies on) through the measure-preserving substitution
+`w ↦ p - w`. -/
+theorem integrable_wirtingerDbar_mul_inv_sub {g : ℂ → ℂ} {U : Set ℂ} {p : ℂ}
+    (hU : IsOpen U)
+    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
+    Integrable (fun w : ℂ => wirtingerDbar g w * (w - p)⁻¹) := by
+  have hg' : ContDiff ℝ 1 g := ContDiffOn.contDiff_of_hasCompactSupport hU hg hcs hsub
+  have hcs_dbar : HasCompactSupport (wirtingerDbar g) := hasCompactSupport_wirtingerDbar g hcs
+  have hcont_dbar : Continuous (wirtingerDbar g) := continuous_wirtingerDbar_of_contDiff_one hg'
+  have hIntF : Integrable (fun w : ℂ => cauchyKernel w * wirtingerDbar g (p - w)) :=
+    hcs_dbar.convolutionExists_right (ContinuousLinearMap.mul ℝ ℂ) locallyIntegrable_cauchyKernel
+      hcont_dbar p
+  have hme : MeasurableEmbedding (fun w : ℂ => p - w) := measurableEmbedding_subLeft p
+  have hmp : MeasureTheory.MeasurePreserving (fun w : ℂ => p - w)
+      (volume : Measure ℂ) volume := MeasureTheory.Measure.measurePreserving_sub_left volume p
+  have hpp : ∀ x : ℂ, p - (p - x) = x := fun x => by ring
+  have hIntComp : Integrable (fun x : ℂ => cauchyKernel (p - x) * wirtingerDbar g (p - (p - x))) :=
+    hmp.integrable_comp_of_integrable hIntF
+  simp only [hpp] at hIntComp
+  -- `hIntComp : Integrable (fun x, cauchyKernel (p - x) * wirtingerDbar g x)`
+  have hker : ∀ x : ℂ, cauchyKernel (p - x) * wirtingerDbar g x
+      = (-(Real.pi : ℂ)⁻¹) * (wirtingerDbar g x * (x - p)⁻¹) := by
+    intro x
+    have hxp : (p - x : ℂ) = -(x - p) := by ring
+    simp only [cauchyKernel, hxp]
+    rw [show (Real.pi : ℂ) * -(x - p) = -(Real.pi * (x - p)) by ring, inv_neg, mul_inv]
+    ring
+  have hIntConst : Integrable
+      (fun x : ℂ => (-(Real.pi : ℂ)⁻¹) * (wirtingerDbar g x * (x - p)⁻¹)) := by
+    have heq : (fun x : ℂ => cauchyKernel (p - x) * wirtingerDbar g x)
+        = (fun x : ℂ => (-(Real.pi : ℂ)⁻¹) * (wirtingerDbar g x * (x - p)⁻¹)) := funext hker
+    rwa [heq] at hIntComp
+  have hπne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  have hunit : IsUnit (-(Real.pi : ℂ)⁻¹) :=
+    isUnit_iff_ne_zero.mpr (neg_ne_zero.mpr (inv_ne_zero hπne))
+  exact (integrable_const_mul_iff hunit _).mp hIntConst
+
+/-- The exact two-puncture shape `abel-weak-solutions` assembles in its Lemma-20.3-specialized
+step (`docs/design/abel-weak-solutions.md` §7.3 step 3): the smeared residue identity for
+`f := (·-b)⁻¹ - (·-a)⁻¹` (simple poles of residue `+1` at `b`, `-1` at `a`), matching `g b - g a`
+directly, for **any** `C¹` compactly-supported `g` — no local constancy needed at either puncture,
+since both poles are simple (the same reasoning as `integral_wirtingerDbar_mul_inv_sub_eq`).
+Assembled from two instances of that lemma plus linearity of the Bochner integral
+(`integrable_wirtingerDbar_mul_inv_sub` supplies the integrability `MeasureTheory.integral_sub`
+needs). -/
+theorem integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq {g : ℂ → ℂ} {U : Set ℂ} {a b : ℂ}
+    (hU : IsOpen U)
+    (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
+    ∫ w : ℂ, wirtingerDbar g w * ((w - b)⁻¹ - (w - a)⁻¹) = -π * (g b - g a) := by
+  have hb := integral_wirtingerDbar_mul_inv_sub_eq (p := b) hU hg hcs hsub
+  have ha := integral_wirtingerDbar_mul_inv_sub_eq (p := a) hU hg hcs hsub
+  have hIntb : Integrable (fun w : ℂ => wirtingerDbar g w * (w - b)⁻¹) :=
+    integrable_wirtingerDbar_mul_inv_sub (p := b) hU hg hcs hsub
+  have hInta : Integrable (fun w : ℂ => wirtingerDbar g w * (w - a)⁻¹) :=
+    integrable_wirtingerDbar_mul_inv_sub (p := a) hU hg hcs hsub
+  have heq : (fun w : ℂ => wirtingerDbar g w * ((w - b)⁻¹ - (w - a)⁻¹))
+      = (fun w : ℂ => wirtingerDbar g w * (w - b)⁻¹ - wirtingerDbar g w * (w - a)⁻¹) := by
+    funext w; ring
+  rw [heq, MeasureTheory.integral_sub hIntb hInta, hb, ha]
+  ring
 
 end RS
 

@@ -828,3 +828,55 @@
   `exists_tail_approx` for tail extraction are both exported), then `windowConnect_spec` /
   `mlClass_eq_of_realizes` give well-definedness for free; `mlClass_eq_zero_iff` (both
   directions) characterizes the kernel.
+- [stokes] Jacobian/PlanarStokes/Compat.lean OK (182 lines, ~7s) — found already complete from the
+  interrupted prior session (Leibniz rule `wirtingerDbar_mul` + `wirtingerDbar_mul_of_
+  differentiableAt`/`wirtingerDbar_mul_eq_zero_of_notMem_tsupport`, the `ContDiffOn.contDiff_of_
+  hasCompactSupport` gluing lemma, `continuous_wirtingerDbar_of_contDiff_one` (R1 resolved),
+  `tsupport_wirtingerDbar_subset`, the `ℂ`-rectangle ↔ iterated-real-integral bridge
+  `setIntegral_reProdIm_eq_intervalIntegral`/`integral_eq_intervalIntegral_of_tsupport_subset_
+  reProdIm`). Recompiled clean, zero sorries, no changes needed.
+- [stokes] Jacobian/PlanarStokes/CompactSupport.lean OK (179 lines, ~10s) — found already complete
+  (Atom 1 `integral_wirtingerDbar_eq_zero` via the rectangle-Stokes-lemma + boundary-vanishing
+  argument, Atom 1b `integral_wirtingerDbar_mul_eq_zero_of_differentiableOn`). Recompiled clean,
+  zero sorries, no changes needed.
+- [stokes] Jacobian/PlanarStokes/AnnulusResidue.lean FIXED + extended (815 lines, ~15s) — found
+  mid-edit (no `end RS`, missing the model-case regression theorem the file's own docstring
+  promised) and with one real bug: `hv_eq_gf`'s off-`tsupport g` branch (inside Atom 2's proof)
+  ended in a `show g w * f w = 0` that is NOT definitionally equal to the actual goal
+  `wirtingerDbar (fun w => g w * f w) w = 0` (the same lambda-vs-unfolded-application trap this
+  project's build log already flags elsewhere) — fixed by routing through Compat's own
+  `wirtingerDbar_mul_eq_zero_of_notMem_tsupport` instead of re-deriving it inline. Completed the
+  file: (1) Atom 1′ (`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar`,
+  the exp-substitution annulus identity) and Atom 2 (`integral_wirtingerDbar_mul_eq_neg_pi_mul_
+  resAt`) were already present and correct, verified compiling; (2) added the promised model-case
+  regression check `integral_wirtingerDbar_mul_inv_sub_eq` (`f = (·-p)⁻¹`, independent derivation
+  via `RS.cauchyPompeiu` + the measure-preserving substitution `w ↦ p - w`
+  (`Measure.measurePreserving_sub_left` + `measurableEmbedding_subLeft`, needs
+  `import Mathlib.MeasureTheory.Measure.Haar.Unique` for the `IsNegInvariant volume` instance on
+  `ℂ` — not otherwise in scope, a real gotcha for anyone doing Lebesgue-measure reflection/
+  translation substitutions on `ℂ`). **Deviation from the design's frozen §5.3 signature, filed as
+  the abel-weak-solutions refinement the task asked about**: `integral_wirtingerDbar_mul_inv_sub_eq`
+  is stated WITHOUT the `hpU`/`hconst` hypotheses Atom 2 needs — both are provably unused in this
+  proof (the design's own §8.4 already observes a simple pole needs no local-constancy at all).
+  Also added, reusing the same substitution+integrability machinery already established by
+  `cauchyPompeiu`'s own proof (`HasCompactSupport.convolutionExists_right`,
+  `MeasurePreserving.integrable_comp_of_integrable`, `integrable_const_mul_iff`):
+  `integrable_wirtingerDbar_mul_inv_sub` (the integrand is integrable) and
+  `integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` (the two-puncture shape
+  `f = (·-b)⁻¹ - (·-a)⁻¹`, `∫∫(∂̄g)·f = -π·(g b - g a)`, assembled from two instances of the
+  single-puncture lemma + `MeasureTheory.integral_sub` — matches
+  `docs/design/abel-weak-solutions.md` §7.3 step 3's Lemma-20.3 assembly EXACTLY, for any `C¹`
+  compactly-supported `g`, no local constancy needed). Zero sorries.
+- [stokes] Jacobian/PlanarStokes.lean (unit root) OK (46 lines; `scripts/check.sh
+  Jacobian/PlanarStokes` passes, zero sorries across all 3 files (1176 lines) + root — unit
+  COMPLETE). NOT registered in `Jacobian.lean` per task hard rule, orchestrator to add
+  `import Jacobian.PlanarStokes`. Notes for **residue-theorem**: Atoms 1/1b/1′/2 all present and
+  exactly as designed (`docs/design/planar-stokes.md` §5); no "change of variables for the area
+  integral" atom is built (§10, unchanged — `ResidueCalculus.resAt_comp_mul_deriv` already
+  suffices). Notes for **abel-weak-solutions**: both Atom 1b and Atom 2 are available as its own
+  design doc expects (§2.2, correcting `planar-stokes.md`'s own downstream-map guess), PLUS the
+  requested `hconst`-free refinement is done: `integral_wirtingerDbar_mul_inv_sub_eq` (single
+  puncture, general `g`), `integrable_wirtingerDbar_mul_inv_sub`, and
+  `integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` (the exact two-puncture `g b - g a` shape,
+  §7.3 step 3) are all ready to consume directly — no further Stokes/measure-theory work should be
+  needed for that unit's Lemma-20.3 step.

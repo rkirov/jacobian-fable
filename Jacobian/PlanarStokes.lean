@@ -24,14 +24,23 @@ manifold imports). API summary (see `docs/design/planar-stokes.md`):
   compactly supported and **locally constant near the puncture `p`** (this hypothesis is load-
   bearing — the fully general smeared-residue formula for merely-continuous `g` and a pole of
   order `≥ 2` is false, see the design's §D4/§8.1 Fourier-resonance analysis; residue-theorem's
-  `ContDiffBump`-built partitions of unity satisfy it for free). Cross-checked independently on
-  `f = (·-p)⁻¹` (`RS.integral_wirtingerDbar_mul_inv_sub_eq`, proved via `RS.cauchyPompeiu`, not via
-  Atom 2) — both routes agree on the `-π` constant.
+  `ContDiffBump`-built partitions of unity satisfy it for free).
+* **Model-case regression check + abel-weak-solutions refinement** (`AnnulusResidue.lean`):
+  `RS.integral_wirtingerDbar_mul_inv_sub_eq` (`f = (·-p)⁻¹`, proved independently via
+  `RS.cauchyPompeiu`, not via Atom 2 — cross-checks the `-π` constant) is stated **without** the
+  `hpU`/`hconst` hypotheses of Atom 2's signature: both are provably unused at a simple pole (the
+  design's own §8.4 observation), and dropping them is exactly the "cheap, bounded" refinement
+  `abel-weak-solutions` needs (its `g` is a holomorphic primitive, not locally constant near its
+  punctures — see `docs/design/abel-weak-solutions.md` §7.3/§10/§11 risk R1). Also exported:
+  `RS.integrable_wirtingerDbar_mul_inv_sub` (the integrand is integrable) and
+  `RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` (the exact two-puncture shape
+  `f = (·-b)⁻¹ - (·-a)⁻¹`, `∫∫ (∂̄g)·f = -π·(g b - g a)`, matching Forster's Lemma 20.3 assembly
+  step directly, again for **any** `C¹` compactly-supported `g`).
 
 Routing: residue-theorem consumes Atoms 1b/2 one chart at a time (PoU pieces), plus
 `ResidueCalculus.resAt_comp_mul_deriv` (not from this unit) for chart-independence of `Res_p(ω)`
 prior to summing; no "change of variables for the area integral" atom is designed or built here
-(every integral here lives in one fixed chart, see §10). abel-weak-solutions is expected to need
-only Atom 1/1b (a compact-support Green's-identity check, no poles) — see the design's §11 and the
-build-log entry for this unit for the current read on its refinement needs.
+(every integral here lives in one fixed chart, see §10). abel-weak-solutions consumes Atom 1b and
+the three `integral_wirtingerDbar_mul_inv_sub*`/`integrable_wirtingerDbar_mul_inv_sub` exports
+above for its Lemma-20.3 step — see the build-log entry for this unit for the full account.
 -/

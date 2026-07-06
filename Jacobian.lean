@@ -18,3 +18,4 @@ import Jacobian.Finiteness
 import Jacobian.Dbar
 import Jacobian.Monodromy
 import Jacobian.FormTrace
+import Jacobian.PlanarStokes

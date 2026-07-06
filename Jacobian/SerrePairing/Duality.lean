@@ -1,6 +1,4 @@
 import Jacobian.SerrePairing.Pairing
-import Mathlib.LinearAlgebra.Quotient.Basic
-import Mathlib.LinearAlgebra.Isomorphisms
 import Mathlib.LinearAlgebra.Dual.Lemmas
 import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 
@@ -77,45 +75,60 @@ section FinrankLe
 
 variable {D : RS.Divisor X} {H : Type*} [AddCommGroup H] [Module ℂ H] [FiniteDimensional ℂ H]
 
-/-- `pair Θ`, restricted to `D`-bounded tails, as a linear map (internal plumbing for
-`finrank_omegaSpace_le`). -/
-def pairSub (Θ : MForm X) : ↥(TailSpace D) →ₗ[ℂ] ℂ := pairL Θ ∘ₗ (TailSpace D).subtype
-
-omit [T1Space X] [ConnectedSpace X] in
-theorem pairSub_apply (Θ : MForm X) (τ : ↥(TailSpace D)) :
-    pairSub (D := D) Θ τ = pair Θ (τ : Tail X) := rfl
-
 -- Note: `hwd`/`hsurj`/`toH` are threaded as EXPLICIT arguments throughout this section (rather
 -- than section `variable`s) because Lean only auto-includes a section variable in a declaration
 -- when it appears in that declaration's stated TYPE, not merely in its tactic proof — `hwd` is
 -- only ever used inside proof bodies below, so it must be explicit.
 
-omit [T1Space X] [ConnectedSpace X] in
-theorem ker_toH_le_ker_pairSub (toH : ↥(TailSpace D) →ₗ[ℂ] H)
+/-- `pair Θ` is invariant on the fibres of `toH` (a repackaging of `hwd`: since `pair Θ` vanishes
+on `ker toH`, it agrees on any two tails with the same `toH`-image). The engine behind `resDual`
+below — the design's risk-3 fallback (`docs/design/serre-duality-cech.md` §7): instead of
+`Submodule.liftQ`/`LinearMap.quotKerEquivOfSurjective` (which stacks a further quotient on top of
+the already-reducible `abbrev Tail X`, and was found to elaborate very slowly / time out), we work
+directly with a section `Function.surjInv` of `toH` and this congruence lemma. -/
+theorem pair_congr_of_toH_eq (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0)
-    {Θ : MForm X} (hΘ : Θ ∈ MForm.OmegaSpace (-D)) :
-    LinearMap.ker toH ≤ LinearMap.ker (pairSub (D := D) Θ) := by
-  intro τ hτ
-  exact LinearMap.mem_ker.2 (hwd Θ hΘ τ (LinearMap.mem_ker.1 hτ))
+    {Θ : MForm X} (hΘ : Θ ∈ MForm.OmegaSpace (-D)) {τ σ : ↥(TailSpace D)} (h : toH τ = toH σ) :
+    pair Θ (τ : Tail X) = pair Θ (σ : Tail X) := by
+  have hker : toH ((τ - σ : ↥(TailSpace D))) = 0 := by rw [map_sub, h, sub_self]
+  have hz := hwd Θ hΘ (τ - σ : ↥(TailSpace D)) hker
+  rw [Submodule.coe_sub] at hz
+  have hlin : pair Θ ((τ : Tail X) - (σ : Tail X)) = pair Θ (τ : Tail X) - pair Θ (σ : Tail X) := by
+    show pairL Θ ((τ : Tail X) - (σ : Tail X)) = pairL Θ (τ : Tail X) - pairL Θ (σ : Tail X)
+    rw [map_sub]
+  rw [hlin] at hz
+  exact sub_eq_zero.mp hz
 
-/-- The functional on `H` induced by a class `Θ ∈ Ω(-D)`, via `toH`'s first-isomorphism-theorem
-equivalence (internal plumbing for `finrank_omegaSpace_le`). -/
-omit [T1Space X] [ConnectedSpace X] in
+/-- The functional on `H` induced by a class `Θ ∈ Ω(-D)`, via a chosen section `Function.surjInv`
+of `toH` (internal plumbing for `finrank_omegaSpace_le`). -/
 def resDual (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0)
-    (hsurj : Function.Surjective toH) (Θ : ↥(MForm.OmegaSpace (-D))) : Module.Dual ℂ H :=
-  (LinearMap.ker toH).liftQ (pairSub (D := D) Θ.1) (ker_toH_le_ker_pairSub toH hwd Θ.2) ∘ₗ
-    (toH.quotKerEquivOfSurjective hsurj).symm.toLinearMap
+    (hsurj : Function.Surjective toH) (Θ : ↥(MForm.OmegaSpace (-D))) : Module.Dual ℂ H where
+  toFun h := pair Θ.1 ((Function.surjInv hsurj h : ↥(TailSpace D)) : Tail X)
+  map_add' h1 h2 := by
+    have hc : toH (Function.surjInv hsurj (h1 + h2))
+        = toH (Function.surjInv hsurj h1 + Function.surjInv hsurj h2) := by
+      rw [Function.surjInv_eq hsurj, map_add, Function.surjInv_eq hsurj, Function.surjInv_eq hsurj]
+    have hcong := pair_congr_of_toH_eq toH hwd Θ.2 hc
+    show pair Θ.1 ((Function.surjInv hsurj (h1 + h2) : ↥(TailSpace D)) : Tail X)
+        = pair Θ.1 ((Function.surjInv hsurj h1 : ↥(TailSpace D)) : Tail X)
+          + pair Θ.1 ((Function.surjInv hsurj h2 : ↥(TailSpace D)) : Tail X)
+    rw [hcong, Submodule.coe_add]
+    exact pair_add_right Θ.1 _ _
+  map_smul' c h := by
+    have hc : toH (Function.surjInv hsurj (c • h)) = toH (c • Function.surjInv hsurj h) := by
+      rw [Function.surjInv_eq hsurj, map_smul, Function.surjInv_eq hsurj]
+    have hcong := pair_congr_of_toH_eq toH hwd Θ.2 hc
+    show pair Θ.1 ((Function.surjInv hsurj (c • h) : ↥(TailSpace D)) : Tail X)
+        = (RingHom.id ℂ) c • pair Θ.1 ((Function.surjInv hsurj h : ↥(TailSpace D)) : Tail X)
+    rw [hcong, Submodule.coe_smul, RingHom.id_apply, smul_eq_mul]
+    exact pair_smul_right Θ.1 c _
 
-omit [T1Space X] [ConnectedSpace X] in
 theorem resDual_apply_toH (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0)
     (hsurj : Function.Surjective toH) (Θ : ↥(MForm.OmegaSpace (-D))) (τ : ↥(TailSpace D)) :
-    resDual toH hwd hsurj Θ (toH τ) = pair Θ.1 (τ : Tail X) := by
-  show (LinearMap.ker toH).liftQ (pairSub (D := D) Θ.1) (ker_toH_le_ker_pairSub toH hwd Θ.2)
-      ((toH.quotKerEquivOfSurjective hsurj).symm (toH τ)) = pair Θ.1 (τ : Tail X)
-  rw [LinearMap.quotKerEquivOfSurjective_symm_apply, Submodule.liftQ_apply]
-  rfl
+    resDual toH hwd hsurj Θ (toH τ) = pair Θ.1 (τ : Tail X) :=
+  pair_congr_of_toH_eq toH hwd Θ.2 (Function.surjInv_eq hsurj (toH τ))
 
 /-- **D5** (the interface #26 discharges, generic in the target `H`): given a finite-dimensional
 `H` and a surjective linear map `toH` from `D`-bounded tails such that `pair Θ` vanishes on
@@ -125,21 +138,21 @@ full, no dependency on laurent-tails or residue-theorem's own content. -/
 theorem finrank_omegaSpace_le (toH : ↥(TailSpace D) →ₗ[ℂ] H) (hsurj : Function.Surjective toH)
     (hwd : ∀ Θ ∈ MForm.OmegaSpace (-D), ∀ τ : ↥(TailSpace D), toH τ = 0 → pair Θ (τ : Tail X) = 0) :
     Module.finrank ℂ (MForm.OmegaSpace (-D)) ≤ Module.finrank ℂ H := by
-  let Φ : ↥(MForm.OmegaSpace (-D)) →ₗ[ℂ] Module.Dual ℂ H where
-    toFun := resDual toH hwd hsurj
-    map_add' Θ1 Θ2 := by
-      apply LinearMap.ext
-      intro h
-      obtain ⟨τ, rfl⟩ := hsurj h
-      rw [LinearMap.add_apply, resDual_apply_toH, resDual_apply_toH, resDual_apply_toH,
-        Submodule.coe_add]
-      exact pair_add_left Θ1.1 Θ2.1 (τ : Tail X)
-    map_smul' c Θ := by
-      apply LinearMap.ext
-      intro h
-      obtain ⟨τ, rfl⟩ := hsurj h
-      rw [RingHom.id_apply, LinearMap.smul_apply, resDual_apply_toH, resDual_apply_toH,
-        Submodule.coe_smul, pair_smul_left, smul_eq_mul]
+  let Φ : ↥(MForm.OmegaSpace (-D)) →ₗ[ℂ] Module.Dual ℂ H :=
+    { toFun := resDual toH hwd hsurj
+      map_add' := fun Θ1 Θ2 => by
+        apply LinearMap.ext
+        intro h
+        obtain ⟨τ, rfl⟩ := hsurj h
+        rw [LinearMap.add_apply, resDual_apply_toH, resDual_apply_toH, resDual_apply_toH,
+          Submodule.coe_add]
+        exact pair_add_left Θ1.1 Θ2.1 (τ : Tail X)
+      map_smul' := fun c Θ => by
+        apply LinearMap.ext
+        intro h
+        obtain ⟨τ, rfl⟩ := hsurj h
+        rw [RingHom.id_apply, LinearMap.smul_apply, resDual_apply_toH, resDual_apply_toH,
+          Submodule.coe_smul, pair_smul_left, smul_eq_mul] }
   have hinj : Function.Injective Φ := by
     intro Θ1 Θ2 heq
     apply Subtype.ext
