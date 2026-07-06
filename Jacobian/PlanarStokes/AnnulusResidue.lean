@@ -439,6 +439,9 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       simp only [zero_add, smul_eq_mul]
       ring
     rw [hLHS_yb, zero_add, hcircleR, hcircler] at hrect
+    clear_value f' F τ A Rec s RecOpen z0 w0
+    clear hHc hHd hHi hHc' hHd' hHi' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
+      hRec_int hτ_CD hexp_CD hRec_eq hperiod hLHS_yb hFexp hcircleR hcircler
     -- Convert the RHS iterated integral to a set integral over `Rec`.
     have hiter_to_set : (∫ x : ℝ in a..b, ∫ y : ℝ in (0 : ℝ)..(2 * π),
         I • f' ((x : ℂ) + y * I) 1 - f' ((x : ℂ) + y * I) I) = ∫ ζ in Rec, I • f' ζ 1 - f' ζ I := by

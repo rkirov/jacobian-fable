@@ -329,13 +329,14 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
     intro x hxV
     have hclosed : IsClosed ((S.erase x : Finset X) : Set X) := (S.erase x).isClosed
     have hnbhd : (V : Set X) ∩ ((S.erase x : Finset X) : Set X)ᶜ ∈ nhds x :=
-      IsOpen.mem_nhds (V.2.inter hclosed.isOpen_compl) ⟨hxV, Finset.not_mem_erase x S⟩
+      IsOpen.mem_nhds (V.2.inter hclosed.isOpen_compl) ⟨hxV, Finset.notMem_erase x S⟩
     have hpunct : (V : Set X) ∩ ((S.erase x : Finset X) : Set X)ᶜ ∈ nhdsWithin x {x}ᶜ :=
       mem_nhdsWithin_of_mem_nhds hnbhd
-    filter_upwards [hpunct, Filter.self_mem_nhdsWithin] with y hy hyne
+    filter_upwards [hpunct, self_mem_nhdsWithin] with y hy hyne
     have hyV : y ∈ (V : Set X) := hy.1
-    have hyS : y ∉ (S.erase x : Finset X) := by simpa using hy.2
-    have hyS' : y ∉ S := fun hmem => hyS (Finset.mem_erase.mpr ⟨hyne, hmem⟩)
+    have hyne' : y ≠ x := hyne
+    have hyS : y ∉ (S.erase x : Finset X) := fun hmem => hy.2 (Finset.mem_coe.mpr hmem)
+    have hyS' : y ∉ S := fun hmem => hyS (Finset.mem_erase.mpr ⟨hyne', hmem⟩)
     show (q ∘ e) y * ((q ∘ e) y)⁻¹ = 1
     apply mul_inv_cancel₀
     show q (e y) ≠ 0
@@ -367,7 +368,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
     have hcancel : ((D x : ℤ) : WithTop ℤ) + ((-(D x) : ℤ) : WithTop ℤ) = 0 := by
       rw [← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero]
     rw [hz0, ← hcancel]
-    exact add_le_add_left hfp _
+    gcongr
   set g : C1 (0 : Divisor X) 𝒱 := fun p =>
     ⟨(RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)), hmem_g p⟩
     with hg_def
@@ -430,9 +431,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
     have hhi : (0 : WithTop ℤ) ≤ (h i : RS.MeroGermOn X (𝒱.U i : Set X)).ord x := by
       have hmem := (mem_linSysOn_iff_of_isOpen (𝒱.U i).2).1 (h i).2 x hx
       simpa using hmem
-    have hz : (-(D x : ℤ) : WithTop ℤ) = (-(D x : ℤ) : WithTop ℤ) + 0 := (add_zero _).symm
-    rw [hz]
-    exact add_le_add_left hhi _
+    exact le_add_of_nonneg_right hhi
   set h' : C0 D 𝒱 := fun i =>
     ⟨(RS.MeroGermOn.restrict (hUiV i) t⁻¹) * (h i : RS.MeroGermOn X (𝒱.U i : Set X)), hmem_h' i⟩
     with hh'_def
@@ -446,10 +445,19 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
     have hij_r : 𝒱.U i ⊓ 𝒱.U j ≤ 𝒱.U j := inf_le_right
     have hij_l : 𝒱.U i ⊓ 𝒱.U j ≤ 𝒱.U i := inf_le_left
     apply Subtype.ext
-    have hcg := congrFun hdh (i, j)
-    rw [d0_apply, restrictL_apply_coe, restrictL_apply_coe] at hcg
-    rw [d0_apply, restrictL_apply_coe, restrictL_apply_coe, hh'_coe, hh'_coe, map_mul, map_mul,
-      MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict]
+    have hcg0 := congrFun hdh (i, j)
+    rw [d0_apply] at hcg0
+    have hcg : (RS.MeroGermOn.restrict hij_r (h j : RS.MeroGermOn X (𝒱.U j : Set X)) -
+        RS.MeroGermOn.restrict hij_l (h i : RS.MeroGermOn X (𝒱.U i : Set X)) :
+        RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
+        (g (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) := by
+      have hcast := congrArg Subtype.val hcg0
+      simpa using hcast
+    show (RS.MeroGermOn.restrict hij_r (h' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
+        RS.MeroGermOn.restrict hij_l (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) :
+        RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
+      (f (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X))
+    rw [hh'_coe, hh'_coe, map_mul, map_mul, MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict]
     have hcomb : (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *
           (RS.MeroGermOn.restrict hij_r (h j : RS.MeroGermOn X (𝒱.U j : Set X))) -
         (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *
