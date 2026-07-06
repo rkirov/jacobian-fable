@@ -631,3 +631,79 @@
   your explicitly named consumption target); `windowConnect` as a *template* is still not built
   here, so if you need the connecting map itself (not just `mlClass`), you are also blocked on
   the same §6.9(c)-(f) gap as finiteness-and-chi.
+- [ftt] Jacobian/FormTrace/PairForm.lean OK (212 lines) — `resAtX F h x` (D2, the pair-form
+  residue), `analyticAt_comp_chart_pair` (Compat: the two-chart `ContMDiffAt → AnalyticAt`
+  bridge, one direction, derived from mathlib's `contMDiffWithinAt_iff_of_mem_maximalAtlas` —
+  not previously exported for a general chart PAIR on `X`/`Y`), `resAt_pairForm_source_change` +
+  `resAtX_eq_of_mem_source_left` (source-chart invariance, task item 1), `resAtX_congr`/
+  `resAtX_add`/`resAtX_const_mul`. **FOUND A DESIGN BUG**: the design's `resAtX_eq_of_mem_source`
+  (§4.1) claims `resAtX` is invariant under an ARBITRARY target-chart change too — FALSE, with a
+  two-line counterexample recorded in the file's module docstring (`X=Y=ℂ`, `F=id`, `h=1/z`,
+  target chart `id` vs `y↦2y` gives residue `1` vs `2` — changing the target chart changes WHICH
+  1-form `F^*(dz)` means, a coefficient that varies over `X`, not a constant, so reusing the same
+  bare `h` computes a genuinely different form's residue). Only the source-chart half is true and
+  exported (`resAtX_eq_of_mem_source_left`); the design's own "one-chart-at-a-time" proof-plan
+  factoring (§5 P1) was the right instinct but the "right" (target) half needed a correction
+  factor, handled per-use-site in `ResidueTraceCompat.lean` rather than as a standalone public
+  lemma. Zero sorries.
+- [ftt] Jacobian/FormTrace/TraceZkForm.lean OK (106 lines) — `traceZkForm h k w` (D3, Jacobian-
+  weighted planar trace atom), `traceZkForm_hAdapted_eq_apply` (cancellation identity, **`w ≠ 0`
+  form** — deviation from the design's claimed unconditional function equality, which is false at
+  `w = 0` for `k > 1` whenever `g 0 ≠ 0`, since the Jacobian factor `k·v^{k-1}` vanishes at `v=0`
+  for `k>1`; the `w≠0` form is equally useful, all downstream uses being `𝓝[≠]0`-germ notions),
+  `meromorphicAt_traceZkForm` (unconditional in `k`, needs only mtrace's P5),
+  `laurentCoeffAt_traceZkForm`/`resAt_traceZkForm` — **now fully UNCONDITIONAL**, mtrace's P6
+  having landed (see the `[mtrace]` log entries) — matches the spike (`scratch_ftt.lean`) exactly,
+  only swapping in the real `RS.MTrace.laurentCoeffAt_traceZk` for the spike's abstracted
+  hypothesis. Zero sorries.
+- [ftt] Jacobian/FormTrace/ResidueTraceCompat.lean OK (312 lines) — `resAtP1` (D4),
+  `resAtP1_eq_resAtX_id`, **`resAtP1_trace_eq_sum`** (THE central theorem, Miranda Lemma 3.2
+  globalized), `trace_const_mul_pullback` (Miranda Problem VIII.3.D, unconditional),
+  `trace_pullback_eq_degree_smul_of_regular` (the `Tr∘F^*=deg·id` projection formula, regular
+  values only — see below). **TWO MORE FINDINGS, both resolved/documented in-file:**
+  (a) `resAtP1_trace_eq_sum` needed reconstructing the design's own proof plan (§5 P-main), which
+  relied on the false general `resAtX_eq_of_mem_source` from `PairForm.lean`. Fix: traced through
+  *why* Miranda's classical theorem is nonetheless true — `AdaptedChartsAt`'s existence proof
+  (`Jacobian/LocalMultiplicity/AdaptedCharts.lean`) always builds its target chart as `chartAt`
+  shifted by an ADDITIVE CONSTANT (a translation, literally constant derivative `1`, the one case
+  a target-chart change costs nothing) — a fact about the *construction*, not exposed as an
+  `AdaptedChartsAt`/`FiberStack` structure field (an adversarial witness could rescale the target
+  chart, genuinely breaking the theorem — verified via a second, order-2-pole counterexample
+  recorded in-file). Since the theorem takes an arbitrary `S : FiberStack` as an explicit
+  parameter, the calibration is recorded as an EXPLICIT hypothesis `hcal` (satisfied by any
+  `exists_fiberStack` witness). Proof: `resAtX_eq_resAt_adapted` (private, the corrected
+  per-fibre-point identification, ~40 lines) + `meromorphicAt_comp_sub_const` (private Compat) +
+  a 4-step assembly (stack formula near `y₀` as a translation of the `traceZk` terms →
+  `resAt_fun_sum` → `resAt_comp_mul_deriv` with the translation → per-term `traceZkForm`
+  cancellation + `resAtX_eq_resAt_adapted`), ~120 lines total. Zero sorries.
+  (b) `trace_pullback_eq_degree_smul` (design §4.3) is ALSO false unconditionally, same root
+  cause as `HolomorphicVanishing.lean`'s issue below (branch-point junk in `traceZk`/`trace`) —
+  concrete counterexample recorded in-file (`F := (·^2)`, `g := 1`: `trace F 1 0 = 1` but
+  `degree F = 2`). Shipped restricted to `RS.IsRegularValue` (`trace_pullback_eq_degree_smul_of_regular`),
+  provable and still the useful case for a future `jacobian-functoriality` unit.
+- [ftt] Jacobian/FormTrace.lean (unit root) OK (68 lines) — `scripts/check.sh Jacobian/FormTrace`
+  passes: builds clean, **zero sorries** across all 3 files + root (698 lines total). NOT
+  registered in `Jacobian.lean` per task hard rule, orchestrator to add `import Jacobian.FormTrace`.
+  **LOUD FLAG — `HolomorphicVanishing.lean` (design file 4/6) was NOT built; its centerpiece
+  theorem `trace_eq_zero_of_holomorphic` is FALSE, not merely hard.** `RS.MTrace.trace` is the
+  UNWEIGHTED fibre sum (`trace_eq_finsum'`, mtrace, proved unconditionally for every point).
+  Counterexample: any nonconstant `F : X → ℙ¹` has a branch point (Riemann–Hurwitz forces one for
+  any degree-`≥2` cover of `ℙ¹`); take `h ≡ 1` (globally holomorphic on compact `X` — automatically
+  constant by the maximum-modulus principle, so `ContMDiff h` is a real, non-degenerate hypothesis
+  here, not a vacuous one). Then `trace F h = degree F` at every regular value but only the
+  (strictly smaller) fibre CARDINALITY at a branch value — not even continuous there, let alone
+  identically `0`. This is a genuine defect in the design's route to Miranda's "integration of a
+  trace"/Item 5 (the bare, unweighted function trace `D1` deliberately built instead of a new
+  Jacobian-weighted form-trace object cannot be the right vehicle for a "holomorphic form traces
+  to a holomorphic form" claim) — not a proof-effort shortfall, so no `sorry`/`TODO(blocker)` was
+  left; the file was simply not created. `RationalOnP1.lean` (design file 5/6, the non-load-
+  bearing partial-fraction bonus per the design's own §0.3) was also not attempted, for
+  time-budget reasons after the above findings (lowest priority, explicitly flagged non-blocking
+  by the design). **Notes for downstream**: `abel-weak-solutions` (the only DAG-wired consumer)
+  gets `resAtX`, `resAtX_eq_of_mem_source_left`, `resAtP1`, `resAtP1_trace_eq_sum` (with `hcal`),
+  `trace_const_mul_pullback` — but NOT `trace_eq_zero_of_holomorphic`; if its "necessity of Abel"
+  argument needs a holomorphic-trace-vanishes fact, this needs a fresh design against a corrected
+  object, flagged for the orchestrator. `jacobian-functoriality` (`#33`, not a current blueprint
+  unit) gets `trace_const_mul_pullback`/`trace_pullback_eq_degree_smul_of_regular` (the latter
+  regular-value-only, same caveat). `serre-duality-tails`: unaffected, nothing DAG-wired here
+  (confirmed by the design's own §0.3 audit, independently reconfirmed).

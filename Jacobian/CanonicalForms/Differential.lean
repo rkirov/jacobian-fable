@@ -1,28 +1,34 @@
-import Jacobian.CanonicalForms.OrdRes
+import Jacobian.CanonicalForms.Quotient
 
 /-!
-# `MForm.ofForm1`, `MForm.smul`, `MForm.d`, `MForm.dlog` (D7)
+# `ofForm1`, the `ℳ(X)`-module structure, `d`, `dlog` (D7), data + quotient layers
 
 Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D7, §4.3, proof plan §5 P1).
 
-* `MForm.ofForm1`/`Form1.toMForm`: the holomorphic special case, using `η`'s own analytic
+Data layer (`MFormData`, raw):
+* `MFormData.ofForm1`/`Form1.toMFormData`: the holomorphic special case, using `η`'s own analytic
   chart coefficients (`Form1.analyticOnNhd_coeffIn`) and the SAME transition rule `coeffIn_trans`
   already proves — no new computation.
-* `MForm.smul`: the `ℳ(X)`-module action, via the canonical, choice-free `MeroGermOn.holoRepr`.
-* `MForm.d`: the differential of a meromorphic function; the `compat`-at-poles case split is the
-  unit's riskiest lemma (P1), isolated here as the reusable `deriv_comp_chart_congr` (no hypothesis
-  on the transported function — this is the point: it handles poles by the *same* junk-collapse
-  argument in BOTH directions, spike-verified in `scratch_canon.lean` item 4).
-* `MForm.dlog := f⁻¹ • MForm.d f`.
+* `MFormData.smul`: the `ℳ(X)`-action, via the canonical, choice-free `MeroGermOn.holoRepr`.
+* `MFormData.d`: the differential of a meromorphic function; the `compat`-at-poles case split is
+  isolated as the reusable `deriv_comp_chart_congr` (no hypothesis on the transported function —
+  poles are handled by the junk-collapse argument in BOTH directions).
 
-Deliberately NOT included here (documented, not sorried — see the unit root's deferral notes):
-`MForm.smul`'s module laws (`smul_add`/`add_smul`), `MForm.d_add`/`d_eq_zero_iff`,
-`MForm.resAt_dlog`. These need genuine pointwise identities for `MeroGermOn.holoRepr` across `+`
-(`(f+g).holoRepr = f.holoRepr + g.holoRepr`) that FAIL exactly at the poles of the summands
-(`evalAt_add` itself only holds when *both* summands have `0 ≤ ord`, `OrderEval.lean:168`) — a
-real junk-value subtlety, not a missing computation; only `MForm.d`'s consumers that route through
-`ℳ X`'s own canonical representative (not raw sums) are unaffected, which is why `d`/`dlog`
-themselves (built directly from `holoRepr`) are still sound.
+Quotient layer (`MForm`, the honest 1-form type):
+* `MForm.ofForm1`/`Form1.toMForm : Form1 X →ₗ[ℂ] MForm X` (the design's frozen bridge name).
+* `SMul (ℳ X) (MForm X)`, the **full `Module (ℳ X) (MForm X)` instance**, plus
+  `IsScalarTower ℂ (ℳ X) (MForm X)`/`SMulCommClass ℂ (ℳ X) (MForm X)`. The module laws that FAIL
+  for raw families (`add_smul`/`mul_smul`/`one_smul` need `holoRepr`-of-a-sum identities that
+  break at poles) hold on the quotient: `holoRepr` of `f + g`/`f * g`/`c • f` agrees with the
+  pointwise combination on `𝓝[≠] x` for EVERY `x` (`holoRepr_eventuallyEq_nhdsNE` against the
+  combined representative), which is exactly the quotient's equality granularity.
+* `MForm.d` with `MForm.d_add` (same mechanism: `(f+g).holoRepr` agrees with
+  `f.holoRepr + g.holoRepr` near every center, and `deriv` respects punctured-neighborhood
+  agreement, `Filter.EventuallyEq.nhdsNE_deriv`) and `MForm.d_const`.
+* `MForm.dlog f := f⁻¹ • MForm.d f`, with the argument-principle atom `MForm.resAt_dlog`
+  (junk-robust, no `f ≠ 0` hypothesis — via `MeromorphicAt.resAt_deriv_div`).
+* `MForm.ord_smul_mero : (h • Θ).ord x = h.ord x + Θ.ord x` (the D10/D11 divisor dictionary's
+  pointwise engine).
 -/
 
 open scoped ContDiff Manifold Classical
@@ -84,13 +90,13 @@ theorem deriv_comp_chart_congr {g : X → ℂ} {e e' : OpenPartialHomeomorph X �
       hd (differentiableAt_comp_chart_of_mem_source he' he hp.2 hp.1 hcon)
     rw [deriv_zero_of_not_differentiableAt hd, deriv_zero_of_not_differentiableAt hd', mul_zero]
 
-/-! ### `MForm.ofForm1`: the holomorphic special case (D7) -/
+/-! ### `MFormData.ofForm1`: the holomorphic special case (D7) -/
 
-namespace MForm
+namespace MFormData
 
-/-- The holomorphic special case: a `Form1` gives an `MForm` with the same chart coefficients
+/-- The holomorphic special case: a `Form1` gives an `MFormData` with the same chart coefficients
 (no poles). `compat` is exactly `coeffIn_trans` — no new work. -/
-noncomputable def ofForm1 (η : Form1 X) : MForm X where
+noncomputable def ofForm1 (η : Form1 X) : MFormData X where
   coeffAt x z := if z ∈ (chartAt ℂ x).target then coeffIn (chartAt ℂ x) η z else 0
   coeffAt_zero_off x z hz := if_neg hz
   meromorphicOn_coeffAt x := by
@@ -130,12 +136,12 @@ theorem ofForm1_zero : ofForm1 (0 : Form1 X) = 0 := by
   rw [if_pos hz, coeffIn_zero]
 
 /-- The holomorphic-to-meromorphic bridge as a `ℂ`-linear map (item 3(d) of the task brief). -/
-noncomputable def _root_.RS.Form1.toMForm : Form1 X →ₗ[ℂ] MForm X where
+noncomputable def _root_.RS.Form1.toMFormData : Form1 X →ₗ[ℂ] MFormData X where
   toFun := ofForm1
   map_add' := ofForm1_add
   map_smul' := ofForm1_smul
 
-/-- Holomorphic 1-forms give `MForm`s with nonnegative order everywhere (they land in
+/-- Holomorphic 1-forms give `MFormData`s with nonnegative order everywhere (they land in
 `OmegaSpace 0`, D12/§6). -/
 theorem ofForm1_ord_nonneg (η : Form1 X) (x : X) : 0 ≤ (ofForm1 η).ord x := by
   have heq : (ofForm1 η).coeffAt x =ᶠ[nhds (chartAt ℂ x x)] coeffIn (chartAt ℂ x) η := by
@@ -145,11 +151,11 @@ theorem ofForm1_ord_nonneg (η : Form1 X) (x : X) : 0 ≤ (ofForm1 η).ord x := 
   rw [meromorphicOrderAt_congr (heq.filter_mono nhdsWithin_le_nhds)]
   exact (η.analyticAt_coeffAt x).meromorphicOrderAt_nonneg
 
-/-! ### `MForm.smul`: the `ℳ(X)`-module action (D7) -/
+/-! ### `MFormData.smul`: the `ℳ(X)`-module action (D7) -/
 
 /-- Multiplication of a meromorphic 1-form by a meromorphic function, via the canonical,
 choice-free representative `MeroGermOn.holoRepr`. -/
-noncomputable def smul (h : ℳ X) (θ : MForm X) : MForm X where
+noncomputable def smul (h : ℳ X) (θ : MFormData X) : MFormData X where
   coeffAt x z := h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z
   coeffAt_zero_off x z hz := by rw [θ.coeffAt_zero_off x z hz, mul_zero]
   meromorphicOn_coeffAt x := by
@@ -171,17 +177,17 @@ noncomputable def smul (h : ℳ X) (θ : MForm X) : MForm X where
     rw [θ.compat x y (chartAt ℂ y p) ⟨p, hp, rfl⟩, hsy, (chartAt ℂ x).left_inv hp.1]
     ring
 
-instance : SMul (ℳ X) (MForm X) := ⟨smul⟩
+instance : SMul (ℳ X) (MFormData X) := ⟨smul⟩
 
-@[simp] theorem coeffAt_smul_mero (h : ℳ X) (θ : MForm X) (x : X) (z : ℂ) :
+@[simp] theorem coeffAt_smul_mero (h : ℳ X) (θ : MFormData X) (x : X) (z : ℂ) :
     (h • θ).coeffAt x z = h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z := rfl
 
-/-! ### `MForm.d`: the differential of a meromorphic function (D7, P1) -/
+/-! ### `MFormData.d`: the differential of a meromorphic function (D7, P1) -/
 
 /-- The differential of a meromorphic function `f`, via `f.holoRepr` — a genuine,
-`Classical.choice`-free function `ℳ X → MForm X`. `compat` (the pole case-split) is
+`Classical.choice`-free function `ℳ X → MFormData X`. `compat` (the pole case-split) is
 `deriv_comp_chart_congr` instantiated at `g := f.holoRepr`. -/
-noncomputable def d (f : ℳ X) : MForm X where
+noncomputable def d (f : ℳ X) : MFormData X where
   coeffAt x z := if z ∈ (chartAt ℂ x).target then deriv (f.holoRepr ∘ (chartAt ℂ x).symm) z else 0
   coeffAt_zero_off x z hz := if_neg hz
   meromorphicOn_coeffAt x := by
@@ -226,11 +232,11 @@ theorem d_const (c : ℂ) : d (algebraMap ℂ (ℳ X) c) = 0 := by
     rw [heq]; rfl
   rw [heq', deriv_const]
 
-/-! ### `MForm.dlog` -/
+/-! ### `MFormData.dlog` -/
 
 /-- The logarithmic differential `dlog f := f⁻¹ • df`. -/
-noncomputable def dlog (f : ℳ X) : MForm X := smul f⁻¹ (d f)
+noncomputable def dlog (f : ℳ X) : MFormData X := smul f⁻¹ (d f)
 
-end MForm
+end MFormData
 
 end RS
