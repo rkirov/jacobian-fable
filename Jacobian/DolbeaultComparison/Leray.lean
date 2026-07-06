@@ -570,9 +570,9 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
       RS.MeroGermOn.restrict hWτβ' (gFam (τ β) β : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U β : Set X)) -
         RS.MeroGermOn.restrict hWτβα
           (gFam (τ β) α : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U α : Set X)) =
-      RS.MeroGermOn.restrict (le_rfl : W ≤ 𝒱.U α ⊓ 𝒱.U β)
-        (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) :=
-    splitting_eq_restrict D hgFam (τ β) α β hWτβα hWτβ' le_rfl
+      (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) := by
+    have h0 := splitting_eq_restrict D hgFam (τ β) α β hWτβα hWτβ' (le_refl (𝒱.U α ⊓ 𝒱.U β))
+    rwa [RS.MeroGermOn.restrict_id] at h0
   -- RHS: `d0 h (α, β)`, unfolded via `tradeH0`'s definition
   have step3 :
       RS.MeroGermOn.restrict hWβ ((tradeH0 D τ hτ gFam β : RS.LinSysOn D (𝒱.U β : Set X)) :
@@ -600,6 +600,7 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
         RS.MeroGermOn.restrict hWτα'
           (gFam (τ α) α : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ α))).U α : Set X))
     rw [hβ, hα]
+    rfl
   show RS.MeroGermOn.restrict (inf_le_inf (hτ α) (hτ β))
       (F (τ α, τ β) : RS.MeroGermOn X (𝒰.U (τ α) ⊓ 𝒰.U (τ β) : Set X)) +
         (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) =
@@ -609,7 +610,68 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
         RS.MeroGermOn.restrict hWα
           ((tradeH0 D τ hτ gFam α : RS.LinSysOn D (𝒱.U α : Set X)) :
             RS.MeroGermOn X (𝒱.U α : Set X))
-  rw [step3, ← step2, ← step1]
+  rw [step3]
+  linear_combination step1 - step2
+
+/-! ### §5 steps 6-7: `exists_trade`, Leray's theorem, `h1CoverEquiv` -/
+
+/-- Forster 14.6(a), qualitative (all `D`): cocycles on any refinement of a good cover are, up to
+coboundary, restrictions of cocycles on the good cover. THE Schwartz surjectivity input for
+finiteness-and-chi. -/
+theorem exists_trade (h𝒰 : 𝒰.IsGood) (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ)
+    (f : Z1 D 𝒱) :
+    ∃ (F : Z1 D 𝒰) (g : C0 D 𝒱),
+      (resZ1 D τ hτ F : C1 D 𝒱) = (f : C1 D 𝒱) + d0 D 𝒱 g := by
+  obtain ⟨gFam, hgFam⟩ := exists_splitting D h𝒰 f.2
+  obtain ⟨F₀, hF₀⟩ := exists_crossGlueFam D f.2 hgFam
+  have hF₀mem : F₀ ∈ Z1 D 𝒰 := crossGlueFam_mem_Z1 D hF₀
+  have hadd := resC1_crossGlueFam_add_eq D τ hτ f.2 hgFam hF₀
+  refine ⟨-(⟨F₀, hF₀mem⟩ : Z1 D 𝒰), -(tradeH0 D τ hτ gFam), ?_⟩
+  have hcoe : (resZ1 D τ hτ (-(⟨F₀, hF₀mem⟩ : Z1 D 𝒰)) : C1 D 𝒱) = -(resC1 D τ hτ F₀) := by
+    rw [resZ1_apply_coe]
+    show resC1 D τ hτ (-F₀) = -(resC1 D τ hτ F₀)
+    rw [map_neg]
+  rw [hcoe, map_neg]
+  have heq : resC1 D τ hτ F₀ = d0 D 𝒱 (tradeH0 D τ hτ gFam) - (f : C1 D 𝒱) := by
+    rw [eq_sub_iff_add_eq]
+    exact hadd
+  rw [heq]
   abel
+
+/-- Forster 14.6(a) at `H1Cover`-level: the qualitative trade. -/
+theorem resH1_surjective_of_isGood (h𝒰 : 𝒰.IsGood) (τ : Fin 𝒱.n → Fin 𝒰.n)
+    (hτ : IsRefIdx 𝒰 𝒱 τ) : Function.Surjective (resH1 D τ hτ) := by
+  intro ξ
+  obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒱 ξ
+  obtain ⟨F, g, hFg⟩ := exists_trade D h𝒰 τ hτ f
+  refine ⟨H1Cover.mk D 𝒰 F, ?_⟩
+  rw [resH1_mk, ← sub_eq_zero, ← map_sub, H1Cover.mk_eq_zero_iff]
+  show (↑(resZ1 D τ hτ F) - ↑f : C1 D 𝒱) ∈ B1 D 𝒱
+  rw [hFg]
+  simp only [add_sub_cancel_left]
+  exact ⟨g, rfl⟩
+
+/-- **LERAY** (Forster 12.8 surjectivity half; injectivity is cech's `toH1_injective`,
+already on disk). Discharges the interface recorded in cech's `Colimit.lean`. -/
+theorem toH1_surjective_of_isGood (h𝒰 : 𝒰.IsGood) : Function.Surjective (toH1 D 𝒰) := by
+  intro ξ
+  obtain ⟨𝒲, c, hc⟩ := exists_rep D ξ
+  obtain ⟨c', hc'⟩ := resH1_surjective_of_isGood D h𝒰 (chosenRefIdx (le_meet_left 𝒰 𝒲))
+    (chosenRefIdx_spec (le_meet_left 𝒰 𝒲)) (resH1' D (le_meet_right 𝒰 𝒲) c)
+  refine ⟨c', ?_⟩
+  have h1 := toH1_resH1 D (chosenRefIdx (le_meet_left 𝒰 𝒲))
+    (chosenRefIdx_spec (le_meet_left 𝒰 𝒲)) c'
+  rw [hc'] at h1
+  rw [toH1_resH1'] at h1
+  rw [← h1]
+  exact hc
+
+/-- Cover-level `H¹` computes the colimit on good covers — finiteness transfers dimensions
+through this. -/
+noncomputable def h1CoverEquiv (h𝒰 : 𝒰.IsGood) : H1Cover D 𝒰 ≃ₗ[ℂ] H1 D :=
+  LinearEquiv.ofBijective (toH1 D 𝒰) ⟨toH1_injective D 𝒰, toH1_surjective_of_isGood D h𝒰⟩
+
+@[simp] theorem h1CoverEquiv_apply (h𝒰 : 𝒰.IsGood) (c : H1Cover D 𝒰) :
+    h1CoverEquiv D h𝒰 c = toH1 D 𝒰 c := rfl
 
 end RS.Cech
