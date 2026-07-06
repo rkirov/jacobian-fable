@@ -732,3 +732,38 @@
   leave one lattice-meet operand as a stuck metavariable (elaboration doesn't see the type ascription
   in time) — name them as separate `have hij_r : A ⊓ B ≤ B := inf_le_right` first, matching the
   existing codebase's `hbc/hac/hab` convention throughout `Cech/`.
+- [canon] Jacobian/CanonicalForms — ARCHITECTURAL REVISION: quotient fix OK (`scripts/check.sh
+  Jacobian/CanonicalForms` passes, zero sorries, 1929 lines across 7 files). The raw
+  chart-coefficient structure is renamed `MFormData` (data carrier, `MForm.lean`/`OrdRes.lean`
+  unchanged in content) and `MForm X` is now the QUOTIENT by `MFormData.Eqv` (germ agreement of
+  the preferred-chart coefficients on `𝓝[≠]` of every chart center — CC3 pattern, new file
+  `Quotient.lean`), equivalent to codiscrete-in-every-chart agreement, chosen because every
+  reading map (`ord`/`resAt`/`laurentCoeffAt`/`divisor`) is a germ-at-center functional so
+  descent is a one-line congruence. This unblocked the entire previously-deferred chain, now all
+  PROVED: D5 `MForm.eq_zero_or_forall_ord_ne_top` (the "`S = univ ⇒ θ = 0`" step that is FALSE
+  raw is definitional on the quotient; closedness of `{ord = ⊤}` is free from
+  `eventually_ord_eq_zero`); full `Module (ℳ X) (MForm X)` + `IsScalarTower`/`SMulCommClass ℂ`
+  (via new `Mero.holoRepr_add/mul/smul/inv/zero/one` germ identities); `MForm.d_add` (via
+  mathlib's `Filter.EventuallyEq.nhdsNE_deriv`); `MForm.resAt_dlog` (junk-robust, no `f ≠ 0`);
+  D8 `MForm.exists_unique_smul_of_ne_zero` (chart-local ratios glue by `MeroGermOn.exists_glue`;
+  quotient granularity removes the removable-singularity repair at zeros of `θ₀`; only needs
+  `[T1][Connected]`); D10 `canonicalDivisorOf`/`MForm.divisor_smul_mero`/
+  `canonicalDivisorOf_linearEquiv` (placed in `OneDimensional.lean`, not the Chi-gated
+  `Existence.lean`); D11 `MForm.OmegaSpace` (on the quotient, instance-free)/`MForm.i`/
+  `MForm.smul_mem_omegaSpace_iff`/`Ω_iso_linSys : OmegaSpace D ≃ₗ[ℂ] LinSys (D + K)`/
+  `i_eq_l_add_canonicalDivisorOf`; D12 `form1ToOmega(_surjective)`/`holomorphicMFormsEquiv :
+  Form1 X ≃ₗ[ℂ] OmegaSpace 0` (surjectivity repairs a representative chart-by-chart through
+  `MeroGermOn.holoRepr` + the new cross-point bridge
+  `MFormData.ord_eq_meromorphicOrderAt_of_mem_source`; NO topological instances needed)/
+  `genus_eq_finrank_omegaSpace_zero`; D13 `MLFormData.Realizes` restated on classes via the
+  lifted `MForm.laurentCoeffAt`. STILL DEFERRED (unchanged): D9 `Existence.lean` — gated on
+  `Jacobian/Finiteness/Chi.lean`, still not on disk at completion time. NOT registered in
+  `Jacobian.lean` (unchanged; orchestrator to add). Consumer notes: **serre-duality-cech** gets
+  its full statement bank (`MForm.OmegaSpace`/`MForm.i`/`canonicalDivisorOf`(+`_linearEquiv`)/
+  `Ω_iso_linSys`/`MLFormData.totalRes`); **laurent-tails** gets `Ω_iso_linSys`/`canonicalDivisorOf`
+  it previously lacked; **residue-theorem** gets `MForm.resAt` on classes + `resAt_dlog` +
+  data-level chart-invariance (`MFormData.resAt_eq_of_mem_source` — quotient consumers reach it
+  via `MForm.exists_rep`); **cech-h1-genus/riemann-roch** get `genus_eq_finrank_omegaSpace_zero`
+  + `i_eq_l_add_canonicalDivisorOf`. BREAKING for any not-yet-written consumer drafted against
+  the old raw `MForm`: the structure is now `MFormData`; `MForm` is its quotient (`MForm.mk`,
+  `mk_eq_mk`, `exists_rep`, `sound`, `ind`); coefficient access on classes is via representatives.

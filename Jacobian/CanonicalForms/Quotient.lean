@@ -131,6 +131,11 @@ instance : Module ℂ (MForm X) where
   one_smul a := ind (fun θ => congrArg mk (one_smul ℂ θ)) a
   mul_smul c d a := ind (fun θ => congrArg mk (mul_smul c d θ)) a
 
+/-- D3 on classes: assemble a meromorphic 1-form from compatible covering-chart-family data
+(`MFormCoeffData`, mirrors `Form1CoeffData`); the class of the raw assembly. -/
+noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MForm X :=
+  mk (MFormData.ofCoeffs D)
+
 /-! ### `ord`, `resAt`, `laurentCoeffAt` (D4), lifted -/
 
 /-- D4: the order of a meromorphic 1-form at `x` (read via the preferred chart at `x`; descends

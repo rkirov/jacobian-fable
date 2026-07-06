@@ -239,4 +239,279 @@ noncomputable def dlog (f : ℳ X) : MFormData X := smul f⁻¹ (d f)
 
 end MFormData
 
+/-! ### `holoRepr` germ identities for the quotient module laws
+
+`holoRepr` of a sum/product/scalar is NOT the pointwise combination (junk at poles), but it
+AGREES with it on `𝓝[≠] x` for every `x` (`holoRepr_eventuallyEq_nhdsNE` read against the
+combined representative) — exactly the granularity of `MFormData.Eqv`, which is why the
+`Module (ℳ X) (MForm X)` laws hold on the quotient. -/
+
+theorem Mero.holoRepr_add (f g : ℳ X) (x : X) :
+    (f + g).holoRepr =ᶠ[𝓝[≠] x] f.holoRepr + g.holoRepr := by
+  have hrep : MeroGermOn.mk (f.holoRepr + g.holoRepr)
+      ((MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f).add
+        (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ g)) = f + g := by
+    rw [← MeroGermOn.mk_add, MeroGermOn.mk_holoRepr isOpen_univ f,
+      MeroGermOn.mk_holoRepr isOpen_univ g]
+    all_goals exact MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
+  exact MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) (f + g) hrep
+
+theorem Mero.holoRepr_mul (f g : ℳ X) (x : X) :
+    (f * g).holoRepr =ᶠ[𝓝[≠] x] f.holoRepr * g.holoRepr := by
+  have hrep : MeroGermOn.mk (f.holoRepr * g.holoRepr)
+      ((MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f).mul
+        (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ g)) = f * g := by
+    rw [← MeroGermOn.mk_mul, MeroGermOn.mk_holoRepr isOpen_univ f,
+      MeroGermOn.mk_holoRepr isOpen_univ g]
+    all_goals exact MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
+  exact MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) (f * g) hrep
+
+theorem Mero.holoRepr_smul (c : ℂ) (f : ℳ X) (x : X) :
+    (c • f).holoRepr =ᶠ[𝓝[≠] x] c • f.holoRepr := by
+  have hrep : MeroGermOn.mk (c • f.holoRepr)
+      ((MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f).smul c) = c • f := by
+    rw [← MeroGermOn.mk_smul, MeroGermOn.mk_holoRepr isOpen_univ f]
+    all_goals exact MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
+  exact MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) (c • f) hrep
+
+theorem Mero.holoRepr_inv (f : ℳ X) (x : X) :
+    f⁻¹.holoRepr =ᶠ[𝓝[≠] x] (f.holoRepr)⁻¹ := by
+  have hrep : MeroGermOn.mk (f.holoRepr)⁻¹
+      (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f).inv = f⁻¹ := by
+    rw [← MeroGermOn.mk_inv, MeroGermOn.mk_holoRepr isOpen_univ f]
+    all_goals exact MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
+  exact MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) f⁻¹ hrep
+
+theorem Mero.holoRepr_zero (x : X) :
+    (0 : ℳ X).holoRepr =ᶠ[𝓝[≠] x] fun _ => (0 : ℂ) :=
+  MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) 0 MeroGermOn.mk_zero
+
+theorem Mero.holoRepr_one (x : X) :
+    (1 : ℳ X).holoRepr =ᶠ[𝓝[≠] x] fun _ => (1 : ℂ) :=
+  MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ x) 1 MeroGermOn.mk_one
+
+/-- The order of a meromorphic-function class, read through `holoRepr` in the preferred chart
+(the form the `ord_smul_mero` dictionary consumes). -/
+theorem Mero.ord_eq_meromorphicOrderAt_holoRepr (f : ℳ X) (x : X) :
+    f.ord x = meromorphicOrderAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
+  conv_lhs => rw [← MeroGermOn.mk_holoRepr isOpen_univ f]
+  exact MeroGermOn.ord_mk isOpen_univ (mem_univ x)
+
+/-! ### Quotient layer: `MForm.ofForm1`, the `Module (ℳ X)` structure, `MForm.d`, `MForm.dlog` -/
+
+namespace MForm
+
+/-- D7: the holomorphic embedding, on classes. -/
+noncomputable def ofForm1 (η : Form1 X) : MForm X := mk (MFormData.ofForm1 η)
+
+theorem ofForm1_ord_nonneg (η : Form1 X) (x : X) : 0 ≤ (ofForm1 η).ord x :=
+  MFormData.ofForm1_ord_nonneg η x
+
+/-- The holomorphic-to-meromorphic bridge as a `ℂ`-linear map (the design's frozen name,
+targeting the QUOTIENT; the raw version is `Form1.toMFormData`). -/
+noncomputable def _root_.RS.Form1.toMForm : Form1 X →ₗ[ℂ] MForm X where
+  toFun := ofForm1
+  map_add' η η' := congrArg mk (MFormData.ofForm1_add η η')
+  map_smul' c η := congrArg mk (MFormData.ofForm1_smul c η)
+
+/-- `ofForm1` is injective into classes: punctured-neighborhood agreement of the ANALYTIC
+coefficients at each center forces value agreement at the center by continuity (D12's
+injectivity half). -/
+theorem ofForm1_injective : Function.Injective (ofForm1 : Form1 X → MForm X) := by
+  intro η η' h
+  have hEqv := mk_eq_mk.1 h
+  refine Form1.ext_coeffAt fun x => ?_
+  have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), z ∈ (chartAt ℂ x).target :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x))
+  have h2 : coeffIn (chartAt ℂ x) η =ᶠ[𝓝[≠] (chartAt ℂ x x)] coeffIn (chartAt ℂ x) η' := by
+    filter_upwards [hEqv x, htarget] with z hz hzt
+    have hL : (MFormData.ofForm1 η).coeffAt x z = coeffIn (chartAt ℂ x) η z := by
+      show (if z ∈ (chartAt ℂ x).target then coeffIn (chartAt ℂ x) η z else 0) = _
+      rw [if_pos hzt]
+    have hR : (MFormData.ofForm1 η').coeffAt x z = coeffIn (chartAt ℂ x) η' z := by
+      show (if z ∈ (chartAt ℂ x).target then coeffIn (chartAt ℂ x) η' z else 0) = _
+      rw [if_pos hzt]
+    rw [← hL, ← hR]
+    exact hz
+  have hη : Tendsto (coeffIn (chartAt ℂ x) η) (𝓝[≠] (chartAt ℂ x x))
+      (𝓝 (coeffIn (chartAt ℂ x) η (chartAt ℂ x x))) :=
+    (η.analyticAt_coeffAt x).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
+  have hη' : Tendsto (coeffIn (chartAt ℂ x) η') (𝓝[≠] (chartAt ℂ x x))
+      (𝓝 (coeffIn (chartAt ℂ x) η' (chartAt ℂ x x))) :=
+    (η'.analyticAt_coeffAt x).continuousAt.tendsto.mono_left nhdsWithin_le_nhds
+  show coeffIn (chartAt ℂ x) η (chartAt ℂ x x) = coeffIn (chartAt ℂ x) η' (chartAt ℂ x x)
+  exact tendsto_nhds_unique (hη.congr' h2) hη'
+
+/-! #### The `ℳ(X)`-module structure -/
+
+noncomputable instance : SMul (ℳ X) (MForm X) :=
+  ⟨fun h => Quotient.map (fun θ => MFormData.smul h θ) fun θ θ' hθ x => by
+    filter_upwards [hθ x] with z hz
+    show h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z =
+      h.holoRepr ((chartAt ℂ x).symm z) * θ'.coeffAt x z
+    rw [hz]⟩
+
+@[simp] theorem mero_smul_mk (h : ℳ X) (θ : MFormData X) :
+    h • mk θ = mk (MFormData.smul h θ) := rfl
+
+noncomputable instance : Module (ℳ X) (MForm X) where
+  one_smul Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => ?_
+    have h1 := eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_one (X := X) x)
+    filter_upwards [h1] with z hz
+    simp only [Function.comp_apply] at hz
+    show (1 : ℳ X).holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z = θ.coeffAt x z
+    rw [hz, one_mul]
+  mul_smul h h' Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => ?_
+    have h1 := eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_mul h h' x)
+    filter_upwards [h1] with z hz
+    simp only [Function.comp_apply, Pi.mul_apply] at hz
+    show (h * h').holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z =
+      h.holoRepr ((chartAt ℂ x).symm z) * (h'.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z)
+    rw [hz]
+    ring
+  smul_zero h := sound fun x => Filter.Eventually.of_forall fun z => by
+    show h.holoRepr ((chartAt ℂ x).symm z) * (0 : MFormData X).coeffAt x z =
+      (0 : MFormData X).coeffAt x z
+    simp
+  smul_add h Θ₁ Θ₂ := by
+    refine Quotient.inductionOn₂ Θ₁ Θ₂ fun θ η => ?_
+    refine sound fun x => Filter.Eventually.of_forall fun z => ?_
+    show h.holoRepr ((chartAt ℂ x).symm z) * (θ + η).coeffAt x z =
+      h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z +
+        h.holoRepr ((chartAt ℂ x).symm z) * η.coeffAt x z
+    simp only [MFormData.coeffAt_add]
+    ring
+  add_smul h h' Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => ?_
+    have h1 := eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_add h h' x)
+    filter_upwards [h1] with z hz
+    simp only [Function.comp_apply, Pi.add_apply] at hz
+    show (h + h').holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z =
+      h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z +
+        h'.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z
+    rw [hz]
+    ring
+  zero_smul Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => ?_
+    have h1 := eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_zero (X := X) x)
+    filter_upwards [h1] with z hz
+    simp only [Function.comp_apply] at hz
+    show (0 : ℳ X).holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z =
+      (0 : MFormData X).coeffAt x z
+    rw [hz, zero_mul]
+    rfl
+
+instance : IsScalarTower ℂ (ℳ X) (MForm X) where
+  smul_assoc c h Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => ?_
+    have h1 := eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_smul c h x)
+    filter_upwards [h1] with z hz
+    simp only [Function.comp_apply, Pi.smul_apply, smul_eq_mul] at hz
+    show (c • h).holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z =
+      c * (h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z)
+    rw [hz]
+    ring
+
+instance : SMulCommClass ℂ (ℳ X) (MForm X) where
+  smul_comm c h Θ := by
+    obtain ⟨θ, rfl⟩ := exists_rep Θ
+    refine sound fun x => Filter.Eventually.of_forall fun z => ?_
+    show c * (h.holoRepr ((chartAt ℂ x).symm z) * θ.coeffAt x z) =
+      h.holoRepr ((chartAt ℂ x).symm z) * (c * θ.coeffAt x z)
+    ring
+
+/-- The order dictionary for the `ℳ(X)`-action: orders add (the D10/D11 engine). Junk-robust —
+no nonvanishing hypotheses (`⊤`-arithmetic absorbs the degenerate cases). -/
+theorem ord_smul_mero (h : ℳ X) (Θ : MForm X) (x : X) :
+    (h • Θ).ord x = h.ord x + Θ.ord x := by
+  obtain ⟨θ, rfl⟩ := exists_rep Θ
+  have h1 : MeromorphicAt (h.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+    MeroGermOn.meromorphicOnX_holoRepr isOpen_univ h x (mem_univ x)
+  have h2 : MeromorphicAt (θ.coeffAt x) (chartAt ℂ x x) := θ.meromorphicAt_coeffAt x
+  have hmul := meromorphicOrderAt_mul h1 h2
+  show meromorphicOrderAt ((MFormData.smul h θ).coeffAt x) (chartAt ℂ x x) = _
+  have hfun : (MFormData.smul h θ).coeffAt x =
+      (h.holoRepr ∘ ⇑(chartAt ℂ x).symm) * θ.coeffAt x := rfl
+  rw [hfun, hmul, ← Mero.ord_eq_meromorphicOrderAt_holoRepr h x]
+  rfl
+
+/-! #### `MForm.d` and `MForm.dlog` -/
+
+/-- D7: the differential of a meromorphic function, on classes (a genuine,
+`Classical.choice`-free function `ℳ X → MForm X` via `holoRepr`). -/
+noncomputable def d (f : ℳ X) : MForm X := mk (MFormData.d f)
+
+theorem d_const (c : ℂ) : d (algebraMap ℂ (ℳ X) c) = 0 :=
+  congrArg mk (MFormData.d_const c)
+
+/-- Additivity of the differential — FALSE at the raw-family level (junk of `holoRepr` at the
+poles of the summands), true on the quotient: `(f+g).holoRepr` agrees with
+`f.holoRepr + g.holoRepr` near every center, and `deriv` respects punctured agreement. -/
+theorem d_add (f g : ℳ X) : d (f + g) = d f + d g := by
+  refine sound fun x => ?_
+  have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), z ∈ (chartAt ℂ x).target :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x))
+  have hadd : ((f + g).holoRepr ∘ ⇑(chartAt ℂ x).symm) =ᶠ[𝓝[≠] (chartAt ℂ x x)]
+      ((f.holoRepr + g.holoRepr) ∘ ⇑(chartAt ℂ x).symm) :=
+    eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_add f g x)
+  have hderiv := hadd.nhdsNE_deriv
+  have hfm : MeromorphicAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+    MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f x (mem_univ x)
+  have hgm : MeromorphicAt (g.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+    MeroGermOn.meromorphicOnX_holoRepr isOpen_univ g x (mem_univ x)
+  filter_upwards [htarget, hderiv, hfm.eventually_analyticAt, hgm.eventually_analyticAt] with
+    z hz hdz hfz hgz
+  show (if z ∈ (chartAt ℂ x).target then deriv ((f + g).holoRepr ∘ ⇑(chartAt ℂ x).symm) z
+      else 0) =
+    (if z ∈ (chartAt ℂ x).target then deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z else 0) +
+      (if z ∈ (chartAt ℂ x).target then deriv (g.holoRepr ∘ ⇑(chartAt ℂ x).symm) z else 0)
+  rw [if_pos hz, if_pos hz, if_pos hz, hdz]
+  have hsplit : (f.holoRepr + g.holoRepr) ∘ ⇑(chartAt ℂ x).symm =
+      (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) + (g.holoRepr ∘ ⇑(chartAt ℂ x).symm) := rfl
+  rw [hsplit, deriv_add hfz.differentiableAt hgz.differentiableAt]
+
+/-- D7: the logarithmic differential, on classes. -/
+noncomputable def dlog (f : ℳ X) : MForm X := f⁻¹ • d f
+
+/-- **The argument-principle atom** (design §4.3 item 4): the residue of `dlog f` at `x` is the
+order of `f` at `x`. Junk-robust: no `f ≠ 0` hypothesis (for `f = 0` both sides are `0`). -/
+theorem resAt_dlog (f : ℳ X) (x : X) :
+    (dlog f).resAt x = ((f.ord x).untop₀ : ℂ) := by
+  have hFm : MeromorphicAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+    MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f x (mem_univ x)
+  have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), z ∈ (chartAt ℂ x).target :=
+    eventually_nhdsWithin_of_eventually_nhds
+      ((chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x))
+  have hinv : (f⁻¹.holoRepr ∘ ⇑(chartAt ℂ x).symm) =ᶠ[𝓝[≠] (chartAt ℂ x x)]
+      ((f.holoRepr)⁻¹ ∘ ⇑(chartAt ℂ x).symm) :=
+    eventuallyEq_nhdsNE_comp_chart_iff.mp (Mero.holoRepr_inv f x)
+  have hcoeff : (MFormData.smul f⁻¹ (MFormData.d f)).coeffAt x =ᶠ[𝓝[≠] (chartAt ℂ x x)]
+      fun z => deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z /
+        (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z := by
+    filter_upwards [htarget, hinv] with z hz hzinv
+    simp only [Function.comp_apply, Pi.inv_apply] at hzinv
+    show f⁻¹.holoRepr ((chartAt ℂ x).symm z) *
+        (if z ∈ (chartAt ℂ x).target then deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z else 0) = _
+    rw [if_pos hz, hzinv]
+    show (f.holoRepr ((chartAt ℂ x).symm z))⁻¹ * deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z =
+      deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z / (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z
+    rw [div_eq_mul_inv, mul_comm]
+    rfl
+  have hres : (dlog f).resAt x = RS.resAt (fun z => deriv (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z /
+      (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) z) (chartAt ℂ x x) := by
+    show RS.resAt ((MFormData.smul f⁻¹ (MFormData.d f)).coeffAt x) (chartAt ℂ x x) = _
+    exact resAt_congr hcoeff
+  rw [hres, MeromorphicAt.resAt_deriv_div hFm, ← Mero.ord_eq_meromorphicOrderAt_holoRepr f x]
+
+end MForm
+
 end RS
