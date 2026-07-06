@@ -16,11 +16,10 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.7).
 
 `mlClass`/`mlClass_eq_zero_iff` (both directions — the `⇒` half uses `toH1_injective`, Forster
 12.4, from `Injectivity.lean`) are proved with zero sorries; both the χ ledger and laurent-tails'
-`T[D] → H¹(D)` map factor through `mlClass`. `H1Incl_surjective` (part (g) of the six-term
-fragment) is proved in `SixTerm.lean`. **Recorded as interface, not proved anywhere in this
-unit** (see `SixTerm.lean`'s file-end note): `windowConnect`, `exists_realization`, Lemma A,
-`exact_windowMap_windowConnect`, `exact_windowConnect_H1Incl` — these need adapted-cover
-*realization* machinery beyond this unit's remaining time budget.
+`T[D] → H¹(D)` map factor through `mlClass`. The rest of the six-term fragment —
+`H1Incl_surjective` (part (g)), `windowConnect`, `exists_realization`, Lemma A
+(`mlClass_eq_of_realizes`), `exact_windowMap_windowConnect`, `exact_windowConnect_H1Incl` —
+is proved in `SixTerm.lean`.
 -/
 
 open scoped ContDiff Manifold

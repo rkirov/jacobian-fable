@@ -767,3 +767,64 @@
   + `i_eq_l_add_canonicalDivisorOf`. BREAKING for any not-yet-written consumer drafted against
   the old raw `MForm`: the structure is now `MFormData`; `MForm` is its quotient (`MForm.mk`,
   `mk_eq_mk`, `exists_rep`, `sound`, `ind`); coefficient access on classes is via representatives.
+- [cech] SixTerm CLOSED — `Jacobian/Cech/SixTerm.lean` (1001 lines) finishes the LAST gap of the
+  cech-cohomology unit: the six-term skyscraper fragment §6.9(c)-(f) is now fully proved, so
+  `0 → L(D) → L(D') → Window D D' → H¹(D) → H¹(D') → 0` is complete end to end.
+  `scripts/check.sh Jacobian/Cech` passes: builds clean, **zero sorries** across all 10 files
+  + root (3434 lines). Construction shape (all in `SixTerm.lean`, on top of the previous pass's
+  `H1Incl_surjective`/`memLD_of_isAdapted`/retype lemmas): (1) **Lemma B**
+  `exists_tail_approx` — a germ of order `≥ -d'` at `q` is matched to order `≥ -d` by a finite
+  Laurent tail in `ordGe q (-d')`, by induction on `(d'-d).toNat` iterating a one-step
+  leading-coefficient subtraction `exists_tail_step` (`u := θ_{q,-m}·γ`, subtract
+  `u.evalAt q • θ_{q,m}`; needs `tailGerm_mul_tailGerm_neg`); (2) **D7 realization predicate**
+  `Realizes 𝒰 g w` — pointwise `ord ≥ -(D q)` bound on the comparison germ
+  `windowDefect γ ψ := γ|_{V∩src} - ψ|_{V∩src}` against *every* chart-source representative
+  `ψ` of `w q` (equivalent to the design's `(w q).out` form by `windowDefect_bound_of_mk_eq`;
+  strictly easier to consume), with closure lemmas `Realizes.res/add/smul`; (3)
+  `exists_realization` — realize `w` on a cover from `exists_adapted_refinement` prescribing,
+  at each `q ∈ diffSupp D D'`, the neighbourhood `N_q ⊓ compOpens (S'.erase q)` (pole-free
+  zone of the chosen representative `ψ q` ∩ complement of the other special points
+  `S' := diffSupp ∪ supp D ∪ supp D'`); the cochain is `ψ hk.choose` restricted on members
+  meeting `diffSupp`, `0` elsewhere (choice-independence of the member's `diffSupp`-point via
+  the `S'.erase` separation), `MemLD` for free from `memLD_of_isAdapted` since the cochain's
+  coboundary is a `Z1 D'` coboundary on an adapted cover; (4) **Lemma A**
+  `mlClass_eq_of_realizes` — NO adaptedness hypothesis: restrict both realizations to
+  `𝒰.meet 𝒰'` (`mlClass_res`, via `resZ1`+`toH1_resH1`), then `G - G'` is a `C0 D`-cochain
+  (at `diffSupp` points the two `Realizes` bounds control the difference through `windowDefect`
+  algebra; elsewhere `D = D'`), so the retyped coboundaries agree in `H1Cover D` by
+  `H1Cover.mk_eq_zero_iff`; (5) `windowConnect : Window D D' →ₗ[ℂ] H1 D` — `choice` over
+  `exists_realization`, well-defined + linear purely via Lemma A (`windowConnectRaw_eq`), with
+  the consumer-facing `windowConnect_spec : windowConnect h w = mlClass 𝒰 g hg` for ANY
+  realization; (6) `exact_windowMap_windowConnect` — `⊆`: `mlClass_eq_zero_iff` gives a global
+  `φ : L(D')`, and `le_ord_sub` of its bound against the `Realizes` bound (bridged by
+  `ord_sub_global_eq_defect`) shows `w = windowMap h φ`; `⊇`: `mlClass_eq_zero_of_exists`; (7)
+  `exact_windowConnect_H1Incl` — `⊆`: `toH1_injective` (12.4) turns `H1Incl ξ = 0` into a
+  `D'`-coboundary witness `g'` on the representing cover itself, Lemma B reads off its window
+  vector `w`, and the cocycle relation (`hmemld` d0-bound) + `windowDefect_ord_congr`
+  cross-member normalization show `Realizes 𝒱 g' w`, whence
+  `windowConnect h w = mlClass 𝒱 g' _ = ξ`; `⊇`: `H1Incl_mlClass`. Fixes applied to the
+  interrupted draft (all instances of known gotchas): unpinned Set-valued implicits at
+  `Set.inter_subset_left`/a `MeroGermOn X _` type ascription (named fully-ascribed `have`s per
+  the log's standing note), and a `zero_smul` rewrite stuck on the Pi-type `Window` smul
+  (replaced by term-mode `exact zero_smul ℂ (w q)` — defeq through `Pi.instSMul` where the
+  `rw` pattern match fails). Root docstring + `Skyscraper.lean` note updated; unit root
+  `Jacobian/Cech.lean` unchanged in imports (SixTerm already registered). Cosmetic leftovers:
+  2 `unusedVariables` warnings in `exists_realization` (the `h : D ≤ D'` hypothesis is kept
+  for design conformity though the construction never uses it; ditto the existential's `hg`
+  binder name).
+  **Notes for finiteness-and-chi**: the previously blocking gap is gone —
+  `windowConnect`/`exact_windowConnect_H1Incl` now exist with exactly the shapes your
+  `H1Finite.lean` step 2 plan expects (`ker (H1Incl D h) = range (windowConnect h)` via
+  `Function.Exact`, `Set.image_eq_range`-style consumption; combine with `finrank_window` +
+  `finiteDimensional_window` from `WindowRank.lean` and `H1Incl_surjective` for step 1). The
+  χ-ledger's six-term rank bookkeeping (`chi` in `docs/design/finiteness-and-chi.md` §chi) has
+  every arrow: `inclusion_injective`, `exact_inclusion_windowMap` (Window.lean),
+  `exact_windowMap_windowConnect`, `exact_windowConnect_H1Incl` (SixTerm.lean),
+  `H1Incl_surjective`. Remember `AddCommGroup (H1 D)` does not resolve by plain
+  `inferInstance` — go through `Module.DirectLimit`'s own instances or `exists_eq_of_of_eq`.
+  **Notes for laurent-tails**: the connecting-map template is now real — your `T[D] → H¹(D)`
+  should factor through `mlClass` exactly as `windowConnect` does: produce a realization
+  (`Realizes` is the reusable predicate; `exists_realization`'s adapted-cover pattern and
+  `exists_tail_approx` for tail extraction are both exported), then `windowConnect_spec` /
+  `mlClass_eq_of_realizes` give well-definedness for free; `mlClass_eq_zero_iff` (both
+  directions) characterizes the kernel.
