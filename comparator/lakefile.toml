@@ -1,0 +1,25 @@
+# In-repo replica of lean-eval's `jacobian_challenge_diffgeo` workspace, used to run the
+# real leanprover/comparator locally (see ../verify.sh). Challenge.lean, Solution.lean and
+# config.json are verbatim from lean-eval; Submission.lean delegates to this repository's
+# Jacobian library (path-required, so the comparator checks the exact library build — no
+# vendoring). Shares the root's packagesDir to reuse the built Mathlib.
+# Workspace replica pattern follows github.com/rkirov/jacobian-claude.
+name = "jacobian_challenge_diffgeo"
+defaultTargets = ["Challenge", "Solution", "Submission"]
+packagesDir = "../.lake/packages"
+
+[leanOptions]
+autoImplicit = false
+
+[[require]]
+name = "jacobian"
+path = ".."
+
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"
+
+[[lean_lib]]
+name = "Submission"
