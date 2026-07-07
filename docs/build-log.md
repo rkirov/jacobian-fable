@@ -2489,3 +2489,49 @@ lines on `genus`, `Jacobian`, `Jacobian.ofCurve_inj`, `genus_eq_zero_iff_homeo`,
 tactic/name/instance-registration change: no theorem signature, definition type, or the
 `Jacobian.lean`/`GistAcceptance.lean`/`comparator/`/`verify.sh`/`lakefile.toml`/
 `lake-manifest.json`/`lean-toolchain` files were touched.
+- [shim] `Jacobian/JacFunctorial/CrossUniverse.lean` NEW (266 lines, ~9s; registered in
+  `Jacobian/JacFunctorial.lean`) — the cross-universe functorial layer the lean-eval template
+  needs (`X : Type u`, `Y : Type v`, `Z : Type w`). Key fact exploited: the one-universe
+  restriction of `Jacobian.inducedHom` was an artifact of its variable block, not of the
+  construction — the linear core `RS.inducedHom` acts between the `Type 0` quotients
+  `RS.Jac₀ X → RS.Jac₀ Y` and only the (already cross-universe) `ULift` shells
+  `RS.uliftUpHom`/`RS.uliftDownHom` carry `u`,`v`. GENERALIZED (bodies/proofs verbatim at
+  independent ground universes): `Jacobian.inducedHomCU`, `Jacobian.contMDiff_inducedHomCU`,
+  `Jacobian.inducedHomCU_apply_up_mk`, `RS.Jacobian.pushforwardCU`/`pullbackCU` (+ their
+  `contMDiff` lemmas, same inherited `[DiscreteTopology …]` gates, globally discharged) and the
+  five challenge laws (`pushforwardCU_id_apply`/`_comp_apply`, `pullbackCU_id_apply`/
+  `_comp_apply`, `pushforwardCU_pullbackCU`) via the representative-level route
+  (`exists_rep` + `inducedHomCU_apply_up_mk`). RE-PROVED (same scripts; the one-universe
+  originals cannot be *instantiated* at distinct universes, but all their `Form1`-level inputs
+  are already `Type*`): `RS.pushforwardT_compCU`, `RS.pullbackT_compCU`,
+  `RS.pushforwardT_pullbackT_applyCU`. Per the JacFunctorial LEDGER's universe warning, every
+  declaration is written with ground universe binders (`Jacobian.{u}`, explicit `Type u/v/w`,
+  never `Type*`) — elaboration is immediate, no `ULift`/quotient defeq grind. At `u = v = w`
+  each `*CU` is definitionally the one-universe original. Compiled first try, zero sorries.
+- [shim] `comparator/Submission.lean` NEW (214 lines) + `comparator/Submission/Helpers.lean`
+  NEW (15 lines, just `import Jacobian.Challenge`) — the lean-eval submission shim for
+  `jacobian_challenge_diffgeo`. Template copied byte-faithfully (namespace
+  `Submission.JacobianChallenge`, `[Nonempty X]` instance args on `genus`/`Jacobian` accepted
+  and ignored, `modelWithCornersSelf ℂ ℂ` spelling — definitionally `𝓘(ℂ)`, elaborates against
+  the library lemmas directly, universes `u v w`); every `sorry` filled by delegation:
+  `genus`/`genus_eq_zero_iff_homeo`/`Jacobian`/7 instances (`inferInstanceAs` through the
+  `_root_` spellings)/`ofCurve`(+`_self`,`_contMDiff`,`_inj`) to the library root API,
+  `degree := ContMDiff.degree f hf`, and the 10 functorial holes to the new `RS.Jacobian.*CU`
+  layer. `noncomputable` added on the data decls (Lean requires it).
+- [shim] comparator workspace: `lake update` (manifest was missing; resolved against the shared
+  `../.lake/packages`, no network), then `lake build Challenge Solution Submission` — all three
+  green (8789 jobs). ONE REAL OBSTACLE, documented in the shim's `Runtime stubs` section: the
+  trusted bridge `Solution.lean` (fixed, verbatim from lean-eval) re-exports the data holes with
+  plain non-`noncomputable` `def`s, so Lean's code generator must compile *calls* to the shim's
+  data declarations — whose honest values are necessarily noncomputable (`genus` is a `finrank`;
+  charts/Abel–Jacobi use choice). Fix: never-executed `@[implemented_by]` runtime stubs on the 8
+  compiled data holes (`genus`, `instAddCommGroup`, `instTopologicalSpace`, `instChartedSpace`,
+  `ofCurve`, `pushforward`, `pullback`, `degree`) — the same code-generator exemption `sorryAx`
+  itself uses to let the placeholder-filled `Challenge.lean` build (verified in the toolchain
+  source: `Lean.Compiler.LCNF.ToLCNF.checkComputable` exempts `implemented_by`/`extern` refs).
+  Kernel-level content untouched: the definitions remain the honest delegations; stubs are
+  invisible to `#print axioms`, `lean4export`, and kernel replay, and nothing executes them.
+  Statement-level: zero deviations from the template beyond `noncomputable` + the appended stub
+  section. Verification: root `lake build` green (3367 jobs), `lake env lean GistAcceptance.lean`
+  clean — all six audited items still exactly `[propext, Classical.choice, Quot.sound]`;
+  `grep -rn -w sorry comparator/Submission.lean comparator/Submission/ Jacobian/` — empty.

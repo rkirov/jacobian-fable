@@ -9,6 +9,7 @@ import Jacobian.JacFunctorial.TraceLaws
 import Jacobian.JacFunctorial.TraceIntegral
 import Jacobian.JacFunctorial.PullbackMaps
 import Jacobian.JacFunctorial.ChallengeLaws
+import Jacobian.JacFunctorial.CrossUniverse
 
 /-!
 # `jacobian-functoriality` (unit root)
