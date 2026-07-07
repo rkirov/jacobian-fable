@@ -2535,3 +2535,35 @@ tactic/name/instance-registration change: no theorem signature, definition type,
   section. Verification: root `lake build` green (3367 jobs), `lake env lean GistAcceptance.lean`
   clean — all six audited items still exactly `[propext, Classical.choice, Quot.sound]`;
   `grep -rn -w sorry comparator/Submission.lean comparator/Submission/ Jacobian/` — empty.
+- [shim] degree signature fix: `comparator/Submission.lean`'s `Jacobian.degree` no longer
+  delegates to the library's `ContMDiff.degree` (`:= RS.degree f`). That delegation elaborated
+  fine but *leaked* `[ConnectedSpace Y]` into `degree`'s own signature — `RS.degree` needs
+  `[Nonempty Y]` to call `Classical.arbitrary Y` (`Jacobian/MappingDegree/Degree.lean`), no bare
+  `[Nonempty Y]` variable is in scope at `ContMDiff.degree`'s declaration site
+  (`Jacobian/ProperDegree/ChallengeDegree.lean`), so instance search silently routed through
+  `ConnectedSpace.toNonempty`, and that instance usage — present only in the elaborated *value*,
+  invisible in the stated type — was enough for Lean's body-driven `variable` inclusion to
+  attach `[ConnectedSpace Y]` as an extra parameter (confirmed via
+  `set_option pp.all true in #check @JacobianChallenge.Jacobian.degree`, importing Challenge vs
+  Solution: one extra `[inst_9 : ConnectedSpace Y]` binder on the Solution side, nowhere else).
+  Fix: `degree` is now a self-contained definition with explicit binders
+  `{X} [TopologicalSpace X] [ChartedSpace ℂ X] {Y} [TopologicalSpace Y] [ChartedSpace ℂ Y] (f)
+  (hf)` (shadowing the ambient section variables so nothing from them can leak in), body
+  `open Classical in if h : Nonempty Y then RS.fiberMultSum f (Classical.choice h) else 0` —
+  `RS.fiberMultSum`/`multiplicity` (`Jacobian/MappingDegree/Basics.lean`,
+  `Jacobian/LocalMultiplicity/Multiplicity.lean`) need only those same four instances, and the
+  `Nonempty Y` case split is discharged classically (`Classical.propDecidable`), never touching
+  `ConnectedSpace Y`. Added a bridging lemma `degree_eq_contMDiff` (not `rfl`: `dif_pos` doesn't
+  compute through the classical `Decidable (Nonempty Y)` instance since `Decidable` is
+  `Type`-valued, not proof-irrelevant, so it needs an explicit `rw [dif_pos hY]`; the residual
+  goal closes by a plain `rfl` since the two sides' `Classical.choice`s over the same `Prop`
+  `Nonempty Y` are defeq by proof irrelevance) and rewrote `pushforward_pullback` through it
+  before delegating to `RS.Jacobian.pushforwardCU_pullbackCU`. Updated the `degreeImpl`
+  `@[implemented_by]` stub's binder list to match (dropped its stray `[ConnectedSpace Y]`, which
+  had silently mirrored the same leak). Verification (all from `comparator/`): `lake build
+  Submission Solution Challenge` green (8789 jobs, warnings only); re-dumped
+  `set_option pp.all true in #check @Jacobian.degree`/`#check @Jacobian.pushforward_pullback` +
+  the other 22 gist names importing Challenge vs Solution — `diff` is byte-for-byte empty (was
+  81 differing lines before, both hunks on `degree`); `#print axioms` on `degree`,
+  `degree_eq_contMDiff`, `pushforward_pullback` — all exactly `[propext, Classical.choice,
+  Quot.sound]`; `grep -rn -w sorry comparator/Submission.lean` — empty.

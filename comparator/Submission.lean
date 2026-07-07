@@ -152,14 +152,53 @@ theorem pullback_comp_apply (f : X → Y)
     (P : Jacobian Z) :
     pullback (g.comp f) (hg.comp hf) P = pullback f hf (pullback g hg P) :=
   RS.Jacobian.pullbackCU_comp_apply f hf g hg P
-noncomputable def degree (f : X → Y)
+open Classical in
+/-- The challenge's `degree` needs only `[TopologicalSpace]`/`[ChartedSpace ℂ]` on `X`/`Y`
+(matching `RS.fiberMultSum`'s minimal instances, `Jacobian/MappingDegree/Basics.lean`) — not the
+ambient `T2Space`/`CompactSpace`/`ConnectedSpace`/`Nonempty`/`IsManifold` binders this section
+carries for `pushforward`/`pullback`. Delegating to the library's `ContMDiff.degree` (`:=
+RS.degree f`, `Jacobian/ProperDegree/ChallengeDegree.lean`) leaks `[ConnectedSpace Y]` into this
+definition's *elaborated* signature: `RS.degree` needs `[Nonempty Y]` to call
+`Classical.arbitrary Y` (`Jacobian/MappingDegree/Degree.lean`), and since no bare `[Nonempty Y]`
+variable is available at `ContMDiff.degree`'s declaration site, instance search discharges it via
+`ConnectedSpace.toNonempty`, and that usage — invisible in the stated type, present only in the
+elaborated *value* — is enough for Lean's body-driven `variable` inclusion to silently attach
+`[ConnectedSpace Y]` as an extra parameter. Fix: bind `X`/`Y`'s instances explicitly here
+(shadowing the ambient section variables entirely, so nothing from them can leak in) and
+re-derive `Nonempty Y` *classically* — a case split on the `Prop` `Nonempty Y` itself, discharged
+by `Classical.propDecidable` (`open Classical in`, brought in scope below), never touching
+`ConnectedSpace Y` — before calling `RS.fiberMultSum` directly. Same value as
+`RS.degree`/`ContMDiff.degree` whenever `[ConnectedSpace Y]` (hence `[Nonempty Y]`) is present
+(`degree_eq_contMDiff` below), just assembled from instances that are actually mentioned in the
+signature. -/
+noncomputable def degree {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y] (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) : ℕ :=
-  ContMDiff.degree f hf -- 0 for constant case
+  if h : Nonempty Y then RS.fiberMultSum f (Classical.choice h) else 0 -- 0 for constant case
+
+/-- Bridging lemma: `degree` agrees with the library's `ContMDiff.degree` once the full surface
+instances are present (in particular `[ConnectedSpace Y]`, giving `[Nonempty Y]`) — needed to
+restate `pushforward_pullback` via `RS.Jacobian.pushforwardCU_pullbackCU`, whose statement is
+phrased in `ContMDiff.degree`. Not `rfl` outright: `dif_pos` doesn't compute through the
+classical `Decidable (Nonempty Y)` instance (it is `Type`-valued, not proof-irrelevant), so the
+case split needs an explicit rewrite; after that, the two sides' `Classical.choice`s over the
+same `Prop` `Nonempty Y` are defeq by proof irrelevance, so a plain `rfl` finishes it. -/
+theorem degree_eq_contMDiff (f : X → Y)
+    (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) :
+    degree f hf = ContMDiff.degree f hf := by
+  classical
+  have hY : Nonempty Y := inferInstance
+  show (if h : Nonempty Y then RS.fiberMultSum f (Classical.choice h) else 0)
+    = ContMDiff.degree f hf
+  rw [dif_pos hY]
+  rfl
+
 theorem pushforward_pullback (f : X → Y)
     (hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f)
     (P : Jacobian Y) :
-    pushforward f hf (pullback f hf P) = (degree f hf) • P :=
-  RS.Jacobian.pushforwardCU_pullbackCU f hf P
+    pushforward f hf (pullback f hf P) = (degree f hf) • P := by
+  rw [degree_eq_contMDiff f hf]
+  exact RS.Jacobian.pushforwardCU_pullbackCU f hf P
 
 /-!
 ### Runtime stubs for the trusted bridge
@@ -203,7 +242,7 @@ private unsafe def pullbackImpl (f : X → Y)
 attribute [implemented_by pullbackImpl] pullback
 
 private def degreeImpl {X : Type u} [TopologicalSpace X] [ChartedSpace ℂ X]
-    {Y : Type v} [TopologicalSpace Y] [ConnectedSpace Y] [ChartedSpace ℂ Y] (f : X → Y)
+    {Y : Type v} [TopologicalSpace Y] [ChartedSpace ℂ Y] (f : X → Y)
     (_hf : ContMDiff (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) ω f) : ℕ := 0
 attribute [implemented_by degreeImpl] degree
 
