@@ -1,0 +1,41 @@
+name: comparator
+
+# Runs the real leanprover/comparator against this repo's solution to the lean-eval
+# problem `jacobian_challenge_diffgeo` — the authoritative challenge check (statement
+# match + permitted-axiom check + kernel replay via lean4export, in a landrun sandbox).
+# Mirrors lean-eval's own environment; a green run here should mean a green run on the
+# lean-eval leaderboard. Workflow pattern follows github.com/rkirov/jacobian-claude.
+
+on:
+  push:
+    branches: [lean-eval]
+  pull_request:
+    branches: [lean-eval]
+  workflow_dispatch:
+
+concurrency:
+  group: comparator-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build the Jacobian library + fetch the mathlib cache. The comparator workspace
+      # (which path-requires the library and shares its packagesDir) reuses this build.
+      - uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true
+
+      # comparator + lean4export are pinned to the toolchain and rarely change; cache
+      # their clones and builds (verify.sh namespaces the cache dir by toolchain tag).
+      - name: Cache comparator tooling
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/jacobian-comparator
+          key: comparator-${{ hashFiles('comparator/lean-toolchain') }}
+
+      - name: Run comparator
+        run: ./verify.sh

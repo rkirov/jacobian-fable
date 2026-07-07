@@ -1,0 +1,54 @@
+name: CI
+
+# Library build + integrity gates. Works on both branches:
+#   main      — gist pin (v4.30.0-rc2 / mathlib 5483982)
+#   lean-eval — benchmark pin (v4.32.0-rc1 / mathlib 360da6fa) + submission artifacts
+# Branch-specific steps guard on file existence and degrade gracefully.
+
+on:
+  push:
+    branches: [main, lean-eval]
+  pull_request:
+    branches: [main, lean-eval]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Hard gate: no sorries anywhere in the library.
+      - name: Sorry sweep
+        run: |
+          ! grep -rn -w sorry Jacobian/ Jacobian.lean --include='*.lean'
+
+      # Hard gate: no axioms / native_decide escapes.
+      - name: Axiom-escape sweep
+        run: |
+          ! grep -rnE '^\s*axiom |native_decide' Jacobian/ --include='*.lean'
+
+      - name: Build Lean project (with mathlib cache)
+        uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true
+
+      # Acceptance artifact: the challenge statements verbatim, proved by the
+      # providing declarations, with the axiom audit (#print axioms output in log).
+      - name: Gist acceptance test
+        run: lake env lean GistAcceptance.lean
+
+      # lean-eval branch only: the committed submission overlay must match a
+      # fresh generation from the library + shim.
+      - name: Submission overlay staleness check
+        run: |
+          if [ -f scripts/make_submission.py ]; then
+            python3 scripts/make_submission.py --check
+          else
+            echo "no submission generator on this branch — skipped"
+          fi
