@@ -68,7 +68,7 @@ theorem integrableOn_cauchyKernel_ball (ρ : ℝ) :
           rw [Complex.norm_polarCoord_symm]; exact abs_of_pos hr
         have hmem2 : Complex.polarCoord.symm (r, θ) ∈ ball (0 : ℂ) ρ := by
           rw [mem_ball_zero_iff, hnorm]; exact hrρ
-        rw [Set.indicator_of_mem hmem1, Set.indicator_of_mem hmem2, ← ofReal_norm_eq_enorm,
+        rw [Set.indicator_of_mem hmem1, Set.indicator_of_mem hmem2, ← ofReal_norm,
           norm_cauchyKernel, hnorm, smul_eq_mul, ← ENNReal.ofReal_mul hr.le]
         have heq : r * (Real.pi * r)⁻¹ = Real.pi⁻¹ := by field_simp
         rw [heq]
@@ -185,7 +185,8 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
   have hhc : Continuous h := by
     have h1 : Continuous (fun w => fderiv ℝ g w 1) := hfc.clm_apply continuous_const
     have h2 : Continuous (fun w => fderiv ℝ g w Complex.I) := hfc.clm_apply continuous_const
-    simpa [hh_def, wirtingerDbar] using (h1.add (continuous_const.mul h2)).div_const 2
+    rw [hh_def]
+    exact (h1.add (continuous_const.mul h2)).div_const 2
   -- R0, R'
   obtain ⟨R0', hR0'⟩ := hcs.isBounded.subset_closedBall (0 : ℂ)
   set R0 : ℝ := max R0' 0 with hR0_def
@@ -228,7 +229,9 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
       (hasDerivAt_circleMap_r 0 p.2 p.1).const_sub z
     have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
       (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
-    simpa [Gr, map_neg] using HasFDerivAt.comp_hasDerivAt_of_eq p.1 h3 h1 rfl
+    have h4 := HasFDerivAt.comp_hasDerivAt_of_eq p.1 h3 h1 rfl
+    simp only [map_neg] at h4
+    exact h4
   have hGθ_deriv : ∀ p : ℝ × ℝ, HasDerivAt (fun θ => g (z - circleMap 0 p.1 θ)) (Gθ p) p.2 := by
     intro p
     have h1 : HasDerivAt (fun θ : ℝ => z - circleMap 0 p.1 θ)
@@ -240,7 +243,8 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
     have heq : circleMap 0 p.1 p.2 * Complex.I = Complex.I * p.1 * Complex.exp (p.2 * Complex.I) := by
       rw [circleMap]; ring
     rw [heq] at h4
-    simpa [Gθ, map_neg] using h4
+    simp only [map_neg] at h4
+    exact h4
   have hcirc_cont : Continuous (fun p : ℝ × ℝ => z - circleMap 0 p.1 p.2) := by
     unfold circleMap; fun_prop
   have hGr_cont : Continuous Gr := by

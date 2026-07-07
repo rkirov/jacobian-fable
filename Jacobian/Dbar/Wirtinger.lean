@@ -69,24 +69,24 @@ theorem fderiv_apply_eq_wirtinger (hf : DifferentiableAt ℝ f z) (v : ℂ) :
 theorem wirtingerDbar_add (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
     wirtingerDbar (f + g) z = wirtingerDbar f z + wirtingerDbar g z := by
   simp only [wirtingerDbar, fderiv_add hf hg]
-  simp [ContinuousLinearMap.add_apply]
+  simp
   ring
 
 theorem wirtingerDbar_sub (hf : DifferentiableAt ℝ f z) (hg : DifferentiableAt ℝ g z) :
     wirtingerDbar (f - g) z = wirtingerDbar f z - wirtingerDbar g z := by
   simp only [wirtingerDbar, fderiv_sub hf hg]
-  simp [ContinuousLinearMap.sub_apply]
+  simp
   ring
 
 theorem wirtingerDbar_neg : wirtingerDbar (-f) z = -wirtingerDbar f z := by
   simp only [wirtingerDbar, fderiv_neg]
-  simp [ContinuousLinearMap.neg_apply]
+  simp
   ring
 
 theorem wirtingerDbar_const_mul (c : ℂ) (hf : DifferentiableAt ℝ f z) :
     wirtingerDbar (fun w => c * f w) z = c * wirtingerDbar f z := by
   simp only [wirtingerDbar, fderiv_const_mul hf]
-  simp [ContinuousLinearMap.smul_apply]
+  simp
   ring
 
 theorem wirtingerDbar_congr_nhds (h : f =ᶠ[nhds z] g) : wirtingerDbar f z = wirtingerDbar g z := by
@@ -141,7 +141,7 @@ theorem differentiableAt_of_wirtingerDbar_eq_zero (hf : DifferentiableAt ℝ f z
     conv_lhs => rw [hv]
     conv_rhs => rw [hv]
     rw [map_add, map_add, L'.map_smul, L'.map_smul]
-    simp only [ContinuousLinearMap.coe_restrictScalars', ContinuousLinearMap.smul_apply,
+    simp only [ContinuousLinearMap.coe_restrictScalars', smul_apply,
       ContinuousLinearMap.id_apply, hCR, smul_eq_mul, Complex.real_smul]
     ring
   exact (hasFDerivAt_of_restrictScalars (𝕜 := ℝ) (h := hf.hasFDerivAt) (H := hHom)).differentiableAt
@@ -222,7 +222,7 @@ theorem contDiffOn_wirtingerDbar {s : Set ℂ} (hs : IsOpen s) (hf : ContDiffOn 
     hfd.clm_apply contDiffOn_const
   have : ContDiffOn ℝ ∞ (fun z => (fderiv ℝ f z 1 + Complex.I * fderiv ℝ f z Complex.I) / 2) s :=
     ((h1.add (contDiffOn_const.mul hI))).div_const 2
-  simpa [wirtingerDbar] using this
+  exact this
 
 theorem continuous_wirtingerDbar (hf : ContDiff ℝ ∞ f) : Continuous (wirtingerDbar f) := by
   have hfd : Continuous (fderiv ℝ f) := hf.continuous_fderiv (by simp)
@@ -230,7 +230,7 @@ theorem continuous_wirtingerDbar (hf : ContDiff ℝ ∞ f) : Continuous (wirting
   have hI : Continuous (fun z => fderiv ℝ f z Complex.I) := hfd.clm_apply continuous_const
   have : Continuous (fun z => (fderiv ℝ f z 1 + Complex.I * fderiv ℝ f z Complex.I) / 2) :=
     (h1.add (continuous_const.mul hI)).div_const 2
-  simpa [wirtingerDbar] using this
+  exact this
 
 theorem hasCompactSupport_wirtingerDbar (hf : HasCompactSupport f) :
     HasCompactSupport (wirtingerDbar f) := by

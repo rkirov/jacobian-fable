@@ -202,7 +202,7 @@ theorem analyticAt_traceZk (hk : k ≠ 0) {ρ : ℝ} (hρ : 0 < ρ)
     intro i _
     have hmem : ψ i w₀ ∈ Metric.ball (0 : ℂ) ρ \ {0} :=
       ⟨mem_ball_zero_iff.mpr (hψnorm0 i), by simp [hψne0 i]⟩
-    exact (hh _ hmem).comp' (hψan i)
+    exact (hh _ hmem).fun_comp (hψan i)
   exact hRHSanalytic.congr heq.symm
 
 /-! ### Meromorphy at the branch point (P5) -/
@@ -285,7 +285,7 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
       have htz : AnalyticAt ℂ (traceZk h k) z :=
         analyticAt_traceZk hk hρ0 hh_an hzne (mem_ball_zero_iff.mp hz1)
       have hzp : AnalyticAt ℂ (fun w : ℂ => w ^ (-q)) z := by
-        simpa using (analyticAt_id (𝕜 := ℂ) (z := z)).zpow (n := -q) hzne
+        simpa using (analyticAt_id (𝕜 := ℂ) (z := z)).fun_zpow (n := -q) hzne
       exact hzp.mul htz
     -- Step 5: uniform norm bound on `V` over `ball 0 ρ' \ {0}`.
     have hVbound : ∀ w ∈ Metric.ball (0 : ℂ) ρ' \ {0}, ‖V w‖ ≤ (k : ℝ) * Cu := by
@@ -346,7 +346,7 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
     have hVmero : MeromorphicAt V 0 := hanrep.meromorphicAt.congr hupdate_eq
     -- Step 7: assemble.
     have hzpow_mero : MeromorphicAt (fun w : ℂ => w ^ q) 0 := by
-      simpa using (MeromorphicAt.id (0 : ℂ)).zpow q
+      simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow q
     have hprod : MeromorphicAt (fun w => w ^ q * V w) 0 := hzpow_mero.mul hVmero
     exact hprod.congr hstep3.symm
 
@@ -613,7 +613,7 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
       by_cases hdvd : (k : ℤ) ∣ (n₀ + (d : ℤ))
       · simp only [if_pos hdvd]
         have h1 : MeromorphicAt (fun w : ℂ => w ^ ((n₀ + (d : ℤ)) / (k : ℤ))) 0 := by
-          simpa using (MeromorphicAt.id (0 : ℂ)).zpow ((n₀ + (d : ℤ)) / (k : ℤ))
+          simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow ((n₀ + (d : ℤ)) / (k : ℤ))
         exact (MeromorphicAt.const _ _).mul ((MeromorphicAt.const _ _).mul h1)
       · simp only [if_neg hdvd, mul_zero]
         exact MeromorphicAt.const 0 0
@@ -645,7 +645,7 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
       MeromorphicAt.fun_sum hterm_mero
     have hBmero : MeromorphicAt (fun w : ℂ => w ^ s' * G w) 0 := by
       have h1 : MeromorphicAt (fun w : ℂ => w ^ s') 0 := by
-        simpa using (MeromorphicAt.id (0 : ℂ)).zpow s'
+        simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow s'
       exact h1.mul hGan.meromorphicAt
     have hB : laurentCoeffAt (fun w : ℂ => w ^ s' * G w) 0 m = 0 := by
       have hBpres : (fun w : ℂ => w ^ s' * G w) =ᶠ[𝓝[≠] (0 : ℂ)]

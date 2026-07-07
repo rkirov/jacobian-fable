@@ -41,7 +41,7 @@ theorem wirtingerDbar_mul (hg : DifferentiableAt ℝ g z) (hf : DifferentiableAt
     wirtingerDbar (fun w => g w * f w) z
       = wirtingerDbar g z * f z + g z * wirtingerDbar f z := by
   simp only [wirtingerDbar, fderiv_fun_mul hg hf]
-  simp [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+  simp
   ring
 
 /-- The `f`-holomorphic specialization: the `∂̄` of a product with a holomorphic factor sees only
@@ -87,7 +87,7 @@ theorem continuous_wirtingerDbar_of_contDiff_one (hg : ContDiff ℝ 1 g) :
   have hfc : Continuous (fderiv ℝ g) := hg.continuous_fderiv (by norm_num)
   have h1 : Continuous (fun z => fderiv ℝ g z 1) := hfc.clm_apply continuous_const
   have hI : Continuous (fun z => fderiv ℝ g z Complex.I) := hfc.clm_apply continuous_const
-  simpa [wirtingerDbar] using (h1.add (continuous_const.mul hI)).div_const 2
+  exact (h1.add (continuous_const.mul hI)).div_const 2
 
 /-- `tsupport (wirtingerDbar g) ⊆ tsupport g` (a sharper, closure-level companion to Dbar's own
 `hasCompactSupport_wirtingerDbar`, which only extracts compactness). -/

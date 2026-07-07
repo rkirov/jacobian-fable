@@ -72,7 +72,7 @@ theorem meromorphicAt_traceZkForm (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
   unfold traceZkForm
   apply RS.MTrace.meromorphicAt_traceZk _ hk
   have hzp : MeromorphicAt (fun v : ℂ => v ^ ((k : ℤ) - 1)) 0 := by
-    simpa using (MeromorphicAt.id (0 : ℂ)).zpow ((k : ℤ) - 1)
+    simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow ((k : ℤ) - 1)
   exact hh.mul ((MeromorphicAt.const (k : ℂ) 0).mul hzp).inv
 
 /-- The Laurent-coefficient formula (design §4.2, ⚠ was gated on mtrace's P6 — now UNCONDITIONAL,
@@ -82,7 +82,7 @@ theorem laurentCoeffAt_traceZkForm (hh : MeromorphicAt h 0) (hk : k ≠ 0) (j : 
   unfold traceZkForm
   have hkC : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 hk
   have hzp : MeromorphicAt (fun v : ℂ => v ^ ((k : ℤ) - 1)) 0 := by
-    simpa using (MeromorphicAt.id (0 : ℂ)).zpow ((k : ℤ) - 1)
+    simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow ((k : ℤ) - 1)
   have hH : MeromorphicAt (fun v => h v * ((k : ℂ) * v ^ ((k : ℤ) - 1))⁻¹) 0 :=
     hh.mul ((MeromorphicAt.const (k : ℂ) 0).mul hzp).inv
   rw [RS.MTrace.laurentCoeffAt_traceZk hH hk j]

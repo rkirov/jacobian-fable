@@ -119,7 +119,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
         have hsub : ContDiffAt ℝ ∞ (fun w : ℂ => w - c) z := contDiffAt_id.sub contDiffAt_const
         have hcomp : ContDiffAt ℝ ∞ ((⇑ψ) ∘ (fun w : ℂ => w - c)) z :=
           ψ.contDiffAt.comp z hsub
-        simpa [Function.comp] using hcomp
+        exact hcomp
       have hψ_ofReal : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ)) z :=
         Complex.ofRealCLM.contDiff.contDiffAt.comp z hψ_contDiffAt
       have hprod : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ) * L (w - c)) z :=

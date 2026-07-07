@@ -44,7 +44,7 @@ namespace SmoothC
 
 instance : FunLike (SmoothC X) X ℂ where
   coe f := f.1
-  coe_injective' _ _ h := Subtype.ext h
+  coe_injective _ _ h := Subtype.ext h
 
 theorem contMDiff (f : SmoothC X) : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑f) := f.2
 

@@ -10,7 +10,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$HERE/comparator"
 TOOLCHAIN_TAG=$(sed -e 's/^leanprover\/lean4://' "$WS/lean-toolchain" | tr -d '[:space:]')
-WORK="${COMPARATOR_WORK:-$HOME/.cache/jacobian-comparator}"
+WORK="${COMPARATOR_WORK:-$HOME/.cache/jacobian-comparator/$TOOLCHAIN_TAG}"
 mkdir -p "$WORK"
 
 # comparator + lean4export pinned to the SAME toolchain that built the library, so

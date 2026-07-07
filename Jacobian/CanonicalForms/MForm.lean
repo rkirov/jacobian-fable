@@ -77,31 +77,31 @@ instance : Zero (MFormData X) where
 instance : Add (MFormData X) where
   add θ η := ⟨fun x z => θ.coeffAt x z + η.coeffAt x z,
     fun x z hz => by
-      dsimp only; rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, add_zero],
+      rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, add_zero],
     fun x => (θ.meromorphicOn_coeffAt x).add (η.meromorphicOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
 
 instance : Neg (MFormData X) where
   neg θ := ⟨fun x z => -θ.coeffAt x z,
-    fun x z hz => by dsimp only; rw [θ.coeffAt_zero_off x z hz, neg_zero],
+    fun x z hz => by rw [θ.coeffAt_zero_off x z hz, neg_zero],
     fun x => (θ.meromorphicOn_coeffAt x).neg,
-    fun x y z hz => by dsimp only; rw [θ.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [θ.compat x y z hz]; ring⟩
 
 instance : Sub (MFormData X) where
   sub θ η := ⟨fun x z => θ.coeffAt x z - η.coeffAt x z,
     fun x z hz => by
-      dsimp only; rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, sub_zero],
+      rw [θ.coeffAt_zero_off x z hz, η.coeffAt_zero_off x z hz, sub_zero],
     fun x => (θ.meromorphicOn_coeffAt x).sub (η.meromorphicOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [θ.compat x y z hz, η.compat x y z hz]; ring⟩
 
 instance : SMul ℂ (MFormData X) where
   smul c θ := ⟨fun x z => c * θ.coeffAt x z,
-    fun x z hz => by dsimp only; rw [θ.coeffAt_zero_off x z hz, mul_zero],
+    fun x z hz => by rw [θ.coeffAt_zero_off x z hz, mul_zero],
     fun x => by
       have hc : MeromorphicOn (fun _ : ℂ => c) (chartAt ℂ x).target :=
         MeromorphicOn.const (U := (chartAt ℂ x).target) c
       exact hc.mul (θ.meromorphicOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [θ.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [θ.compat x y z hz]; ring⟩
 
 @[simp] theorem coeffAt_zero (x : X) (z : ℂ) : (0 : MFormData X).coeffAt x z = 0 := rfl
 
