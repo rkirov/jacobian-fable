@@ -4,7 +4,7 @@
 # Jacobian library (path-required, so the comparator checks the exact library build — no
 # vendoring). Shares the root's packagesDir to reuse the built Mathlib.
 # Workspace replica pattern follows github.com/rkirov/jacobian-claude.
-name = "jacobian_challenge_diffgeo"
+name = "jacobian_challenge_diffgeo_localcheck"
 defaultTargets = ["Challenge", "Solution", "Submission"]
 packagesDir = "../.lake/packages"
 
