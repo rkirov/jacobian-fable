@@ -146,7 +146,7 @@ theorem Z1.rel_res_evalAt {𝒰 : FinCover (⊤ : Opens X)} {f : C1 (0 : RS.Divi
       - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))
       + RS.MeroGermOn.restrict hab' (f (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)) = 0 := by
     have hcast := congrArg Subtype.val hzero
-    simpa using hcast
+    exact hcast
   have hnn_A : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
       RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))).ord z := by
     rw [RS.MeroGermOn.ord_restrict hbc' hopen (𝒰.U b ⊓ 𝒰.U c).2 hzabc]
@@ -366,7 +366,6 @@ theorem trade_evalAt {𝒱 : FinCover (⊤ : Opens X)} {τ : Fin 𝒱.n → Fin 
     exact hnn_ga'
   have hcongr := congrArg (fun ψ : RS.MeroGermOn X ((𝒱.U α ⊓ 𝒱.U β : Opens X) : Set X) =>
     ψ.evalAt z) hcoe
-  simp only at hcongr
   rw [MeroGermOn.evalAt_add hLopen hz hnn_f hnn_sub,
     MeroGermOn.evalAt_sub hLopen hz hnn_gb' hnn_ga',
     RS.MeroGermOn.evalAt_restrict inf_le_right hLopen (𝒱.U β).2 hz,

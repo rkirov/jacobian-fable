@@ -290,7 +290,7 @@ theorem finrank_windowAt {p : X} {d d' : ℤ} (h : d ≤ d') :
   rw [hd']
   exact (finrank_windowAt_aux p d n).2
 
-instance finiteDimensional_windowAt (p : X) {d d' : ℤ} (h : d ≤ d') :
+theorem finiteDimensional_windowAt (p : X) {d d' : ℤ} (h : d ≤ d') :
     FiniteDimensional ℂ (WindowAt p d d') := by
   set n := (d' - d).toNat with hn_def
   have hcast : (n : ℤ) = d' - d := Int.toNat_of_nonneg (by omega)
@@ -300,9 +300,25 @@ instance finiteDimensional_windowAt (p : X) {d d' : ℤ} (h : d ≤ d') :
 
 /-! ### `finrank_window`: the global (Pi-of-windows) dimension count -/
 
+/-- Registered explicitly (same reason as `Jacobian/Cech/Cochains.lean`'s `Z1`/`H1Cover`
+instances): `Window D D' := ∀ q, WindowAt (q:X) (D q) (D' q)` is a Pi type, so its
+`Module ℂ`/`Module.Free ℂ` structure needs these per-factor instances solved as a *dependent*
+Pi-instance goal — the newer toolchain's `synthInstance` no longer reliably re-derives that from
+`WindowAt`'s own (quotient) definition on demand. Supplying them once, directly, for the generic
+`WindowAt p d d'` lets every downstream Pi-dependent lookup match verbatim instead of
+re-deriving them. -/
+noncomputable instance instAddCommGroupWindowAt (p : X) (d d' : ℤ) :
+    AddCommGroup (WindowAt p d d') := inferInstance
+
+noncomputable instance instModuleWindowAt (p : X) (d d' : ℤ) : Module ℂ (WindowAt p d d') :=
+  inferInstance
+
+noncomputable instance instModuleFreeWindowAt (p : X) (d d' : ℤ) :
+    Module.Free ℂ (WindowAt p d d') := inferInstance
+
 variable [T2Space X] [CompactSpace X]
 
-instance finiteDimensional_window (D D' : RS.Divisor X) (h : D ≤ D') :
+theorem finiteDimensional_window (D D' : RS.Divisor X) (h : D ≤ D') :
     FiniteDimensional ℂ (Window D D') := by
   haveI : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
     finiteDimensional_windowAt (q : X) (Function.locallyFinsuppWithin.le_def.1 h q)

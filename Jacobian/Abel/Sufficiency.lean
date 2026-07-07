@@ -203,10 +203,12 @@ theorem exists_mero_of_periodVector_mem {ι : Type*} [Fintype ι] [DecidableEq �
       have hL : (∑ i, RS.pathIntegralₗ (γ' i) : RS.Form1 X →ₗ[ℂ] ℂ) = 0 := by
         apply (RS.basis X).ext
         intro k
-        simpa using hbasis k
+        simp only [LinearMap.sum_apply]
+        exact hbasis k
       intro θ
-      have := congrFun (congrArg DFunLike.coe hL) θ
-      simpa using this
+      have hθ := congrFun (congrArg DFunLike.coe hL) θ
+      simp only [LinearMap.sum_apply] at hθ
+      exact hθ
     -- Step 4, `k`-point form: a weak solution per (pairwise-disjoint) pair.
     choose f U hf hUopen hUcompact hxU haU hf1 using
       fun i => RS.AbelWeak.exists_weakSolutionOfPair (hax i i) (γ' i)

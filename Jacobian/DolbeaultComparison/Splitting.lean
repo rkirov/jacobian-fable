@@ -64,7 +64,7 @@ theorem Z1.repr_cocycle {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Diviso
       (RS.MeroGermOn.restrict hab
         ((f : C1 (0 : RS.Divisor X) 𝒰) (a, b) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X))) = 0 := by
     have hcast := congrArg Subtype.val hrel
-    simpa using hcast
+    exact hcast
   have hordbc : 0 ≤ ((f : C1 (0 : RS.Divisor X) 𝒰) (b, c) :
       RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X)).ord x := by
     have h := (RS.mem_linSysOn_iff_of_isOpen (𝒰.U b ⊓ 𝒰.U c).isOpen).1

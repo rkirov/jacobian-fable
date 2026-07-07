@@ -159,7 +159,6 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
       rw [MeroGermOn.ord_restrict hab (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U i ⊓ 𝒱.U j).2 hp]
       exact hordij
     have heval := congrArg (fun g => MeroGermOn.evalAt g p) hsum
-    dsimp only at heval
     rw [MeroGermOn.evalAt_add (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 hp hordjk_r hordij_r] at heval
     rw [MeroGermOn.evalAt_restrict hbc (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U j ⊓ 𝒱.U k).2 hp,
       MeroGermOn.evalAt_restrict hab (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U i ⊓ 𝒱.U j).2 hp,
@@ -452,7 +451,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
         RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
         (g (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) := by
       have hcast := congrArg Subtype.val hcg0
-      simpa using hcast
+      exact hcast
     show (RS.MeroGermOn.restrict hij_r (h' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
         RS.MeroGermOn.restrict hij_l (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) :
         RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =

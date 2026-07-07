@@ -123,7 +123,7 @@ theorem analyticAt_traceZkForm_of_ne_zero {ρ : ℝ} (hρ : 0 < ρ) (hk : k ≠ 
   have hv0 : v ≠ 0 := by simpa using hv2
   have hkC : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 hk
   have hzp : AnalyticAt ℂ (fun v : ℂ => v ^ ((k : ℤ) - 1)) v := by
-    simpa using (analyticAt_id (𝕜 := ℂ) (z := v)).zpow (n := (k : ℤ) - 1) hv0
+    simpa using (analyticAt_id (𝕜 := ℂ) (z := v)).fun_zpow (n := (k : ℤ) - 1) hv0
   have hJ : AnalyticAt ℂ (fun v : ℂ => ((k : ℂ) * v ^ ((k : ℤ) - 1))⁻¹) v := by
     apply AnalyticAt.inv (analyticAt_const.mul hzp)
     exact mul_ne_zero hkC (zpow_ne_zero _ hv0)

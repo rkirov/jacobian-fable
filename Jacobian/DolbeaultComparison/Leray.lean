@@ -91,7 +91,7 @@ theorem indCocycle_mem_Z1 (i : Fin 𝒰.n) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱
       RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ⊓
         (𝒱.induced (𝒰.U i)).U γ : Set X)) = 0 := by
     have hcast := congrArg Subtype.val key
-    simpa using hcast
+    exact hcast
   apply Subtype.ext
   rw [d1_apply]
   show (RS.MeroGermOn.restrict hβγ𝒱ᵢ

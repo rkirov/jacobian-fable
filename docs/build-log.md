@@ -2318,3 +2318,174 @@ touched (registration pending, one line).
   `[propext, Classical.choice, Quot.sound]` only.
 - [final] `scripts/check.sh Jacobian/Challenge` — Build completed successfully (3319 jobs), zero
   sorries. `Jacobian.lean` NOT touched (orchestrator to register `import Jacobian.Challenge`).
+
+## forward-port: v4.30.0-rc2/mathlib 5483982 → v4.32.0-rc1/mathlib 360da6fa (979 commits)
+
+Pure drift-fixing pass, no statement changes. Root failures were 16 errors in 6 files; fixing
+them cascaded through the rest of the (46k-line) build in five more rounds as downstream files
+hit the same handful of mathlib-API-shape changes. Three recurring root causes account for
+almost everything:
+
+1. **The new `to_fun` attribute** (`Mathlib.Tactic.ToFun`, since ~2026-05): point-free combinator
+   lemmas (`HasDerivAt.sub`, `AnalyticAt.zpow`, `MeromorphicAt.zpow`, `AnalyticAt.comp'`,
+   `HasFDerivAt.comp_hasDerivAt_of_eq`, …) now literally produce `f - g` / `f ^ n` /
+   `g ∘ f` (`Pi`/`Function.comp` point-free form) instead of the eta-expanded `fun x => f x - g x`
+   form our proofs were written against — and critically, `simp`/`simpa` no longer bridges the
+   two forms the way it used to (see point 3). Fix: use the `to_fun`-generated eta-expanded
+   sibling where one exists (`HasDerivAt.fun_sub`, `AnalyticAt.fun_zpow`,
+   `MeromorphicAt.fun_zpow`, `AnalyticAt.fun_comp`, `AnalyticAt.fun_comp_of_eq`,
+   `MeromorphicAt.fun_mul`, `HasDerivAt.fun_div`) — mathlib's own migration path for exactly this
+   shape mismatch.
+2. **Renamed/dropped lemmas** (plain `@[deprecated]` aliases, one-line fixes): `Pi.zero_def`/
+   `Pi.one_def` needed explicitly in a couple of `simpa` calls that used to close automatically;
+   `ContinuousLinearMap.{add,sub,neg,smul}_apply` → unqualified `{add,sub,neg,smul}_apply`;
+   `ContinuousLinearMap.ring_lmap_equiv_self` → `(ContinuousLinearMap.toSpanSingletonLIE _ _).symm`
+   (direction flipped in the rename); `ofReal_norm_eq_enorm` → `ofReal_norm`; `Set.mem_diff` →
+   `Set.mem_sdiff`; `Set.diff_eq_empty`/`Set.sdiff_eq_empty`, `Icc_diff_{Ioo,Ico}_same` →
+   `Icc_sdiff_{Ioo,Ico}_same`; `Set.diff_subset` → `Set.sdiff_subset`; `DFunLike`'s field
+   `coe_injective'` → `coe_injective` (and its type is now stated as `Function.Injective coe`).
+3. **`simpa`/`simp only []` no longer closes goals it used to.** Two recurring shapes: (a) a bare
+   `simp only []` or `dsimp only` that used to do *some* normalization now does none (the
+   preceding `simp`/rewriting already leaves the goal in simp-normal form) — deleting the
+   vacuous call is the fix; (b) `simpa [foo] using bar` where `bar`'s type and the goal are
+   **definitionally equal** (mostly `rfl`-true unfoldings of a `def`/`LinearMap`/`Submodule`
+   wrapper, or associativity of `Function.comp`) but not *simp*-equal — `simpa`'s closing step
+   apparently now checks equality at a stricter transparency than plain `exact`/`rw` does, so it
+   fails where it used to succeed. Fix: replace `simpa … using bar` with a plain `exact bar` (or
+   `rw [foo]; exact bar`/`simp only [...] at bar; exact bar` when a genuine, non-defeq rewrite is
+   still needed first).
+
+A fourth, unrelated issue surfaced in `Jacobian/Cech/Cochains.lean` and `Jacobian/Cech/
+WindowRank.lean`: `synthInstance` on this toolchain no longer reliably re-derives a **dependent**
+Pi-instance goal (`∀ i, AddCommGroup ↥(Submodule …)`, arising from `Module`/`AddCommGroup` on a
+`∀ i, LinSysOn …`-shaped cochain/window type) on demand at every downstream `Submodule.addCommGroup`/
+`Submodule.instModule`/`HasQuotient` use site — even though the *non-dependent* instance for a
+single fixed factor resolves fine. Fix: register the resolved instance once, directly, as a named
+global `instance` (bypassing the fragile re-derivation), rather than changing any type. Separately,
+two declarations (`finiteDimensional_windowAt`, `finiteDimensional_window`) were `instance`s
+whose one non-instance-implicit hypothesis (`h : d ≤ d'` / `h : D ≤ D'`) Lean now (correctly)
+refuses to accept as an `instance` at all (`"has 1 argument that cannot be inferred using
+typeclass synthesis"` is now a hard error, not a lint warning) — both were already invoked only by
+explicit application at every call site, so `instance` → `theorem` is a no-op change in behavior.
+
+Files touched (30), each a one-liner-to-small tactic/API fix, statements unchanged:
+
+- [fport] `Jacobian/ResidueCalculus/PrincipalPart.lean`: deleted 3 now-vacuous `simp only []`
+  calls in the Laurent-coefficient `Finset.sum_nbij'` proof (`simp made no progress`; the
+  preceding `simp only [Finset.mem_range/Icc]` already leaves the goal in normal form).
+- [fport] `Jacobian/Meromorphic/Predicates.lean`: `ordAtX_zero`/`ordAtX_one` — added
+  `Pi.zero_def`/`Pi.one_def` to the `simpa` set so `(0 : X → ℂ)`/`(1 : X → ℂ)` match
+  `ordAtX_const`'s `fun _ => c` shape (mathlib change: these no longer fire without the
+  lemma named explicitly).
+- [fport] `Jacobian/Path/Planar.lean`: `HasDerivAt.sub` → `HasDerivAt.fun_sub` (×2, in
+  `eventuallyEq_of_hasDerivAt_eq`); `convert hy.units_smul ![-1, 1]` now leaves two
+  instance-diamond side goals (`CommRing.toCommSemiring.toSemiring = Real.semiring`,
+  `addCommGroup.toAddCommMonoid = instAddCommMonoid`) — closed with
+  `<;> [skip; rfl; rfl]` (both are `rfl`-true, `convert`'s own closing pass no longer does it).
+- [fport] `Jacobian/Dbar/Wirtinger.lean`: `simpa [wirtingerDbar] using this` (×2, in
+  `contDiffOn_wirtingerDbar`/`continuous_wirtingerDbar`) → `exact this` (the def-unfold
+  is `rfl`-true, `simpa`'s closing check no longer sees it through the partial
+  application); dropped 4 now-unused-and-deprecated `ContinuousLinearMap.{add,sub,neg,smul}_apply`
+  simp args (mathlib change: → unqualified `{add,sub,neg,smul}_apply`).
+- [fport] `Jacobian/AbelWeak/SingleChart.lean`: `simpa [Function.comp] using hcomp` → `exact
+  hcomp` (same defeq-not-simp-eq pattern, for a `ContDiffAt … (↑ψ ∘ fun w ↦ w - c)` vs
+  `fun w ↦ ↑ψ (w - c)` goal).
+- [fport] `Jacobian/Forms/Analyticity.lean`: `ContinuousLinearMap.ring_lmap_equiv_self ℂ ℂ` →
+  `(ContinuousLinearMap.toSpanSingletonLIE ℂ ℂ).symm` (mathlib change: the old name is now a
+  deprecated alias for `toSpanSingletonLIE` itself, i.e. the *forward* direction — our use needed
+  the reverse, exactly as the deprecation message says); `AnalyticAt.comp'` →
+  `AnalyticAt.fun_comp` (×3, mathlib change: `AnalyticAt.comp'` deprecated in favor of the
+  `to_fun`-generated `fun_comp`).
+- [fport] `Jacobian/Meromorphic/OrderEval.lean`: `evalAt_smul` — `simpa [smul_eq_mul] using
+  (e1.const_smul c)` → `simp only [smul_eq_mul] at h2; exact h2` (goal needs the literal
+  Pi-form `c • f`, matching a sibling `tendsto_evalAt` call; `Filter.Tendsto.const_smul` has no
+  `to_fun` sibling to reach for, so bridge in two steps instead of one `simpa`).
+- [fport] `Jacobian/MeromorphicTrace/PlanarTrace.lean`: `.zpow` → `.fun_zpow` (×3, `AnalyticAt`
+  once, `MeromorphicAt` twice); `.comp'` → `.fun_comp` (×1).
+- [fport] `Jacobian/PlanarStokes/Compat.lean`: dropped 2 now-unused deprecated
+  `ContinuousLinearMap.{add,smul}_apply` simp args; `simpa [wirtingerDbar] using …` (×1) → `exact
+  …` (same `Dbar/Wirtinger.lean` pattern, this unit's own copy per its docstring).
+- [fport] `Jacobian/Dbar/Form01.lean`: deleted 4 now-vacuous `dsimp only;` calls in the
+  `Add`/`Neg`/`Sub`/`SMul (Form01 X)` instance proofs (`dsimp` made no progress).
+- [fport] `Jacobian/Dbar/CauchyKernel.lean`: `simpa [hh_def, wirtingerDbar] using …` →
+  `rw [hh_def]; exact …`; two `simpa [Gr/Gθ, map_neg] using (HasFDerivAt.comp_hasDerivAt_of_eq …)`
+  → `simp only [map_neg] at h4; exact h4` (`.comp_hasDerivAt_of_eq` has no `to_fun` sibling, no
+  `Function.comp`-eta needed once `map_neg` alone is applied as a plain rewrite first);
+  `ofReal_norm_eq_enorm` → `ofReal_norm`.
+- [fport] `Jacobian/JacFunctorial/Pullback.lean`: `mfderiv_chartAt_self` — `simpa [extChartAt_coe]
+  using h` no longer collapses `↑𝓘(ℂ,ℂ) ∘ ↑(chartAt ℂ y)` down to `↑(chartAt ℂ y)` alone; added
+  `modelWithCornersSelf_coe, Function.id_comp` to the simp set and switched the close to
+  `simp only […] at h; exact h` (the residual `TangentSpace 𝓘(ℂ,ℂ) y` vs `ℂ` gap is defeq-only,
+  not simp-eq); `AnalyticAt.comp'` → `AnalyticAt.fun_comp`.
+- [fport] `Jacobian/CanonicalForms/MForm.lean`: deleted 4 now-vacuous `dsimp only;` calls (same
+  `Add`/`Neg`/`Sub`/`SMul (MFormData X)` pattern as `Dbar/Form01.lean`).
+- [fport] `Jacobian/Dbar/Operator.lean`: `SmoothC.instFunLike`'s `coe_injective'` field →
+  `coe_injective` (mathlib change: `DFunLike`'s field renamed, dropped the trailing prime, and
+  is now typed as `Function.Injective coe` rather than the unfolded `∀ a b, …` form).
+- [fport] `Jacobian/MeromorphicTrace/ToP1.lean`: `simpa using (hd.sub hconst)` → `simp only
+  [sub_self] at hsub; exact hsub` (`Filter.Tendsto.sub` has no `to_fun` sibling).
+- [fport] `Jacobian/FormTrace/TraceZkForm.lean`: `.zpow` → `.fun_zpow` (×2).
+- [fport] `Jacobian/PlanarStokes/AnnulusResidue.lean`: `MeasureTheory.ae_iff.mpr (by simpa using
+  hRecOpen_null_diff)` → `rw [MeasureTheory.ae_iff]; simp only [not_not]; exact
+  hRecOpen_null_diff` (the goal has a genuine `¬¬P` needing `not_not`, not just a defeq gap, so
+  `exact` alone doesn't suffice this time); renamed 4 deprecated lemmas project-wide within the
+  file: `Icc_diff_Ioo_same`/`Icc_diff_Ico_same` → `Icc_sdiff_{Ioo,Ico}_same`, `Set.mem_diff` (×2)
+  → `Set.mem_sdiff`, `Set.diff_eq_empty` → `Set.sdiff_eq_empty`.
+- [fport] `Jacobian/Cech/Cochains.lean`: added `instAddCommGroupZ1`/`instModuleZ1` — direct
+  `AddCommGroup (Z1 D 𝒰)`/`Module ℂ (Z1 D 𝒰)` instances via `(Z1 D 𝒰).addCommGroup`/`.module`,
+  registered once so `H1Cover`'s `Z1 D 𝒰 ⧸ _` and every downstream user finds them verbatim
+  instead of re-deriving `AddCommGroup (C1 D 𝒰)` through the (now-fragile) dependent Pi-instance
+  path per use (see the round summary above; was surfacing as `failed to synthesize
+  HasQuotient …` plus knock-on `Function expected at H1Cover` parse-level errors from the first
+  failure poisoning the rest of the file's elaboration).
+- [fport] `Jacobian/JacFunctorial/TraceCoeff.lean`: `.zpow` → `.fun_zpow`.
+- [fport] `Jacobian/FormTrace/ResidueTraceCompat.lean`: `.comp_of_eq` → `.fun_comp_of_eq`;
+  `.zpow` → `.fun_zpow`; `.mul` → `.fun_mul` (×2, both operands of a nested product); dropped 2
+  now-unused `deriv_sub_const` simp args.
+- [fport] `Jacobian/DolbeaultComparison/Splitting.lean`: `simpa using hcast` → `exact hcast`
+  (`congrArg Subtype.val` of a `Z1`-membership equation vs. the `restrictL_apply_coe`-unfolded
+  goal — `rfl`-true, not simp-eq).
+- [fport] `Jacobian/Dbar/DiskAcyclic.lean`: deleted a vacuous `dsimp only at heval`; two more
+  `simpa using hcast` → `exact hcast` (same `LinSysOn.restrictL`/`MeroGermOn.restrict`
+  defeq-bridge pattern as `Splitting.lean`).
+- [fport] `Jacobian/AbelWeak/ChainAssembly.lean`: `HasDerivAt.div` → `HasDerivAt.fun_div`.
+- [fport] `Jacobian/Cech/WindowRank.lean`: added `instAddCommGroupWindowAt`/
+  `instModuleWindowAt`/`instModuleFreeWindowAt` — direct instances for the generic
+  `WindowAt p d d'` (same dependent-Pi-instance fix as `Cech/Cochains.lean`, one level up:
+  `Window D D' := ∀ q, WindowAt (q:X) (D q) (D' q)`); `finiteDimensional_windowAt`/
+  `finiteDimensional_window`: `instance` → `theorem` (both take a non-instance-implicit `≤`
+  hypothesis Lean can no longer accept on an `instance` at all — `"This instance has 1 argument
+  that cannot be inferred using typeclass synthesis"` is now a hard error; every call site
+  already invoked them explicitly, so this is a pure declaration-kind change, zero behavior
+  change).
+- [fport] `Jacobian/DolbeaultComparison/Leray.lean`: `simpa using hcast` → `exact hcast` (same
+  `LinSysOn.restrictL`/`MeroGermOn.restrict` pattern).
+- [fport] `Jacobian/Finiteness/TradeBounded.lean`: `simpa using hcast` → `exact hcast` (same
+  pattern); deleted a vacuous `simp only at hcongr`.
+- [fport] `Jacobian/DolbeaultComparison/Comparison.lean`: `simpa using this` → `exact this`
+  (`resH1_comp`'s conclusion `(ρ ∘ τ𝒱) ∘ σV` vs. the goal's `ρ ∘ τ𝒱 ∘ σV` — associativity of
+  `Function.comp` is `rfl`-true via its `fun x => f (g x)` definition, not simp-eq).
+- [fport] `Jacobian/Abel/SerreFunctional.lean`: `simpa using (RS.wirtingerDbar_const z 0)` →
+  added `Pi.zero_def` to the simp set (same `Predicates.lean` pattern); `pairingDual_injective`'s
+  `simpa using happ` → added `pairingDual, pairingH01_mk` to the simp set (needed the `def`'s own
+  unfolding lemma spelled out, plus the already-`@[simp]` `pairingH01_mk`, together in one call).
+- [fport] `Jacobian/Abel/Sufficiency.lean`: two `simpa using …` closing a `Basis.ext`/`LinearMap`
+  sum-of-`pathIntegralₗ` argument → `simp only [LinearMap.sum_apply] at …; exact …` (distribute
+  the finite sum of linear maps first, then the leftover `pathIntegralₗ γ θ = pathIntegral γ θ`
+  gap is `rfl`-true).
+- [fport] `Jacobian/Abel/UpgradeDischarge.lean`: `simpa using ((chartAt ℂ x).symm.
+  isOpen_inter_preimage h1)` → `rw [hV_def]; exact …` (`simp` was distributing the preimage over
+  `\`/`ᶜ` on the hypothesis side only, breaking the match against the untouched `let`-bound goal
+  `V`; unfolding `V` via its own `set … with hV_def` equation first and skipping simp entirely
+  avoids the mismatch since both sides are then syntactically identical); `Set.diff_subset` →
+  `Set.sdiff_subset`.
+
+**Verification**: `lake build` — Build completed successfully (3366 jobs), all six rounds of
+cascades resolved, zero remaining errors. `lake env lean GistAcceptance.lean` — clean (7.2s).
+`grep -rn -w sorry Jacobian/` — empty. Axiom audit (`GistAcceptance.lean`'s own `#print axioms`
+lines on `genus`, `Jacobian`, `Jacobian.ofCurve_inj`, `genus_eq_zero_iff_homeo`,
+`Jacobian.pushforward_pullback`, `ContMDiff.degree`) — all six report exactly
+`[propext, Classical.choice, Quot.sound]`. No statement-level issues: every fix above is a
+tactic/name/instance-registration change: no theorem signature, definition type, or the
+`Jacobian.lean`/`GistAcceptance.lean`/`comparator/`/`verify.sh`/`lakefile.toml`/
+`lake-manifest.json`/`lean-toolchain` files were touched.
