@@ -17,6 +17,7 @@ set -euo pipefail
 COMPARATOR_REV=71b52ec29e06d4b7d882726553b1ceb99a2499e0
 LEAN4EXPORT_REV=4e7915201d3f9f04470d9eae002fa695f7cdc589  # = refs/tags/v4.32.0
 NANODA_REV=68d5ca9db226849b41a6fff59d796ff19d0a8840
+LANDRUN_REV=5ed4a3db3a4ad930d577215c6b9abaa19df7f99f
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$HERE/comparator"
@@ -53,9 +54,20 @@ clone_at https://github.com/robsimmons/nanoda_lib "$WORK/nanoda" "$NANODA_REV"
 
 # landrun sandbox binary, wrapped to grant the dynamic loader the read+exec paths its
 # -ldd resolution can miss.
+#
+# lean-eval's README is explicit that landrun must come from the PINNED COMMIT, not from a
+# tagged release: "tagged releases through v0.1.15 lack fixes comparator needs".
 if [ ! -x "$WORK/landrun-bin" ]; then
-  curl -sL -o "$WORK/landrun-bin" \
-    https://github.com/Zouuup/landrun/releases/download/v0.1.14/landrun-linux-amd64
+  if command -v go >/dev/null 2>&1; then
+    GOBIN="$WORK/gobin" go install "github.com/zouuup/landrun/cmd/landrun@$LANDRUN_REV"
+    cp "$WORK/gobin/landrun" "$WORK/landrun-bin"
+  else
+    echo "verify.sh: no 'go' toolchain found; falling back to the landrun v0.1.14 release." >&2
+    echo "verify.sh: WARNING - upstream considers released landrun binaries insufficient, so" >&2
+    echo "verify.sh: this run is NOT equivalent to lean-eval's. Install Go to fix." >&2
+    curl -sL -o "$WORK/landrun-bin" \
+      https://github.com/Zouuup/landrun/releases/download/v0.1.14/landrun-linux-amd64
+  fi
   chmod +x "$WORK/landrun-bin"
 fi
 EXTRA=""

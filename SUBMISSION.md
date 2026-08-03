@@ -72,7 +72,7 @@ the real `leanprover/comparator` through lean-eval's own `WorkspaceTest` harness
 | comparator | `71b52ec2` | upstream builds it with its own toolchain (v4.30.0-rc2) |
 | lean4export | `4e791520` (tag v4.32.0) | workspace `lean-toolchain` copied over it, as upstream does |
 | nanoda | `68d5ca9` (robsimmons/nanoda_lib) | independent kernel replay, required for every problem |
-| landrun | `v0.1.14` release binary | sandbox |
+| landrun | `5ed4a3db` (pinned commit, `go install`) | sandbox; upstream warns released binaries through v0.1.15 are insufficient |
 
 `verify.sh` defaults to building comparator with the *workspace* toolchain, so a dev box needs
 only one Lean install; set `COMPARATOR_OWN_TOOLCHAIN=1` for upstream's exact recipe. The
