@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.Loops
 import Jacobian.TailDuality
 import Jacobian.LaurentTail
@@ -61,8 +67,6 @@ not an external blocker — flagged precisely in `Sufficiency.lean`.
 -/
 
 open scoped ContDiff Manifold
-set_option maxHeartbeats 4000000
-set_option synthInstance.maxHeartbeats 400000
 
 noncomputable section
 

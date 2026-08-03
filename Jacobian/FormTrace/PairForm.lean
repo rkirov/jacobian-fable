@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: form-trace-tower. Pair-form residues `resAtX F h x` (D2) and their
 chart-invariance (task item 1).
 -/
@@ -69,6 +75,7 @@ actually needed, `ContMDiffAt → AnalyticAt`) directly from mathlib's
 
 section Compat
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- `ContMDiffAt` for a map `F : X → Y` gives analyticity of the chart composite in ANY pair of
 maximal-atlas charts (`e` at `x`, `e'` at `F x`). (Only the forward direction is proved/needed;
 the converse would need an extra continuity argument not required here.) -/
@@ -88,6 +95,7 @@ end Compat
 
 /-! ### Source-chart invariance (task item 1) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Source-chart invariance of the pair-form integrand's residue: the target chart `e'` is held
 FIXED (arbitrary), only the source chart varies. The TRUE, general half of chart-invariance —
 directly analogous to `RS.ordAtX_eq_of_mem_source`, via ONE application of

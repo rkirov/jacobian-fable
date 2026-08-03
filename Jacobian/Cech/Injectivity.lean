@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Colimit
 import Jacobian.Meromorphic.Gluing
 
@@ -22,6 +28,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 variable (D : RS.Divisor X) {Ω : Opens X} {𝒰 𝒱 : FinCover Ω}
 variable (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ)
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Any member `A ≤ Ω` is exhausted by its intersections with the members of a cover `𝒱` of `Ω`
 (§6.7's covering fact, used both to glue `injPatch` over `𝒰.U i` and to compare cochains over
 `𝒰.U i ⊓ 𝒰.U j`). -/
@@ -142,7 +149,7 @@ theorem exists_injGlue {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) {g : C0 D 𝒱}
 /-- The glued cochain `ψ` is a coboundary witness for `-f` (a sign artifact of `injPatch`'s
 convention, harmless — `f = d0 D 𝒰 (-ψ)`). -/
 theorem d0_injGlue_eq_neg {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) {g : C0 D 𝒱}
-    (hgeq : resC1 D τ hτ f = d0 D 𝒱 g) (ψ : ∀ i, RS.LinSysOn D (𝒰.U i : Set X))
+    (_hgeq : resC1 D τ hτ f = d0 D 𝒱 g) (ψ : ∀ i, RS.LinSysOn D (𝒰.U i : Set X))
     (hψ : ∀ (i : Fin 𝒰.n) (k : Fin 𝒱.n),
       LinSysOn.restrictL D (inf_le_left : 𝒰.U i ⊓ 𝒱.U k ≤ 𝒰.U i) (ψ i) =
         injPatch D τ hτ f g i k) :

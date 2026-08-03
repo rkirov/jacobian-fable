@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.AbelWeak.SingleChart
 import Jacobian.Path
 import Jacobian.PlanarStokes
@@ -80,6 +86,7 @@ theorem exists_weakSolutionOfFinset {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 /-! ## §7.2: the telescoped path-integral identity (pure `Path`-API, no Stokes) -/
 
+omit [T2Space X] in
 /-- **The CC6-compliant replacement for Forster's `∬_X`-formula (D5)**: for any `ω : Form1 X` and
 any `ChartChain` `C` adapted to `γ`, `pathIntegral γ ω` is exactly the finite telescoped sum of
 chart-local holomorphic-primitive differences. -/

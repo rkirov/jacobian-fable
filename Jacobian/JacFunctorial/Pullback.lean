@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms
 
 /-!
@@ -37,6 +43,7 @@ variable {Y : Type*} [TopologicalSpace Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(
 
 /-! ### `Compat`: two-manifold chart bridges (requested upstream, proved locally) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Reading a `ContMDiffAt` map through arbitrary maximal-atlas charts on both source and target
 is analytic. Generalizes `RS.contMDiffAt_iff_analyticAt_of_mem_source` (`f : X → ℂ`) to an
 arbitrary charted target `Y`. -/
@@ -50,7 +57,6 @@ theorem analyticAt_of_mem_maximalAtlas {f : X → Y} {x : X} (hf : ContMDiffAt �
     contDiffWithinAt_univ] at h
   exact h.2.analyticAt
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The (forward) preferred chart's own `mfderiv` at its base point is the identity — the
 symmetric counterpart of `RS.mfderiv_chartAt_symm_chartAt_self`. -/
 theorem mfderiv_chartAt_self (y : Y) :
@@ -60,7 +66,6 @@ theorem mfderiv_chartAt_self (y : Y) :
   exact h
 
 omit [IsManifold 𝓘(ℂ) ω X] in
-set_option backward.isDefEq.respectTransparency false in
 /-- Two-manifold generalization of `RS.tangentCoord_mfderiv_comp`: the composite `mfderiv`,
 read in the *target's own preferred chart*, is the planar derivative of the chart-composite. -/
 theorem tangentCoord_mfderiv_chart_comp {F : X → Y} {g : ℂ → X} {z : ℂ}
@@ -102,6 +107,7 @@ private theorem deriv_eq_of_eventuallyEq_comp {g h k : ℂ → ℂ} {z : ℂ}
     (heq : k =ᶠ[nhds z] g ∘ h) : deriv k z = deriv g (h z) * deriv h z :=
   ((hg.hasDerivAt.comp z hh.hasDerivAt).congr_of_eventuallyEq heq).deriv
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **Master computation** (mirrors `Form1CoeffData.coeffInFun_toSection`): in any maximal-atlas
 source chart `e` and target chart `e'` (with `f` mapping the relevant point into `e'.source`),
 the raw coefficient of `pullbackSection f η` is the chain-rule pullback formula. -/

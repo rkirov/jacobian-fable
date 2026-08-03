@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.LinkData
 import Jacobian.Abel.Sufficiency
 import Jacobian.Path
@@ -35,7 +41,6 @@ external fact (the same gate as `DolbeaultBridge.lean`; the weak-solution hypoth
 open scoped ContDiff Manifold
 open IsManifold Metric Set MeasureTheory Filter Topology
 
-set_option maxHeartbeats 3200000
 
 noncomputable section
 
@@ -46,6 +51,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 
 /-! ## Small algebra helpers -/
 
+omit [T2Space X] [CompactSpace X] in
 theorem pairing_zero_left (PU : SurfPoU X) (θ : RS.Form1 X) :
     pairing PU (0 : RS.Form01 X) θ = 0 := by
   rw [show (0 : RS.Form01 X) = (0 : ℂ) • (0 : RS.Form01 X) from (zero_smul ℂ _).symm,
@@ -64,6 +70,7 @@ theorem zpow_finset_sum {ι : Type*} {a : ℂ} (ha : a ≠ 0) (s : Finset ι) (f
   | empty => simp
   | cons b s hb ih => rw [Finset.sum_cons, Finset.prod_cons, zpow_add₀ ha, ih]
 
+omit [T2Space X] [CompactSpace X] in
 /-- Real-smooth multiplication on the surface, through the preferred chart (no
 `ContMDiffMul 𝓘(ℝ, ℂ) ∞ ℂ` instance exists — the `AbelWeak` compat route). -/
 theorem contMDiffAt_mul_real' {f g : X → ℂ} {x : X}

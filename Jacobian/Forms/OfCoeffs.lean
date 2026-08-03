@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms.Analyticity
 
 /-!
@@ -60,7 +66,6 @@ def toSection (x : X) : TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ 
     (mfderiv 𝓘(ℂ) 𝓘(ℂ) (D.chart (D.idx x)) x :
       TangentSpace 𝓘(ℂ) x →L[ℂ] TangentSpace 𝓘(ℂ) (D.chart (D.idx x) x))
 
-set_option backward.isDefEq.respectTransparency false in
 theorem evalC_toSection (x : X) (w : ℂ) :
     evalC D.toSection x w =
       D.coeff (D.idx x) (D.chart (D.idx x) x) *

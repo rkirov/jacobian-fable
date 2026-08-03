@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: meromorphic-trace. THE argument principle, file 3 of the design's 6-file plan.
 -/
 import Jacobian.MeromorphicTrace.OrderMultiplicity
@@ -33,6 +39,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {f : X → ℂ} {x : X}
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Translation lemma: `toP1 f x = ↑0` iff `f` has a genuine zero at `x` (strictly positive
 order — excludes the "regular, nonvanishing" case `ordAtX f x = 0`, since an order-exactly-`0`
 presentation has a *nonzero* limiting value, `tendsto_ne_zero_of_meromorphicOrderAt_eq_zero`). -/

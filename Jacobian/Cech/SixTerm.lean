@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Skyscraper
 import Jacobian.Cech.WindowRank
 
@@ -36,13 +42,13 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.7, §6.9).
 open scoped ContDiff Manifold Topology
 open Set Filter TopologicalSpace RS.Cech
 
-set_option linter.unusedSectionVars false
 
 namespace RS.Cech
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {Ω : Opens X} {𝒰 : FinCover Ω} {D D' : RS.Divisor X}
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- General (non-coboundary) version of `C1.retype_mem_Z1`: retyping a `Z1 D'`-cocycle whose
 components all satisfy the `D`-bound gives a `Z1 D`-cocycle. -/
 theorem C1.retype_mem_Z1' {f : C1 D' 𝒰} (hf : f ∈ Z1 D' 𝒰) (hmem : f.MemLD D) :
@@ -66,6 +72,7 @@ theorem h1CoverIncl_mk_retype (h : D ≤ D') {f : C1 D' 𝒰} (hf : f ∈ Z1 D' 
 
 /-! ### Small order arithmetic helpers -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem le_ord_sub {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     {φ ψ : RS.MeroGermOn X U} {m : WithTop ℤ} (h1 : m ≤ φ.ord x) (h2 : m ≤ ψ.ord x) :
     m ≤ (φ - ψ).ord x := by
@@ -81,6 +88,7 @@ private theorem one_le_of_pos {s : WithTop ℤ} (h : 0 < s) : 1 ≤ s := by
     have hk : (0 : ℤ) < k := by exact_mod_cast h
     exact_mod_cast (show (1 : ℤ) ≤ k by omega)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem WindowAt.mk_surjective (p : X) (d d' : ℤ) : Function.Surjective (WindowAt.mk p d d') :=
   Submodule.mkQ_surjective _
 
@@ -253,6 +261,7 @@ noncomputable def windowDefect {V : Opens X} {q : X} (γ : RS.MeroGermOn X (V : 
   RS.MeroGermOn.restrict Set.inter_subset_left γ -
     RS.MeroGermOn.restrict Set.inter_subset_right ψ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The `ord` of the defect at `q` can be computed after restricting both germs to any open
 `T ∋ q` inside both domains (the normalization workhorse for all defect bookkeeping). -/
 theorem windowDefect_ord_congr {V : Opens X} {q : X} {T : Set X} (hT : IsOpen T)
@@ -266,6 +275,7 @@ theorem windowDefect_ord_congr {V : Opens X} {q : X} {T : Set X} (hT : IsOpen T)
   congr 1
   rw [windowDefect, map_sub, RS.MeroGermOn.restrict_restrict, RS.MeroGermOn.restrict_restrict]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Restricting the local section to a smaller member does not change the defect's `ord`. -/
 theorem windowDefect_ord_restrict {V V' : Opens X} {q : X} (hVV' : V' ≤ V) (hq : q ∈ V')
     (γ : RS.MeroGermOn X (V : Set X)) (ψ : RS.MeroGermOn X ((chartAt ℂ q).source)) :
@@ -275,6 +285,7 @@ theorem windowDefect_ord_restrict {V V' : Opens X} {q : X} (hVV' : V' ≤ V) (hq
   congr 1
   rw [windowDefect, RS.MeroGermOn.restrict_restrict]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Rep-change: the defect bound only depends on the `WindowAt`-class of the chart-source germ
 (two representatives differ by `ordGe q (-dq)`, which is absorbed by `ord_add`). This is why
 `Realizes` may quantify over all representatives. -/
@@ -307,6 +318,7 @@ theorem windowDefect_bound_of_mk_eq {V : Opens X} {q : X} (hq : q ∈ V) {dq d'q
 
 /-! ### `C1.MemLD` closure properties -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.res {𝒱 : FinCover Ω} {f : C1 D' 𝒰} (hf : f.MemLD D)
     (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) : (resC1 D' τ hτ f).MemLD D := by
   intro p
@@ -324,6 +336,7 @@ theorem memLD_d0_res {𝒱 : FinCover Ω} {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).
   rw [← hcomm]
   exact hg.res τ hτ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.add {f f' : C1 D' 𝒰} (hf : f.MemLD D) (hf' : f'.MemLD D) :
     (f + f').MemLD D := by
   intro p
@@ -332,17 +345,20 @@ theorem C1.MemLD.add {f f' : C1 D' 𝒰} (hf : f.MemLD D) (hf' : f'.MemLD D) :
     RS.LinSysOn D ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)
   exact Submodule.add_mem _ (hf p) (hf' p)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.smul (a : ℂ) {f : C1 D' 𝒰} (hf : f.MemLD D) : (a • f).MemLD D := by
   intro p
   show (a • (f p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))) ∈
     RS.LinSysOn D ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)
   exact Submodule.smul_mem _ a (hf p)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem memLD_d0_add {g g' : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D)
     (hg' : (d0 D' 𝒰 g').MemLD D) : (d0 D' 𝒰 (g + g')).MemLD D := by
   rw [map_add]
   exact hg.add hg'
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem memLD_d0_smul (a : ℂ) {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D) :
     (d0 D' 𝒰 (a • g)).MemLD D := by
   rw [map_smul]
@@ -350,7 +366,6 @@ theorem memLD_d0_smul (a : ℂ) {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D) :
 
 /-! ### `mlClass` is refinement-stable (§6.9(a), `mlClass_res`) -/
 
-set_option maxHeartbeats 1000000 in
 theorem mlClass_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     (hgr : (d0 D' 𝒱 (resC0 D' τ hτ g)).MemLD D) :
@@ -393,7 +408,6 @@ theorem memLD_of_isAdapted {𝒲 : FinCover (⊤ : Opens X)} (hadapt : 𝒲.IsAd
 -- sequence, no snake lemma anywhere. Every class of `H1 D'` is already, on a cover adapted to
 -- `diffSupp D D'`, represented by a genuine `Z1 D`-cocycle (retyping across the finite set where
 -- `D ≠ D'` costs nothing since cocycles vanish there anyway).
-set_option maxHeartbeats 1000000 in
 theorem H1Incl_surjective (h : D ≤ D') : Function.Surjective (H1Incl D h) := by
   intro ξ'
   obtain ⟨𝒰₀, f'c, hf'c⟩ := exists_rep D' ξ'
@@ -426,6 +440,7 @@ def Realizes (𝒰 : FinCover (⊤ : Opens X)) (g : C0 D' 𝒰) (w : Window D D'
         (windowDefect (g i : RS.MeroGermOn X (𝒰.U i : Set X))
           (ψ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source))).ord (q : X)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem Realizes.res {𝒰 𝒱 : FinCover (⊤ : Opens X)} {g : C0 D' 𝒰} {w : Window D D'}
     (hr : Realizes 𝒰 g w) (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) :
     Realizes 𝒱 (resC0 D' τ hτ g) w := by
@@ -436,6 +451,7 @@ theorem Realizes.res {𝒰 𝒱 : FinCover (⊤ : Opens X)} {g : C0 D' 𝒰} {w 
   rw [hgerm, windowDefect_ord_restrict (hτ k) hqk]
   exact hb
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem Realizes.add {𝒰 : FinCover (⊤ : Opens X)} {g g' : C0 D' 𝒰} {w w' : Window D D'}
     (hr : Realizes 𝒰 g w) (hr' : Realizes 𝒰 g' w') : Realizes 𝒰 (g + g') (w + w') := by
   intro q ψ hψ i hqi
@@ -465,6 +481,7 @@ theorem Realizes.add {𝒰 : FinCover (⊤ : Opens X)} {g g' : C0 D' 𝒰} {w w'
   exact le_trans (le_min hb₁ hb₂) (RS.MeroGermOn.ord_add
     ((𝒰.U i).2.inter (chartAt ℂ (q : X)).open_source) ⟨hqi, mem_chart_source ℂ (q : X)⟩ _ _)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem Realizes.smul {𝒰 : FinCover (⊤ : Opens X)} (a : ℂ) {g : C0 D' 𝒰} {w : Window D D'}
     (hr : Realizes 𝒰 g w) : Realizes 𝒰 (a • g) (a • w) := by
   intro q ψ hψ i hqi
@@ -509,7 +526,6 @@ theorem Realizes.smul {𝒰 : FinCover (⊤ : Opens X)} (a : ℂ) {g : C0 D' �
 
 /-! ### Lemma A (§6.9(d)): independence of the realization -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Lemma A (§6.9(d))**: any two Mittag-Leffler realizations of the same window vector give
 the same `H¹(D)`-class. No adaptedness is needed: at `diffSupp`-points the two `Realizes`
 bounds control the difference, everywhere else `D = D'` and the `D'`-bounds do. -/
@@ -594,13 +610,12 @@ theorem mlClass_eq_of_realizes {𝒰 𝒰' : FinCover (⊤ : Opens X)} {g : C0 D
 
 /-! ### `exists_realization` (§6.9(c)) -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Adapted-cover realization (§6.9(c))**: every window vector is realized by a
 Mittag-Leffler `0`-cochain on a cover adapted to `diffSupp D D'` — on the (unique) member
 through `q`, the restriction of a chart-source representative of `w q`, shrunk into a pole-free
 zone avoiding all other points of `diffSupp D D' ∪ supp D ∪ supp D'`; `0` elsewhere. -/
-theorem exists_realization (h : D ≤ D') (w : Window D D') :
-    ∃ (𝒰 : FinCover (⊤ : Opens X)) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D),
+theorem exists_realization (_h : D ≤ D') (w : Window D D') :
+    ∃ (𝒰 : FinCover (⊤ : Opens X)) (g : C0 D' 𝒰) (_hg : (d0 D' 𝒰 g).MemLD D),
       Realizes 𝒰 g w ∧ 𝒰.IsAdapted (diffSupp D D') := by
   classical
   set S' : Finset X := diffSupp D D' ∪ (D.finiteSupport isCompact_univ).toFinset ∪
@@ -732,7 +747,6 @@ private theorem windowConnectRaw_eq (h : D ≤ D') (w : Window D D')
   mlClass_eq_of_realizes (exists_realization h w).choose_spec.choose_spec.choose hg
     (exists_realization h w).choose_spec.choose_spec.choose_spec.1 hr
 
-set_option maxHeartbeats 1000000 in
 /-- **The connecting map `δ` of the six-term skyscraper fragment (§6.9(d))**: realize the
 window vector on an adapted cover (`exists_realization`), take the Mittag-Leffler class
 (`mlClass`); well-defined by Lemma A (`mlClass_eq_of_realizes`), which also gives linearity. -/
@@ -773,6 +787,7 @@ theorem H1Incl_windowConnect (h : D ≤ D') (w : Window D D') :
 
 /-! ### Exactness (§6.9(e)/(f)) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [CompactSpace X] in
 /-- The `mlClass_eq_zero_iff`-side `ord` bound and the `windowDefect`-side bound agree (both
 compute the same germ's order on `𝒰.U i ∩ chart source`). -/
 private theorem ord_sub_global_eq_defect {𝒰 : FinCover (⊤ : Opens X)} {i : Fin 𝒰.n} {q : X}
@@ -793,7 +808,6 @@ private theorem ord_sub_global_eq_defect {𝒰 : FinCover (⊤ : Opens X)} {i : 
       RS.MeroGermOn.restrict_restrict]
   rw [hgerm, RS.MeroGermOn.ord_restrict Set.inter_subset_left hopen (𝒰.U i).2 hqmem]
 
-set_option maxHeartbeats 1000000 in
 /-- **Exactness at `Window D D'` (§6.9(e))**: `windowConnect h w = 0` iff `w` is the window
 vector of a global section of `L(D')`. -/
 theorem exact_windowMap_windowConnect (h : D ≤ D') :
@@ -871,7 +885,6 @@ theorem exact_windowMap_windowConnect (h : D ≤ D') :
       rw [hDx]
       exact hb
 
-set_option maxHeartbeats 1000000 in
 /-- **Exactness at `H¹(D)` (§6.9(f))**: the kernel of `H1Incl` is exactly the image of the
 connecting map — `toH1_injective` (Forster 12.4) turns the vanishing into a `D'`-coboundary
 witness on the representing cover itself, and `exists_tail_approx` reads off its window
@@ -889,7 +902,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
     rw [h1CoverIncl_mk, H1Cover.mk_eq_zero_iff] at hincl0
     obtain ⟨g', hg'd0⟩ := hincl0
     have hg'd0' : d0 D' 𝒱 g' = inclC1 D 𝒱 h (f : C1 D 𝒱) := by
-      rw [hg'd0, LinearMap.restrict_coe_apply]
+      rw [hg'd0, LinearMap.coe_restrict_apply]
     have hmemld : (d0 D' 𝒱 g').MemLD D := by
       intro p
       rw [hg'd0']

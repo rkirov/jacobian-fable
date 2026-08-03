@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.TailDuality.Duality
 
 /-!
@@ -81,6 +87,7 @@ noncomputable def windowConnectT {D D' : RS.Divisor X} (h : D ≤ D') :
 theorem windowConnectT_apply {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.Cech.Window D D') :
     windowConnectT h w = H1Tail.mk D (RS.LaurentTail.windowToT D D' h w) := rfl
 
+omit [ConnectedSpace X] [T1Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `windowToT`'s value off the witness `Finset` is `0` (unfolds `T.mk`). -/
 theorem windowToT_apply_of_not_mem {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.Cech.Window D D')
     {p : X} (hp : p ∉ RS.Cech.diffSupp D D') :
@@ -213,6 +220,7 @@ theorem exact_windowMap_windowConnectT {D D' : RS.Divisor X} (h : D ≤ D') :
 
 /-! ### Exactness at `H1Tail D`: `ker (H1TailIncl h) = range (windowConnectT h)` -/
 
+omit [ConnectedSpace X] [T1Space X] in
 /-- The window's image, truncated one step further, vanishes IDENTICALLY (not merely mod
 `range(alphaL D')`) — the tail-level shadow of Čech's `H1Incl_windowConnect`, but here a direct
 computation: a window representative already has order `≥ -(D' p)` at its marked point, so
@@ -293,6 +301,7 @@ theorem exact_windowConnectT_H1TailIncl {D D' : RS.Divisor X} (h : D ≤ D') :
 
 /-! ### The rank ledger, and `chiT`'s additivity -/
 
+omit [T1Space X] [DecidableEq X] in
 /-- `sixterm_rank1`'s tail-level analogue — unchanged from `Finiteness.Chi`'s own proof (no `H¹`
 appears in it at all: it is purely about `L(D)`/`L(D')`/`Window D D'`). -/
 private theorem sixterm_rankT1 {D D' : RS.Divisor X} (h : D ≤ D') :

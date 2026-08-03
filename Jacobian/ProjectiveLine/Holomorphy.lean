@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.ProjectiveLine.Charts
 import Jacobian.Surface.Bridges
 import Mathlib.Analysis.Meromorphic.Order
@@ -45,15 +51,18 @@ theorem contMDiff_coe : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω ((↑) : ℂ → OnePoi
   rw [hfun]
   exact analyticAt_id
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 /-- Holomorphic lift of a holomorphic function (the "no poles" constructor). -/
 theorem ContMDiffAt.onePointCoe {g : Z → ℂ} {x : Z} (hg : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g x) :
     ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (fun z => ((g z : ℂ) : OnePoint ℂ)) x :=
   (contMDiff_coe (g x)).comp x hg
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 theorem ContMDiff.onePointCoe {g : Z → ℂ} (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (fun z => ((g z : ℂ) : OnePoint ℂ)) :=
   fun x => ContMDiffAt.onePointCoe (hg x)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 /-- Holomorphy at a finite value, read in the `coeChart`. -/
 theorem contMDiffAt_iff_analyticAt_of_ne_infty {f : Z → OnePoint ℂ} {x : Z}
     (h : f x ≠ (∞ : OnePoint ℂ)) :
@@ -70,6 +79,7 @@ theorem contMDiffAt_iff_analyticAt_of_ne_infty {f : Z → OnePoint ℂ} {x : Z}
       Function.comp_id, Function.id_comp, hchart]
   rw [hfun, hpt]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 /-- Holomorphy at `∞`, read in the `invChart` ("`1/f` is analytic"). -/
 theorem contMDiffAt_iff_analyticAt_of_eq_infty {f : Z → OnePoint ℂ} {x : Z}
     (h : f x = (∞ : OnePoint ℂ)) :
@@ -93,7 +103,7 @@ theorem tendsto_coe_cobounded :
 
 /-- **Pole constructor** (planar; the pre-`ℳ X` layer). A function agreeing near `z₀` with a
 meromorphic `g` having a genuine pole, and sent to `∞` at `z₀`, is holomorphic into `ℙ¹`. -/
-theorem contMDiffAt_of_pole {g : ℂ → ℂ} {z₀ : ℂ} (hg : MeromorphicAt g z₀)
+theorem contMDiffAt_of_pole {g : ℂ → ℂ} {z₀ : ℂ} (_hg : MeromorphicAt g z₀)
     (hord : meromorphicOrderAt g z₀ < 0) {F : ℂ → OnePoint ℂ} (hFinf : F z₀ = (∞ : OnePoint ℂ))
     (hF : ∀ᶠ z in 𝓝[≠] z₀, F z = ((g z : ℂ) : OnePoint ℂ)) :
     ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F z₀ := by
@@ -124,6 +134,7 @@ theorem contMDiffAt_of_pole {g : ℂ → ℂ} {z₀ : ℂ} (hg : MeromorphicAt g
     simp [hFinf]
   exact AnalyticAt.of_meromorphicOrderAt_pos hpos hval
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 /-- Converse atom: a holomorphic map to `ℙ¹` is chart-locally meromorphic (CC3's currency). -/
 theorem meromorphicAt_coeChart_comp {f : Z → OnePoint ℂ} {x : Z}
     (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) :

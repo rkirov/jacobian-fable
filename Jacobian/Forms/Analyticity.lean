@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms.Coeffs
 import Jacobian.Surface.Bridges
 import Mathlib.Analysis.Normed.Operator.Mul
@@ -85,7 +91,6 @@ theorem deriv_trans_comp {e e' f : OpenPartialHomeomorph X ℂ}
   exact deriv_comp z h1 h2
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-set_option backward.isDefEq.respectTransparency false in
 /-- **Scalar chain rule**: the composite of `mfderiv`s applied to the canonical tangent vector
 `1`, read in the canonical coordinate, is the planar derivative of the composite. -/
 theorem tangentCoord_mfderiv_comp {f : X → ℂ} {g : ℂ → X} {z : ℂ}
@@ -119,7 +124,6 @@ theorem analyticAt_clm_iff_apply_one {F : ℂ → ℂ →L[ℂ] ℂ} {z : ℂ} :
     show L.toContinuousLinearEquiv.symm (L.toContinuousLinearEquiv (F w)) = F w
     exact L.toContinuousLinearEquiv.symm_apply_apply (F w)
 
-set_option backward.isDefEq.respectTransparency false in
 /-- Defeq bridge: the hom-bundle trivialization representative of a covector section, evaluated
 at the canonical tangent vector `1`, is the chart coefficient function. -/
 theorem inCoordinates_apply_one (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x)

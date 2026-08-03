@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Topology.Sets.Opens
 import Mathlib.Topology.Compactness.Compact
 import Mathlib.Topology.Separation.Basic
@@ -240,6 +246,7 @@ theorem mem_compOpens [T1Space X] {T : Finset X} {x : X} :
   show x ∈ ((T : Set X)ᶜ) ↔ x ∉ T
   rw [Set.mem_compl_iff, Finset.mem_coe]
 
+omit [ChartedSpace ℂ X] in
 /-- Refine a cover so that it is adapted to a finite set `S ⊆ Ω`, respecting prescribed
 neighbourhoods `O p` of each `p ∈ S` (§6.2; pure finite-lattice bookkeeping, `[T1Space X]`).
 Deviation from the design doc: an explicit `hS : ∀ p ∈ S, p ∈ Ω` hypothesis is added — without
@@ -343,6 +350,7 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
       simp only [hU_def, hcase, ← hqp]
       exact hAleO q
 
+omit [ChartedSpace ℂ X] in
 /-- If `𝒰` is adapted to `S`, distinct members meet `S` in at most disjoint points: no member
 other than the unique one containing `p` also contains it (immediate from `IsAdapted`, kept as
 a named export for the skyscraper unit). -/

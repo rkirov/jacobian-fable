@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.TailDuality.TailOps
 import Jacobian.CanonicalForms
 import Jacobian.ResidueCalculus.GermFunctionals
@@ -57,9 +63,11 @@ noncomputable def readAt (p : X) :
     induction ψ using RS.MeroGermOn.ind with
     | h f hf => rfl
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem readAt_mk (p : X) {f : X → ℂ} (hf : RS.MeromorphicOnX f (chartAt ℂ p).source) :
     readAt p (RS.MeroGermOn.mk f hf) = (f ∘ (chartAt ℂ p).symm : Filter.Germ _ ℂ) := rfl
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem meromorphicGerm_readAt (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     readAt p ψ ∈ RS.meromorphicGermsAt (chartAt ℂ p p) := by
   induction ψ using RS.MeroGermOn.ind with
@@ -67,6 +75,7 @@ theorem meromorphicGerm_readAt (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).sou
     rw [readAt_mk]
     exact hf p (mem_chart_source ℂ p)
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem readAt_mul (p : X) (ψ ψ' : RS.MeroGermOn X (chartAt ℂ p).source) :
     readAt p (ψ * ψ') = readAt p ψ * readAt p ψ' := by
   induction ψ using RS.MeroGermOn.ind with
@@ -77,6 +86,7 @@ theorem readAt_mul (p : X) (ψ ψ' : RS.MeroGermOn X (chartAt ℂ p).source) :
         show (f * g) ∘ (chartAt ℂ p).symm = f ∘ (chartAt ℂ p).symm * g ∘ (chartAt ℂ p).symm
           from rfl, Filter.Germ.coe_mul]
 
+omit [T2Space X] in
 theorem readAt_tailGerm (p : X) (m : ℤ) :
     readAt p (RS.Cech.tailGerm p m) =
       (fun z => (z - chartAt ℂ p p) ^ m : Filter.Germ (𝓝[≠] (chartAt ℂ p p)) ℂ) := by
@@ -136,11 +146,13 @@ noncomputable def pairAtData (θ : MFormData X) (p : X) :
           funext z; simp [mul_assoc]]
       exact RS.resAt_const_mul c
 
+omit [T2Space X] in
 theorem pairAtData_mk (θ : MFormData X) (p : X) {f : X → ℂ}
     (hf : RS.MeromorphicOnX f (chartAt ℂ p).source) :
     pairAtData θ p (RS.MeroGermOn.mk f hf) =
       RS.resAt (fun z => f ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p) := rfl
 
+omit [T2Space X] in
 theorem pairAtData_congr {θ θ' : MFormData X} (p : X)
     (h : θ.coeffAt p =ᶠ[𝓝[≠] (chartAt ℂ p p)] θ'.coeffAt p) :
     pairAtData θ p = pairAtData θ' p := by
@@ -157,6 +169,7 @@ noncomputable def pairAt (θ : MForm X) (p : X) :
     RS.MeroGermOn X (chartAt ℂ p).source →ₗ[ℂ] ℂ :=
   Quotient.liftOn θ (pairAtData · p) (fun _ _ hab => pairAtData_congr p (hab p))
 
+omit [T2Space X] in
 theorem pairAt_apply_mk (θ : MFormData X) (p : X) : pairAt (MForm.mk θ) p = pairAtData θ p := rfl
 
 theorem pairAt_tailGerm (θ : MForm X) (p : X) (m : ℤ) :
@@ -261,9 +274,10 @@ variable [DecidableEq X]
 /-- `pairAt θ p` descended to the tail fibre `TailAt p D`, for `θ ∈ Ω(-D)`. -/
 noncomputable def pairTailAt (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.OmegaSpace (-D))
     (p : X) : TailAt p D →ₗ[ℂ] ℂ :=
-  Submodule.liftQ _ (pairAt θ p) (fun ψ hψ => LinearMap.mem_ker.mpr
+  Submodule.liftQ _ (pairAt θ p) (fun _ψ hψ => LinearMap.mem_ker.mpr
     (pairAt_eq_zero_of_mem_ordGe hθ hψ))
 
+omit [DecidableEq X] in
 theorem pairTailAt_mk (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.OmegaSpace (-D)) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     pairTailAt θ hθ p (TailAt.mk p D ψ) = pairAt θ p ψ :=
@@ -295,6 +309,7 @@ theorem pairT_zero (D : RS.Divisor X) : pairT (0 : MForm X) (zero_mem _) = (0 : 
 
 /-! ### Monotonicity of `Ω(-D)` in `D`, and the multiplication mover -/
 
+omit [T2Space X] [DecidableEq X] in
 theorem omegaSpace_anti {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) {θ : MForm X}
     (hθ₂ : θ ∈ MForm.OmegaSpace (-D₂)) : θ ∈ MForm.OmegaSpace (-D₁) := by
   rw [MForm.mem_omegaSpace_iff] at hθ₂ ⊢
@@ -305,6 +320,7 @@ theorem omegaSpace_anti {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) {θ : MFo
   calc ((D₁ p : ℤ) : WithTop ℤ) ≤ ((D₂ p : ℤ) : WithTop ℤ) := by exact_mod_cast hDp
     _ ≤ θ.ord p := h2
 
+omit [T2Space X] [DecidableEq X] in
 theorem smul_mem_omegaSpace {f : RS.Mero X} {θ : MForm X} {E F : RS.Divisor X}
     (hf : ∀ p, ((F p : ℤ) : WithTop ℤ) ≤ f.ord p) (hθ : θ ∈ MForm.OmegaSpace (-E)) :
     f • θ ∈ MForm.OmegaSpace (-(E + F)) := by
@@ -331,6 +347,7 @@ theorem pairT_trunc {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (θ : MForm X
 
 /-! ### `pairT_mulInto`: Miranda's `Res_ω∘μ_f = Res_{fω}` -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulInto_singleT (f : RS.Mero X) {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
@@ -341,6 +358,7 @@ theorem mulInto_singleT (f : RS.Mero X) {D E : RS.Divisor X}
   rw [DFinsupp.mapRange_single, mulIntoAt_mk]
   rfl
 
+omit [DecidableEq X] in
 /-- Miranda's `Res_ω∘μ_f = Res_{fω}`, at the raw germ level. -/
 theorem pairAt_mulInto (f : RS.Mero X) (p : X) (θ : MForm X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
@@ -375,6 +393,7 @@ theorem pairT_mulInto {D E : RS.Divisor X} (f : RS.Mero X)
 
 variable [CompactSpace X] [ConnectedSpace X] [T1Space X]
 
+omit [DecidableEq X] [CompactSpace X] [ConnectedSpace X] [T1Space X] in
 theorem pairAt_one (θ : MForm X) (p : X) :
     pairAt θ p (1 : RS.MeroGermOn X (chartAt ℂ p).source) = θ.resAt p := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
@@ -447,6 +466,7 @@ theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaS
 
 /-! ### `pairT` linearity in `θ` (feeds `resMap`) and injectivity -/
 
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
 theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
     (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ + θ₂ ∈ MForm.OmegaSpace (-D)) :
     pairT (θ₁ + θ₂) hθ12 = pairT θ₁ hθ₁ + pairT θ₂ hθ₂ := by
@@ -457,6 +477,7 @@ theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   rw [LinearMap.add_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_add,
     LinearMap.add_apply]
 
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
 theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
     (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ - θ₂ ∈ MForm.OmegaSpace (-D)) :
     pairT (θ₁ - θ₂) hθ12 = pairT θ₁ hθ₁ - pairT θ₂ hθ₂ := by
@@ -467,6 +488,7 @@ theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   rw [LinearMap.sub_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_sub,
     LinearMap.sub_apply]
 
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
 theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MForm.OmegaSpace (-D))
     (hcθ : c • θ ∈ MForm.OmegaSpace (-D)) :
     pairT (c • θ) hcθ = c • pairT θ hθ := by
@@ -476,6 +498,7 @@ theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MFo
   show pairT (c • θ) hcθ (singleT p D ψ) = (c • pairT θ hθ) (singleT p D ψ)
   rw [LinearMap.smul_apply, pairT_singleT, pairT_singleT, pairAt_smul, LinearMap.smul_apply]
 
+omit [CompactSpace X] [ConnectedSpace X] in
 theorem pairT_ne_zero [ConnectedSpace X] {D : RS.Divisor X} {θ : MForm X} (hθ0 : θ ≠ 0)
     (hθ : θ ∈ MForm.OmegaSpace (-D)) : pairT θ hθ ≠ 0 := by
   intro hz
@@ -511,6 +534,7 @@ theorem resMap_mk (D : RS.Divisor X) (θ : ↥(MForm.OmegaSpace (-D))) (τ : T D
     resMap D θ (H1Tail.mk D τ) = pairT θ.1 θ.2 τ :=
   Submodule.liftQ_apply _ _ τ
 
+omit [ConnectedSpace X] in
 theorem resMap_injective [ConnectedSpace X] (D : RS.Divisor X) :
     Function.Injective (resMap D) := by
   intro θ₁ θ₂ heq

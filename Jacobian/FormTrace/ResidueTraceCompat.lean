@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: form-trace-tower. `resAtP1` (D4) and residue-trace compatibility (task item 3,
 Miranda Lemma 3.2 globalized).
 -/
@@ -82,6 +88,7 @@ private theorem meromorphicAt_comp_sub_const {g : ℂ → ℂ} {c₀ : ℂ} (hg 
 
 /-! ### The per-fibre-point identification, under the calibration hypothesis -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Under the calibration hypothesis (the module docstring's `hcal`), the pair-form residue
 computed via an ADAPTED chart pair equals `resAtX` (computed via the PREFERRED chart pair). This
 is the corrected replacement for the design's (false, see `PairForm.lean`) general two-chart

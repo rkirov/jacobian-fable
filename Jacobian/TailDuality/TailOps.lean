@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.LaurentTail.Truncation
 
 /-!
@@ -24,6 +30,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-! ### `ordGe` monotonicity (the engine behind `truncAt`/`mulIntoAt`'s well-definedness) -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ordGe_mono (p : X) {m₁ m₂ : ℤ} (h : m₂ ≤ m₁) :
     RS.Cech.ordGe p m₁ ≤ RS.Cech.ordGe p m₂ := by
   intro ψ hψ
@@ -39,11 +46,13 @@ noncomputable def truncAt (p : X) {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂)
     rw [Submodule.comap_id]
     exact ordGe_mono p (neg_le_neg (Function.locallyFinsuppWithin.le_def.1 h p)))
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem truncAt_mk (p : X) {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     truncAt p h (TailAt.mk p D₁ ψ) = TailAt.mk p D₂ ψ :=
   Submodule.mapQ_apply _ _ _ ψ
 
+omit [T2Space X] in
 theorem truncAt_surjective (p : X) {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) :
     Function.Surjective (truncAt p h) := by
   intro z
@@ -64,10 +73,12 @@ noncomputable def truncT {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) : T D₁
     intro p
     simp only [DFinsupp.smul_apply, DFinsupp.mapRange_apply, map_smul, RingHom.id_apply]
 
+omit [DecidableEq X] [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem truncT_apply {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (τ : T D₁) (p : X) :
     truncT h τ p = truncAt p h (τ p) :=
   DFinsupp.mapRange_apply (fun p => truncAt p h) (fun _ => map_zero _) τ p
 
+omit [DecidableEq X] in
 theorem truncT_surjective {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) :
     Function.Surjective (truncT h) :=
   (DFinsupp.mapRange_surjective (fun p => truncAt p h) (fun _ => map_zero _)).mpr
@@ -88,19 +99,23 @@ noncomputable def singleT (p : X) (D : RS.Divisor X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : T D :=
   DFinsupp.single p (TailAt.mk p D ψ)
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem singleT_apply_self (p : X) (D : RS.Divisor X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : singleT p D ψ p = TailAt.mk p D ψ :=
   DFinsupp.single_eq_same
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem singleT_apply_of_ne {p q : X} (hqp : q ≠ p) (D : RS.Divisor X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : singleT p D ψ q = 0 :=
   DFinsupp.single_eq_of_ne hqp
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem singleT_eq_zero_iff (p : X) (D : RS.Divisor X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     singleT p D ψ = 0 ↔ (-(D p) : WithTop ℤ) ≤ ψ.ord p := by
   rw [singleT, DFinsupp.single_eq_zero, TailAt.mk_eq_zero_iff]
 
+omit [T2Space X] in
 @[simp] theorem truncT_singleT {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     truncT h (singleT p D₁ ψ) = singleT p D₂ ψ := by
@@ -113,6 +128,7 @@ theorem singleT_eq_zero_iff (p : X) (D : RS.Divisor X)
 
 /-! ### `mulIntoAt`/`mulInto` (D3): Miranda's `t ∘ μ_f`, uniform in `f` -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulIntoAt_bound_computation (p : X) (f : RS.Mero X) {D E : RS.Divisor X}
     (hf : ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) (hψ : ((-(D p) : ℤ) : WithTop ℤ) ≤ ψ.ord p) :
@@ -137,12 +153,14 @@ noncomputable def mulIntoAt (f : RS.Mero X) (p : X) {D E : RS.Divisor X}
     rw [Submodule.mem_comap, RS.Cech.mem_ordGe_iff, LinearMap.mulLeft_apply]
     exact mulIntoAt_bound_computation p f hf ψ hψ)
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 @[simp] theorem mulIntoAt_mk (f : RS.Mero X) (p : X) {D E : RS.Divisor X}
     (hf : ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     mulIntoAt f p hf (TailAt.mk p D ψ) =
       TailAt.mk p E (RS.MeroGermOn.restrict (Set.subset_univ _) f * ψ) :=
   Submodule.mapQ_apply _ _ _ ψ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulIntoAt_surjective {f : RS.Mero X} (hf0 : f ≠ 0) [ConnectedSpace X] (p : X)
     {D E : RS.Divisor X} (hf : ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) :
     Function.Surjective (mulIntoAt f p hf) := by
@@ -164,11 +182,13 @@ noncomputable def mulInto (f : RS.Mero X) {D E : RS.Divisor X}
     intro p
     simp only [DFinsupp.smul_apply, DFinsupp.mapRange_apply, map_smul, RingHom.id_apply]
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulInto_apply (f : RS.Mero X) {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (τ : T D) (p : X) :
     mulInto f hf τ p = mulIntoAt f p (hf p) (τ p) :=
   DFinsupp.mapRange_apply (fun p => mulIntoAt f p (hf p)) (fun _ => map_zero _) τ p
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulInto_add (f g : RS.Mero X) {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p)
     (hg : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ g.ord p)
@@ -186,6 +206,7 @@ theorem mulInto_add (f g : RS.Mero X) {D E : RS.Divisor X}
       from map_add _ f g,
     add_mul, map_add]
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulInto_smul (c : ℂ) (f : RS.Mero X) {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p)
     (hcf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ (c • f).ord p) :
@@ -218,18 +239,21 @@ theorem mulInto_surjective {f : RS.Mero X} (hf0 : f ≠ 0) [ConnectedSpace X] {D
 
 /-! ### `LinSys`/`Mero.ord` bookkeeping helpers -/
 
+omit [DecidableEq X] in
 theorem LinSys.divisor_ge [ConnectedSpace X] {C : RS.Divisor X} {f : RS.Mero X}
     (hf : f ∈ RS.LinSys C) (hf0 : f ≠ 0) (p : X) : -(C p) ≤ RS.divisor f p := by
   have h := RS.mem_linSys_iff.mp hf p
   rw [RS.divisor_apply]
   exact WithTop.untop₀_le_untop₀ (Mero.ord_ne_top hf0 p) h
 
+omit [DecidableEq X] in
 theorem Mero.ord_eq_divisor [ConnectedSpace X] {f : RS.Mero X} (hf : f ≠ 0) (p : X) :
     f.ord p = ((RS.divisor f p : ℤ) : WithTop ℤ) := by
   rw [RS.divisor_apply, WithTop.coe_untop₀_of_ne_top (Mero.ord_ne_top hf p)]
 
 /-! ### `nuL` -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem nu_bound (A C : RS.Divisor X) (f : ↥(RS.LinSys C)) (p : X) :
     (((A - C) p - A p : ℤ) : WithTop ℤ) ≤ (f : RS.Mero X).ord p := by
   have h := RS.mem_linSys_iff.mp f.2 p
@@ -259,6 +283,7 @@ theorem nuL_surjective (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
   rw [nuL_apply]
   exact mulInto_surjective hf0 (nu_bound A C f)
 
+omit [DecidableEq X] in
 theorem sub_divisor_le (A C : RS.Divisor X) [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0) :
     A - C - RS.divisor (f : RS.Mero X) ≤ A := by

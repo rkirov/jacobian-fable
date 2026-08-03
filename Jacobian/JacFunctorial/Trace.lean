@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.JacFunctorial.TraceCoeff
 import Jacobian.JacFunctorial.Density
 import Jacobian.MeromorphicTrace.FunctionTrace
@@ -58,6 +64,7 @@ theorem deriv_eq_of_eventuallyEq_comp' {g h k : ℂ → ℂ} {z : ℂ}
     (heq : k =ᶠ[𝓝 z] g ∘ h) : deriv k z = deriv g (h z) * deriv h z :=
   ((hg.hasDerivAt.comp z hh.hasDerivAt).congr_of_eventuallyEq heq).deriv
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω M] in
 /-- The two transition derivatives between overlapping maximal-atlas charts are mutually
 inverse. -/
 theorem deriv_transition_mul {e e' : OpenPartialHomeomorph M ℂ}
@@ -91,7 +98,7 @@ theorem open_subset_closure_diff {U : Set ℂ} (hU : IsOpen U) {s : Set ℂ} (hs
     U ⊆ closure (U \ s) := by
   intro z hz
   rw [mem_closure_iff_nhdsWithin_neBot]
-  have hs' : IsClosed (s \ {z}) := (hs.subset diff_subset).isClosed
+  have hs' : IsClosed (s \ {z}) := (hs.subset sdiff_subset).isClosed
   have hmem : U ∩ (s \ {z})ᶜ ∈ 𝓝 z :=
     Filter.inter_mem (hU.mem_nhds hz) (hs'.isOpen_compl.mem_nhds (by simp))
   have h1 : 𝓝[({z}ᶜ : Set ℂ) ∩ (U ∩ (s \ {z})ᶜ)] z = 𝓝[({z}ᶜ : Set ℂ)] z :=
@@ -208,6 +215,7 @@ derivative of `f`. (Junk `0` at ramified `x`, where the chart derivative vanishe
 def qCoeff (f : X → Y) (η : Form1 X) (e₀ : OpenPartialHomeomorph Y ℂ) (x : X) : ℂ :=
   (deriv (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Factorization of the chart derivative of `f` through a pair of adapted charts:
 `d(f-in-charts) = d(target transition) · (k·v^(k-1)) · d(source transition)`. -/
 theorem deriv_chartRead_eq_of_adapted {x₀ : X} {k : ℕ} (A : AdaptedChartsAt f x₀ k)
@@ -258,6 +266,7 @@ theorem deriv_chartRead_eq_of_adapted {x₀ : X} {k : ℕ} (A : AdaptedChartsAt 
   rw [hD]
   ring
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- The per-fibre-point identity: `qCoeff` computed through the `i`-th branch of a fibre stack
 is exactly the branch-transported, Jacobian-divided coefficient of `η` (the integrand of
 `traceZkForm`). Holds at ramified points too (both sides junk to `0`). -/
@@ -376,6 +385,7 @@ theorem traceCoeffFun_eq_qSum (η : Form1 X) {y ŷ : Y}
         RS.MTrace.sum_traceZk_stack (stackAt hf hne y) hŷV
 
 include hf in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- The chart-transition law for the canonical fibre sum. -/
 theorem qSum_trans (η : Form1 X) {ŷ : Y} {e₀ e₁ : OpenPartialHomeomorph Y ℂ}
     (he₀ : e₀ ∈ maximalAtlas 𝓘(ℂ) ω Y) (he₁ : e₁ ∈ maximalAtlas 𝓘(ℂ) ω Y)

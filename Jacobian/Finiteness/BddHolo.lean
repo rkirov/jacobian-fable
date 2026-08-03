@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Meromorphic
 import Jacobian.Surface.Bridges
 import Mathlib.Topology.Sets.Opens
@@ -141,7 +147,7 @@ noncomputable def restrictFun {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) 
     (fun z => (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z))
     ((f : ↥(S : Set X) →ᵇ ℂ).continuous.comp (continuous_inclusion h))
     ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
-    (fun z => BoundedContinuousFunction.norm_coe_le_norm _ _)
+    (fun _z => BoundedContinuousFunction.norm_coe_le_norm _ _)
 
 theorem restrictFun_mem {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     restrictFun h f ∈ BddHoloOn S' :=
@@ -195,6 +201,7 @@ theorem norm_restrictCLM_apply_le {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn
 
 variable [T1Space X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] in
 /-- If two meromorphic functions agree pointwise on an open set `U`, their germ classes on `U`
 agree (Compat: the everywhere-on-`U` case of `mk_eq_mk`, used throughout this file's
 well-definedness proofs since `Exists.choose` is otherwise opaque). -/
@@ -231,14 +238,16 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
     show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
     rw [← ecf, hval, ef]
 
+omit [T1Space X] in
 /-- Unfolding lemma for `toGerm` (forces the `mk`-shape syntactically, since neither
 metavariable unification nor `rw` reliably unfolds the `LinearMap`/`FunLike` layers of the
 named `toGerm` application on their own). -/
 theorem toGerm_eq_mk {S : Opens X} (f : BddHoloOn S) :
     toGerm S f = MeroGermOn.mk f.2.choose
-      (fun x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))) :=
+      (fun _x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))) :=
   rfl
 
+omit [T1Space X] in
 theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
     toGerm S f ∈ RS.LinSysOn (0 : RS.Divisor X) (S : Set X) := by
   rw [toGerm_eq_mk]
@@ -248,12 +257,14 @@ theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
   rw [h0, RS.MeroGermOn.ord_mk S.2 hx]
   simpa using RS.ContMDiffAt.ordAtX_nonneg (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
 
+omit [T1Space X] in
 theorem evalAt_toGerm {S : Opens X} (f : BddHoloOn S) {x : X} (hx : x ∈ S) :
     (toGerm S f).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := by
   rw [toGerm_eq_mk, RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
     (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))]
   exact (f.2.choose_spec.2 ⟨x, hx⟩).symm
 
+omit [T1Space X] in
 theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     toGerm S' (restrictCLM h f) = RS.MeroGermOn.restrict h (toGerm S f) := by
   rw [toGerm_eq_mk, toGerm_eq_mk, RS.MeroGermOn.restrict_mk]
@@ -269,6 +280,7 @@ theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
 
 variable [T2Space X] [CompactSpace X]
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] [T2Space X] [CompactSpace X] in
 /-- A closure-nested open pair `S' ⋐ S` gives `S' ≤ S`. -/
 theorem le_of_closure {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X)) : S' ≤ S :=
   subset_closure.trans hc
@@ -293,11 +305,13 @@ noncomputable def restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (
       (fun z => hbdd.choose_spec z (subset_closure z.2)),
     ⟨(φ : RS.MeroGermOn X (S : Set X)).holoRepr, hCS', fun _ => rfl⟩⟩
 
+omit [T1Space X] [T2Space X] in
 @[simp] theorem restrictGerm_apply {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
     (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) (z : ↥(S' : Set X)) :
     (restrictGerm hc φ : ↥(S' : Set X) →ᵇ ℂ) z
       = RS.MeroGermOn.holoRepr (φ : RS.MeroGermOn X (S : Set X)) z := rfl
 
+omit [T2Space X] [T1Space X] in
 theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
     (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) :
     toGerm S' (restrictGerm hc φ) =
@@ -318,6 +332,7 @@ theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
       = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x := rfl
   rw [← e1, e2]
 
+omit [T2Space X] in
 theorem restrictGerm_toGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
     (f : BddHoloOn S) :
     restrictGerm hc ⟨toGerm S f, toGerm_mem_linSysOn f⟩ = restrictCLM (le_of_closure hc) f := by

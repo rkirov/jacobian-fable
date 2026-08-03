@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Finiteness.BddHolo
 import Jacobian.Forms.Montel
 import Mathlib.Analysis.Normed.Operator.Compact.Basic
@@ -48,6 +54,7 @@ theorem isCompactOperator_of_isCompactOperator_val {E N : Type*} [NormedAddCommG
   rw [Subtype.isCompact_iff, heq]
   exact hK.of_isClosed_subset (hK.isClosed.inter hS) inter_subset_left
 
+omit [T1Space X] [T2Space X] in
 /-- **Montel compactness of the restriction**: for `S' ⋐ S ⊆ source (chartAt ℂ x₀)`, the
 restriction `BddHoloOn S → BddHoloOn S'` is a compact operator. -/
 theorem isCompactOperator_restrictCLM {S' S : Opens X} {x₀ : X}

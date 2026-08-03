@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Analysis.Complex.HasPrimitives
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Analysis.Normed.Module.Connected
@@ -33,7 +39,7 @@ open scoped Topology Convex
 
 /-- Primitive with prescribed value on a ball inside a domain of analyticity. -/
 theorem exists_hasDerivAt_ball {f : ℂ → ℂ} {U : Set ℂ} (hf : AnalyticOnNhd ℂ f U)
-    {c z₀ w : ℂ} {r : ℝ} (hb : ball c r ⊆ U) (hz₀ : z₀ ∈ ball c r) :
+    {c z₀ w : ℂ} {r : ℝ} (hb : ball c r ⊆ U) (_hz₀ : z₀ ∈ ball c r) :
     ∃ g : ℂ → ℂ, g z₀ = w ∧ ∀ z ∈ ball c r, HasDerivAt g (f z) z := by
   obtain ⟨g, hg₀, hg⟩ := (hf.differentiableOn.mono hb).isExactOn_ball.with_val_at z₀ w
   exact ⟨g, hg₀, hg⟩
@@ -138,7 +144,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
   have hzs : z ∈ s := hzmem t ht_mem
   have JA : JoinedIn (s \ T) a z := by
     apply JoinedIn.of_segment_subset
-    rw [subset_diff]
+    rw [subset_sdiff]
     refine ⟨hs.segment_subset has hzs, ?_⟩
     rw [disjoint_iff_inter_eq_empty]
     have heq : [a -[ℝ] z] = [c - x -[ℝ] z] := by rw [hIa]
@@ -146,7 +152,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
     exact htnotin.2
   have JB : JoinedIn (s \ T) b z := by
     apply JoinedIn.of_segment_subset
-    rw [subset_diff]
+    rw [subset_sdiff]
     refine ⟨hs.segment_subset hbs hzs, ?_⟩
     rw [disjoint_iff_inter_eq_empty]
     have heq : [b -[ℝ] z] = [c + x -[ℝ] z] := by rw [hIb]

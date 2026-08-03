@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.JacobianConstruction.ChartedSpaceKitV
 import Mathlib.Topology.Algebra.Group.Quotient
 import Mathlib.Topology.Algebra.ContinuousMonoidHom
@@ -69,6 +75,7 @@ section InjRadius
 
 variable (L : AddSubgroup V) [DiscreteTopology L]
 
+omit [NormedSpace ℂ V] in
 /-- Every discrete additive subgroup of a normed space has a uniform injectivity radius: some
 `ρ > 0` such that every nonzero element has norm at least `2ρ`. -/
 theorem exists_uniform_injRadius :
@@ -91,11 +98,14 @@ theorem exists_uniform_injRadius :
 /-- A choice of uniform injectivity radius for `L`. -/
 def injRadius : ℝ := (exists_uniform_injRadius L).choose
 
+omit [NormedSpace ℂ V] in
 theorem injRadius_pos : 0 < injRadius L := (exists_uniform_injRadius L).choose_spec.1
 
+omit [NormedSpace ℂ V] in
 theorem norm_le_of_mem_injRadius {ℓ : V} (hℓ : ℓ ∈ L) (hne : ℓ ≠ 0) :
     2 * injRadius L ≤ ‖ℓ‖ := (exists_uniform_injRadius L).choose_spec.2 ℓ hℓ hne
 
+omit [NormedSpace ℂ V] in
 /-- `QuotientAddGroup.mk` is injective on any ball of radius `injRadius L`. -/
 theorem mk_injOn_ball (x : V) :
     Set.InjOn (QuotientAddGroup.mk (s := L)) (ball x (injRadius L)) := by
@@ -258,10 +268,12 @@ section LieGroupAux
 
 variable (L : AddSubgroup V) [DiscreteTopology L] [CompleteSpace V]
 
+omit [NormedSpace ℂ V] [DiscreteTopology ↥L] [CompleteSpace V] in
 theorem continuous_add_torus : Continuous (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) := by
   haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
 
+omit [NormedSpace ℂ V] [DiscreteTopology ↥L] [CompleteSpace V] in
 theorem continuous_neg_torus : Continuous (fun q : V ⧸ L => -q) := by
   haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
@@ -418,17 +430,20 @@ def inducedHom (L : AddSubgroup V) (L' : AddSubgroup V') (T : V →ₗ[ℂ] V')
       rw [heq]
       exact QuotientAddGroup.continuous_mk.comp T.continuous_of_finiteDimensional }
 
+omit [CompleteSpace V'] [FiniteDimensional ℂ V'] in
 @[simp] theorem inducedHom_apply_mk {L : AddSubgroup V} {L' : AddSubgroup V'}
     {T : V →ₗ[ℂ] V'} (hT : L ≤ L'.comap T.toAddMonoidHom) (x : V) :
     inducedHom L L' T hT (QuotientAddGroup.mk x) = QuotientAddGroup.mk (T x) :=
   QuotientAddGroup.map_mk L L' T.toAddMonoidHom hT x
 
+omit [CompleteSpace V'] [FiniteDimensional ℂ V'] in
 /-- Any `ℂ`-linear map between finite-dimensional normed spaces is entire (analytic at every
 point): it is continuous (finite-dimensional domain), hence bounded, hence its own convergent
 power series. -/
 theorem analyticAt_linearMap (T : V →ₗ[ℂ] V') (x : V) : AnalyticAt ℂ (⇑T) x :=
   (⟨T, T.continuous_of_finiteDimensional⟩ : V →L[ℂ] V').analyticAt x
 
+omit [FiniteDimensional ℂ V'] in
 /-- The induced map on tori is `ω`-smooth, given discreteness of both lattices (needed for the
 manifold structure on either side; no further hypothesis on `T`/`hT` beyond linearity). -/
 theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
@@ -477,6 +492,7 @@ theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
 /-! ### Functoriality of `inducedHom` (requested by jacobian-functoriality,
 `docs/requests/jacobian-construction.md`) -/
 
+omit [FiniteDimensional ℂ V] in
 /-- `inducedHom` at the identity is the identity (`QuotientAddGroup.map` functoriality). -/
 theorem inducedHom_id [FiniteDimensional ℂ V] [CompleteSpace V] (L : AddSubgroup V)
     (hT : L ≤ L.comap (LinearMap.id (R := ℂ) (M := V)).toAddMonoidHom) :
@@ -487,6 +503,7 @@ theorem inducedHom_id [FiniteDimensional ℂ V] [CompleteSpace V] (L : AddSubgro
   rw [inducedHom_apply_mk]
   rfl
 
+omit [CompleteSpace V'] in
 /-- `inducedHom` is compositional (`QuotientAddGroup.map` functoriality). -/
 theorem inducedHom_comp {V'' : Type*} [NormedAddCommGroup V''] [NormedSpace ℂ V'']
     [CompleteSpace V''] [FiniteDimensional ℂ V''] [CompleteSpace V']

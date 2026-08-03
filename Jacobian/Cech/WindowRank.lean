@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Window
 
 /-!
@@ -24,6 +30,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-! ### Compat: chart-transported vanishing criterion for `evalAt` -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat (requested from meromorphic-and-divisors, not upstreamed): chart-transported analogue
 of mathlib's `tendsto_zero_iff_meromorphicOrderAt_pos`. -/
 theorem RS.tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.MeromorphicAtX f x) :
@@ -31,6 +38,7 @@ theorem RS.tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.Meromorp
   rw [RS.ordAtX_def, ← tendsto_zero_iff_meromorphicOrderAt_pos hf]
   exact RS.tendsto_nhdsNE_comp_chart_iff
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat (requested from meromorphic-and-divisors §1.4(b), not upstreamed): `evalAt` vanishes
 (given `0 ≤ ord`) iff the order is strictly positive. -/
 theorem RS.MeroGermOn.evalAt_eq_zero_iff {U : Set X} {x : X} (hU : IsOpen U) (hx : x ∈ U)

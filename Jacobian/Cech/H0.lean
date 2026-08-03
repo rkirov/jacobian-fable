@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Cochains
 
 /-!
@@ -22,9 +28,11 @@ variable (D : RS.Divisor X) {Ω : Opens X} (𝒰 : FinCover Ω)
 noncomputable def toC0 : RS.LinSysOn D (Ω : Set X) →ₗ[ℂ] C0 D 𝒰 :=
   LinearMap.pi fun i => LinSysOn.restrictL D (𝒰.le_base i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem toC0_apply (φ : RS.LinSysOn D (Ω : Set X)) (i : Fin 𝒰.n) :
     toC0 D 𝒰 φ i = LinSysOn.restrictL D (𝒰.le_base i) φ := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem toC0_mem_ker (φ : RS.LinSysOn D (Ω : Set X)) :
     toC0 D 𝒰 φ ∈ LinearMap.ker (d0 D 𝒰) := by
   rw [LinearMap.mem_ker]
@@ -39,6 +47,7 @@ theorem toC0_mem_ker (φ : RS.LinSysOn D (Ω : Set X)) :
 noncomputable def toC0' : RS.LinSysOn D (Ω : Set X) →ₗ[ℂ] LinearMap.ker (d0 D 𝒰) :=
   LinearMap.codRestrict _ (toC0 D 𝒰) (toC0_mem_ker D 𝒰)
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The cover's members exhaust `Ω` (as sets). -/
 theorem iUnion_U_eq : (⋃ i, (𝒰.U i : Set X)) = (Ω : Set X) := by
   apply Set.Subset.antisymm
@@ -124,6 +133,7 @@ theorem h0EquivLinSysOn_symm_apply_ord (φ : RS.LinSysOn D (Ω : Set X)) (i : Fi
   rw [h0EquivLinSysOn_symm_apply]
   exact ord_restrictL D (𝒰.le_base i) hx φ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The absolute `LinSysOn D univ` and `LinSys D` are the same submodule (`Opens.coe_top` is
 `rfl`, so only the `IsOpen`-gate needs unfolding). -/
 theorem linSysOn_top_eq_linSys : RS.LinSysOn D ((⊤ : Opens X) : Set X) = RS.LinSys D := by

@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech
 import Mathlib.Data.DFinsupp.Module
 
@@ -47,6 +53,7 @@ noncomputable abbrev TailAt (p : X) (D : RS.Divisor X) : Type _ :=
 noncomputable def TailAt.mk (p : X) (D : RS.Divisor X) :
     RS.MeroGermOn X (chartAt ℂ p).source →ₗ[ℂ] TailAt p D := Submodule.mkQ _
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem TailAt.mk_eq_zero_iff {p : X} {D : RS.Divisor X}
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     TailAt.mk p D ψ = 0 ↔ (-(D p) : WithTop ℤ) ≤ ψ.ord p := by
@@ -55,6 +62,7 @@ noncomputable def TailAt.mk (p : X) (D : RS.Divisor X) :
   rw [Submodule.Quotient.mk_eq_zero]
   exact RS.Cech.mem_ordGe_iff
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem TailAt.mk_surjective (p : X) (D : RS.Divisor X) :
     Function.Surjective (TailAt.mk p D) := Submodule.mkQ_surjective _
 
@@ -67,9 +75,11 @@ noncomputable def windowAt_toTailAt (p : X) (D : RS.Divisor X) (d' : ℤ) :
     RS.Cech.WindowAt p (D p) d' →ₗ[ℂ] TailAt p D :=
   Submodule.mapQ _ _ (RS.Cech.ordGe p (-d')).subtype le_rfl
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowAt_toTailAt_mk (p : X) (D : RS.Divisor X) (d' : ℤ) (ψ : RS.Cech.ordGe p (-d')) :
     windowAt_toTailAt p D d' (RS.Cech.WindowAt.mk p (D p) d' ψ) = TailAt.mk p D ψ := rfl
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Every tail class is *represented* by some finite window (the union-of-`ordGe` fact): every
 germ has an honest `WithTop ℤ`-order, hence lies in `ordGe p (-d')` for `d'` large enough. -/
 theorem exists_windowAt_repr (p : X) (D : RS.Divisor X) (z : TailAt p D) :
@@ -103,11 +113,13 @@ noncomputable instance instModuleT (D : RS.Divisor X) : Module ℂ (T D) :=
 noncomputable def T.mk (D : RS.Divisor X) (S : Finset X)
     (x : ∀ p : (S : Set X), TailAt (p : X) D) : T D := DFinsupp.mk S x
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem T.mk_apply_mem {D : RS.Divisor X} {S : Finset X} {x : ∀ p : (S : Set X), TailAt (p : X) D}
     {p : X} (hp : p ∈ S) : T.mk D S x p = x ⟨p, hp⟩ := by
   unfold T.mk
   rw [DFinsupp.mk_apply, dif_pos hp]
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem T.mk_apply_not_mem {D : RS.Divisor X} {S : Finset X}
     {x : ∀ p : (S : Set X), TailAt (p : X) D} {p : X} (hp : p ∉ S) : T.mk D S x p = 0 := by
   unfold T.mk
@@ -140,6 +152,7 @@ noncomputable def windowToT (D D' : RS.Divisor X) (_h : D ≤ D') :
       rfl
     · rw [DFinsupp.smul_apply, T.mk_apply_not_mem hp, T.mk_apply_not_mem hp, smul_zero]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowToT_apply (D D' : RS.Divisor X) (h : D ≤ D') (w : RS.Cech.Window D D')
     (q : RS.Cech.diffSupp D D') :
     windowToT D D' h w (q : X) = windowAt_toTailAt (q : X) D (D' q) (w q) := by

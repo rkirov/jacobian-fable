@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Window
 import Jacobian.Cech.Injectivity
 
@@ -42,6 +48,7 @@ def C1.MemLD (f : C1 D' 𝒰) (D : RS.Divisor X) : Prop :=
 noncomputable def C1.retype (f : C1 D' 𝒰) (hf : f.MemLD D) : C1 D 𝒰 :=
   fun p => ⟨(f p : RS.MeroGermOn X _), hf p⟩
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.retype_apply_coe (f : C1 D' 𝒰) (hf : f.MemLD D) (p : Fin 𝒰.n × Fin 𝒰.n) :
     (C1.retype f hf p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) =
       (f p : RS.MeroGermOn X _) := rfl
@@ -68,7 +75,6 @@ noncomputable def mlClass (𝒰 : FinCover (⊤ : Opens X)) (g : C0 D' 𝒰)
     (hg : (d0 D' 𝒰 g).MemLD D) : H1 D :=
   toH1 D 𝒰 (H1Cover.mk D 𝒰 ⟨C1.retype (d0 D' 𝒰 g) hg, C1.retype_mem_Z1 hg⟩)
 
-set_option maxHeartbeats 1000000 in
 theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0 D' 𝒰 g').MemLD D)
     (hgg' : (d0 D' 𝒰 (g + g')).MemLD D) :
     mlClass 𝒰 (g + g') hgg' = mlClass 𝒰 g hg + mlClass 𝒰 g' hg' := by
@@ -91,10 +97,10 @@ theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0
           RS.MeroGermOn.restrict inf_le_left (g' p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)))
     simp only [map_add]
     abel
-  rw [mlClass, mlClass, mlClass, ← map_add, ← map_add]
+  simp only [mlClass]
+  rw [← map_add, ← map_add]
   exact congrArg (toH1 D 𝒰) (congrArg (H1Cover.mk D 𝒰) (Subtype.ext hval))
 
-set_option maxHeartbeats 1000000 in
 theorem mlClass_smul (a : ℂ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     (hag : (d0 D' 𝒰 (a • g)).MemLD D) :
     mlClass 𝒰 (a • g) hag = a • mlClass 𝒰 g hg := by
@@ -119,7 +125,7 @@ theorem H1Incl_mlClass (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemL
       ⟨C1.retype (d0 D' 𝒰 g) hg, C1.retype_mem_Z1 hg⟩) = 0 := by
     rw [H1Cover.mk_eq_zero_iff]
     refine ⟨g, ?_⟩
-    rw [LinearMap.restrict_coe_apply]
+    rw [LinearMap.coe_restrict_apply]
     funext p
     apply Subtype.ext
     show (Submodule.inclusion (RS.linSysOn_mono h)

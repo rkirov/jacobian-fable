@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Path.Chain
 import Mathlib.AlgebraicTopology.FundamentalGroupoid.Basic
 
@@ -45,10 +51,11 @@ theorem nonempty_open_diff_finite {U : Set X} (hU : IsOpen U) (hne : U.Nonempty)
   intro hqS
   exact hzT ⟨q, ⟨hqS, hqsrc⟩, rfl⟩
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Base case: a path lying entirely inside one chart-ball `(e, ball c r)`, with endpoints off a
 finite set `S`, is homotopic rel endpoints to a path whose range avoids `S` entirely. -/
 theorem exists_homotopic_avoiding_of_ball {a b : X} (γ : Path a b)
-    {e : OpenPartialHomeomorph X ℂ} (he : e ∈ maximalAtlas 𝓘(ℂ) ω X)
+    {e : OpenPartialHomeomorph X ℂ} (_he : e ∈ maximalAtlas 𝓘(ℂ) ω X)
     {c : ℂ} {r : ℝ} (hballsub : ball c r ⊆ e.target)
     (hγsrc : range ⇑γ ⊆ e.source) (hγball : ∀ t : ↥unitInterval, e (γ t) ∈ ball c r)
     {S : Set X} (hS : S.Finite) (ha : a ∉ S) (hb : b ∉ S) :
@@ -211,6 +218,7 @@ with an arc inside the overlap, perturbs the single-ball head via
 homotopies (`Path.Homotopic.trans_assoc`/`trans_symm`/`refl_trans`).
 -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem exists_homotopic_avoiding_aux {a b : X} (γ : Path a b) {S : Set X}
     (hS : S.Finite) (hb : b ∉ S) (C : ChartChain γ) :
     ∀ r k : ℕ, C.n ≤ k + r → ∀ hk1 : C.t k ≤ 1, ∀ (q : X) (p : Path q (γ.extend (C.t k))),

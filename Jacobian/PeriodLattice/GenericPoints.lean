@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.PeriodLattice.Membership
 import Jacobian.Path.Perturb
 import Jacobian.LocalMultiplicity.ChartBridge
@@ -33,8 +39,10 @@ def evalAtₗ (x : X) : Form1 X →ₗ[ℂ] ℂ where
   map_add' := coeffAt_add x
   map_smul' := coeffAt_smul x
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 @[simp] theorem evalAtₗ_apply (x : X) (η : Form1 X) : evalAtₗ x η = coeffAt x η := rfl
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- The nonvanishing locus of a form's coefficient is open. -/
 theorem isOpen_coeffAt_ne_zero (η : Form1 X) : IsOpen {x : X | coeffAt x η ≠ 0} := by
   rw [isOpen_iff_mem_nhds]
@@ -61,6 +69,7 @@ theorem isOpen_coeffAt_ne_zero (η : Form1 X) : IsOpen {x : X | coeffAt x η ≠
   exact mul_ne_zero
     (analyticAt_transition (chart_mem_maximalAtlas x) he (mem_chart_source ℂ x) hxsrc).2 hx
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- A nonzero form is nonzero somewhere off any finite set (openness + avoidance). -/
 theorem exists_coeffAt_ne_zero_notMem {η : Form1 X} (hη : η ≠ 0) (S : Finset X) :
     ∃ x, x ∉ S ∧ coeffAt x η ≠ 0 := by
@@ -82,12 +91,15 @@ def genericKernel (s : Finset X) : Submodule ℂ (Form1 X) where
   add_mem' {η η'} hη hη' x hx := by rw [coeffAt_add, hη x hx, hη' x hx, add_zero]
   smul_mem' c η hη x hx := by rw [coeffAt_smul, hη x hx, mul_zero]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem mem_genericKernel {s : Finset X} {η : Form1 X} :
     η ∈ genericKernel X s ↔ ∀ x ∈ s, coeffAt x η = 0 := Iff.rfl
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem genericKernel_anti {s t : Finset X} (h : s ⊆ t) :
     genericKernel X t ≤ genericKernel X s := fun _ hη x hx => hη x (h hx)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem genericKernel_empty : genericKernel X (∅ : Finset X) = ⊤ := by
   ext η
   simp [mem_genericKernel]
@@ -128,7 +140,7 @@ theorem exists_finset_card_finrank_le (k : ℕ) :
 
 /-- **Forster 21.3**: `genus X` distinct points such that any form vanishing at all of them is
 identically zero. -/
-theorem exists_genericPoints (hg : 1 ≤ genus X) : ∃ a : Fin (genus X) → X,
+theorem exists_genericPoints (_hg : 1 ≤ genus X) : ∃ a : Fin (genus X) → X,
     Function.Injective a ∧ ∀ η : Form1 X, (∀ j, coeffAt (a j) η = 0) → η = 0 := by
   obtain ⟨s, hscard, hsfr⟩ := exists_finset_card_finrank_le (X := X) (genus X)
   rw [Nat.sub_self] at hsfr

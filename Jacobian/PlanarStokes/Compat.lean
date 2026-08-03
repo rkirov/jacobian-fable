@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.Calculus.FDeriv.Congr
 import Mathlib.Analysis.Calculus.ContDiff.Defs
@@ -69,7 +75,7 @@ theorem wirtingerDbar_mul_eq_zero_of_notMem_tsupport (hz : z ∉ tsupport g) :
 globally `ContDiff` function (two-piece gluing: locally `g` on `U`, locally `0` on
 `(tsupport g)ᶜ`, these two opens cover `ℂ`). -/
 theorem ContDiffOn.contDiff_of_hasCompactSupport {U : Set ℂ} {n : ℕ∞} (hU : IsOpen U)
-    (hg : ContDiffOn ℝ n g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
+    (hg : ContDiffOn ℝ n g U) (_hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
     ContDiff ℝ n g := by
   rw [contDiff_iff_contDiffAt]
   intro x

@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.AreaPairing
 import Jacobian.PlanarStokes.CompactSupport
 import Jacobian.TailDuality
@@ -42,7 +48,6 @@ residue-pairing hypothesis does not directly offer.
 open scoped ContDiff Manifold
 open IsManifold Metric Set MeasureTheory
 
-set_option maxHeartbeats 1600000
 
 noncomputable section
 
@@ -80,6 +85,7 @@ section StokesLemmas
 
 variable (PU : SurfPoU X) (u : RS.SmoothC X) (θ : RS.Form1 X)
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Membership bookkeeping: reading membership in an overlap image off the source point,
 version where the imaging chart is the FIRST overlap component. -/
 private theorem mem_image_iff_fst (i j : Fin PU.n) {z : ℂ} (hz : z ∈ (PU.chart i).target) :
@@ -92,6 +98,7 @@ private theorem mem_image_iff_fst (i j : Fin PU.n) {z : ℂ} (hz : z ∈ (PU.cha
     rw [(PU.chart i).left_inv hq.1]
     exact hq.2
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Version where the imaging chart is the SECOND overlap component. -/
 private theorem mem_image_iff_snd (i j : Fin PU.n) {w : ℂ} (hw : w ∈ (PU.chart j).target) :
     (PU.chart j).symm w ∈ (PU.chart i).source ↔
@@ -103,26 +110,31 @@ private theorem mem_image_iff_snd (i j : Fin PU.n) {w : ℂ} (hw : w ∈ (PU.cha
     rw [(PU.chart j).left_inv hq.2]
     exact hq.1
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem image_overlap_subset (i j : Fin PU.n) :
     ⇑(PU.chart i) '' ((PU.chart i).source ∩ (PU.chart j).source) ⊆ (PU.chart i).target := by
   rintro z ⟨q, hq, rfl⟩
   exact (PU.chart i).map_source hq.1
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem image_overlap_subset' (i j : Fin PU.n) :
     ⇑(PU.chart j) '' ((PU.chart i).source ∩ (PU.chart j).source) ⊆ (PU.chart j).target := by
   rintro w ⟨q, hq, rfl⟩
   exact (PU.chart j).map_source hq.2
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem isOpen_image_overlap (i j : Fin PU.n) :
     IsOpen (⇑(PU.chart i) '' ((PU.chart i).source ∩ (PU.chart j).source)) :=
   (PU.chart i).isOpen_image_of_subset_source
     ((PU.chart i).open_source.inter (PU.chart j).open_source) inter_subset_left
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem isOpen_image_overlap' (i j : Fin PU.n) :
     IsOpen (⇑(PU.chart j) '' ((PU.chart i).source ∩ (PU.chart j).source)) :=
   (PU.chart j).isOpen_image_of_subset_source
     ((PU.chart i).open_source.inter (PU.chart j).open_source) inter_subset_right
 
+omit [T2Space X] [CompactSpace X] in
 /-- `stokesA`'s core vanishes off the compact carrier `PU.K i`. -/
 private theorem stokesA_core_zero (i : Fin PU.n) : ∀ z ∈ (PU.chart i).target, z ∉ PU.K i →
     RS.wirtingerDbar (PU.psiC i (PU.chart i)) z *
@@ -133,6 +145,7 @@ private theorem stokesA_core_zero (i : Fin PU.n) : ∀ z ∈ (PU.chart i).target
     exact hzK ⟨(PU.chart i).symm z, hmem, (PU.chart i).right_inv hz⟩
   rw [PU.wirtingerDbar_psiC_eq_zero i hz hy, zero_mul]
 
+omit [T2Space X] [CompactSpace X] in
 private theorem stokesA_core_contDiffOn (i : Fin PU.n) : ContDiffOn ℝ ∞
     (fun z => RS.wirtingerDbar (PU.psiC i (PU.chart i)) z *
       ((⇑u ∘ ⇑(PU.chart i).symm) z * RS.coeffIn (PU.chart i) θ z)) (PU.chart i).target :=
@@ -149,6 +162,7 @@ private theorem integrable_stokesA (i : Fin PU.n) : Integrable (stokesA PU u θ 
 private def Kover (PU : SurfPoU X) (i j : Fin PU.n) : Set ℂ :=
   ⇑(PU.chart i) '' (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j))
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem isCompact_Kover (i j : Fin PU.n) : IsCompact (Kover PU i j) := by
   have hts : IsCompact (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j)) :=
     (IsCompact.of_isClosed_subset isCompact_univ (isClosed_tsupport _)
@@ -156,11 +170,13 @@ private theorem isCompact_Kover (i j : Fin PU.n) : IsCompact (Kover PU i j) := b
   exact hts.image_of_continuousOn ((PU.chart i).continuousOn.mono
     (Set.inter_subset_left.trans (PU.tsupport_subset i)))
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem Kover_subset (i j : Fin PU.n) :
     Kover PU i j ⊆ ⇑(PU.chart i) '' ((PU.chart i).source ∩ (PU.chart j).source) := by
   rintro z ⟨q, hq, rfl⟩
   exact ⟨q, ⟨PU.tsupport_subset i hq.1, PU.tsupport_subset j hq.2⟩, rfl⟩
 
+omit [T2Space X] [CompactSpace X] in
 private theorem stokesB_core_zero (i j : Fin PU.n) :
     ∀ z ∈ ⇑(PU.chart i) '' ((PU.chart i).source ∩ (PU.chart j).source), z ∉ Kover PU i j →
       PU.ψ j ((PU.chart i).symm z) • (RS.wirtingerDbar (PU.psiC i (PU.chart i)) z *
@@ -184,12 +200,14 @@ private theorem integrable_stokesB (i j : Fin PU.n) : Integrable (stokesB PU u �
       (image_overlap_subset PU i j)
   exact h1.smul ((stokesA_core_contDiffOn PU u θ i).mono (image_overlap_subset PU i j))
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The `stokesC` carrier, imaged in chart `j`. -/
 private theorem Kover_subset' (i j : Fin PU.n) :
     ⇑(PU.chart j) '' (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j)) ⊆
       ⇑(PU.chart j) '' ((PU.chart i).source ∩ (PU.chart j).source) :=
-  Set.image_mono (fun q hq => ⟨PU.tsupport_subset i hq.1, PU.tsupport_subset j hq.2⟩)
+  Set.image_mono (fun _q hq => ⟨PU.tsupport_subset i hq.1, PU.tsupport_subset j hq.2⟩)
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem isCompact_Kover' (i j : Fin PU.n) :
     IsCompact (⇑(PU.chart j) '' (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j))) := by
   have hts : IsCompact (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j)) :=
@@ -198,6 +216,7 @@ private theorem isCompact_Kover' (i j : Fin PU.n) :
   exact hts.image_of_continuousOn ((PU.chart j).continuousOn.mono
     (Set.inter_subset_right.trans (PU.tsupport_subset j)))
 
+omit [T2Space X] [CompactSpace X] in
 private theorem stokesC_core_zero (i j : Fin PU.n) :
     ∀ w ∈ ⇑(PU.chart j) '' ((PU.chart i).source ∩ (PU.chart j).source),
       w ∉ ⇑(PU.chart j) '' (tsupport (PU.ψ i) ∩ tsupport (PU.ψ j)) →
@@ -213,6 +232,7 @@ private theorem stokesC_core_zero (i j : Fin PU.n) :
     rw [PU.wirtingerDbar_psiC_eq_zero i hwT hyi, zero_mul, smul_zero]
   · rw [image_eq_zero_of_notMem_tsupport hyj, zero_smul]
 
+omit [T2Space X] [CompactSpace X] in
 private theorem stokesC_core_contDiffOn (i j : Fin PU.n) : ContDiffOn ℝ ∞
     (fun w => PU.ψ j ((PU.chart j).symm w) • (RS.wirtingerDbar (PU.psiC i (PU.chart j)) w *
       ((⇑u ∘ ⇑(PU.chart j).symm) w * RS.coeffIn (PU.chart j) θ w)))
@@ -337,8 +357,9 @@ private theorem stokes_step2 (i : Fin PU.n) :
       rw [stokesB, Set.indicator_of_notMem hzS]
   rw [show (fun z => stokesA PU u θ i z) = fun z => ∑ j, stokesB PU u θ i j z from
     funext hpoint]
-  exact MeasureTheory.integral_finset_sum _ (fun j _ => integrable_stokesB PU u θ i j)
+  exact MeasureTheory.integral_finsetSum _ (fun j _ => integrable_stokesB PU u θ i j)
 
+omit [T2Space X] [CompactSpace X] in
 /-- **Step 3** (change of variables): `∫ stokesB i j = ∫ stokesC i j`. -/
 private theorem stokes_step3 (i j : Fin PU.n) :
     ∫ z : ℂ, stokesB PU u θ i j z = ∫ w : ℂ, stokesC PU u θ i j w := by
@@ -396,6 +417,7 @@ private theorem stokes_step3 (i j : Fin PU.n) :
       ← Complex.mul_conj (deriv τ ((PU.chart j) q))]
     ring
 
+omit [T2Space X] [CompactSpace X] in
 /-- **Step 4** (the `∑ᵢ ∂̄ψᵢ = 0` cancellation in chart `j`): `∑ᵢ stokesC i j ≡ 0`. -/
 private theorem stokes_step4 (j : Fin PU.n) (w : ℂ) :
     ∑ i, stokesC PU u θ i j w = 0 := by
@@ -458,7 +480,7 @@ theorem pairing_dbar_eq_zero (PU : SurfPoU X) (u : RS.SmoothC X) (θ : RS.Form1 
     _ = 0 := by
         rw [neg_eq_zero]
         refine Finset.sum_eq_zero (fun j _ => ?_)
-        rw [← MeasureTheory.integral_finset_sum _
+        rw [← MeasureTheory.integral_finsetSum _
           (fun i _ => integrable_stokesC PU u θ i j)]
         rw [show (fun w => ∑ i, stokesC PU u θ i j w) = fun _ => (0 : ℂ) from
           funext (fun w => stokes_step4 PU u θ j w)]
@@ -492,6 +514,7 @@ def conjForm (θ : RS.Form1 X) : RS.Form01 X where
       RS.coeffIn_trans (IsManifold.chart_mem_maximalAtlas x)
         (IsManifold.chart_mem_maximalAtlas y) θ hz, map_mul]
 
+omit [T2Space X] [CompactSpace X] in
 /-- The chart coefficient of the conjugate form. -/
 theorem conjForm_coeffAt (θ : RS.Form1 X) (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target) :
     (conjForm θ).coeffAt x z = (starRingEnd ℂ) (RS.coeffIn (chartAt ℂ x) θ z) := by
@@ -499,6 +522,7 @@ theorem conjForm_coeffAt (θ : RS.Form1 X) (x : X) {z : ℂ} (hz : z ∈ (chartA
     (fun z => (starRingEnd ℂ) (RS.coeffIn (chartAt ℂ x) θ z)) z = _
   exact Set.indicator_of_mem hz _
 
+omit [T2Space X] in
 /-- The pairing of `θ̄` against `θ` is the (complexified) integral of the nonnegative density
 `∑ᵢ ψᵢ |θᵢ|²`; if it vanishes, `θ = 0`. -/
 theorem eq_zero_of_pairing_conjForm_eq_zero (PU : SurfPoU X) (θ : RS.Form1 X)

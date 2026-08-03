@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Mul
@@ -60,7 +66,7 @@ theorem clm_apply_eq_add_conj_smul (L : ℂ →L[ℝ] ℂ) (v : ℂ) :
     ring
 
 /-- **THE workhorse**: the Wirtinger decomposition of the real differential. -/
-theorem fderiv_apply_eq_wirtinger (hf : DifferentiableAt ℝ f z) (v : ℂ) :
+theorem fderiv_apply_eq_wirtinger (_hf : DifferentiableAt ℝ f z) (v : ℂ) :
     fderiv ℝ f z v = wirtingerD f z * v + wirtingerDbar f z * (starRingEnd ℂ) v :=
   clm_apply_eq_add_conj_smul (fderiv ℝ f z) v
 
@@ -151,7 +157,7 @@ theorem differentiableAt_iff_wirtingerDbar_eq_zero :
   ⟨fun h => ⟨h.restrictScalars ℝ, wirtingerDbar_eq_zero_of_differentiableAt f z h⟩,
    fun ⟨hf, h⟩ => differentiableAt_of_wirtingerDbar_eq_zero f z hf h⟩
 
-theorem differentiableOn_of_wirtingerDbar_eq_zero {s : Set ℂ} (hs : IsOpen s)
+theorem differentiableOn_of_wirtingerDbar_eq_zero {s : Set ℂ} (_hs : IsOpen s)
     (hf : ∀ z ∈ s, DifferentiableAt ℝ f z) (h : ∀ z ∈ s, wirtingerDbar f z = 0) :
     DifferentiableOn ℂ f s :=
   fun z hz => (differentiableAt_of_wirtingerDbar_eq_zero f z (hf z hz) (h z hz)).differentiableWithinAt

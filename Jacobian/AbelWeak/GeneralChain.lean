@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.AbelWeak.Rechart
 import Jacobian.AbelWeak.SingleChart
 import Jacobian.Path.Chain
@@ -89,6 +95,7 @@ theorem isWeakSolutionAt_zero_of_ne {f : X → ℂ} {p q x : X}
   · filter_upwards [(chartAt ℂ x).open_source.mem_nhds (mem_chart_source ℂ x)] with y hy
     rw [(chartAt ℂ x).left_inv hy, zpow_zero, mul_one]
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Converse of `isWeakSolutionAt_zero_of_ne`'s conclusion: order `0` at `a` unfolds to genuine
 smoothness and nonvanishing there. -/
 theorem IsWeakSolutionAt.contMDiffAt_and_ne_zero_of_zero {f : X → ℂ} {a : X}
@@ -112,6 +119,7 @@ private theorem contMDiffAt_mul_real {f g : X → ℂ} {x : X}
   rw [RS.contMDiffAt_real_iff_contDiffAt] at hf hg ⊢
   exact hf.mul hg
 
+omit [T2Space X] in
 /-- A nonnegative order (`k ≥ 0`, i.e. a genuine zero, `k > 0`, or the order-`0` case) unfolds to
 genuine smoothness (no `≠ 0` conclusion — a zero really does vanish there). -/
 theorem IsWeakSolutionAt.contMDiffAt_of_nonneg {f : X → ℂ} {a : X} {k : ℤ}

@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.MappingDegree
 
 /-!
@@ -36,7 +42,7 @@ otherwise the usual mapping degree (`RS.degree`). One-line wrapper — `RS.degre
 right junk-`0` convention definitionally, no case split needed. `[Nonempty Y]` (needed by
 `RS.degree`) is discharged for free by `ConnectedSpace.toNonempty`
 (`Mathlib.Topology.Connected.Basic:636`). -/
-noncomputable def _root_.ContMDiff.degree (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
+noncomputable def _root_.ContMDiff.degree (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   RS.degree f
 
 @[simp] theorem _root_.ContMDiff.degree_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :

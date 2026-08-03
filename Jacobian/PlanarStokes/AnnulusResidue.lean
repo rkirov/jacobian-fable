@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.PlanarStokes.CompactSupport
 import Jacobian.ResidueCalculus.IntegralBridge
 import Jacobian.ResidueCalculus.Residue
@@ -156,7 +162,6 @@ end Helpers
 
 /-! ## The annulus identity (Atom 1′) -/
 
-set_option maxHeartbeats 4000000 in
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `∂̄` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -544,12 +549,11 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
 
 /-! ## The smeared residue theorem (Atom 2) -/
 
-set_option maxHeartbeats 1000000 in
 /-- **Atom 2** (the smeared residue theorem — the "one honest integration atom" routing decision
 #2 budgets for): `g` compactly supported in `U`, locally CONSTANT near the puncture `p` (§D4),
 `f` holomorphic on `U \ {p}` and meromorphic at `p`. -/
 theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : Set ℂ} {p : ℂ}
-    (hU : IsOpen U) (hpU : p ∈ U)
+    (hU : IsOpen U) (_hpU : p ∈ U)
     (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U)
     (hconst : g =ᶠ[nhds p] Function.const ℂ (g p))
     (hf : DifferentiableOn ℂ f (U \ {p})) (hfp : MeromorphicAt f p) :

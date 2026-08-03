@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.CechCount.Count
 import Jacobian.Abel
 import Jacobian.PeriodLattice
@@ -27,7 +33,6 @@ gate of the project was reduced to. This file records the ungated finals:
 
 open scoped ContDiff Manifold
 
-set_option linter.unusedSectionVars false
 
 namespace RS
 

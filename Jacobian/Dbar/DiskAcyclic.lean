@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Dbar.PlanarCousin
 import Jacobian.Dbar.Operator
 import Jacobian.Cech.Cochains
@@ -34,17 +40,20 @@ open Cech
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] [T1Space X]
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] in
 private theorem heqOn_to_evEq {f g : X → ℂ} {U : Set X} (h : ∀ x ∈ U, f x = g x) :
     f =ᶠ[Filter.codiscreteWithin U] g :=
   Filter.mem_of_superset (Filter.self_mem_codiscreteWithin _) h
 
 /-! ### Compat helpers (holomorphic ⇒ meromorphic, candidates for upstreaming to `mero`) -/
 
+omit [T1Space X] in
 theorem meromorphicOnX_of_contMDiffOn_omega {U : Set X} (hU : IsOpen U) {u : X → ℂ}
     (hu : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω u U) : MeromorphicOnX u U := fun x hx => by
   have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω u x := (hu x hx).contMDiffAt (hU.mem_nhds hx)
   exact ContMDiffAt.meromorphicAtX h2
 
+omit [T1Space X] in
 theorem mk_mem_linSysOn_zero {U : Set X} (hU : IsOpen U) {u : X → ℂ}
     (hu : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω u U) :
     MeroGermOn.mk u (meromorphicOnX_of_contMDiffOn_omega hU hu) ∈ LinSysOn (0 : Divisor X) U := by
@@ -57,6 +66,7 @@ theorem mk_mem_linSysOn_zero {U : Set X} (hU : IsOpen U) {u : X → ℂ}
   have h2 : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω u x := (hu x hx).contMDiffAt (hU.mem_nhds hx)
   simpa using ContMDiffAt.ordAtX_nonneg h2
 
+omit [T1Space X] in
 /-- Acyclicity for `𝒪` (no compactness needed): `H¹` of a finite cover of a chart disk, with
 the structure sheaf's coefficients, vanishes. -/
 theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk V)

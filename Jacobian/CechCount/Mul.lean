@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech
 
 /-!
@@ -27,8 +33,6 @@ epimorphism statement `mulH1_surjective`.
 open scoped ContDiff Manifold
 open Set TopologicalSpace RS.Cech Module
 
-set_option linter.unusedSectionVars false
-set_option maxHeartbeats 1000000
 
 namespace RS.Cech
 
@@ -42,15 +46,18 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 def MulBound (f : ℳ X) (D E : RS.Divisor X) : Prop :=
   ∀ x : X, ((D x - E x : ℤ) : WithTop ℤ) ≤ f.ord x
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulBound_zero (D E : RS.Divisor X) : MulBound (0 : ℳ X) D E := by
   intro x
   rw [RS.MeroGermOn.ord_zero, if_pos ⟨isOpen_univ, mem_univ x⟩]
   exact le_top
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem MulBound.add {f g : ℳ X} {D E : RS.Divisor X} (hf : MulBound f D E)
     (hg : MulBound g D E) : MulBound (f + g) D E := fun x =>
   le_trans (le_min (hf x) (hg x)) (RS.MeroGermOn.ord_add isOpen_univ (mem_univ x) f g)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem MulBound.smul {f : ℳ X} {D E : RS.Divisor X} (c : ℂ) (hf : MulBound f D E) :
     MulBound (c • f) D E := by
   rcases eq_or_ne c 0 with rfl | hc
@@ -60,6 +67,7 @@ theorem MulBound.smul {f : ℳ X} {D E : RS.Divisor X} (c : ℂ) (hf : MulBound 
     rw [RS.MeroGermOn.ord_smul isOpen_univ (mem_univ x) hc]
     exact hf x
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem MulBound.mul {f g : ℳ X} {D D' E : RS.Divisor X} (hf : MulBound f D' E)
     (hg : MulBound g D D') : MulBound (f * g) D E := by
   intro x
@@ -70,12 +78,14 @@ theorem MulBound.mul {f g : ℳ X} {D D' E : RS.Divisor X} (hf : MulBound f D' E
         rw [← WithTop.coe_add, ← hsplit]
     _ ≤ f.ord x + g.ord x := add_le_add (hf x) (hg x)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulBound_one {D E : RS.Divisor X} (h : D ≤ E) : MulBound (1 : ℳ X) D E := by
   intro x
   rw [RS.MeroGermOn.ord_one isOpen_univ (mem_univ x)]
   have hx : D x ≤ E x := Function.locallyFinsuppWithin.le_def.1 h x
   exact_mod_cast sub_nonpos.mpr hx
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem le_of_mulBound_one {D E : RS.Divisor X} (h : MulBound (1 : ℳ X) D E) : D ≤ E := by
   rw [Function.locallyFinsuppWithin.le_def]
   intro x
@@ -84,12 +94,14 @@ theorem le_of_mulBound_one {D E : RS.Divisor X} (h : MulBound (1 : ℳ X) D E) :
   have hle : (D x - E x : ℤ) ≤ 0 := by exact_mod_cast hx
   exact sub_nonpos.mp hle
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulBound_of_mem_linSys {f : ℳ X} {B D E : RS.Divisor X} (hf : f ∈ RS.LinSys B)
     (h : ∀ x, D x - E x ≤ -(B x)) : MulBound f D E := fun x =>
   le_trans (WithTop.coe_le_coe.mpr (h x)) (hf x)
 
 /-! ### Germ level: `mulOn` -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mul_restrict_mem_linSysOn {f : ℳ X} {D E : RS.Divisor X} (hf : MulBound f D E)
     (U : Opens X) {φ : RS.MeroGermOn X (U : Set X)} (hφ : φ ∈ RS.LinSysOn D (U : Set X)) :
     RS.MeroGermOn.restrict (Set.subset_univ (U : Set X)) f * φ ∈ RS.LinSysOn E (U : Set X) := by
@@ -112,13 +124,15 @@ noncomputable def mulOn (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (
     (fun _φ hφ => by
       simpa only [LinearMap.mulLeft_apply] using mul_restrict_mem_linSysOn hf U hφ)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulOn_apply_coe (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (U : Opens X)
     (φ : RS.LinSysOn D (U : Set X)) :
     (mulOn f hf U φ : RS.MeroGermOn X (U : Set X)) =
       RS.MeroGermOn.restrict (Set.subset_univ (U : Set X)) f *
         (φ : RS.MeroGermOn X (U : Set X)) := by
-  rw [mulOn, LinearMap.restrict_coe_apply, LinearMap.mulLeft_apply]
+  rw [mulOn, LinearMap.coe_restrict_apply, LinearMap.mulLeft_apply]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `mulOn` commutes with the presheaf restriction maps. -/
 theorem restrictL_mulOn {V U : Opens X} (hVU : V ≤ U) (f : ℳ X) {D E : RS.Divisor X}
     (hf : MulBound f D E) (φ : RS.LinSysOn D (U : Set X)) :
@@ -136,6 +150,7 @@ noncomputable def mulC0 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (
     C0 D 𝒰 →ₗ[ℂ] C0 E 𝒰 :=
   LinearMap.pi fun i => (mulOn f hf (𝒰.U i)).comp (LinearMap.proj i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulC0_apply (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     (g : C0 D 𝒰) (i : Fin 𝒰.n) : mulC0 f hf 𝒰 g i = mulOn f hf (𝒰.U i) (g i) := rfl
 
@@ -145,6 +160,7 @@ noncomputable def mulC1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (
   LinearMap.pi fun p : Fin 𝒰.n × Fin 𝒰.n =>
     (mulOn f hf (𝒰.U p.1 ⊓ 𝒰.U p.2)).comp (LinearMap.proj p)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulC1_apply (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     (c : C1 D 𝒰) (p : Fin 𝒰.n × Fin 𝒰.n) :
     mulC1 f hf 𝒰 c p = mulOn f hf (𝒰.U p.1 ⊓ 𝒰.U p.2) (c p) := rfl
@@ -305,7 +321,7 @@ theorem mulH1_one {D E : RS.Divisor X} (h1 : MulBound (1 : ℳ X) D E) (hDE : D 
     rw [mulH1Cover_mk, h1CoverIncl_mk]
     congr 1
     apply Subtype.ext
-    rw [mulZ1_apply_coe, LinearMap.restrict_coe_apply]
+    rw [mulZ1_apply_coe, LinearMap.coe_restrict_apply]
     funext p
     rw [mulC1_apply, inclC1_apply]
     apply Subtype.ext

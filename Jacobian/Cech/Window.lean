@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Colimit
 import Mathlib.LinearAlgebra.Dimension.Constructions
 
@@ -50,6 +56,7 @@ noncomputable def ordGe (p : X) (m : ℤ) : Submodule ℂ (RS.MeroGermOn X ((cha
     · rw [RS.MeroGermOn.ord_smul (chartAt ℂ p).open_source (mem_chart_source ℂ p) ha]
       exact hψ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mem_ordGe_iff {p : X} {m : ℤ} {ψ : RS.MeroGermOn X ((chartAt ℂ p).source)} :
     ψ ∈ ordGe p m ↔ (m : WithTop ℤ) ≤ ψ.ord p := Iff.rfl
 
@@ -131,6 +138,7 @@ noncomputable abbrev WindowAt (p : X) (d d' : ℤ) : Type _ :=
 noncomputable def WindowAt.mk (p : X) (d d' : ℤ) : ordGe p (-d') →ₗ[ℂ] WindowAt p d d' :=
   Submodule.mkQ _
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem WindowAt.mk_eq_zero_iff {p : X} {d d' : ℤ} (ψ : ordGe p (-d')) :
     WindowAt.mk p d d' ψ = 0 ↔
       ((-d : ℤ) : WithTop ℤ) ≤ (ψ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p := by
@@ -145,6 +153,7 @@ variable [T2Space X] [CompactSpace X]
 noncomputable def diffSupp (D D' : RS.Divisor X) : Finset X :=
   ((D - D').finiteSupport isCompact_univ).toFinset
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mem_diffSupp_iff {D D' : RS.Divisor X} {q : X} : q ∈ diffSupp D D' ↔ D q ≠ D' q := by
   rw [diffSupp, Set.Finite.mem_toFinset, Function.mem_support, Divisor.sub_apply, sub_ne_zero]
 
@@ -169,6 +178,7 @@ noncomputable def restrictToChart (D' : RS.Divisor X) (q : X) :
         isOpen_univ (mem_chart_source ℂ q)]
       exact φ.2 q)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [CompactSpace X] in
 theorem restrictToChart_apply_coe (D' : RS.Divisor X) (q : X) (φ : RS.LinSys D') :
     (restrictToChart D' q φ : RS.MeroGermOn X ((chartAt ℂ q).source)) =
       RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source)
@@ -179,10 +189,12 @@ noncomputable def windowMap {D D' : RS.Divisor X} (_h : D ≤ D') :
     RS.LinSys D' →ₗ[ℂ] Window D D' :=
   LinearMap.pi fun q => (WindowAt.mk (q : X) (D q) (D' q)).comp (restrictToChart D' q)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowMap_apply {D D' : RS.Divisor X} (h : D ≤ D') (φ : RS.LinSys D')
     (q : diffSupp D D') :
     windowMap h φ q = WindowAt.mk (q : X) (D q) (D' q) (restrictToChart D' q φ) := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowMap_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (φ : RS.LinSys D') :
     windowMap h φ = 0 ↔ (φ : RS.Mero X) ∈ RS.LinSys D := by
   constructor
@@ -204,6 +216,7 @@ theorem windowMap_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (φ : RS.LinS
         (chartAt ℂ (q : X)).open_source isOpen_univ (mem_chart_source ℂ (q : X))]
     exact (RS.mem_linSys_iff.1 hDφ) (q : X)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Exactness at `L(D')`: the window map's kernel is exactly `L(D)` (bottom half of the
 six-term fragment, `Skyscraper.lean` supplies the top half). -/
 theorem exact_inclusion_windowMap {D D' : RS.Divisor X} (h : D ≤ D') :
@@ -216,6 +229,7 @@ theorem exact_inclusion_windowMap {D D' : RS.Divisor X} (h : D ≤ D') :
   · rintro ⟨ψ, rfl⟩
     exact ψ.2
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [CompactSpace X] in
 theorem inclusion_injective {D D' : RS.Divisor X} (h : D ≤ D') :
     Function.Injective (Submodule.inclusion (RS.linSys_mono h)) :=
   Submodule.inclusion_injective (RS.linSys_mono h)

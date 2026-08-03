@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Refinement
 import Mathlib.Algebra.Colimit.Module
 
@@ -38,7 +44,6 @@ theorem resH1'_eq_resH1 {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ �
     (hτ : IsRefIdx 𝒰 𝒱 τ) : resH1' D h = resH1 D τ hτ :=
   resH1_indep D (chosenRefIdx h) τ (chosenRefIdx_spec h) hτ
 
-set_option maxHeartbeats 1000000 in
 instance directedSystemH1Cover :
     DirectedSystem (fun 𝒰 : FinCover (⊤ : Opens X) => H1Cover D 𝒰) (fun _ _ h => resH1' D h) where
   map_self 𝒰 x := by
@@ -145,6 +150,7 @@ noncomputable def H1.lift {P : Type*} [AddCommGroup P] [Module ℂ P]
 
 /-! ### `D`-functoriality -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat: requested from meromorphic-and-divisors (`docs/requests/meromorphic-and-divisors.md`
 item 1), not yet upstreamed — proved locally (one-line carrier implication). -/
 theorem RS.linSysOn_mono {U : Set X} {D D' : RS.Divisor X} (h : D ≤ D') :
@@ -157,6 +163,7 @@ theorem RS.linSysOn_mono {U : Set X} {D D' : RS.Divisor X} (h : D ≤ D') :
 
 variable {D' : RS.Divisor X}
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclusion_restrictL_comm {V U : Opens X} (h' : V ≤ U) (hD : D ≤ D')
     (φ : RS.LinSysOn D (U : Set X)) :
     Submodule.inclusion (RS.linSysOn_mono hD) (LinSysOn.restrictL D h' φ) =
@@ -167,6 +174,7 @@ theorem inclusion_restrictL_comm {V U : Opens X} (h' : V ≤ U) (hD : D ≤ D')
 noncomputable def inclC1 {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D') : C1 D 𝒰 →ₗ[ℂ] C1 D' 𝒰 :=
   LinearMap.pi fun p => (Submodule.inclusion (RS.linSysOn_mono h)).comp (LinearMap.proj p)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC1_apply {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : C1 D 𝒰)
     (p : Fin 𝒰.n × Fin 𝒰.n) :
     inclC1 D 𝒰 h f p = Submodule.inclusion (RS.linSysOn_mono h) (f p) := rfl
@@ -175,9 +183,11 @@ theorem inclC1_apply {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : C1 
 noncomputable def inclC0 {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D') : C0 D 𝒰 →ₗ[ℂ] C0 D' 𝒰 :=
   LinearMap.pi fun i => (Submodule.inclusion (RS.linSysOn_mono h)).comp (LinearMap.proj i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC0_apply {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : C0 D 𝒰) (i : Fin 𝒰.n) :
     inclC0 D 𝒰 h f i = Submodule.inclusion (RS.linSysOn_mono h) (f i) := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC1_mem_Z1 {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') {f : C1 D 𝒰}
     (hf : f ∈ Z1 D 𝒰) : inclC1 D 𝒰 h f ∈ Z1 D' 𝒰 := by
   rw [mem_Z1_iff]
@@ -198,7 +208,7 @@ noncomputable def h1CoverIncl {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D')
       refine ⟨inclC0 D 𝒰 h g, ?_⟩
       show d0 D' 𝒰 (inclC0 D 𝒰 h g) =
         (↑(LinearMap.restrict (inclC1 D 𝒰 h) (fun _ hf => inclC1_mem_Z1 D h hf) z) : C1 D' 𝒰)
-      rw [LinearMap.restrict_coe_apply, ← hg']
+      rw [LinearMap.coe_restrict_apply, ← hg']
       funext p
       show d0 D' 𝒰 (inclC0 D 𝒰 h g) p = inclC1 D 𝒰 h (d0 D 𝒰 g) p
       rw [d0_apply, inclC1_apply, d0_apply, inclC0_apply, inclC0_apply, map_sub,
@@ -209,6 +219,7 @@ theorem h1CoverIncl_mk {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : Z
       H1Cover.mk D' 𝒰 (LinearMap.restrict (inclC1 D 𝒰 h) (fun _ hf => inclC1_mem_Z1 D h hf) f) :=
   Submodule.mapQ_apply _ _ _ f
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC1_comp_resC1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C1 D 𝒰) :
     inclC1 D 𝒱 h (resC1 D τ hτ f) = resC1 D' τ hτ (inclC1 D 𝒰 h f) := by
@@ -250,17 +261,18 @@ theorem H1Incl_id : H1Incl D (le_refl D) = LinearMap.id := by
     rw [h1CoverIncl_mk]
     congr 1
 
-set_option maxHeartbeats 1000000 in
 theorem H1Incl_comp {D'' : RS.Divisor X} (h : D ≤ D') (h' : D' ≤ D'') :
     H1Incl D' h' ∘ₗ H1Incl D h = H1Incl D (h.trans h') := by
   apply LinearMap.ext
   intro ξ
   induction ξ using H1.induction_on with
   | _ 𝒰 c =>
-    rw [LinearMap.comp_apply, H1Incl_toH1, H1Incl_toH1, H1Incl_toH1]
+    -- `simp only` traverses once; three successive `rw`s of the same `@[simp]` lemma each
+    -- re-solve the direct-limit unification and together blow the heartbeat budget.
+    simp only [LinearMap.comp_apply, H1Incl_toH1]
     congr 1
     obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
-    rw [h1CoverIncl_mk, h1CoverIncl_mk, h1CoverIncl_mk]
+    simp only [h1CoverIncl_mk]
     congr 1
 
 /-!

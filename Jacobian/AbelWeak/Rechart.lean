@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.AbelWeak.WeakSolution
 import Mathlib.Analysis.Analytic.IsolatedZeros
 
@@ -56,7 +62,7 @@ private theorem contDiffAt_zpow_of_ne_zero {f : ℂ → ℂ} {z : ℂ} {k : ℤ}
 
 /-! ## The rechart lemma -/
 
-omit [T2Space X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **The rechart lemma**: `IsWeakSolutionAt f a k`'s local model, witnessed by SOME chart `e`, is
 also witnessed by ANY OTHER `maximalAtlas` chart `e'` at `a`. Proof: the transition map
 `S := e ∘ e'.symm` is holomorphic (chart compatibility) hence `AnalyticAt`; its "divided
@@ -153,7 +159,7 @@ theorem exists_localModel_of_isWeakSolutionAt {f : X → ℂ} {a : X} {k : ℤ}
 
 /-! ## General order-additive multiplication -/
 
-omit [T2Space X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **General order-additive multiplication** (subsumes `IsWeakSolutionAt.mul_of_contMDiffAt`'s
 `k2 = 0` case, and the "opposite order cancellation" the general chain induction needs at every
 interior breakpoint): given `IsWeakSolutionAt f a k1` and `IsWeakSolutionAt g a k2` (witnessed by

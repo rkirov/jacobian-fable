@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.Loops
 import Jacobian.Dbar
 import Jacobian.Meromorphic
@@ -42,7 +48,7 @@ private theorem wirtingerDbar_cexp_comp {v : ℂ → ℂ} {z : ℂ} (hv : Differ
   show (fderiv ℝ (fun w => Complex.exp (v w)) z 1
     + Complex.I * fderiv ℝ (fun w => Complex.exp (v w)) z Complex.I) / 2 = _
   rw [hfderiv_eq]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp only [smul_apply, smul_eq_mul]
   show (Complex.exp (v z) * fderiv ℝ v z 1
       + Complex.I * (Complex.exp (v z) * fderiv ℝ v z Complex.I)) / 2
     = Complex.exp (v z) * wirtingerDbar v z

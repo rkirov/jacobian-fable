@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.AbelWeak.PlanarLogBranch
 import Jacobian.PlanarStokes.AnnulusResidue
 import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
@@ -268,11 +274,11 @@ theorem wirtingerDbar_cexp (v : ℂ → ℂ) (z : ℂ) (hv : DifferentiableAt �
       (Complex.exp (v z) • fderiv ℝ v z) z :=
     (Complex.hasDerivAt_exp (v z)).comp_hasFDerivAt z hv.hasFDerivAt
   rw [RS.wirtingerDbar, RS.wirtingerDbar, hchain.fderiv]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp only [smul_apply, smul_eq_mul]
   ring
 
 /-- **The logarithmic-derivative identity**: `∂̄g = dlog · g` off the divisor. -/
-theorem wirtingerDbar_g {z : ℂ} (hzα : z ≠ P.α) (hzβ : z ≠ P.β) :
+theorem wirtingerDbar_g {z : ℂ} (hzα : z ≠ P.α) (_hzβ : z ≠ P.β) :
     RS.wirtingerDbar P.g z = P.dlog z * P.g z := by
   by_cases hcase : ‖z - P.c‖ < P.χ.rIn
   · -- the rational region: both sides vanish
@@ -429,7 +435,7 @@ theorem integral_dlog_mul {r : ℝ} (hr : P.χ.rOut < r) {w Gp : ℂ → ℂ}
     -- extend to the whole plane: the integrand vanishes off the region
     have hzero : ∀ z, z ∉ closedBall P.c P.χ.rOut \ ball P.c ρ' → P.dlog z * w z = 0 := by
       intro z hz
-      rw [Set.mem_diff, not_and_or] at hz
+      rw [Set.mem_sdiff, not_and_or] at hz
       rcases hz with hz1 | hz2
       · rw [Metric.mem_closedBall, dist_eq_norm, not_le] at hz1
         rw [P.dlog_eq_zero_outer hz1, zero_mul]

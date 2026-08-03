@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.JacFunctorial.Trace
 import Jacobian.Path
 import Jacobian.JacobianConstruction.OfCurve
@@ -235,19 +241,22 @@ def Path.segMap {a b : Y} (δ : Path a b) (t₀ t₁ : ℝ) : Path (δ.extend t�
   source' := by norm_num
   target' := by norm_num
 
+omit [T2Space Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 @[simp] theorem Path.segMap_coe {a b : Y} (δ : Path a b) (t₀ t₁ : ℝ) :
     ⇑(Path.segMap δ t₀ t₁) = fun s : I => δ.extend ((1 - (s : ℝ)) * t₀ + (s : ℝ) * t₁) := rfl
 
-theorem Path.segMap_mem_Icc {a b : Y} (δ : Path a b) {t₀ t₁ : ℝ} (h : t₀ ≤ t₁) (s : I) :
+omit [T2Space Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+theorem Path.segMap_mem_Icc {a b : Y} (_δ : Path a b) {t₀ t₁ : ℝ} (h : t₀ ≤ t₁) (s : I) :
     (1 - (s : ℝ)) * t₀ + (s : ℝ) * t₁ ∈ Icc t₀ t₁ := by
   obtain ⟨hs0, hs1⟩ := s.2
   constructor
   · nlinarith
   · nlinarith
 
+omit [T2Space Y] in
 /-- The integral over an affine segment, computed by a primitive of the whole path. -/
 theorem pathIntegral_segMap {a b : Y} {δ : Path a b} {η₂ : Form1 Y} {F : ℝ → ℂ}
-    (hF : IsPrimitiveAlong δ η₂ F) {t₀ t₁ : ℝ} (h₀ : 0 ≤ t₀) (h₁ : t₁ ≤ 1) :
+    (hF : IsPrimitiveAlong δ η₂ F) {t₀ t₁ : ℝ} (_h₀ : 0 ≤ t₀) (_h₁ : t₁ ≤ 1) :
     pathIntegral (Path.segMap δ t₀ t₁) η₂ = F t₁ - F t₀ := by
   set ψ : ℝ → ℝ := fun u =>
     (1 - ((Set.projIcc (0 : ℝ) 1 zero_le_one u : I) : ℝ)) * t₀

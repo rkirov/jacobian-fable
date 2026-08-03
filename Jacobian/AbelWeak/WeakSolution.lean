@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 import Mathlib.Analysis.Calculus.ContDiff.Operations
 import Jacobian.Surface.RealSmooth
@@ -66,6 +72,7 @@ a real algebra) — so finite products of `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, 
 routing through `ContDiffAt ℝ` in a fixed chart (`RS.contMDiffAt_real_iff_contDiffAt`) and mathlib's
 generic `contDiffAt_prod` (valid for any normed ring), then bridging back. -/
 
+omit [T2Space X] in
 /-- Finite pointwise products of `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` functions are again
 `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` (Compat: no `ContMDiffMul 𝓘(ℝ, ℂ) ∞ ℂ` instance is registered,
 so this routes through `ContDiffAt ℝ` in the chart `extChartAt 𝓘(ℂ) x`). -/
@@ -82,6 +89,7 @@ theorem contMDiffAt_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X �
   rw [heq]
   exact hp
 
+omit [T2Space X] in
 /-- `ContMDiffOn` companion of `contMDiffAt_finsetProd_real`, for an OPEN set `s` (the only case
 needed here: `s` is always a finite-set complement, open since `X` is `T2Space`). -/
 theorem contMDiffOn_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X → ℂ} {s : Set X}
@@ -91,6 +99,7 @@ theorem contMDiffOn_finsetProd_real {ι : Type*} {t : Finset ι} {f : ι → X �
   exact (contMDiffAt_finsetProd_real
     fun i hi => (h i hi).contMDiffAt (hs.mem_nhds hz)).contMDiffWithinAt
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat bridge: composing a `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` function `h` with the inverse of
 ANY maximal-atlas chart `e` at `a` gives a `ContDiffAt ℝ ∞` planar function at `e a` (needed for
 `IsWeakSolutionAt.mul_of_contMDiffAt`, which must reuse the *existing* witness chart of its
@@ -107,6 +116,7 @@ theorem contDiffAt_comp_symm_of_contMDiffAt {h : X → ℂ} {a : X}
   have hh' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ h (e.symm (e a)) := by rw [heaa]; exact hh
   exact (hh'.comp (e a) hsymm).contDiffAt
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat bridge, the converse direction: a planar `ContDiffAt ℝ ∞` function `g` composed with
 ANY maximal-atlas chart `e` (at a point `x ∈ e.source`) is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞` as a
 function on `X` (needed by `SingleChart.lean`'s construction, which builds its weak solution's
@@ -122,6 +132,7 @@ theorem contMDiffAt_comp_of_contDiffAt {g : ℂ → ℂ} {x : X} {e : OpenPartia
 
 /-! ### Multiplicativity (Forster's Lemma 20.1) -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The core multiplicativity step: multiplying a weak solution at `a` by a smooth, non-vanishing
 (at `a`) cofactor `h` preserves the local model (same order `k`, same witness chart). -/
 theorem IsWeakSolutionAt.mul_of_contMDiffAt {f h : X → ℂ} {a : X} {k : ℤ}

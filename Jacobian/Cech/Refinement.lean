@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.H0
 
 /-!
@@ -30,6 +36,7 @@ variable (D : RS.Divisor X) {Ω : Opens X} {𝒰 𝒱 : FinCover Ω}
 noncomputable def resC0 (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) : C0 D 𝒰 →ₗ[ℂ] C0 D 𝒱 :=
   LinearMap.pi fun k => (LinSysOn.restrictL D (hτ k)).comp (LinearMap.proj (τ k))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC0_apply (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C0 D 𝒰) (k : Fin 𝒱.n) :
     resC0 D τ hτ f k = LinSysOn.restrictL D (hτ k) (f (τ k)) := rfl
 
@@ -38,6 +45,7 @@ noncomputable def resC1 (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 �
   LinearMap.pi fun p : Fin 𝒱.n × Fin 𝒱.n =>
     (LinSysOn.restrictL D (inf_le_inf (hτ p.1) (hτ p.2))).comp (LinearMap.proj (τ p.1, τ p.2))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_apply (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C1 D 𝒰)
     (p : Fin 𝒱.n × Fin 𝒱.n) :
     resC1 D τ hτ f p = LinSysOn.restrictL D (inf_le_inf (hτ p.1) (hτ p.2)) (f (τ p.1, τ p.2)) :=
@@ -45,6 +53,7 @@ theorem resC1_apply (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 �
 
 variable (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_comp_d0 : (resC1 D τ hτ) ∘ₗ (d0 D 𝒰) = (d0 D 𝒱) ∘ₗ (resC0 D τ hτ) := by
   apply LinearMap.ext
   intro f
@@ -66,6 +75,7 @@ theorem resC1_mem_B1 {f : C1 D 𝒰} (hf : f ∈ B1 D 𝒰) : resC1 D τ hτ f �
 
 /-! ### The cocycle-relation workhorse (§6.5) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Forster p. 97 / the workhorse: any cocycle-relation triple, restricted to any smaller
 open `W` (via arbitrary — by proof irrelevance, any — witnessing inequalities). -/
 theorem Z1.rel_res {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) (a b c : Fin 𝒰.n) {W : Opens X}
@@ -192,12 +202,14 @@ theorem resH1_indep (τ τ' : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 �
 
 /-! ### Functor laws: identity and composition -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC0_id (h : IsRefIdx 𝒰 𝒰 id) : resC0 D id h = LinearMap.id := by
   apply LinearMap.ext
   intro f
   funext i
   exact restrictL_id D (f i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_id (h : IsRefIdx 𝒰 𝒰 id) : resC1 D id h = LinearMap.id := by
   apply LinearMap.ext
   intro f
@@ -221,6 +233,7 @@ theorem resH1_id (h : IsRefIdx 𝒰 𝒰 id) : resH1 D id h = LinearMap.id := by
   rw [resH1_mk, resZ1_id]
   rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC0_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : IsRefIdx 𝒱 𝒲 σ) :
     (resC0 D σ hσ) ∘ₗ (resC0 D τ hτ) =
       resC0 D (τ ∘ σ) (fun k => (hσ k).trans (hτ (σ k))) := by
@@ -232,6 +245,7 @@ theorem resC0_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   rw [resC0_apply]
   exact restrictL_restrictL D (hτ (σ k)) (hσ k) ((hσ k).trans (hτ (σ k))) (f (τ (σ k)))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : IsRefIdx 𝒱 𝒲 σ) :
     (resC1 D σ hσ) ∘ₗ (resC1 D τ hτ) =
       resC1 D (τ ∘ σ) (fun k => (hσ k).trans (hτ (σ k))) := by

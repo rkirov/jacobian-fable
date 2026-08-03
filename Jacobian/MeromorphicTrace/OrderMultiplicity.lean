@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: meromorphic-trace. Order↔multiplicity bridges (zero and pole cases), file 2 of
 the design's 6-file plan.
 -/
@@ -43,6 +49,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {f : X → ℂ} {x : X}
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Shared CC4-level bridge: if the target-chart composite of `toP1 G` matches (on a *full*
 neighborhood) the chart composite of a companion ℂ-valued function `g`, the CC4 multiplicities of
 `toP1 G` and of `g` coincide (same `inChartAt` germ, since the target chart's own recentering

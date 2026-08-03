@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Analysis.Calculus.BumpFunction.Normed
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.Analysis.Complex.LocallyUniformLimit
@@ -93,7 +99,7 @@ private theorem solveRho_mono (hR : 0 < R) : Monotone (solveRho R) := by
   intro n
   exact (solveRho_lt_succ R hR n).le
 
-private theorem exists_solveRho_gt (hR : 0 < R) {x : ℝ} (hx : x < R) :
+private theorem exists_solveRho_gt (_hR : 0 < R) {x : ℝ} (hx : x < R) :
     ∃ N, x < solveRho R N := by
   have hRx : 0 < R - x := by linarith
   obtain ⟨N, hN⟩ := exists_nat_gt (R / (R - x))
@@ -147,7 +153,7 @@ private theorem solveGcut_eq (hR : 0 < R) (n : ℕ) :
 
 /-! ### The raw (uncorrected) solutions on shrinking sub-balls -/
 
-private def solveF (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ) : ℂ → ℂ :=
+private def solveF (hR : 0 < R) (_hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ) : ℂ → ℂ :=
   cauchyTransform (solveGcut g c R hR n)
 
 private theorem solveF_cd (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ) :
@@ -165,7 +171,7 @@ private theorem solveF_dbar_eq (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R
 /-! ### The corrected sequence: a Nat.rec into a Σ-type carrying invariants (i), (ii); the
 correction bound (iii) is proved once, as a property of the step function itself. -/
 
-private def SolveState (hR : 0 < R) (n : ℕ) : Type :=
+private def SolveState (_hR : 0 < R) (n : ℕ) : Type :=
   {F : ℂ → ℂ // ContDiff ℝ ∞ F ∧ Set.EqOn (wirtingerDbar F) g (closedBall c (solveRho R (n + 1)))}
 
 private def solveState0 (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) : SolveState g c R hR 0 :=

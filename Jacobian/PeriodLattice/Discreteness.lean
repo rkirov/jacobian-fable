@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.PeriodLattice.GenericPoints
 import Jacobian.PeriodLattice.Segment
 import Jacobian.Abel
@@ -130,7 +136,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       intro v
       funext i
       show (∑ j, A i j • proj' j) v = _
-      simp [hproj_def, ContinuousLinearMap.sum_apply, Matrix.mulVecLin_apply, Matrix.mulVec,
+      simp [hproj_def, sum_apply, Matrix.mulVecLin_apply, Matrix.mulVec,
         dotProduct]
     rwa [heq] at hpi
   have hACLMdet : ((Matrix.mulVecLin A).toContinuousLinearMap

@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: local-multiplicity (CC4). Adapted charts: the local normal form `z ↦ z ^ k`.
 -/
 import Jacobian.LocalMultiplicity.Multiplicity
@@ -90,11 +96,10 @@ theorem contMDiffOn_e'_symm [IsManifold 𝓘(ℂ) ω Y] (A : AdaptedChartsAt F x
 
 variable [IsManifold 𝓘(ℂ) ω X] [IsManifold 𝓘(ℂ) ω Y]
 
-set_option linter.unusedVariables false in
 /-- Adapted charts pin down the multiplicity: if `F` reads as `z ^ k` in adapted charts,
 then `k` IS the local multiplicity. (The hypothesis `hk` is kept for interface stability;
 it is not needed for this direction.) -/
-theorem multiplicity_eq (hk : k ≠ 0) (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x)
+theorem multiplicity_eq (_hk : k ≠ 0) (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x)
     (A : AdaptedChartsAt F x k) : multiplicity F x = k := by
   have hinv := analyticOrderAt_charts_eq_multiplicityENat hF
     A.mem_maximalAtlas A.mem_source A.mem_maximalAtlas' A.mem_source'

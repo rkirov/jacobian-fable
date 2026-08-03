@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Finiteness.Chain
 import Jacobian.DolbeaultComparison.Leray
 
@@ -47,9 +53,11 @@ theorem isCompactOperator_pi {ι : Type*} [Finite ι] {E : Type*} [NormedAddComm
 
 variable (T : ShrinkChain X)
 
+omit [T1Space X] [T2Space X] [CompactSpace X] in
 theorem resZ_apply_coe {P P' : Fin T.n → Opens X} (h : ∀ i, P' i ≤ P i) (x : NZ1 T P) :
     (resZ T P P' h x : NC1 T P') = resNC1 T P P' h (x : NC1 T P) := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] [T2Space X] [CompactSpace X] in
 /-- Closure of a same-index-pair meet: `closure (P₁ i ⊓ P₁ j) ⊆ closure (P₁ i) ∩ closure (P₁ j)`,
 specialized to the `V ⊓ V ⊆ closure ⊆ U ⊓ U` shape needed for the Montel input. -/
 private theorem closure_inf_pair_subset {P₁ P₂ : Fin T.n → Opens X}
@@ -58,11 +66,13 @@ private theorem closure_inf_pair_subset {P₁ P₂ : Fin T.n → Opens X}
   simp only [Opens.coe_inf]
   exact closure_inter_subset.trans (Set.inter_subset_inter (h i) (h j))
 
+omit [T1Space X] [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem inf_pair_subset_chart_source (i j : Fin T.n) :
     ((T.U i ⊓ T.U j : Opens X) : Set X) ⊆ (chartAt ℂ (T.c i)).source := by
   rw [Opens.coe_inf]
   exact (Set.inter_subset_left.trans (T.U_subset_Ustar i)).trans (T.Ustar_subset_source i)
 
+omit [T1Space X] [T2Space X] in
 theorem isCompactOperator_resNC1_U_V : IsCompactOperator (resNC1 T T.U T.V T.V_le_U) := by
   show IsCompactOperator (ContinuousLinearMap.pi (fun p : Fin T.n × Fin T.n =>
     (restrictCLM (inf_le_inf (T.V_le_U p.1) (T.V_le_U p.2))).comp (ContinuousLinearMap.proj p)))
@@ -102,21 +112,25 @@ section EvalAtCompat
 
 variable [T1Space X]
 
+omit [T1Space X] in
 theorem MeroGermOn.evalAt_neg {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     {φ : RS.MeroGermOn X U} (h : 0 ≤ φ.ord x) : (-φ).evalAt x = -(φ.evalAt x) := by
   rw [← neg_one_smul ℂ φ, RS.MeroGermOn.evalAt_smul hU hx h, neg_one_mul]
 
+omit [T1Space X] in
 theorem MeroGermOn.evalAt_sub {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     {φ ψ : RS.MeroGermOn X U} (h1 : 0 ≤ φ.ord x) (h2 : 0 ≤ ψ.ord x) :
     (φ - ψ).evalAt x = φ.evalAt x - ψ.evalAt x := by
   rw [sub_eq_add_neg, RS.MeroGermOn.evalAt_add hU hx h1 (by rw [RS.MeroGermOn.ord_neg]; exact h2),
     MeroGermOn.evalAt_neg hU hx h2, sub_eq_add_neg]
 
+omit [T1Space X] in
 theorem MeroGermOn.evalAt_zero {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U) :
     (0 : RS.MeroGermOn X U).evalAt x = 0 := by
   rw [← RS.MeroGermOn.mk_zero]
   exact RS.MeroGermOn.evalAt_mk_of_contMDiffAt hU hx contMDiffAt_const
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] in
 /-- `LinSysOn 0`-membership gives `0 ≤ ord` unconditionally (D=0's own zero divisor). -/
 theorem LinSysOn.ord_nonneg {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     (φ : RS.LinSysOn (0 : RS.Divisor X) U) : 0 ≤ (φ : RS.MeroGermOn X U).ord x := by
@@ -125,6 +139,7 @@ theorem LinSysOn.ord_nonneg {U : Set X} (hU : IsOpen U) {x : X} (hx : x ∈ U)
     simp [Function.locallyFinsuppWithin.coe_zero]
   rwa [h0, neg_zero] at h
 
+omit [T1Space X] in
 /-- The "repr\_cocycle" pattern (dolbeault §6.2): a `Z1`-cocycle relation, evaluated pointwise. -/
 theorem Z1.rel_res_evalAt {𝒰 : FinCover (⊤ : Opens X)} {f : C1 (0 : RS.Divisor X) 𝒰}
     (hf : f ∈ Z1 (0 : RS.Divisor X) 𝒰) (a b c : Fin 𝒰.n) {z : X}
@@ -270,6 +285,7 @@ noncomputable def starPairGerm (F : Z1 (0 : RS.Divisor X) T.coverStar) (i j : Fi
     RS.MeroGermOn X ((T.Ustar i ⊓ T.Ustar j : Opens X) : Set X) :=
   starPairMem T F i j
 
+omit [T1Space X] [T2Space X] in
 theorem boundZ1_apply_eq_evalAt {P : Fin T.n → Opens X}
     (h : ∀ i, closure (P i : Set X) ⊆ (T.Ustar i : Set X)) (F : Z1 (0 : RS.Divisor X) T.coverStar)
     (i j : Fin T.n) (z : ↥((P i ⊓ P j : Opens X) : Set X)) :
@@ -316,12 +332,14 @@ noncomputable def vGerm (g : C0 (0 : RS.Divisor X) T.coverV) (i : Fin T.n) :
     RS.MeroGermOn X (T.V i : Set X) :=
   vMem T g i
 
+omit [T1Space X] [T2Space X] in
 theorem boundZ1C0_apply_eq_evalAt (g : C0 (0 : RS.Divisor X) T.coverV) (i : Fin T.n)
     (z : ↥((T.W i : Set X))) :
     (boundZ1C0 T g i : ↥(T.W i : Set X) →ᵇ ℂ) z = (vGerm T g i).evalAt (z : X) := by
   rw [boundZ1C0, restrictGerm_apply]
   rfl
 
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 /-- **The trade equation, evaluated pointwise** (the "repr\_cocycle" pattern applied to
 `exists_trade`'s conclusion): reads off a scalar identity relating the good-cover cocycle `F`,
 the traded cocycle `f`, and the coboundary witness `g` at a point. Reused for both
@@ -394,6 +412,7 @@ noncomputable def cComp (ξ : NZ1 T T.V) (α β : Fin T.n) :
     RS.MeroGermOn X ((T.V α ⊓ T.V β : Opens X) : Set X) :=
   cCompMem T ξ α β
 
+omit [T2Space X] [CompactSpace X] in
 theorem cComp_eq (ξ : NZ1 T T.V) (α β : Fin T.n) :
     cComp T ξ α β = toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β)) := by
   rw [cComp, cCompMem, cC1, toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
@@ -436,6 +455,7 @@ theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T)
 
 /-! ### §5 steps 8–9: `classMap` and the two Schwartz-consumer properties -/
 
+omit [T1Space X] [T2Space X] [CompactSpace X] in
 /-- Composition law for the Banach-level restriction (mirrors `resZ1_comp`/`resC1_comp`). -/
 theorem resZ_resZ {P P' P'' : Fin T.n → Opens X} (h1 : ∀ i, P' i ≤ P i) (h2 : ∀ i, P'' i ≤ P' i)
     (h3 : ∀ i, P'' i ≤ P i) (x : NZ1 T P) :
@@ -450,9 +470,11 @@ noncomputable def toGermC0 (P : Fin T.n → Opens X) :
     NC0 T P →ₗ[ℂ] ∀ i : Fin T.n, RS.LinSysOn (0 : RS.Divisor X) ((P i : Opens X) : Set X) :=
   LinearMap.pi fun i => (toGermSub (P i)).comp (LinearMap.proj i)
 
+omit [T2Space X] [CompactSpace X] in
 theorem toGermC0_apply (P : Fin T.n → Opens X) (h : NC0 T P) (i : Fin T.n) :
     toGermC0 T P h i = toGermSub (P i) (h i) := rfl
 
+omit [T2Space X] [CompactSpace X] in
 /-- Naturality: germifying a `0`-cochain then taking its cover-level coboundary agrees with
 germifying the Banach-level coboundary (§5 step 8's "`toGermZ1 ∘ δ_W = d0 ∘ toGermC0`"). -/
 theorem toGermC1_deltaCLM_eq_d0 (η : NC0 T T.W) (p : Fin T.n × Fin T.n) :
@@ -467,6 +489,7 @@ two-step naming device as `cC1`). -/
 noncomputable def toGermZ1W (ψ : NZ1 T T.W) : Z1 (0 : RS.Divisor X) T.coverW :=
   (toGermZ1 T T.W T.covers_W ψ : Z1 (0 : RS.Divisor X) (coverOfP T T.W T.covers_W))
 
+omit [T2Space X] [CompactSpace X] in
 theorem toGermZ1W_apply_coe (ψ : NZ1 T T.W) :
     (toGermZ1W T ψ : C1 (0 : RS.Divisor X) T.coverW) = toGermC1 T T.W (ψ : NC1 T T.W) := rfl
 
@@ -488,11 +511,12 @@ noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.
          rw [map_smul, toGermZ1W_apply_coe]
          rfl } ∘ₗ (resZ T T.V T.W T.W_le_V))
 
+omit [T2Space X] [CompactSpace X] in
 theorem classMap_apply (ψ : NZ1 T T.V) :
     classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
   rfl
 
-set_option maxHeartbeats 1000000 in
+omit [T2Space X] [CompactSpace X] in
 /-- **Schwartz-consumer property 1** (§5 step 8): the trade defect dies in `H¹(𝔚)`. -/
 theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
     classMap T (tradePi T x - tradeCompact T x) = 0 := by
@@ -510,7 +534,7 @@ theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
     have e1 := hxmem (α, β)
     rw [e1]
     abel
-  rw [classMap_apply, H1Cover.mk_eq_zero_iff]
+  simp only [classMap_apply, H1Cover.mk_eq_zero_iff]
   refine ⟨-(toGermC0 T T.W x.1.2.2), ?_⟩
   rw [toGermZ1W_apply_coe, hkey]
   have hd0neg : d0 (0 : RS.Divisor X) T.coverW (-(toGermC0 T T.W x.1.2.2)) =
@@ -569,7 +593,6 @@ theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : S
     restrictL_apply_coe]
   rfl
 
-set_option maxHeartbeats 1000000 in
 /-- **§5's second centerpiece**: `classMap` is surjective (§5 step 9). -/
 theorem classMap_surjective : Function.Surjective (classMap T) := by
   intro c'

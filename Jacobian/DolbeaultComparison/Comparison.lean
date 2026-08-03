@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.DolbeaultComparison.Leray
 import Jacobian.DolbeaultComparison.Splitting
 
@@ -22,8 +28,6 @@ open Set TopologicalSpace RS.Cech
 -- `FinCover ⊤`; instance search for `AddCommGroup`/`Module` on it, and definitional unfolding of
 -- `H1Cover`/`C0`/`C1` through it, is heavy throughout this file (mirrors `Colimit.lean`'s own
 -- `directedSystemH1Cover` heartbeat bump).
-set_option maxHeartbeats 4000000
-set_option synthInstance.maxHeartbeats 400000
 
 namespace RS
 
@@ -127,35 +131,35 @@ theorem toDolb_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} [T2Space X] [CompactSp
 noncomputable def goodRef [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     FinCover (⊤ : Opens X) := (exists_good_refinement 𝒰).choose
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem goodRef_le [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     𝒰 ≤ goodRef 𝒰 := (exists_good_refinement 𝒰).choose_spec.1
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem goodRef_isGood [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     (goodRef 𝒰).IsGood := (exists_good_refinement 𝒰).choose_spec.2
 
-set_option maxHeartbeats 1000000 in
 /-- `toDolb` extended to every cover by pushing to a good refinement. -/
 noncomputable def toDolbAll [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     H1Cover (0 : RS.Divisor X) 𝒰 →ₗ[ℂ] H01 X :=
   toDolb (goodRef_isGood 𝒰) ∘ₗ resH1' (0 : RS.Divisor X) (goodRef_le 𝒰)
 
-set_option maxHeartbeats 1000000 in
 theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤ : Opens X)) (h : 𝒰 ≤ 𝒱)
     (ξ : H1Cover (0 : RS.Divisor X) 𝒰) :
     toDolbAll 𝒱 (resH1' (0 : RS.Divisor X) h ξ) = toDolbAll 𝒰 ξ := by
   obtain ⟨𝒲, h𝒲le, h𝒲good⟩ := exists_good_refinement ((goodRef 𝒰).meet (goodRef 𝒱))
   have hU𝒲 : goodRef 𝒰 ≤ 𝒲 := (le_meet_left _ _).trans h𝒲le
   have hV𝒲 : goodRef 𝒱 ≤ 𝒲 := (le_meet_right _ _).trans h𝒲le
-  set τ𝒰 := chosenRefIdx (goodRef_le 𝒰) with hτ𝒰_def
-  set τ𝒱 := chosenRefIdx (goodRef_le 𝒱) with hτ𝒱_def
-  set σU := chosenRefIdx hU𝒲 with hσU_def
-  set σV := chosenRefIdx hV𝒲 with hσV_def
-  set ρ := chosenRefIdx h with hρ_def
-  have hτ𝒰 : IsRefIdx 𝒰 (goodRef 𝒰) τ𝒰 := chosenRefIdx_spec (goodRef_le 𝒰)
-  have hτ𝒱 : IsRefIdx 𝒱 (goodRef 𝒱) τ𝒱 := chosenRefIdx_spec (goodRef_le 𝒱)
-  have hσU : IsRefIdx (goodRef 𝒰) 𝒲 σU := chosenRefIdx_spec hU𝒲
-  have hσV : IsRefIdx (goodRef 𝒱) 𝒲 σV := chosenRefIdx_spec hV𝒲
-  have hρ : IsRefIdx 𝒰 𝒱 ρ := chosenRefIdx_spec h
+  -- `resH1'_eq_resH1` accepts ANY refinement index, so the indices are obtained opaquely
+  -- rather than `set` to `chosenRefIdx …`: with the definitions visible, `whnf` unfolds them
+  -- repeatedly while checking the `resH1`/`toDolb` rewrites and blows the heartbeat budget.
+  obtain ⟨τ𝒰, hτ𝒰⟩ : ∃ τ, IsRefIdx 𝒰 (goodRef 𝒰) τ :=
+    ⟨chosenRefIdx (goodRef_le 𝒰), chosenRefIdx_spec (goodRef_le 𝒰)⟩
+  obtain ⟨τ𝒱, hτ𝒱⟩ : ∃ τ, IsRefIdx 𝒱 (goodRef 𝒱) τ :=
+    ⟨chosenRefIdx (goodRef_le 𝒱), chosenRefIdx_spec (goodRef_le 𝒱)⟩
+  obtain ⟨σU, hσU⟩ : ∃ σ, IsRefIdx (goodRef 𝒰) 𝒲 σ := ⟨chosenRefIdx hU𝒲, chosenRefIdx_spec hU𝒲⟩
+  obtain ⟨σV, hσV⟩ : ∃ σ, IsRefIdx (goodRef 𝒱) 𝒲 σ := ⟨chosenRefIdx hV𝒲, chosenRefIdx_spec hV𝒲⟩
+  obtain ⟨ρ, hρ⟩ : ∃ ρ, IsRefIdx 𝒰 𝒱 ρ := ⟨chosenRefIdx h, chosenRefIdx_spec h⟩
   have hidx1 : IsRefIdx 𝒰 𝒲 (τ𝒰 ∘ σU) := fun k => (hσU k).trans (hτ𝒰 (σU k))
   have hidx2 : IsRefIdx 𝒰 𝒲 (ρ ∘ τ𝒱 ∘ σV) :=
     fun k => (hσV k).trans ((hτ𝒱 (σV k)).trans (hρ (τ𝒱 (σV k))))
@@ -165,13 +169,13 @@ theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤
     have hc1 : resH1 (0 : RS.Divisor X) σU hσU (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ) =
         resH1 (0 : RS.Divisor X) (τ𝒰 ∘ σU) hidx1 ξ := by
       have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) τ𝒰 hτ𝒰 σU hσU) ξ
-      simpa using this
+      exact this
     have hc2 : toDolb h𝒲good (resH1 (0 : RS.Divisor X) σU hσU
         (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ)) =
         toDolb (goodRef_isGood 𝒰) (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ) := by
       have := LinearMap.congr_fun (toDolb_res (goodRef_isGood 𝒰) h𝒲good σU hσU)
         (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ)
-      simpa using this
+      exact this
     rw [← hc2, hc1]
   have hLHS : toDolbAll 𝒱 (resH1' (0 : RS.Divisor X) h ξ) =
       toDolb h𝒲good (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) hidx2 ξ) := by
@@ -182,7 +186,7 @@ theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤
     have hc1 : resH1 (0 : RS.Divisor X) τ𝒱 hτ𝒱 (resH1 (0 : RS.Divisor X) ρ hρ ξ) =
         resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ := by
       have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) ρ hρ τ𝒱 hτ𝒱) ξ
-      simpa using this
+      exact this
     rw [hc1]
     have hc2 : resH1 (0 : RS.Divisor X) σV hσV
         (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ) =
@@ -196,13 +200,12 @@ theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤
           (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ) := by
       have := LinearMap.congr_fun (toDolb_res (goodRef_isGood 𝒱) h𝒲good σV hσV)
         (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ)
-      simpa using this
+      exact this
     rw [← hc3, hc2]
   rw [hLHS, hRHS]
   exact congrArg (toDolb h𝒲good)
     (LinearMap.congr_fun (resH1_indep (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) (τ𝒰 ∘ σU) hidx2 hidx1) ξ)
 
-set_option maxHeartbeats 1000000 in
 /-- **THE comparison map on the colimit** (Forster 15.14(a), forward map). -/
 noncomputable def cechToH01 [T2Space X] [CompactSpace X] :
     H1 (0 : RS.Divisor X) →ₗ[ℂ] H01 X :=
@@ -212,7 +215,6 @@ noncomputable def cechToH01 [T2Space X] [CompactSpace X] :
     (c : H1Cover (0 : RS.Divisor X) 𝒰) : cechToH01 (toH1 (0 : RS.Divisor X) 𝒰 c) = toDolbAll 𝒰 c :=
   H1.lift_toH1 (0 : RS.Divisor X) toDolbAll toDolbAll_compat 𝒰 c
 
-set_option maxHeartbeats 1000000 in
 theorem cechToH01_toH1 [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ : Opens X)}
     (h𝒰 : 𝒰.IsGood) (c : H1Cover (0 : RS.Divisor X) 𝒰) :
     cechToH01 (toH1 (0 : RS.Divisor X) 𝒰 c) = toDolb h𝒰 c := by
@@ -225,7 +227,6 @@ theorem cechToH01_toH1 [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ : Open
 
 /-! ### Injectivity -/
 
-set_option maxHeartbeats 1000000 in
 theorem cechToH01_injective [T2Space X] [CompactSpace X] :
     Function.Injective (cechToH01 (X := X)) := by
   apply LinearMap.ker_eq_bot.mp
@@ -284,7 +285,6 @@ theorem cechToH01_injective [T2Space X] [CompactSpace X] :
 
 /-! ### Surjectivity -/
 
-set_option maxHeartbeats 1000000 in
 theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
     Function.Surjective (cechToH01 (X := X)) := by
   intro η'
@@ -355,7 +355,6 @@ theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
 
 /-! ### Assembly -/
 
-set_option maxHeartbeats 1000000 in
 /-- **DOLBEAULT** (Forster 15.14(a), PDE-free): `H¹(X, 𝒪) ≃ H^{0,1}_∂̄(X)`. -/
 noncomputable def dolbeaultEquiv [T2Space X] [CompactSpace X] :
     H1 (0 : RS.Divisor X) ≃ₗ[ℂ] H01 X :=
@@ -364,7 +363,6 @@ noncomputable def dolbeaultEquiv [T2Space X] [CompactSpace X] :
 @[simp] theorem dolbeaultEquiv_apply [T2Space X] [CompactSpace X] (ξ : H1 (0 : RS.Divisor X)) :
     dolbeaultEquiv ξ = cechToH01 ξ := rfl
 
-set_option maxHeartbeats 1000000 in
 /-- The blueprint's stated purpose: Čech finiteness transfers to `H^{0,1}`. Gated on
 `[FiniteDimensional ℂ (H1 (0 : Divisor X))]` — the unconditional discharge of this hypothesis
 lives in `Jacobian/Finiteness/H1Finite.lean`, not yet built at the time of this unit. -/
@@ -372,7 +370,6 @@ theorem finiteDimensional_H01 [T2Space X] [CompactSpace X]
     [FiniteDimensional ℂ (H1 (0 : RS.Divisor X))] : FiniteDimensional ℂ (H01 X) :=
   Module.Finite.equiv dolbeaultEquiv
 
-set_option maxHeartbeats 1000000 in
 /-- Global ∂̄-solvability criterion (free corollary): solvable iff the Čech class of the Leray
 cocycle of local solutions vanishes. -/
 theorem exists_dbar_eq_iff [T2Space X] [CompactSpace X] {η : Form01 X}

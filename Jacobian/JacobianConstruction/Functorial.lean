@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.JacobianConstruction.Basic
 
 /-!
@@ -37,8 +43,10 @@ def uliftDownHom : ULift.{u} G →ₜ+ G :=
   { (AddEquiv.ulift (α := G)).toAddMonoidHom with
     continuous_toFun := (Homeomorph.ulift (X := G)).continuous }
 
+omit [IsTopologicalAddGroup G] in
 @[simp] theorem uliftUpHom_apply (x : G) : uliftUpHom.{u} x = ULift.up x := rfl
 
+omit [IsTopologicalAddGroup G] in
 @[simp] theorem uliftDownHom_apply (x : ULift.{u} G) : uliftDownHom x = x.down := rfl
 
 end RS

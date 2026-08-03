@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms.OfCoeffs
 import Jacobian.Forms.Montel
 import Mathlib.Analysis.Normed.Module.FiniteDimension
@@ -32,7 +38,6 @@ open Set Filter IsManifold
 -- Several lemmas about `G.P`/`gext` below are stated in a section carrying
 -- `[IsManifold 𝓘(ℂ) ω X]` (needed by other declarations in the same `variable` block) but do not
 -- themselves use it; silence the resulting (harmless) unused-variable linter noise.
-set_option linter.unusedSectionVars false
 
 noncomputable section
 
@@ -325,6 +330,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem gext_apply (f : G.P) {i : Fin G.n} {z : ℂ} (hz : z ∈ G.K i) :
     G.gext f i z = f i ⟨z, hz⟩ := dif_pos hz
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem continuousOn_gext [CompactSpace X] (f : G.P) (i : Fin G.n) :
     ContinuousOn (G.gext f i) (G.K i) := by
   rw [continuousOn_iff_continuous_restrict]

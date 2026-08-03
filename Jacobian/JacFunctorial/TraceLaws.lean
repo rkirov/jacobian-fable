@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.JacFunctorial.Trace
 import Jacobian.ProperDegree.ChallengeDegree
 
@@ -28,6 +34,7 @@ variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [ChartedSpace ℂ Y] [IsMa
 
 /-! ### Nonvanishing of the chart-read derivative at unramified points -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- At a point where `f` reads as `z ↦ z^1` in adapted charts, the chart-read derivative of `f`
 does not vanish. -/
 theorem deriv_chartRead_ne_zero {f : X → Y} {x : X} {k : ℕ} (A : RS.AdaptedChartsAt f x k)
@@ -45,6 +52,7 @@ theorem deriv_chartRead_ne_zero {f : X → Y} {x : X} {k : ℕ} (A : RS.AdaptedC
   simp only [Nat.cast_one, one_mul, Nat.sub_self, pow_zero, mul_one]
   exact mul_ne_zero hT hB
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `X` (a positive-dimensional charted space) carries no constant identity: `id` is
 nonconstant. -/
 theorem not_exists_const_id : ¬ ∃ c : X, ∀ x : X, (id : X → X) x = c := by
@@ -239,6 +247,7 @@ variable [CompactSpace Y] [ConnectedSpace Y]
 variable {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hne : ¬ ∃ c, ∀ x, f x = c)
 
 include hf hne in
+omit [CompactSpace Y] [ConnectedSpace Y] [T2Space X] [CompactSpace X] in
 /-- Per-point cancellation: the canonical trace coefficient of a pulled-back form at an
 unramified fibre point is the coefficient of the original form. -/
 theorem qCoeff_pullback {ŷ : Y} (hŷ : RS.IsRegularValue f ŷ) {x : X} (hx : f x = ŷ)
@@ -255,6 +264,7 @@ theorem qCoeff_pullback {ŷ : Y} (hŷ : RS.IsRegularValue f ŷ) {x : X} (hx : f 
       * coeffAt x (Form1.pullback f hf η) = coeffAt (f x) η
   rw [coeffAt_pullback, ← mul_assoc, inv_mul_cancel₀ hDne, one_mul]
 
+omit [CompactSpace Y] in
 /-- **The projection formula (raw form)**: `Tr_f (f^* η) = (deg f) • η`. -/
 theorem traceForm_pullback (η : Form1 Y) :
     traceForm hf hne (Form1.pullback f hf η) = (RS.degree f : ℂ) • η := by

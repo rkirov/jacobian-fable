@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.PeriodLattice.GenericPoints
 import Mathlib.Analysis.Analytic.Uniqueness
 
@@ -27,9 +33,11 @@ chart's center. -/
 private def genericVanishing (η : Form1 X) : Set X :=
   {x : X | ∀ᶠ z in 𝓝 (chartAt ℂ x x), coeffIn (chartAt ℂ x) η z = 0}
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 private theorem mem_genericVanishing {η : Form1 X} {x : X} :
     x ∈ genericVanishing η ↔ ∀ᶠ z in 𝓝 (chartAt ℂ x x), coeffIn (chartAt ℂ x) η z = 0 := Iff.rfl
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- `genericVanishing η` is open: chart-transport of "vanishing near the center" through
 `coeffIn_trans`, multiplying by a (possibly zero, irrelevant) transition factor. -/
 private theorem isOpen_genericVanishing (η : Form1 X) : IsOpen (genericVanishing η) := by
@@ -53,6 +61,7 @@ private theorem isOpen_genericVanishing (η : Form1 X) : IsOpen (genericVanishin
   rw [(chartAt ℂ y).left_inv hwysrc] at heq
   rw [heq, hw.1, mul_zero]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- `genericVanishing η` is closed: if `x` is a limit of it, the analytic coefficient in `x`'s own
 chart vanishes near some nearby point of the set (chart-transport again), hence vanishes on a
 whole convex ball around the chart's center (`AnalyticOnNhd.eqOn_zero_of_preconnected_of_
@@ -94,6 +103,7 @@ private theorem isClosed_genericVanishing (η : Form1 X) : IsClosed (genericVani
   rw [mem_genericVanishing]
   filter_upwards [Metric.ball_mem_nhds (e x) hr] with z hz using heqon hz
 
+omit [T2Space X] [CompactSpace X] in
 /-- **The identity theorem**: eventual vanishing of `η`'s coefficient in one chart forces `η = 0`
 everywhere. -/
 theorem form1_eq_zero_of_eventually_coeffIn_zero {η : Form1 X} {x₀ : X}

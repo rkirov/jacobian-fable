@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.AreaPairing
 
 /-!
@@ -30,7 +36,6 @@ Also here: the inverse-derivative units `deriv_trans_mul_deriv_trans_symm` /
 open scoped ContDiff Manifold
 open IsManifold Metric Set MeasureTheory
 
-set_option maxHeartbeats 1000000
 
 noncomputable section
 
@@ -40,6 +45,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-! ## Inverse-derivative units -/
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The two transition derivatives at matched points multiply to `1`. -/
 theorem deriv_trans_mul_deriv_trans_symm {e e' : OpenPartialHomeomorph X ℂ}
     (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) (he' : e' ∈ maximalAtlas 𝓘(ℂ) ω X) {w : ℂ}
@@ -61,6 +67,7 @@ theorem deriv_trans_mul_deriv_trans_symm {e e' : OpenPartialHomeomorph X ℂ}
   rw [hq']
   linear_combination -hcomp
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Transition derivatives never vanish. -/
 theorem deriv_trans_ne_zero {e e' : OpenPartialHomeomorph X ℂ}
     (he : e ∈ maximalAtlas 𝓘(ℂ) ω X) (he' : e' ∈ maximalAtlas 𝓘(ℂ) ω X) {w : ℂ}
@@ -70,6 +77,7 @@ theorem deriv_trans_ne_zero {e e' : OpenPartialHomeomorph X ℂ}
 
 /-! ## Finset sums of `(0,1)`-form coefficients -/
 
+omit [T2Space X] in
 theorem Form01.coeffAt_finsetSum {ι : Type*} (s : Finset ι) (F : ι → RS.Form01 X) (x : X)
     (z : ℂ) : (∑ k ∈ s, F k).coeffAt x z = ∑ k ∈ s, (F k).coeffAt x z := by
   induction s using Finset.cons_induction with
@@ -100,13 +108,16 @@ variable (D : ChartSupportedData X)
 /-- The source-side compact carrier. -/
 def Ksrc : Set X := ⇑D.e.symm '' D.K
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem isCompact_Ksrc : IsCompact D.Ksrc :=
   D.hK.image_of_continuousOn (D.e.symm.continuousOn.mono (by simpa using D.hKsub))
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem Ksrc_subset_source : D.Ksrc ⊆ D.e.source := by
   rintro y ⟨z, hz, rfl⟩
   exact D.e.map_target (D.hKsub hz)
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem h_eq_zero_of_notMem_Ksrc {y : X} (hy : y ∈ D.e.source) (hyK : y ∉ D.Ksrc) :
     D.h (D.e y) = 0 := by
   by_contra hne
@@ -119,6 +130,7 @@ def coeff (x : X) : ℂ → ℂ :=
     (fun z => (starRingEnd ℂ) (deriv (⇑D.e ∘ ⇑(chartAt ℂ x).symm) z) *
       D.h (D.e ((chartAt ℂ x).symm z)))
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mem_coeffSet_iff (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target) :
     (chartAt ℂ x).symm z ∈ D.e.source ↔
       z ∈ ⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ D.e.source) := by
@@ -130,11 +142,13 @@ theorem mem_coeffSet_iff (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target) :
     rw [(chartAt ℂ x).left_inv hq.1]
     exact hq.2
 
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem coeffSet_subset_target (x : X) :
     ⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ D.e.source) ⊆ (chartAt ℂ x).target := by
   rintro z ⟨q, hq, rfl⟩
   exact (chartAt ℂ x).map_source hq.1
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The coefficient vanishes near any target point whose source point avoids the compact
 source carrier. -/
 theorem coeff_eventuallyEq_zero (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target)
@@ -262,6 +276,7 @@ end ChartSupportedData
 
 variable [CompactSpace X]
 
+omit [CompactSpace X] in
 /-- **The localization lemma**: the global PoU pairing of a chart-supported `(0,1)`-form
 collapses to a single planar integral in the supporting chart. -/
 theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 X) :
@@ -422,7 +437,7 @@ theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 
   calc ∑ i, ∫ z : ℂ, pairingTerm PU (D.form) θ i z
       = ∑ i, ∫ w : ℂ, G i w := Finset.sum_congr rfl (fun i _ => hstep1 i)
     _ = ∫ w : ℂ, ∑ i, G i w :=
-        (MeasureTheory.integral_finset_sum _ (fun i _ => hGint i)).symm
+        (MeasureTheory.integral_finsetSum _ (fun i _ => hGint i)).symm
     _ = ∫ w : ℂ, D.h w * RS.coeffIn D.e θ w := by
         refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall (fun w => ?_))
         exact hstep2 w

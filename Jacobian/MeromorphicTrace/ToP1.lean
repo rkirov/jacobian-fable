@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: meromorphic-trace. The `toP1` bridge: meromorphic function → holomorphic map to
 `ℙ¹`, file 1 of the design's 6-file plan.
 -/
@@ -67,6 +73,7 @@ theorem toP1_eq_coe_iff {c : ℂ} :
 
 /-! ### `toP1_contMDiff` (P1) -/
 
+omit [CompactSpace X] [ConnectedSpace X] in
 theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
     ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (toP1 f) := by
   -- Route through `holoRepr`: `toP1 f = toP1 f'` everywhere, `f' := (mk f hf).holoRepr`.
@@ -161,6 +168,7 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
 
 /-! ### Reusable `holoRepr` facts (for `OrderMultiplicity`/`ArgumentPrinciple`) -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- `f` agrees with its `holoRepr` in `toP1`, everywhere (both `ordAtX` and `limUnder` are
 `𝓝[≠]x`-germ notions, and `holoRepr` matches any representative there, at *every* `x`). -/
 theorem toP1_eq_toP1_holoRepr (hf : MeromorphicOnX f Set.univ) :
@@ -172,15 +180,18 @@ theorem toP1_eq_toP1_holoRepr (hf : MeromorphicOnX f Set.univ) :
   unfold toP1
   rw [RS.ordAtX_congr heq, RS.limUnder_congr heq]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem ordAtX_holoRepr (hf : MeromorphicOnX f Set.univ) (y : X) :
     RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y = RS.ordAtX f y :=
   (RS.ordAtX_congr ((RS.MeroGermOn.holoRepr_eventuallyEq_nhdsNE isOpen_univ (mem_univ y)
     (RS.MeroGermOn.mk f hf) rfl).symm)).symm
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem meromorphicOnX_holoRepr' (hf : MeromorphicOnX f Set.univ) :
     MeromorphicOnX (RS.MeroGermOn.mk f hf).holoRepr Set.univ :=
   RS.MeroGermOn.meromorphicOnX_holoRepr isOpen_univ _
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 theorem holoRepr_contMDiffAt_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
     (hy : 0 ≤ RS.ordAtX (RS.MeroGermOn.mk f hf).holoRepr y) :
     ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (RS.MeroGermOn.mk f hf).holoRepr y := by
@@ -188,6 +199,7 @@ theorem holoRepr_contMDiffAt_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
   exact RS.MeroGermOn.holoRepr_contMDiffAt isOpen_univ (mem_univ y)
     (by rwa [RS.MeroGermOn.ord_mk isOpen_univ (mem_univ y)])
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Wherever `f`'s `holoRepr` has nonnegative order, `toP1` of it is the literal coercion — a
 *pointwise* fact (no "isolated zeros" propagation needed: `holoRepr_contMDiffAt` gives continuity
 of the `holoRepr` AT that point directly). -/
@@ -247,6 +259,7 @@ constant. (What callers holding `ℳ X` nonzero-ness will have once that field i
 here germ-level so we do not need it.) -/
 def NotEventuallyConstX (f : X → ℂ) : Prop := ∀ c : ℂ, ¬ (fun x => f x - c) =ᶠ[codiscrete X] 0
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- If a globally meromorphic `g` has *strictly positive* order at *every* point, `g` is
 codiscretely `0`: a point where the order is finite (`≠ ⊤`) would force order `0` at nearby
 points (`eventually_ordAtX_eq_zero`), contradicting positivity there; so the order is `⊤`
@@ -262,6 +275,7 @@ private theorem eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos {g : X → ℂ
     exact absurd hy (hpos y).ne'
   exact RS.eventuallyEq_codiscrete_iff.2 (fun x => RS.ordAtX_eq_top_iff.1 (htop x))
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- The translation: an everywhere-meromorphic `f` on connected `X` that is not codiscretely a
 constant induces a nonconstant `toP1 f`. Both degenerate cases (`toP1 f ≡ ↑c` and `toP1 f ≡ ∞`)
 are ruled out by the SAME `eventuallyEq_zero_codiscrete_of_forall_ordAtX_pos` engine, applied to

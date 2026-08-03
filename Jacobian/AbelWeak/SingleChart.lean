@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.AbelWeak.PlanarLogBranch
 import Jacobian.AbelWeak.WeakSolution
 import Mathlib.Analysis.Calculus.BumpFunction.Basic
@@ -29,6 +35,7 @@ namespace RS.AbelWeak
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **The single-chart weak solution** (§6.2-6.3). -/
 theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     {e : OpenPartialHomeomorph X ℂ} (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X)

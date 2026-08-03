@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Cech.Injectivity
 import Jacobian.Dbar.DiskAcyclic
 import Jacobian.Meromorphic.Gluing
@@ -29,6 +35,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-! ### A reusable lattice fact -/
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inf_inf_inf_le (a b c : Opens X) : (a ⊓ b) ⊓ (a ⊓ c) ≤ b ⊓ c :=
   le_inf (inf_le_left.trans inf_le_right) (inf_le_right.trans inf_le_right)
 
@@ -43,12 +50,15 @@ def FinCover.induced (𝒱 : FinCover (⊤ : Opens X)) (V : Opens X) : FinCover 
     obtain ⟨α, hα⟩ := 𝒱.covers x trivial
     exact ⟨α, hx, hα⟩
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem FinCover.induced_n (𝒱 : FinCover (⊤ : Opens X)) (V : Opens X) :
     (𝒱.induced V).n = 𝒱.n := rfl
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem FinCover.induced_U (𝒱 : FinCover (⊤ : Opens X)) (V : Opens X) (α : Fin 𝒱.n) :
     (𝒱.induced V).U α = V ⊓ 𝒱.U α := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Good covers exist (§6.3 of cech-cohomology, applied to the trivial cover). -/
 theorem exists_goodCover [T2Space X] [CompactSpace X] :
     ∃ 𝒰 : FinCover (⊤ : Opens X), 𝒰.IsGood := by
@@ -147,6 +157,7 @@ theorem exists_splitting (h𝒰 : 𝒰.IsGood) {f : C1 D 𝒱} (hf : f ∈ Z1 D 
       (subsingleton_h1Cover_of_isChartDisk (h𝒰 i) D (𝒱.induced (𝒰.U i)))) (indCocycle_mem_Z1 D i hf)
   exact ⟨gFam, hgFam⟩
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The pointwise splitting identity extracted from `exists_splitting`, at `LinSysOn`
 (submodule) level (used both for the cross-glue compatibility and for the final comparison,
 §5 steps 3/5). -/
@@ -164,6 +175,7 @@ theorem splitting_eq {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.indu
   rw [d0_apply] at hd
   exact hd
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Raw `MeroGermOn`-level form of `splitting_eq`. -/
 theorem splitting_eq' {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
     (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) (i : Fin 𝒰.n)
@@ -181,6 +193,7 @@ theorem splitting_eq' {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.ind
       (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) := by
   exact congrArg Subtype.val (splitting_eq D hgFam i α β)
 
+omit [T2Space X] [CompactSpace X] in
 /-- `splitting_eq'`, restricted down to an arbitrary smaller open `W` (§5 step 3's workhorse:
 lets us compare the splittings at TWO different good-cover members `i`, `j` on their common
 overlap with a member of `𝒱`). -/
@@ -228,6 +241,7 @@ noncomputable def patch (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i
       (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
         𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ (𝒱.induced (𝒰.U i)).U α) (gFam i α)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [CompactSpace X] in
 theorem patch_coe (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))) (i j : Fin 𝒰.n)
     (α : Fin 𝒱.n) :
     (patch D gFam i j α : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α : Set X)) =
@@ -317,7 +331,7 @@ theorem patch_compat {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.indu
 
 /-- The glued section `F_{ij}` on `𝒰.U i ⊓ 𝒰.U j`, restricting back to `patch` on each
 `Uᵢ⊓Uⱼ⊓Vα` (§5 step 3). -/
-theorem exists_crossGlue {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
+theorem exists_crossGlue {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
     {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
     (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) (i j : Fin 𝒰.n) :
     ∃ Φ : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X), ∀ α : Fin 𝒱.n,
@@ -368,6 +382,7 @@ theorem exists_crossGlueLinSysOn {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
   rw [restrictL_apply_coe]
   exact hΨ α
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [CompactSpace X] in
 /-- `patch`, restricted further down to an arbitrary open `W` (`LinSysOn`-level unfolding of
 `patch_coe`, reused for both step 4's triple relation and step 5's final comparison). -/
 theorem patch_restrict (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))) (i j : Fin 𝒰.n)
@@ -405,6 +420,7 @@ theorem exists_crossGlueFam {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
 
 /-! ### §5 step 4: `F ∈ Z1 D 𝒰` -/
 
+omit [T2Space X] [CompactSpace X] in
 /-- Step 4: the glued family is a genuine cocycle on `𝒰` (the triple relation telescopes
 term-by-term from the `patch` definition — pure algebra, no further analytic input). -/
 theorem crossGlueFam_mem_Z1 {F : C1 D 𝒰} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
@@ -531,7 +547,7 @@ noncomputable def tradeH0 (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U
     (le_inf (hτ α) le_rfl : 𝒱.U α ≤ 𝒰.U (τ α) ⊓ 𝒱.U α) (gFam (τ α) α)
 
 /-- Step 5's frozen conclusion: `resC1 F + f = d0 h`. -/
-theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
+theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
     {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
     (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) {F : C1 D 𝒰}
     (hF : ∀ (i j : Fin 𝒰.n) (α : Fin 𝒱.n),

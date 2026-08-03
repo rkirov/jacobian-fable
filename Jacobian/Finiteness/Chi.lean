@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Finiteness.H1Finite
 
 /-!
@@ -61,6 +67,7 @@ noncomputable def chi [ConnectedSpace X] (D : RS.Divisor X) : ℤ := (RS.l D : �
 
 /-! ### The shared six-term rank bookkeeping -/
 
+omit [T1Space X] in
 /-- The four rank-nullity applications along the six-term fragment
 `0 → L(D) → L(D') → Window D D' → H¹(D) → H¹(D') → 0`, packaged as two witness naturals `p, q`
 (`p` = the drop in `l` from `D` to `D'`, `q` = the drop in `h1` from `D` to `D'`). -/
@@ -80,6 +87,7 @@ private theorem sixterm_rank1 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D �
   unfold RS.l at hrn ⊢
   omega
 
+omit [T1Space X] in
 private theorem sixterm_rank2 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     Module.finrank ℂ (Window D D') = Module.finrank ℂ (LinearMap.range (windowMap h)) +
       Module.finrank ℂ (LinearMap.range (windowConnect h)) := by
@@ -90,7 +98,6 @@ private theorem sixterm_rank2 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D �
   rw [hexact] at hrn
   omega
 
-set_option maxHeartbeats 1000000 in
 private theorem sixterm_rank3 {D D' : RS.Divisor X} (h : D ≤ D') :
     h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D' := by
   have hrn := LinearMap.finrank_range_add_finrank_ker (H1Incl D h)
@@ -148,6 +155,7 @@ theorem chi_of_le [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
 
 /-! ### `Divisor.single` bookkeeping (Compat: `degree_single` not upstreamed) -/
 
+omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] in
 theorem degree_single (P : X) :
     (Function.locallyFinsuppWithin.single P (1 : ℤ) : RS.Divisor X).degree = 1 := by
   classical

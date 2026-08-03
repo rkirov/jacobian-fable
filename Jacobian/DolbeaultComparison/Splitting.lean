@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.DolbeaultComparison.GlueForm01
 import Jacobian.Cech.Refinement
 
@@ -107,6 +113,7 @@ theorem Z1.repr_cocycle {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Diviso
       RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U b : Set X)).evalAt x = 0
   linear_combination heval
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem Z1.repr_add {𝒰 : FinCover (⊤ : Opens X)} (f f' : Z1 (0 : RS.Divisor X) 𝒰)
     (p : Fin 𝒰.n × Fin 𝒰.n) {x : X} (hx : x ∈ (𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X)) :
     Z1.repr (f + f') p x = Z1.repr f p x + Z1.repr f' p x := by
@@ -151,6 +158,7 @@ theorem Z1.repr_smul {𝒰 : FinCover (⊤ : Opens X)} (c : ℂ) (f : Z1 (0 : RS
 
 /-! ### Extension-by-zero smul lemma -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Extension-by-zero workhorse: `ψ` globally smooth with `tsupport ψ ⊆ W`, `F` smooth on
 `W ⊓ U` ⇒ `fun x => ψ x • F x` is smooth on `U` (values off `W` are junk-irrelevant: `ψ`
 vanishes there). -/
@@ -174,6 +182,7 @@ theorem contMDiffOn_smul_of_tsupport_subset {ψ : X → ℝ} {F : X → ℂ} {W 
       rw [hy]; simp
     exact (contMDiffAt_const.congr_of_eventuallyEq heq).contMDiffWithinAt
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Finite sums of `ContMDiffOn` functions are `ContMDiffOn` (no generic lemma found at the
 pin for `ContMDiffOn`; proved by `Finset.induction`). -/
 private theorem contMDiffOn_finset_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) {F : ι → X → ℂ}

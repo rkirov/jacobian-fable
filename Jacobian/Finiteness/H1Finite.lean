@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Finiteness.Schwartz
 import Jacobian.Finiteness.TradeBounded
 import Jacobian.Cech.SixTerm
@@ -28,6 +34,7 @@ variable [T1Space X] [T2Space X] [CompactSpace X]
 
 /-! ### §6.5: assembly at a fixed `ShrinkChain` -/
 
+omit [T1Space X] in
 /-- Every `H1 (0 : Divisor X)`-class already has a representative on `T.coverW` (push Leray's
 `T.coverStar`-level surjectivity down along the same-index refinement `T.ref_star_W`). -/
 theorem toH1_coverW_surjective (T : ShrinkChain X) :

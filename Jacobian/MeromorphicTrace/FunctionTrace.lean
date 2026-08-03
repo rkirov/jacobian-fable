@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: meromorphic-trace. `Tr_F h`: the global assembly, file 5 of the design's 6-file
 plan.
 -/

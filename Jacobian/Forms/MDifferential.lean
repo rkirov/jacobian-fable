@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms.Analyticity
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Mul
@@ -32,7 +38,7 @@ def mdifferentialSection (f : X → ℂ) (x : X) :
     TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x :=
   (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x : TangentSpace 𝓘(ℂ) x →L[ℂ] TangentSpace 𝓘(ℂ) (f x))
 
-set_option backward.isDefEq.respectTransparency false in
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The raw chart coefficient of the differential section is the derivative of the chart
 composite. -/
 theorem coeffInFun_mdifferentialSection {f : X → ℂ} {e : OpenPartialHomeomorph X ℂ}
@@ -115,13 +121,11 @@ theorem mdifferential_const (c : ℂ) :
 def Form1.smulFun (f : X → ℂ) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (η : Form1 X) : Form1 X :=
   ⟨f • ⇑η, hf.smul_section η.contMDiff⟩
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem coeffIn_smulFun (e : OpenPartialHomeomorph X ℂ) (f : X → ℂ)
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (η : Form1 X) (z : ℂ) :
     coeffIn e (Form1.smulFun f hf η) z = f (e.symm z) * coeffIn e η z := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem coeffAt_smulFun (x : X) (f : X → ℂ) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (η : Form1 X) :
     coeffAt x (Form1.smulFun f hf η) = f x * coeffAt x η := by

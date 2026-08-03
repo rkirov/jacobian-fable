@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Surface
 import Jacobian.Forms.Analyticity
 
@@ -159,7 +165,7 @@ theorem mem_source_idx (x : X) : x ∈ (Data.chart (Data.idx x)).source :=
 /-- The coefficient of the assembled `(0,1)`-form in the preferred chart at `x`, junk-`0` off the
 chart target. -/
 noncomputable def rawCoeffAt (x : X) (z : ℂ) : ℂ :=
-  if hz : z ∈ (chartAt ℂ x).target then
+  if _hz : z ∈ (chartAt ℂ x).target then
     (starRingEnd ℂ)
         (deriv (⇑(Data.chart (Data.idx ((chartAt ℂ x).symm z))) ∘ ⇑(chartAt ℂ x).symm) z) *
       Data.coeff (Data.idx ((chartAt ℂ x).symm z))

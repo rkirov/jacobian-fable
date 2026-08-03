@@ -1,4 +1,10 @@
 /-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
+/-
 Blueprint unit: meromorphic-trace. The planar trace atom `traceZk h k w` (trace of `h` along
 `z ↦ z ^ k`), file 4 of the design's 6-file plan.
 -/
@@ -62,7 +68,7 @@ theorem traceZk_eq_finset_sum (h : ℂ → ℂ) (hk : k ≠ 0) (w : ℂ) :
     traceZk h k w = ∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, h z :=
   finsum_mem_eq_finite_toFinset_sum _ (RS.setOf_pow_eq_finite hk w)
 
-theorem traceZk_apply_of_ne_zero (hk : k ≠ 0) (hw : w ≠ 0) :
+theorem traceZk_apply_of_ne_zero (hk : k ≠ 0) (_hw : w ≠ 0) :
     traceZk h k w = ∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, h z :=
   traceZk_eq_finset_sum h hk w
 

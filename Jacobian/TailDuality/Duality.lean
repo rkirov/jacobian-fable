@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.TailDuality.Counting
 
 /-!
@@ -35,6 +41,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-! ### Miranda Lemma 3.6 (the order downgrade) -/
 
+omit [CompactSpace X] in
 /-- **MIRANDA LEMMA 3.6.** -/
 theorem mem_omegaSpace_of_vanishing_ker_trunc {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂)
     {θ : MForm X} (hθ : θ ∈ MForm.OmegaSpace (-D₁))
@@ -68,6 +75,7 @@ theorem mem_omegaSpace_of_vanishing_ker_trunc {D₁ D₂ : RS.Divisor X} (h : D�
 
 /-! ### The surjectivity endgame (Miranda Thm 3.3, hard half) -/
 
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
 /-- `pairT` only depends on its `MForm` argument up to equality (proof-irrelevant in the
 membership proof) — avoids a dependent `rw`/`▸` inside `pairT`'s own proof argument, which
 `rw` cannot abstract into a well-typed motive. -/

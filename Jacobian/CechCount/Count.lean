@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.CechCount.Surjective
 import Jacobian.Finiteness
 import Jacobian.RiemannRoch
@@ -30,8 +36,6 @@ Exports: `RS.cechCount` (= `RS.finrank_H1_zero_le_genus`).
 open scoped ContDiff Manifold
 open Set TopologicalSpace
 
-set_option linter.unusedSectionVars false
-set_option maxHeartbeats 1000000
 
 namespace RS
 

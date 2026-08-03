@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Mathlib.Topology.ShrinkingLemma
 import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 import Mathlib.Topology.GDelta.MetrizableSpace
@@ -30,7 +36,7 @@ namespace RS
 cover `W`: each `ψ i` is smooth on `V`, nonnegative, supported in `W i`, summing to `1` on `V`,
 and eventually zero near any point of `V` outside `W i`. -/
 theorem exists_smooth_partition_of_finite_cover {V : Set ℂ} (hV : IsOpen V) {n : ℕ}
-    {W : Fin n → Set ℂ} (hWo : ∀ i, IsOpen (W i)) (hWV : ∀ i, W i ⊆ V)
+    {W : Fin n → Set ℂ} (hWo : ∀ i, IsOpen (W i)) (_hWV : ∀ i, W i ⊆ V)
     (hcov : V ⊆ ⋃ i, W i) :
     ∃ ψ : Fin n → ℂ → ℝ,
       (∀ i, ContDiffOn ℝ ∞ (ψ i) V) ∧ (∀ i z, 0 ≤ ψ i z) ∧
@@ -106,7 +112,7 @@ theorem exists_smooth_partition_of_finite_cover {V : Set ℂ} (hV : IsOpen V) {n
 
 /-- Extending a `PoU`-weighted term by zero outside its supporting open set stays smooth on `U`,
 provided `ψ` vanishes near any point of `U` outside `W`. -/
-theorem contDiffOn_indicator_smul_of_eventually_zero {U W V : Set ℂ} (hU : IsOpen U)
+theorem contDiffOn_indicator_smul_of_eventually_zero {U W V : Set ℂ} (_hU : IsOpen U)
     (hW : IsOpen W) {ψ : ℂ → ℝ} {f : ℂ → ℂ} (hUV : U ⊆ V)
     (hψ : ContDiffOn ℝ ∞ ψ V) (hf : ContDiffOn ℝ ∞ f (U ∩ W))
     (hvan : ∀ z ∈ U, z ∉ W → ∀ᶠ w in 𝓝 z, ψ w = 0) :

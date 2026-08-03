@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Finiteness.CompactRestrict
 import Jacobian.Cech.Cochains
 
@@ -66,31 +72,41 @@ namespace ShrinkChain
 
 variable (T : ShrinkChain X)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem W_subset_V (i : Fin T.n) : (T.W i : Set X) ⊆ (T.V i : Set X) :=
   subset_closure.trans (T.closure_W_subset i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem V_subset_U (i : Fin T.n) : (T.V i : Set X) ⊆ (T.U i : Set X) :=
   subset_closure.trans (T.closure_V_subset i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem U_subset_Ustar (i : Fin T.n) : (T.U i : Set X) ⊆ (T.Ustar i : Set X) :=
   subset_closure.trans (T.closure_U_subset i)
 
 /-! `Opens`-level `≤` forms of the chain inclusions — the shapes `restrictCLM`/`resNC1`/`resZ`
 consume (definitionally the same statements as the `Set`-level `_subset_` lemmas above). -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem W_le_V (i : Fin T.n) : T.W i ≤ T.V i := T.W_subset_V i
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem V_le_U (i : Fin T.n) : T.V i ≤ T.U i := T.V_subset_U i
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem U_le_Ustar (i : Fin T.n) : T.U i ≤ T.Ustar i := T.U_subset_Ustar i
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem W_le_U (i : Fin T.n) : T.W i ≤ T.U i := (T.W_le_V i).trans (T.V_le_U i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem covers_V (x : X) : ∃ i, x ∈ T.V i := (T.covers_W x).imp (fun i hi => T.W_subset_V i hi)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem covers_U (x : X) : ∃ i, x ∈ T.U i :=
   (T.covers_W x).imp (fun i hi => T.V_subset_U i (T.W_subset_V i hi))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem covers_Ustar (x : X) : ∃ i, x ∈ T.Ustar i :=
   (T.covers_W x).imp (fun i hi => T.U_subset_Ustar i (T.V_subset_U i (T.W_subset_V i hi)))
 
@@ -119,19 +135,27 @@ noncomputable def coverStar : FinCover (⊤ : Opens X) where
   le_base _ := le_top
   covers x _ := T.covers_Ustar x
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem good_star : T.coverStar.IsGood := T.isChartDisk_Ustar
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_star_U : IsRefIdx T.coverStar T.coverU id := fun i => T.U_subset_Ustar i
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_star_V : IsRefIdx T.coverStar T.coverV id :=
   fun i => (T.V_subset_U i).trans (T.U_subset_Ustar i)
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_star_W : IsRefIdx T.coverStar T.coverW id :=
   fun i => ((T.W_subset_V i).trans (T.V_subset_U i)).trans (T.U_subset_Ustar i)
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_U_V : IsRefIdx T.coverU T.coverV id := fun i => T.V_subset_U i
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_V_W : IsRefIdx T.coverV T.coverW id := fun i => T.W_subset_V i
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ref_U_W : IsRefIdx T.coverU T.coverW id := fun i => (T.W_subset_V i).trans (T.V_subset_U i)
 
 end ShrinkChain
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **Existence** of a `ShrinkChain` (§6.4): iterate the cech chart-disk-with-compact-closure
 basis four times per point, then extract a finite subcover of the innermost level. -/
 theorem ShrinkChain.nonempty [T2Space X] [CompactSpace X] : Nonempty (ShrinkChain X) := by
@@ -213,7 +237,6 @@ closedness proof needed. -/
 
 noncomputable def NZ1 : Submodule ℂ (NC1 T P) := (d1NC T P).ker
 
-set_option synthInstance.maxHeartbeats 800000 in
 instance : CompleteSpace (NZ1 T P) := ContinuousLinearMap.completeSpace_ker (d1NC T P)
 
 /- Instance shortcuts for `↥(NZ1 T P)` (this is the resolution of the file's former
@@ -293,7 +316,6 @@ noncomputable def resZ (h : ∀ i, P' i ≤ P i) : NZ1 T P →L[ℂ] NZ1 T P' :=
 
 /-! ### Forster 14.6(b): the trade subspace `L` and its two Schwartz-cospan projections -/
 
-set_option synthInstance.maxHeartbeats 1000000 in
 /-- **Forster 14.6(b)'s defect map** `(ζ, ξ, η) ↦ ζ|𝔚 − ξ|𝔚 − δ𝔚 η` on the triple product
 `Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)` (§4.2/§5 step 1); its kernel is Forster's subspace `L`
 (`tradeSpace`). -/
@@ -339,7 +361,6 @@ theorem mem_tradeSpace_iff_eq (x : NZ1 T T.U × NZ1 T T.V × NC0 T T.W) :
   refine forall_congr' fun p => ?_
   rw [tradeDefect_apply T x p, sub_sub, sub_eq_zero]
 
-set_option synthInstance.maxHeartbeats 800000 in
 instance : CompleteSpace (tradeSpace T) :=
   ContinuousLinearMap.completeSpace_ker (tradeDefect T)
 
@@ -347,11 +368,9 @@ instance : CompleteSpace (tradeSpace T) :=
 `schwartz_finite_cospan (u := tradePi T) (v := tradeCompact T)` in `H1Finite.lean`'s §6.5
 assembly, which needs `[NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]`. -/
 
-set_option synthInstance.maxHeartbeats 800000 in
 noncomputable instance : NormedAddCommGroup (tradeSpace T) :=
   (tradeSpace T).normedAddCommGroup
 
-set_option synthInstance.maxHeartbeats 800000 in
 noncomputable instance : NormedSpace ℂ (tradeSpace T) :=
   (tradeSpace T).normedSpace
 

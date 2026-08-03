@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Abel.LogPiece
 import Jacobian.Abel.ChartSupported
 import Jacobian.Abel.SerreFunctional
@@ -33,7 +39,6 @@ plus a factor limit pin `meromorphicOrderAt`, via mathlib's removable-singularit
 open scoped ContDiff Manifold
 open IsManifold Metric Set MeasureTheory Filter Topology
 
-set_option maxHeartbeats 1600000
 
 noncomputable section
 
@@ -50,7 +55,7 @@ theorem meromorphicAt_of_tendsto_factor {F : ℂ → ℂ} {z₀ C : ℂ} {m : �
   obtain ⟨U, hUV, hUopen, hz₀U⟩ := _root_.mem_nhds_iff.mp hV
   have hFU : ∀ z ∈ U \ {z₀}, DifferentiableAt ℂ F z := by
     intro z hz
-    exact (hF.mono (Set.diff_subset_diff_left hUV)).differentiableAt
+    exact (hF.mono (Set.sdiff_subset_sdiff_left hUV)).differentiableAt
       ((hUopen.sdiff isClosed_singleton).mem_nhds hz)
   set G : ℂ → ℂ := Function.update (fun z => F z * (z - z₀) ^ (-m)) z₀ C with hG_def
   have hGoff : ∀ z, z ≠ z₀ → G z = F z * (z - z₀) ^ (-m) := fun z hz =>
@@ -154,9 +159,11 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 def linkOrd [DecidableEq X] (A B x : X) : ℤ :=
   (if x = B then 1 else 0) - (if x = A then 1 else 0)
 
+omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem linkOrd_self_eq_zero [DecidableEq X] (A x : X) : linkOrd A A x = 0 := by
   rw [linkOrd, sub_self]
 
+omit [CompactSpace X] in
 /-- **The link construction** (design §4.1 step 5, one chain link): the piece function `f`,
 its packaged `(0,1)`-form `η`, and the five assembly facts. Degenerate links (`A = B`) yield
 the constant `1` and the zero form. -/

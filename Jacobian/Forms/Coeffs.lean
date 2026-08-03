@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.Forms.Basic
 import Mathlib.Geometry.Manifold.MFDeriv.Atlas
 import Mathlib.Geometry.Manifold.MFDeriv.Tangent
@@ -131,14 +137,12 @@ theorem coeffInFun_eq_evalC (e : OpenPartialHomeomorph X ℂ)
     coeffInFun e σ z = evalC σ (e.symm z) (mfderiv 𝓘(ℂ) 𝓘(ℂ) e.symm z (1 : ℂ)) := rfl
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-set_option backward.isDefEq.respectTransparency false in
 /-- Scalars pull out of the non-dependent evaluation (the fiberwise CLM is `ℂ`-linear). -/
 theorem evalC_mul (σ : ∀ x : X, TangentSpace 𝓘(ℂ) x →L[ℂ] Bundle.Trivial X ℂ x)
     (q : X) (c w : ℂ) : evalC σ q (c * w) = c * evalC σ q w :=
   (σ q).map_smul c w
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-set_option backward.isDefEq.respectTransparency false in
 /-- A continuous linear map between a tangent fiber of the model `ℂ` and a tangent fiber of `X`
 (both definitionally `ℂ`) is multiplication by its value at `1`. -/
 theorem tangentCLM_apply_eq_mul {w : ℂ} {q : X}
@@ -147,10 +151,14 @@ theorem tangentCLM_apply_eq_mul {w : ℂ} {q : X}
   have h : (c : TangentSpace 𝓘(ℂ) w) = c • ((1 : ℂ) : TangentSpace 𝓘(ℂ) w) := by
     show c = c * (1 : ℂ)
     rw [mul_one]
-  conv_lhs => rw [h, T.map_smul]
+  -- `T.map_smul` is stated with `T`'s own module instances; naming the instance here (rather
+  -- than letting `rw` unify through `TangentSpace`'s unfolding) keeps the rewrite syntactic.
+  have hsmul : T (c • ((1 : ℂ) : TangentSpace 𝓘(ℂ) w)) =
+      c • T ((1 : ℂ) : TangentSpace 𝓘(ℂ) w) :=
+    T.map_smul c ((1 : ℂ) : TangentSpace 𝓘(ℂ) w)
+  conv_lhs => rw [h, hsmul]
   rfl
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The `mfderiv` of the inverse of the preferred chart, at the image of the base point, is the
 identity (canonical identification of the tangent fiber with `ℂ`). -/
 theorem mfderiv_chartAt_symm_chartAt_self (x : X) :
@@ -161,7 +169,6 @@ theorem mfderiv_chartAt_symm_chartAt_self (x : X) :
     Function.comp_apply, id_eq, mfderivWithin_univ] at h
   exact h
 
-set_option backward.isDefEq.respectTransparency false in
 /-- In the preferred chart, the coefficient at the base point is the evaluation at the canonical
 tangent vector `1`. -/
 theorem coeffAt_eq_apply_one (η : Form1 X) (x : X) : coeffAt x η = η x (1 : ℂ) := by
@@ -177,7 +184,6 @@ theorem coeffAt_eq_apply_one (η : Form1 X) (x : X) : coeffAt x η = η x (1 : �
     _ = evalC (⇑η) x (ContinuousLinearMap.id ℂ ℂ (1 : ℂ)) := by rw [hpt]
     _ = η x (1 : ℂ) := by rw [ContinuousLinearMap.id_apply]; rfl
 
-set_option backward.isDefEq.respectTransparency false in
 /-- Evaluation of a 1-form on a tangent vector, via the canonical identification: the fiber is
 one-dimensional and `η x v = v * coeffAt x η`. -/
 theorem Form1.apply_eq_smul_coeffAt (η : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
@@ -190,7 +196,6 @@ theorem Form1.apply_eq_smul_coeffAt (η : Form1 X) (x : X) (v : TangentSpace �
     _ = tangentCoord v * η x (1 : ℂ) :=
         (η x).map_smul (tangentCoord v) ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The non-dependent-evaluation version of `Form1.apply_eq_smul_coeffAt`. -/
 theorem evalC_eq_mul_coeffAt (η : Form1 X) (q : X) (w : ℂ) :
     evalC (⇑η) q w = w * coeffAt q η :=
@@ -228,7 +233,6 @@ theorem differentiableAt_trans {e e' : OpenPartialHomeomorph X ℂ}
   have hcoe : ⇑(e'.symm.trans e) = ⇑e ∘ ⇑e'.symm := rfl
   rwa [hcoe] at hD
 
-set_option backward.isDefEq.respectTransparency false in
 /-- **Transition rule** for chart coefficients (CC1 orientation): on the image of a chart
 overlap, `coeffIn e' η z = deriv (e ∘ e'.symm) z * coeffIn e η (e (e'.symm z))`. -/
 theorem coeffIn_trans {e e' : OpenPartialHomeomorph X ℂ}

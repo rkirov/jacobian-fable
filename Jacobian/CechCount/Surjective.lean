@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2026 Rado Kirov. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Rado Kirov
+-/
+
 import Jacobian.CechCount.Mul
 
 /-!
@@ -18,8 +24,6 @@ primal form). Proof: factor through the intermediate divisor `D₁ := E + diviso
 open scoped ContDiff Manifold
 open Set TopologicalSpace RS.Cech Module
 
-set_option linter.unusedSectionVars false
-set_option maxHeartbeats 1000000
 
 namespace RS.Cech
 
