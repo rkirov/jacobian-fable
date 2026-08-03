@@ -5,6 +5,7 @@
 # vendoring). Shares the root's packagesDir to reuse the built Mathlib.
 # Workspace replica pattern follows github.com/rkirov/jacobian-claude.
 name = "jacobian_challenge_diffgeo_localcheck"
+testDriver = "workspace_test"
 defaultTargets = ["Challenge", "Solution", "Submission"]
 packagesDir = "../.lake/packages"
 
@@ -23,3 +24,9 @@ name = "Solution"
 
 [[lean_lib]]
 name = "Submission"
+
+# lean-eval's own harness (verbatim `WorkspaceTest.lean`): invokes comparator with
+# `enable_nanoda := true` forced on, regardless of what `config.json` says.
+[[lean_exe]]
+name = "workspace_test"
+root = "WorkspaceTest"

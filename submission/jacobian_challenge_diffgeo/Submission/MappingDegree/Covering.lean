@@ -75,11 +75,11 @@ theorem exists_openPartialHomeomorph_coe_eq (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) 
 /-- `F` is a covering map away from the (finite) branch locus. -/
 theorem isCoveringMapOn_compl_branchLocus (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
     (hne : ¬ ∃ c, ∀ x, F x = c) : IsCoveringMapOn F (branchLocus F)ᶜ := by
-  apply IsCoveringMapOn.of_openPartialHomeomorph hF.continuous
+  apply IsCoveringMapOn.of_isLocalHomeomorphOn hF.continuous
   intro x hx
-  apply exists_openPartialHomeomorph_coe_eq hF hne
-  intro hram
-  exact hx ⟨x, hram, rfl⟩
+  obtain ⟨φ, hxφ, hφ⟩ :=
+    exists_openPartialHomeomorph_coe_eq hF hne (x := x) (fun hram ↦ hx ⟨x, hram, rfl⟩)
+  exact ⟨φ, hxφ, hφ.symm⟩
 
 /-- The covering statement specialized to a single regular value. -/
 theorem isEvenlyCovered_of_isRegularValue (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)

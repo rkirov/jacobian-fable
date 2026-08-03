@@ -49,7 +49,10 @@ private theorem contDiffAt_zpow_of_ne_zero {f : ℂ → ℂ} {z : ℂ} {k : ℤ}
   · simpa using hf.pow n
   · have h1 : ContDiffAt ℝ ∞ (fun w => f w ^ n) z := by simpa using hf.pow n
     have h1z : f z ^ n ≠ 0 := pow_ne_zero n hfz0
-    simpa [zpow_neg, zpow_natCast] using h1.inv h1z
+    -- the ascription pins the `NormedSpace ℝ ℂ` instance path to the goal's (`ContDiffAt.inv`
+    -- produces the `NormedAlgebra` one, which does not match syntactically)
+    have h2 : ContDiffAt ℝ ∞ (fun w => (f w ^ n)⁻¹) z := h1.inv h1z
+    simpa [zpow_neg, zpow_natCast] using h2
 
 /-! ## The rechart lemma -/
 

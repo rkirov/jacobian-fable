@@ -2,7 +2,7 @@ import Jacobian.ProjectiveLine
 import Jacobian.Path
 import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
 import Mathlib.Analysis.Convex.Contractible
-import Mathlib.Topology.Connected.LocPathConnected
+import Mathlib.Topology.Connected.LocallyPathConnected
 
 /-!
 # `SimplyConnectedSpace (OnePoint ℂ)` (CC-sphere-topology, design §2)
@@ -62,8 +62,9 @@ theorem isSimplyConnected_compl_coeZero :
 /-- `OnePoint ℂ` is path connected (local path-connectedness transports through the two-chart
 atlas from `ℂ`'s local convexity, combined with the existing `ConnectedSpace` instance). -/
 instance : PathConnectedSpace (OnePoint ℂ) := by
-  haveI : LocPathConnectedSpace (OnePoint ℂ) := ChartedSpace.locPathConnectedSpace ℂ (OnePoint ℂ)
-  exact PathConnectedSpace.of_locPathConnectedSpace
+  haveI : LocallyPathConnectedSpace (OnePoint ℂ) :=
+    ChartedSpace.locallyPathConnectedSpace ℂ (OnePoint ℂ)
+  exact PathConnectedSpace.of_locallyPathConnectedSpace
 
 /-- **The headline of this file**: no van Kampen, no universal cover — assembled from the
 perturbation lemma + the two polar-cap facts above. -/

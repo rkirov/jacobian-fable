@@ -60,7 +60,8 @@ theorem integral_wirtingerDbar_eq_zero (hU : IsOpen U) (hg : ContDiffOn ℝ 1 g 
   have hIntegrand_cont : Continuous (fun ζ : ℂ => I • fderiv ℝ g ζ 1 - fderiv ℝ g ζ I) := by
     have h1 : Continuous (fun ζ : ℂ => fderiv ℝ g ζ 1) := hfc.clm_apply continuous_const
     have hI : Continuous (fun ζ : ℂ => fderiv ℝ g ζ I) := hfc.clm_apply continuous_const
-    exact (continuous_const.smul h1).sub hI
+    have hsmul : Continuous (fun ζ : ℂ => I • fderiv ℝ g ζ 1) := h1.const_smul I
+    exact hsmul.sub hI
   have hcompactRect : IsCompact
       (Complex.reProdIm (Set.uIcc z.re w.re) (Set.uIcc z.im w.im)) :=
     IsCompact.reProdIm isCompact_uIcc isCompact_uIcc

@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
 # Run leanprover/comparator against this repo's solution to the lean-eval problem
-# `jacobian_challenge_diffgeo`, mirroring lean-eval's own check: same toolchain, the
-# verbatim Challenge.lean/Solution.lean/config.json, and the real comparator (statement
-# match + permitted-axiom check + kernel replay via lean4export, in a landrun sandbox).
+# `jacobian_challenge_diffgeo`, mirroring lean-eval's own CI check: the verbatim
+# Challenge.lean/Solution.lean/config.json, the real comparator (statement match +
+# permitted-axiom check + kernel replay via lean4export, in a landrun sandbox), and the
+# independent nanoda kernel that lean-eval's WorkspaceTest forces on for every problem.
+#
+# Tool pins below mirror lean-eval's .github/workflows/ci.yml (as of 2026-08-03). The
+# comparator/lean4export repos are tagged per Lean *minor* release, so there is no
+# v4.32.2 tag; upstream pins lean4export by SHA and copies the workspace `lean-toolchain`
+# over it, which is what makes lean4export able to read this toolchain's `.olean`s.
 #
 # Script adapted from github.com/rkirov/jacobian-claude (verify.sh).
 set -euo pipefail
+
+# Upstream-pinned tool revisions (lean-eval ci.yml; bump only alongside upstream).
+COMPARATOR_REV=71b52ec29e06d4b7d882726553b1ceb99a2499e0
+LEAN4EXPORT_REV=4e7915201d3f9f04470d9eae002fa695f7cdc589  # = refs/tags/v4.32.0
+NANODA_REV=68d5ca9db226849b41a6fff59d796ff19d0a8840
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WS="$HERE/comparator"
@@ -13,18 +24,32 @@ TOOLCHAIN_TAG=$(sed -e 's/^leanprover\/lean4://' "$WS/lean-toolchain" | tr -d '[
 WORK="${COMPARATOR_WORK:-$HOME/.cache/jacobian-comparator/$TOOLCHAIN_TAG}"
 mkdir -p "$WORK"
 
-# comparator + lean4export pinned to the SAME toolchain that built the library, so
-# lean4export can read its `.olean`s (the export format is toolchain-locked).
-if [ ! -d "$WORK/comparator" ]; then
-  git clone --branch "$TOOLCHAIN_TAG" --depth 1 \
-    https://github.com/leanprover/comparator "$WORK/comparator"
+clone_at() { # repo dir rev
+  if [ ! -d "$2" ]; then
+    git clone "$1" "$2"
+    (cd "$2" && git checkout --detach "$3")
+  fi
+}
+
+clone_at https://github.com/leanprover/comparator "$WORK/comparator" "$COMPARATOR_REV"
+clone_at https://github.com/leanprover/lean4export "$WORK/lean4export" "$LEAN4EXPORT_REV"
+# lean4export must be built with the toolchain that produced the `.olean`s it reads
+# (upstream does exactly this `cp`).
+cp "$WS/lean-toolchain" "$WORK/lean4export/lean-toolchain"
+# DEVIATION from upstream: upstream builds comparator with comparator's OWN pinned toolchain
+# (v4.30.0-rc2 at $COMPARATOR_REV). We build it with the workspace toolchain instead, to avoid
+# installing a third full Lean toolchain on a disk-constrained machine. comparator only reads
+# the export produced by lean4export and shells out to nanoda, so its own build toolchain is
+# not part of the check. Set COMPARATOR_OWN_TOOLCHAIN=1 to restore upstream's exact recipe.
+if [ "${COMPARATOR_OWN_TOOLCHAIN:-0}" != "1" ]; then
+  cp "$WS/lean-toolchain" "$WORK/comparator/lean-toolchain"
 fi
-if [ ! -d "$WORK/lean4export" ]; then
-  git clone --branch "$TOOLCHAIN_TAG" --depth 1 \
-    https://github.com/leanprover/lean4export "$WORK/lean4export"
-fi
-(cd "$WORK/comparator" && lake build)
-(cd "$WORK/lean4export" && lake build)
+(cd "$WORK/comparator" && lake build comparator)
+(cd "$WORK/lean4export" && lake build lean4export)
+
+# nanoda: the external kernel every lean-eval solution is replayed through.
+clone_at https://github.com/robsimmons/nanoda_lib "$WORK/nanoda" "$NANODA_REV"
+(cd "$WORK/nanoda" && cargo build --release)
 
 # landrun sandbox binary, wrapped to grant the dynamic loader the read+exec paths its
 # -ldd resolution can miss.
@@ -41,9 +66,11 @@ printf '#!/usr/bin/env bash\nexec "%s/landrun-bin"%s "$@"\n' "$WORK" "$EXTRA" \
   > "$WORK/landrun"
 chmod +x "$WORK/landrun"
 export COMPARATOR_LANDRUN="$WORK/landrun"
-export PATH="$WORK/lean4export/.lake/build/bin:$WORK:$PATH"
+export PATH="$WORK/lean4export/.lake/build/bin:$WORK/nanoda/target/release:$WORK:$PATH"
+export COMPARATOR_BIN="$WORK/comparator/.lake/build/bin/comparator"
 
-# Build the workspace (Challenge spec, Solution bridge, Submission → library) and run.
+# Build the workspace (Challenge spec, Solution bridge, Submission → library) and run it
+# through lean-eval's own harness, which forces `enable_nanoda := true`.
 cd "$WS"
 lake build Challenge Solution Submission
-exec lake env "$WORK/comparator/.lake/build/bin/comparator" config.json
+exec lake test

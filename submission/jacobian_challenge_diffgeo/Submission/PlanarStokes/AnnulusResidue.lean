@@ -338,7 +338,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       have hcont : ContinuousOn (fun ζ => I • f' ζ 1 - f' ζ I) Rec := by
         have h1 : ContinuousOn (fun ζ => f' ζ 1) Rec := hf'_cont.clm_apply continuousOn_const
         have h2 : ContinuousOn (fun ζ => f' ζ I) Rec := hf'_cont.clm_apply continuousOn_const
-        exact (continuousOn_const.smul h1).sub h2
+        exact (h1.const_smul I).sub h2
       have hcompact : IsCompact Rec := by
         rw [hRec_def]; exact IsCompact.reProdIm isCompact_Icc isCompact_Icc
       exact hcont.integrableOn_compact hcompact

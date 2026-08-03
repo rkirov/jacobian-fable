@@ -33,10 +33,10 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 /-- `Compat`: `X` is locally path-connected, via its charts into `ℂ` (a locally convex space).
 Filed as a request to surfaces-and-charts (`docs/requests/surfaces-and-charts.md`); carried here
 as a local instance since no upstream unit currently provides it. -/
-instance : LocPathConnectedSpace X := ChartedSpace.locPathConnectedSpace (H := ℂ) (M := X)
+instance : LocallyPathConnectedSpace X := ChartedSpace.locallyPathConnectedSpace (H := ℂ) (M := X)
 
-/-- `Compat`: `X` is path-connected (`ConnectedSpace X` + `LocPathConnectedSpace X`). -/
-instance : PathConnectedSpace X := .of_locPathConnectedSpace
+/-- `Compat`: `X` is path-connected (`ConnectedSpace X` + `LocallyPathConnectedSpace X`). -/
+instance : PathConnectedSpace X := .of_locallyPathConnectedSpace
 
 /-! ### `periodVector` of a loop, at *any* basepoint, lies in `periodSubgroup X` -/
 

@@ -2567,3 +2567,50 @@ tactic/name/instance-registration change: no theorem signature, definition type,
   81 differing lines before, both hunks on `degree`); `#print axioms` on `degree`,
   `degree_eq_contMDiff`, `pushforward_pullback` — all exactly `[propext, Classical.choice,
   Quot.sound]`; `grep -rn -w sorry comparator/Submission.lean` — empty.
+
+## upgrade: v4.32.0-rc1/mathlib 360da6fa → v4.32.2/mathlib 905b9581 (tag v4.32.2)
+
+Requested upgrade of the whole development (both branches) to Lean v4.32.2. Chosen mathlib is
+the `v4.32.2` tag `905b95818eb32af7874a58b427f50c1711a5e96c` (2026-07-28) — which is also
+exactly what upstream `leanprover/lean-eval` pins, so the benchmark workspace and this
+repository now build on the same mathlib.
+
+`main` came from the older gist pin (v4.30.0-rc2 / `5483982`) and picked up the already-done
+4.30 → 4.32.0-rc1 port from this branch first; the residual 4.32.0-rc1 → 4.32.2 delta was four
+distinct API changes across seven files:
+
+1. **`LocPathConnectedSpace` → `LocallyPathConnectedSpace`.** The old name is now a deprecated
+   *alias*, not the class, so `instance : LocPathConnectedSpace X := …` fails outright ("should
+   not be an instance as its return type … is not a type class") and a `haveI` of it does not
+   satisfy later synthesis. Renamed at both sites (`JacobianConstruction/OfCurve.lean`,
+   `SphereTopology/SimplyConnectedP1.lean`), together with `ChartedSpace.locPathConnectedSpace`,
+   `PathConnectedSpace.of_locPathConnectedSpace` and the deprecated module import.
+2. **`IsCoveringMapOn.of_openPartialHomeomorph` → `of_isLocalHomeomorphOn`**, whose hypothesis
+   `IsLocalHomeomorphOn f (f ⁻¹' s)` unfolds to `∃ e, x ∈ e.source ∧ f = ↑e` — the *opposite*
+   orientation from the old constructor. Our `exists_openPartialHomeomorph_coe_eq` still proves
+   `⇑φ = F`, so the use site now `obtain`s and flips (`MappingDegree/Covering.lean`).
+3. **`Continuous.smul` / `ContinuousOn.smul` are point-free** (`f • g`, like the `to_fun` wave
+   that drove the previous port). `refine ContinuousOn.smul ?_ h` against a goal shaped
+   `fun z ↦ c • g z` no longer unifies, and `continuous_const.smul h` leaves the scalar type a
+   metavariable ("typeclass instance problem is stuck: `ContinuousSMul ?m ℂ`"). Fixed by naming
+   both factors and combining with `exact`, or by `Continuous(On).const_smul`
+   (`PlanarStokes/CompactSupport.lean`, `PlanarStokes/AnnulusResidue.lean`, `Abel/LogPiece.lean`).
+4. **Two `NormedSpace ℝ ℂ` instance paths.** `ContDiffAt.inv` is stated over
+   `[NormedField 𝕜'] [NormedAlgebra 𝕜 𝕜']`, so it produces `NormedAlgebra.toNormedSpace`
+   where our goal carries `instInnerProductSpaceRealComplex.toNormedSpace`; `simpa using
+   h.inv hz` then fails on a type mismatch that is pure instance-path noise. A type-ascribed
+   `have` in the goal's instances, filled by the same term, elaborates fine
+   (`AbelWeak/Rechart.lean`).
+
+Everything else (the 4.30 → 4.32.0-rc1 fixes, and the cross-universe layer) carried over
+unchanged. `lake build` green on both branches (3399 jobs), sorry/axiom sweeps empty,
+`GistAcceptance.lean` and `scratch_gist_check.lean` clean with all six headline items on
+`[propext, Classical.choice, Quot.sound]`.
+
+Submission side: `comparator/` was refreshed from upstream (`Solution.lean` gained
+`noncomputable` on its shim declarations; `Challenge.lean`/`config.json` unchanged), its
+manifest re-resolved to the new mathlib, and lean-eval's `WorkspaceTest.lean` added so
+`lake test` runs comparator the way upstream does — with the nanoda kernel forced on.
+`verify.sh` now pins comparator/lean4export/nanoda to the same revisions as lean-eval's CI.
+The comparator run itself is left to the `comparator` GitHub workflow: this machine ran out of
+disk mid-run (three full Lean toolchains do not fit).

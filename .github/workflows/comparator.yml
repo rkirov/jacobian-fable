@@ -2,9 +2,12 @@ name: comparator
 
 # Runs the real leanprover/comparator against this repo's solution to the lean-eval
 # problem `jacobian_challenge_diffgeo` — the authoritative challenge check (statement
-# match + permitted-axiom check + kernel replay via lean4export, in a landrun sandbox).
+# match + permitted-axiom check + kernel replay via lean4export, in a landrun sandbox,
+# plus the independent nanoda kernel that lean-eval's WorkspaceTest forces on).
 # Mirrors lean-eval's own environment; a green run here should mean a green run on the
 # lean-eval leaderboard. Workflow pattern follows github.com/rkirov/jacobian-claude.
+#
+# Tool pins live in verify.sh and mirror lean-eval's .github/workflows/ci.yml.
 
 on:
   push:
@@ -29,13 +32,22 @@ jobs:
         with:
           use-mathlib-cache: true
 
-      # comparator + lean4export are pinned to the toolchain and rarely change; cache
-      # their clones and builds (verify.sh namespaces the cache dir by toolchain tag).
+      # comparator + lean4export + nanoda are pinned and rarely change; cache their
+      # clones and builds (verify.sh namespaces the cache dir by toolchain tag).
       - name: Cache comparator tooling
         uses: actions/cache@v4
         with:
           path: ~/.cache/jacobian-comparator
-          key: comparator-${{ hashFiles('comparator/lean-toolchain') }}
+          key: comparator-${{ hashFiles('comparator/lean-toolchain', 'verify.sh') }}
 
+      # nanoda is a Rust build; ubuntu-latest ships cargo, but be explicit about it.
+      - name: Check cargo is available
+        run: cargo --version
+
+      # On CI there is room for comparator's own pinned toolchain, so run lean-eval's
+      # exact recipe (the local-dev default builds comparator with the workspace
+      # toolchain instead, to avoid a third Lean install on a small disk).
       - name: Run comparator
         run: ./verify.sh
+        env:
+          COMPARATOR_OWN_TOOLCHAIN: "1"
