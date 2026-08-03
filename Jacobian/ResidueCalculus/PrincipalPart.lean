@@ -150,15 +150,12 @@ theorem MeromorphicAt.exists_principalPart_add_analyticAt (hf : MeromorphicAt f 
           omega
         · intro d hd
           simp only [Finset.mem_range] at hd
-          simp only []
           omega
         · intro k hk
           simp only [Finset.mem_Icc] at hk
-          simp only []
           omega
         · intro d hd
           simp only [Finset.mem_range] at hd
-          simp only []
           have hcoeff : laurentCoeffAt f z₀ ((meromorphicOrderAt f z₀).untop₀ + (d : ℤ))
               = taylorCoeffAt u z₀ d := by
             rw [laurentCoeffAt_of_eventuallyEq h₁u h₃u _, if_pos (by omega)]

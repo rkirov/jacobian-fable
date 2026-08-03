@@ -104,16 +104,16 @@ theorem tangentCoord_mfderiv_comp {f : X → ℂ} {g : ℂ → X} {z : ℂ}
 one-dimensional; evaluation at `1` is a linear isometry equivalence). -/
 theorem analyticAt_clm_iff_apply_one {F : ℂ → ℂ →L[ℂ] ℂ} {z : ℂ} :
     AnalyticAt ℂ F z ↔ AnalyticAt ℂ (fun w => F w 1) z := by
-  set L := ContinuousLinearMap.ring_lmap_equiv_self ℂ ℂ with hL
+  set L := (ContinuousLinearMap.toSpanSingletonLIE ℂ ℂ).symm with hL
   constructor
   · intro h
     have h1 : AnalyticAt ℂ (fun w => L.toContinuousLinearEquiv (F w)) z :=
-      AnalyticAt.comp' (g := ⇑L.toContinuousLinearEquiv) (f := F)
+      AnalyticAt.fun_comp (g := ⇑L.toContinuousLinearEquiv) (f := F)
         ((L.toContinuousLinearEquiv : (ℂ →L[ℂ] ℂ) →L[ℂ] ℂ).analyticAt (F z)) h
     exact h1.congr (Filter.Eventually.of_forall fun w => rfl)
   · intro h
     have h1 : AnalyticAt ℂ (fun w => L.toContinuousLinearEquiv.symm (F w 1)) z :=
-      AnalyticAt.comp' (g := ⇑L.toContinuousLinearEquiv.symm) (f := fun w => F w 1)
+      AnalyticAt.fun_comp (g := ⇑L.toContinuousLinearEquiv.symm) (f := fun w => F w 1)
         ((L.toContinuousLinearEquiv.symm : ℂ →L[ℂ] (ℂ →L[ℂ] ℂ)).analyticAt (F z 1)) h
     refine h1.congr (Filter.Eventually.of_forall fun w => ?_)
     show L.toContinuousLinearEquiv.symm (L.toContinuousLinearEquiv (F w)) = F w
@@ -217,7 +217,7 @@ theorem Form1.analyticOnNhd_coeffIn (η : Form1 X) {e : OpenPartialHomeomorph X 
   have hτz : (⇑(chartAt ℂ (e.symm z)) ∘ ⇑e.symm) z = chartAt ℂ (e.symm z) (e.symm z) := rfl
   have hcoeff : AnalyticAt ℂ
       (fun w => coeffIn (chartAt ℂ (e.symm z)) η ((⇑(chartAt ℂ (e.symm z)) ∘ ⇑e.symm) w)) z := by
-    refine AnalyticAt.comp' ?_ hτ
+    refine AnalyticAt.fun_comp ?_ hτ
     rw [hτz]
     exact η.analyticAt_coeffAt (e.symm z)
   exact (AnalyticAt.fun_mul hτ.deriv hcoeff).congr heq.symm

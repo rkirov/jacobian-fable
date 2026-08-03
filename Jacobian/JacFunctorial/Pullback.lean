@@ -56,7 +56,8 @@ symmetric counterpart of `RS.mfderiv_chartAt_symm_chartAt_self`. -/
 theorem mfderiv_chartAt_self (y : Y) :
     mfderiv 𝓘(ℂ) 𝓘(ℂ) (chartAt ℂ y) y = ContinuousLinearMap.id ℂ ℂ := by
   have h := mfderiv_extChartAt_self (I := 𝓘(ℂ)) (x := y)
-  simpa only [extChartAt_coe] using h
+  simp only [extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp] at h
+  exact h
 
 omit [IsManifold 𝓘(ℂ) ω X] in
 set_option backward.isDefEq.respectTransparency false in
@@ -174,7 +175,7 @@ def pullbackForm (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (η : F
       simp only [Function.comp_apply, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
     have hcoeff : AnalyticAt ℂ (fun z => coeffIn (chartAt ℂ (f x)) η
         ((⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) z)) (chartAt ℂ x x) := by
-      refine AnalyticAt.comp' ?_ hφ
+      refine AnalyticAt.fun_comp ?_ hφ
       rw [hptEq]
       exact η.analyticAt_coeffAt (f x)
     have hmemF : (f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ∈ (chartAt ℂ (f x)).source := by

@@ -21,7 +21,7 @@ exploration and JF inherited the map, so nothing here is a like-for-like capabil
 | Ported code | ~3.1% (Brsanch degree/fibre theory, tangentstorm Green's theorem) | none |
 | Axioms | `propext, Classical.choice, Quot.sound` only (AuditAll.lean) | identical (GistAcceptance.lean) |
 | Verification | real leanprover/comparator, CI, lean-eval leaderboard | same (harness pattern adapted from JC, post-clean-room) |
-| Mathlib pin | v4.30.0 / `c5ea003` | v4.30.0-rc2 / `5483982` (main); v4.32.0-rc1 / `360da6fa` (lean-eval) |
+| Mathlib pin | v4.30.0 / `c5ea003` | v4.32.2 / `905b9581` (main, upgraded from the gist pin v4.30.0-rc2 / `5483982`); v4.32.0-rc1 / `360da6fa` (lean-eval) |
 
 Same-unit weight extremes (lines, JC → JF): Finiteness 9,752 → 1,964 · MappingDegree+ProperDegree
 12,263 → 1,243 · MeromorphicTrace 5,823 → 1,623 · Path 4,595 → 1,923 — versus Čech 1,742 → 3,380

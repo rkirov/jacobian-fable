@@ -1,6 +1,8 @@
 # Mathlib inventory for the Jacobian project
 
-Pinned mathlib commit: `548398201a64f3a5127d90d83945278cfe38cac4` (2026-05-15), source at
+Pinned mathlib commit: `905b95818eb32af7874a58b427f50c1711a5e96c` (tag `v4.32.2`, 2026-07-28;
+this inventory was originally written against `548398201a64f3a5127d90d83945278cfe38cac4`,
+2026-05-15), source at
 `.lake/packages/mathlib/Mathlib/`. All file paths below are relative to `Mathlib/`.
 All Lean names and signatures were verified against this commit's source (not memory).
 Signatures may elide long typeclass argument lists with `...`; the mathematical content is exact.

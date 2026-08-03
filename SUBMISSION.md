@@ -14,8 +14,11 @@ are proved as stated).
 
 ## Toolchain
 
-- `leanprover/lean4:v4.30.0-rc2`
-- mathlib pinned at `548398201a64f3a5127d90d83945278cfe38cac4` (as required by the gist header)
+- `leanprover/lean4:v4.32.2`
+- mathlib pinned at `905b95818eb32af7874a58b427f50c1711a5e96c` (mathlib tag `v4.32.2`)
+
+The gist header requires `v4.30.0-rc2` / mathlib `548398201a64f3a5127d90d83945278cfe38cac4`; the
+development was forward-ported off that pin (statements unchanged, only mathlib API drift fixed).
 
 ## How to verify
 

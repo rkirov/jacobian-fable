@@ -62,27 +62,27 @@ instance : Zero (Form01 X) where
 
 instance : Add (Form01 X) where
   add η η' := ⟨fun x z => η.coeffAt x z + η'.coeffAt x z,
-    fun x z hz => by dsimp only; rw [η.coeffAt_zero_off x z hz, η'.coeffAt_zero_off x z hz, add_zero],
+    fun x z hz => by rw [η.coeffAt_zero_off x z hz, η'.coeffAt_zero_off x z hz, add_zero],
     fun x => (η.contDiffOn_coeffAt x).add (η'.contDiffOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [η.compat x y z hz, η'.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [η.compat x y z hz, η'.compat x y z hz]; ring⟩
 
 instance : Neg (Form01 X) where
   neg η := ⟨fun x z => -η.coeffAt x z,
-    fun x z hz => by dsimp only; rw [η.coeffAt_zero_off x z hz, neg_zero],
+    fun x z hz => by rw [η.coeffAt_zero_off x z hz, neg_zero],
     fun x => (η.contDiffOn_coeffAt x).neg,
-    fun x y z hz => by dsimp only; rw [η.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [η.compat x y z hz]; ring⟩
 
 instance : Sub (Form01 X) where
   sub η η' := ⟨fun x z => η.coeffAt x z - η'.coeffAt x z,
-    fun x z hz => by dsimp only; rw [η.coeffAt_zero_off x z hz, η'.coeffAt_zero_off x z hz, sub_zero],
+    fun x z hz => by rw [η.coeffAt_zero_off x z hz, η'.coeffAt_zero_off x z hz, sub_zero],
     fun x => (η.contDiffOn_coeffAt x).sub (η'.contDiffOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [η.compat x y z hz, η'.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [η.compat x y z hz, η'.compat x y z hz]; ring⟩
 
 instance : SMul ℂ (Form01 X) where
   smul c η := ⟨fun x z => c * η.coeffAt x z,
-    fun x z hz => by dsimp only; rw [η.coeffAt_zero_off x z hz, mul_zero],
+    fun x z hz => by rw [η.coeffAt_zero_off x z hz, mul_zero],
     fun x => contDiffOn_const.mul (η.contDiffOn_coeffAt x),
-    fun x y z hz => by dsimp only; rw [η.compat x y z hz]; ring⟩
+    fun x y z hz => by rw [η.compat x y z hz]; ring⟩
 
 @[simp] theorem coeffAt_zero (x : X) (z : ℂ) : (0 : Form01 X).coeffAt x z = 0 := rfl
 

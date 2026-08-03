@@ -296,8 +296,9 @@ theorem toP1_not_const (hf : MeromorphicOnX f Set.univ) (hnc : NotEventuallyCons
       rw [hdc] at hd
       have htend : Tendsto (f - fun _ => c₀) (𝓝[≠] x) (𝓝 0) := by
         have hconst : Tendsto (fun _ : X => c₀) (𝓝[≠] x) (𝓝 c₀) := tendsto_const_nhds
-        have := hd.sub hconst
-        simpa using this
+        have hsub := hd.sub hconst
+        simp only [sub_self] at hsub
+        exact hsub
       have htend' : Tendsto ((f - fun _ => c₀) ∘ (chartAt ℂ x).symm)
           (𝓝[≠] (chartAt ℂ x x)) (𝓝 0) := RS.tendsto_nhdsNE_comp_chart_iff.1 htend
       exact (tendsto_zero_iff_meromorphicOrderAt_pos (hmerosub x (mem_univ x))).1 htend'

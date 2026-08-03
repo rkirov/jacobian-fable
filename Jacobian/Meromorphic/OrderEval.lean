@@ -187,8 +187,9 @@ theorem evalAt_smul (hU : IsOpen U) (hx : x ∈ U) {φ : MeroGermOn X U} (h : 0 
     have e1 := tendsto_evalAt hU hx (mk f hf) h rfl
     have e2 := tendsto_evalAt hU hx (c • mk f hf) h1 (mk_smul c).symm
     have e3 : Tendsto (c • f) (𝓝[≠] x) (𝓝 (c * (mk f hf).evalAt x)) := by
-      have := e1.const_smul c
-      simpa [smul_eq_mul] using this
+      have h2 := e1.const_smul c
+      simp only [smul_eq_mul] at h2
+      exact h2
     exact tendsto_nhds_unique e2 e3
 
 omit [IsManifold 𝓘(ℂ) ω X] in

@@ -149,7 +149,7 @@ theorem logDeriv_rat_eq {a b z : ℂ} (hza : z ≠ a) (hzb : z ≠ b) :
     deriv (fun w : ℂ => (w - b) / (w - a)) z / ((z - b) / (z - a)) = (z - b)⁻¹ - (z - a)⁻¹ := by
   have hderiv : HasDerivAt (fun w : ℂ => (w - b) / (w - a))
       ((1 * (z - a) - (z - b) * 1) / (z - a) ^ 2) z := by
-    have := ((hasDerivAt_id z).sub_const b).div ((hasDerivAt_id z).sub_const a)
+    have := ((hasDerivAt_id z).sub_const b).fun_div ((hasDerivAt_id z).sub_const a)
       (sub_ne_zero.mpr hza)
     simpa using this
   rw [hderiv.deriv]

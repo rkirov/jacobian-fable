@@ -1,7 +1,8 @@
 # Project conventions (binding for every unit builder)
 
 Goal: fill in Buzzard's Jacobian challenge v0.4 (see `docs/Jacobian_challenge.lean` for the target
-API) over mathlib pinned at `548398201a64f3a5127d90d83945278cfe38cac4`, following
+API) over mathlib pinned at `905b95818eb32af7874a58b427f50c1711a5e96c` (tag `v4.32.2`; the gist's
+original pin was `548398201a64f3a5127d90d83945278cfe38cac4`), following
 `clean_room_blueprint.md`. ~30 units, each a directory under `Jacobian/`.
 
 ## Hard rules

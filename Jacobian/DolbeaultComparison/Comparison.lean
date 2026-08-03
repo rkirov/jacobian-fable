@@ -189,7 +189,7 @@ theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤
         resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) hidx2 ξ := by
       have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) (ρ ∘ τ𝒱)
         (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) σV hσV) ξ
-      simpa using this
+      exact this
     have hc3 : toDolb h𝒲good (resH1 (0 : RS.Divisor X) σV hσV
         (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ)) =
         toDolb (goodRef_isGood 𝒱)

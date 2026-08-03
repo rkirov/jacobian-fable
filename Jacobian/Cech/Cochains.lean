@@ -192,6 +192,16 @@ noncomputable def Z1 : Submodule ℂ (C1 D 𝒰) := LinearMap.ker (d1 D 𝒰)
 /-- `1`-coboundaries. -/
 noncomputable def B1 : Submodule ℂ (C1 D 𝒰) := LinearMap.range (d0 D 𝒰)
 
+/-- Registered explicitly (rather than left to ad-hoc re-derivation at `H1Cover`'s `⧸`): the
+newer toolchain's `synthInstance` no longer reliably re-discharges the *dependent* Pi-instance
+goal `∀ i, AddCommGroup ↥(RS.LinSysOn D _)` that `Submodule.addCommGroup`/`Submodule.instModule`
+would otherwise have to solve afresh (as a precondition on the ambient `C1 D 𝒰`) at every
+downstream use of `Z1 D 𝒰 ⧸ _`. Supplying the resolved instance for `↥(Z1 D 𝒰)` once, directly,
+lets every later lookup match it verbatim instead of re-deriving it. -/
+noncomputable instance instAddCommGroupZ1 : AddCommGroup (Z1 D 𝒰) := (Z1 D 𝒰).addCommGroup
+
+noncomputable instance instModuleZ1 : Module ℂ (Z1 D 𝒰) := (Z1 D 𝒰).module
+
 theorem B1_le_Z1 : B1 D 𝒰 ≤ Z1 D 𝒰 := by
   rintro y ⟨x, rfl⟩
   show d1 D 𝒰 (d0 D 𝒰 x) = 0

@@ -116,12 +116,12 @@ private theorem measure_frame_null (a b lo hi : ℝ) (hab : a ≤ b) (hlohi : lo
       refine ⟨hw.1, ?_⟩
       have hnotim : w.im ∉ Set.Ioo lo hi := fun h => hw' (Complex.mem_reProdIm.mpr ⟨hre, h⟩)
       have hmem : w.im ∈ Set.Icc lo hi \ Set.Ioo lo hi := ⟨hw.2, hnotim⟩
-      rwa [Icc_diff_Ioo_same hlohi] at hmem
+      rwa [Icc_sdiff_Ioo_same hlohi] at hmem
     · left
       rw [Complex.mem_reProdIm]
       refine ⟨?_, hw.2⟩
       have hmem : w.re ∈ Set.Icc a b \ Set.Ioo a b := ⟨hw.1, hre⟩
-      rwa [Icc_diff_Ioo_same hab] at hmem
+      rwa [Icc_sdiff_Ioo_same hab] at hmem
   have hbound : volume (Complex.reProdIm ({a, b} : Set ℝ) (Set.Icc lo hi)
       ∪ Complex.reProdIm (Set.Icc a b) ({lo, hi} : Set ℝ)) = 0 :=
     measure_union_null (measure_reProdIm_pair_re a b (Set.Icc lo hi))
@@ -170,7 +170,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     subst hRr
     have hAeq : Metric.closedBall c r \ Metric.ball c r = Metric.sphere c r := by
       ext w
-      simp only [Metric.mem_closedBall, Metric.mem_ball, Metric.mem_sphere, Set.mem_diff, not_lt]
+      simp only [Metric.mem_closedBall, Metric.mem_ball, Metric.mem_sphere, Set.mem_sdiff, not_lt]
       exact ⟨fun h => le_antisymm h.1 h.2, fun h => ⟨h.le, h.ge⟩⟩
     rw [hAeq, MeasureTheory.setIntegral_measure_zero _ (Measure.addHaar_sphere volume c r),
       mul_zero, sub_self]
@@ -338,7 +338,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       have hcont : ContinuousOn (fun ζ => I • f' ζ 1 - f' ζ I) Rec := by
         have h1 : ContinuousOn (fun ζ => f' ζ 1) Rec := hf'_cont.clm_apply continuousOn_const
         have h2 : ContinuousOn (fun ζ => f' ζ I) Rec := hf'_cont.clm_apply continuousOn_const
-        exact (continuousOn_const.smul h1).sub h2
+        exact (h1.const_smul I).sub h2
       have hcompact : IsCompact Rec := by
         rw [hRec_def]; exact IsCompact.reProdIm isCompact_Icc isCompact_Icc
       exact hcont.integrableOn_compact hcompact
@@ -481,8 +481,10 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     have hae : ∀ᵐ ζ ∂volume, ζ ∈ Rec →
         I • f' ζ 1 - f' ζ I
           = 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)) := by
-      have hnmem : ∀ᵐ ζ ∂volume, ζ ∉ Rec \ RecOpen :=
-        MeasureTheory.ae_iff.mpr (by simpa using hRecOpen_null_diff)
+      have hnmem : ∀ᵐ ζ ∂volume, ζ ∉ Rec \ RecOpen := by
+        rw [MeasureTheory.ae_iff]
+        simp only [not_not]
+        exact hRecOpen_null_diff
       filter_upwards [hnmem] with ζ hζ hζRec
       by_contra hne
       exact hζ ⟨hζRec, fun hop => hne (hpt ζ hop)⟩
@@ -506,16 +508,16 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
         (measurableSet_Ico.preimage Complex.measurable_im)
     have hRecs_null_diff : volume (Rec \ s) = 0 := by
       have heq : Rec \ s = Complex.reProdIm (Set.Icc a b) ({2 * π} : Set ℝ) := by
-        rw [hRec_def, hs_def, ← Icc_diff_Ico_same Real.two_pi_pos.le]
+        rw [hRec_def, hs_def, ← Icc_sdiff_Ico_same Real.two_pi_pos.le]
         ext w
-        simp only [Complex.mem_reProdIm, Set.mem_diff]
+        simp only [Complex.mem_reProdIm, Set.mem_sdiff]
         tauto
       rw [heq]
       exact measure_reProdIm_im_singleton (2 * π) (Set.Icc a b)
     have hRec_ae_s : Rec =ᵐ[volume] s := by
       rw [ae_eq_set]
       refine ⟨hRecs_null_diff, ?_⟩
-      rw [Set.diff_eq_empty.mpr hs_sub_Rec]
+      rw [Set.sdiff_eq_empty.mpr hs_sub_Rec]
       exact measure_empty
     have hRec_to_s : (∫ ζ in Rec, (Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ))
         = ∫ ζ in s, (Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ) :=
@@ -678,7 +680,7 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
       = ∫ w in (Metric.closedBall p R \ Metric.ball p ε), wirtingerDbar g w * f w := by
     apply (MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero ?_).symm
     intro w hw
-    rw [Set.mem_diff, not_and, not_not] at hw
+    rw [Set.mem_sdiff, not_and, not_not] at hw
     by_cases hw1 : w ∈ Metric.closedBall p R
     · have hw2 : w ∈ Metric.ball p ε := hw hw1
       have hwδ : w ∈ Metric.ball p δ := Metric.ball_subset_ball hεδ.le hw2

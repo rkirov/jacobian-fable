@@ -221,10 +221,10 @@ theorem ordAtX_const : ordAtX (fun _ : X => c) x = if c = 0 then ⊤ else 0 := b
   exact meromorphicOrderAt_const (chartAt ℂ x x) c
 
 theorem ordAtX_zero : ordAtX (0 : X → ℂ) x = ⊤ := by
-  simpa using (ordAtX_const (c := 0) (x := x))
+  simpa [Pi.zero_def] using (ordAtX_const (c := 0) (x := x))
 
 theorem ordAtX_one : ordAtX (1 : X → ℂ) x = 0 := by
-  simpa using (ordAtX_const (c := 1) (x := x))
+  simpa [Pi.one_def] using (ordAtX_const (c := 1) (x := x))
 
 /-- No chart invariance needed: `S = {x | ordAtX f x = ⊤}` is open (the analogue of the
 `identity theorem`'s "S open" step, specialized to a single point). -/

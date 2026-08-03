@@ -288,7 +288,7 @@ private theorem stokes_step1 (i : Fin PU.n) :
         indicator_eventuallyEq_zero_of_notMem (PU.isCompact_K i) hhcore0 hzK
       rw [RS.wirtingerDbar_congr_nhds _ _ z hev, stokesA, Set.indicator_of_notMem hz,
         pairingTerm, Set.indicator_of_notMem hz]
-      simpa using RS.wirtingerDbar_const z 0
+      simpa [Pi.zero_def] using RS.wirtingerDbar_const z 0
   have hstokes : ∫ z : ℂ, RS.wirtingerDbar hfun z = 0 :=
     RS.integral_wirtingerDbar_eq_zero isOpen_univ
       ((hhsmooth.of_le (by norm_num)).contDiffOn) hhcs (Set.subset_univ _)
@@ -648,7 +648,7 @@ theorem pairingDual_injective (PU : SurfPoU X) : Function.Injective (pairingDual
   intro θ hθ
   refine eq_zero_of_pairing_conjForm_eq_zero PU θ ?_
   have happ := congrArg (fun φ => φ (RS.H01.mk (conjForm θ))) hθ
-  simpa using happ
+  simpa [pairingDual, pairingH01_mk] using happ
 
 /-! ## The gated dimension count and the integral-pairing bridge -/
 

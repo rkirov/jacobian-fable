@@ -243,9 +243,10 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
     -- the punctured-holomorphy neighborhood
     set V : Set ℂ := (chartAt ℂ x).target ∩ ⇑(chartAt ℂ x).symm ⁻¹' ((S \ {x})ᶜ) with hV_def
     have hVopen : IsOpen V := by
-      have h1 : IsOpen ((S \ {x})ᶜ) := ((hSfin.subset Set.diff_subset).isClosed).isOpen_compl
-      have := (chartAt ℂ x).symm.isOpen_inter_preimage h1
-      simpa using this
+      have h1 : IsOpen ((S \ {x})ᶜ) := ((hSfin.subset Set.sdiff_subset).isClosed).isOpen_compl
+      have hthis := (chartAt ℂ x).symm.isOpen_inter_preimage h1
+      rw [hV_def]
+      exact hthis
     have hz₀V : z₀ ∈ V := by
       constructor
       · exact mem_chart_target ℂ x

@@ -1,7 +1,7 @@
 name: CI
 
 # Library build + integrity gates. Works on both branches:
-#   main      — gist pin (v4.30.0-rc2 / mathlib 5483982)
+#   main      — v4.32.2 / mathlib 905b9581 (gist's original pin was v4.30.0-rc2 / mathlib 5483982)
 #   lean-eval — benchmark pin (v4.32.0-rc1 / mathlib 360da6fa) + submission artifacts
 # Branch-specific steps guard on file existence and degrade gracefully.
 

@@ -46,10 +46,11 @@ theorem eventuallyEq_of_hasDerivAt_eq {f g d : ℂ → ℂ} {z₀ : ℂ}
   have key : ∀ z ∈ ball z₀ r, (fun w => f w - g w) z = (fun w => f w - g w) z₀ := by
     intro z hz
     refine (convex_ball z₀ r).is_const_of_fderivWithin_eq_zero (𝕜 := ℂ)
-      (fun w hw => (((hball w hw).1.sub (hball w hw).2).differentiableAt.differentiableWithinAt))
+      (fun w hw =>
+        (((hball w hw).1.fun_sub (hball w hw).2).differentiableAt.differentiableWithinAt))
       (fun w hw => ?_) hz (mem_ball_self hr)
     have h0' : HasDerivAt (fun w => f w - g w) 0 w := by
-      simpa using ((hball w hw).1.sub (hball w hw).2)
+      simpa using ((hball w hw).1.fun_sub (hball w hw).2)
     rw [fderivWithin_of_isOpen isOpen_ball hw]
     simpa using h0'.hasFDerivAt.fderiv
   filter_upwards [ball_mem_nhds z₀ hr] with z hz
@@ -124,7 +125,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
     apply inter_subset_inter_left
     rw [sub_eq_add_neg _ x]
     refine (segment_inter_eq_endpoint_of_linearIndependent_of_ne ?_ htt'.symm c).subset
-    convert hy.units_smul ![-1, 1]
+    convert hy.units_smul ![-1, 1] <;> [skip; rfl; rfl]
     simp [← List.ofFn_inj]
   -- pick `t` in `Ioo (-ρ) ρ` outside both countable exceptional sets.
   have hopen : IsOpen (Ioo (-ρ) ρ) := isOpen_Ioo

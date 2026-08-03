@@ -45,8 +45,10 @@ lake env lean GistAcceptance.lean   # acceptance test
 scripts/check.sh Jacobian/<Unit>    # per-unit: builds + sorry sweep
 ```
 
-Pinned toolchain: `leanprover/lean4:v4.30.0-rc2`; mathlib at
-`548398201a64f3a5127d90d83945278cfe38cac4` (as the gist specifies).
+Pinned toolchain: `leanprover/lean4:v4.32.2`; mathlib at
+`905b95818eb32af7874a58b427f50c1711a5e96c` (mathlib tag `v4.32.2`). The gist itself specifies
+`v4.30.0-rc2` / mathlib `5483982`; the development was forward-ported off that pin with all
+challenge statements unchanged.
 
 ## Architecture
 

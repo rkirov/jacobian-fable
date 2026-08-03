@@ -77,7 +77,7 @@ private theorem meromorphicAt_comp_sub_const {g : ℂ → ℂ} {c₀ : ℂ} (hg 
   obtain ⟨n, hn⟩ := hg
   refine ⟨n, ?_⟩
   have hφ : AnalyticAt ℂ (fun z : ℂ => z - c₀) c₀ := by fun_prop
-  have hcomp := hn.comp_of_eq hφ (by simp : (fun z : ℂ => z - c₀) c₀ = 0)
+  have hcomp := hn.fun_comp_of_eq hφ (by simp : (fun z : ℂ => z - c₀) c₀ = 0)
   simpa using hcomp
 
 /-! ### The per-fibre-point identification, under the calibration hypothesis -/
@@ -195,14 +195,14 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
       RS.MTrace.meromorphicAt_traceZk h1 (S.mult_ne_zero i)
     have hφ : AnalyticAt ℂ (fun z : ℂ => z - c₀) c₀ := by fun_prop
     have hφderiv : deriv (fun z : ℂ => z - c₀) c₀ = 1 := by
-      simp [deriv_sub_const]
+      simp
     have hφ' : deriv (fun z : ℂ => z - c₀) c₀ ≠ 0 := by rw [hφderiv]; exact one_ne_zero
     have hkey := resAt_comp_mul_deriv hφ hφ' (by simp : (fun z : ℂ => z - c₀) c₀ = 0) h2
     have heq : (fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀))
         = fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) ((fun w : ℂ => w - c₀) z)
           * deriv (fun w : ℂ => w - c₀) z := by
       funext z
-      have hd : deriv (fun w : ℂ => w - c₀) z = 1 := by simp [deriv_sub_const]
+      have hd : deriv (fun w : ℂ => w - c₀) z = 1 := by simp
       rw [hd, mul_one]
     rw [heq]
     exact hkey
@@ -219,8 +219,8 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
   set g_i : ℂ → ℂ := fun v => h ((S.A i).e.symm v) * (k : ℂ) * v ^ ((k : ℤ) - 1) with hgi_def
   have hgimero : MeromorphicAt g_i 0 := by
     have hzp : MeromorphicAt (fun v : ℂ => v ^ ((k : ℤ) - 1)) 0 := by
-      simpa using (MeromorphicAt.id (0 : ℂ)).zpow ((k : ℤ) - 1)
-    have := h1.mul ((MeromorphicAt.const (k : ℂ) 0).mul hzp)
+      simpa using (MeromorphicAt.id (0 : ℂ)).fun_zpow ((k : ℤ) - 1)
+    have := h1.fun_mul ((MeromorphicAt.const (k : ℂ) 0).fun_mul hzp)
     simpa [hgi_def, mul_assoc] using this
   have hcong : traceZkForm g_i k =ᶠ[𝓝[≠] (0 : ℂ)] RS.MTrace.traceZk (h ∘ (S.A i).e.symm) k := by
     filter_upwards [self_mem_nhdsWithin] with w hw
