@@ -91,7 +91,8 @@ theorem two_l_le_h1T_of_injective (A C : RS.Divisor X) (φ₁ φ₂ : T A →ₗ
     (hα₁ : ∀ g : RS.Mero X, φ₁ (alphaL A g) = 0) (hα₂ : ∀ g : RS.Mero X, φ₂ (alphaL A g) = 0)
     (hinj : Function.Injective (nuPairDual A C φ₁ φ₂ hα₁ hα₂)) :
     2 * (RS.l C : ℤ) ≤ (h1T (A - C) : ℤ) := by
-  have hle : Module.finrank ℂ (↥(RS.LinSys C) × ↥(RS.LinSys C)) ≤ Module.finrank ℂ (H1Tail (A - C)) := by
+  have hle : Module.finrank ℂ (↥(RS.LinSys C) × ↥(RS.LinSys C)) ≤ Module.finrank ℂ
+      (H1Tail (A - C)) := by
     rw [show Module.finrank ℂ (H1Tail (A - C)) = Module.finrank ℂ (Module.Dual ℂ (H1Tail (A - C)))
       from (Subspace.dual_finrank_eq).symm]
     exact LinearMap.finrank_le_finrank_of_injective hinj

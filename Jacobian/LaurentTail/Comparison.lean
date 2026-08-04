@@ -192,7 +192,8 @@ theorem d0_pairCover_diag {D' : RS.Divisor X} (p : X) (V : Opens X) (hpV : p ∈
     RS.Cech.d0 D' (pairCover p V hpV) g (i, i) = 0 := by
   rw [RS.Cech.d0_apply, sub_eq_zero]
 
-/-! ### `mlClass` invariance under raising the auxiliary divisor `D'` (from `scratch_ltails2.lean`) -/
+/-! ### `mlClass` invariance under raising the auxiliary divisor `D'` (from
+    `scratch_ltails2.lean`) -/
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
     [IsManifold 𝓘(ℂ, ℂ) ω X] in
@@ -282,7 +283,8 @@ theorem mem_cleanNbhd (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt 
 omit [ConnectedSpace X] in
 theorem cleanNbhd_sub_source (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     (cleanNbhd D p ψ : Set X) ⊆ (chartAt ℂ p).source :=
-  fun _x hx => (exists_clean_nhds (chartAt ℂ p).open_source ψ (mem_chart_source ℂ p)).choose_spec.2.1 hx.1
+  fun _x hx =>
+      (exists_clean_nhds (chartAt ℂ p).open_source ψ (mem_chart_source ℂ p)).choose_spec.2.1 hx.1
 
 omit [ConnectedSpace X] in
 theorem cleanNbhd_ord_nonneg (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
@@ -496,7 +498,8 @@ theorem mlClassAtOf_raise_res (p : X) (D D' D'' : RS.Divisor X)
     mlClassAtOf p D D' ψ V hpV hVsub hVclean hVDzero ψV hψV =
       mlClassAtOf p D D'' ψ W hpW hWsub hWclean hWDzero ψW hψW := by
   unfold mlClassAtOf
-  set ψV'' : RS.LinSysOn D'' (V : Set X) := Submodule.inclusion (RS.Cech.linSysOn_mono h) ψV with hψV''def
+  set ψV'' : RS.LinSysOn D'' (V : Set X) :=
+      Submodule.inclusion (RS.Cech.linSysOn_mono h) ψV with hψV''def
   have hψV'' : (ψV'' : RS.MeroGermOn X (V : Set X)) = RS.MeroGermOn.restrict hVsub ψ := hψV
   -- step 1: raise D' to D'' on the same cover `pairCover p V hpV`
   have e1 : RS.Cech.mlClass (pairCover p V hpV) (gOf p V hpV D' ψV)
@@ -509,7 +512,8 @@ theorem mlClassAtOf_raise_res (p : X) (D D' D'' : RS.Divisor X)
   -- step 2: refine the cover from `V` down to `W`
   have e2 : RS.Cech.mlClass (pairCover p V hpV) (gOf p V hpV D'' ψV'')
         (gOf_memLD_of_clean p D D'' ψ V hpV hVsub hVclean hVDzero ψV'' hψV'') =
-      RS.Cech.mlClass (pairCover p W hpW) (gOf p W hpW D'' (RS.Cech.LinSysOn.restrictL D'' hWV ψV''))
+      RS.Cech.mlClass (pairCover p W hpW)
+          (gOf p W hpW D'' (RS.Cech.LinSysOn.restrictL D'' hWV ψV''))
         (gOf_memLD_of_clean p D D'' ψ W hpW hWsub hWclean hWDzero
           (RS.Cech.LinSysOn.restrictL D'' hWV ψV'')
           (by rw [RS.Cech.restrictL_apply_coe, hψV'', RS.MeroGermOn.restrict_restrict])) :=
@@ -619,7 +623,8 @@ theorem mlClassAt_eq_zero_of_mem_ordGe (D : RS.Divisor X) (p : X)
   fin_cases i <;> dsimp only
   · erw [gOf_apply_zero, map_zero, sub_zero]
     exact (RS.mem_linSysOn_iff_of_isOpen (cleanNbhd D p ψ).2).1 hmem x hx
-  · erw [gOf_apply_one, map_zero, sub_zero, RS.MeroGermOn.ord_zero, if_pos ⟨isOpen_compl_singleton, hx⟩]
+  · erw [gOf_apply_one, map_zero, sub_zero, RS.MeroGermOn.ord_zero, if_pos
+      ⟨isOpen_compl_singleton, hx⟩]
     exact le_top
 
 /-! ### `mlClassAt` is additive and `ℂ`-linear -/
@@ -638,7 +643,8 @@ theorem mlClassAt_add (D : RS.Divisor X) (p : X) (ψ ψ' : RS.MeroGermOn X (char
     intro x hx hxp
     exact le_trans (le_min (hVclean x hx hxp) (hVclean' x hx hxp))
       (RS.MeroGermOn.ord_add (chartAt ℂ p).open_source (hVsub hx) ψ ψ')
-  have hVDzero : ∀ x ∈ (V : Set X), x ≠ p → D x = 0 := fun x hx hxp => cleanNbhd_D_eq_zero D p ψ x hx.1 hxp
+  have hVDzero : ∀ x ∈ (V : Set X), x ≠ p → D x = 0 :=
+      fun x hx hxp => cleanNbhd_D_eq_zero D p ψ x hx.1 hxp
   set D' : RS.Divisor X := DPrimeOf D p ψ ⊔ DPrimeOf D p ψ' with hD'def
   have hDψ : D' p ≥ nOf D p ψ := by
     rw [hD'def]
@@ -656,10 +662,12 @@ theorem mlClassAt_add (D : RS.Divisor X) (p : X) (ψ ψ' : RS.MeroGermOn X (char
     show DPrimeOf D p ψ x ⊔ DPrimeOf D p ψ' x = D x
     rw [DPrimeOf_apply_of_ne D p ψ hx, DPrimeOf_apply_of_ne D p ψ' hx, sup_idem]
   have hboundψ : ((-(D' p) : ℤ) : WithTop ℤ) ≤ ψ.ord p := by
-    calc ((-(D' p) : ℤ) : WithTop ℤ) ≤ ((-(nOf D p ψ) : ℤ) : WithTop ℤ) := by exact_mod_cast neg_le_neg hDψ
+    calc ((-(D' p) : ℤ) : WithTop ℤ) ≤ ((-(nOf D p ψ) : ℤ) : WithTop ℤ) :=
+        by exact_mod_cast neg_le_neg hDψ
       _ ≤ ψ.ord p := neg_nOf_le_ord D p ψ
   have hboundψ' : ((-(D' p) : ℤ) : WithTop ℤ) ≤ ψ'.ord p := by
-    calc ((-(D' p) : ℤ) : WithTop ℤ) ≤ ((-(nOf D p ψ') : ℤ) : WithTop ℤ) := by exact_mod_cast neg_le_neg hDψ'
+    calc ((-(D' p) : ℤ) : WithTop ℤ) ≤ ((-(nOf D p ψ') : ℤ) : WithTop ℤ) :=
+        by exact_mod_cast neg_le_neg hDψ'
       _ ≤ ψ'.ord p := neg_nOf_le_ord D p ψ'
   have hmemψ : RS.MeroGermOn.restrict hVsub ψ ∈ RS.LinSysOn D' (V : Set X) := by
     refine (RS.mem_linSysOn_iff_of_isOpen V.2).2 ?_
@@ -934,7 +942,8 @@ private theorem alpha_hmember_ord :
         (RS.MeroGermOn.restrict (Set.subset_univ _) f : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
       rw [RS.MeroGermOn.ord_restrict (Set.subset_univ _) (𝒱.U k).isOpen isOpen_univ hx]
       exact not_mem_alphaFinset D f hxS
-    · rw [mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T k (fun q hqT hqk => hex ⟨q, hqT, hqk⟩)]
+    · rw [mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T k (fun q hqT hqk => hex ⟨q, hqT,
+        hqk⟩)]
       show ((-(D x) : ℤ) : WithTop ℤ) ≤ (0 : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
       rw [RS.MeroGermOn.ord_zero, if_pos ⟨(𝒱.U k).isOpen, hx⟩]
       exact le_top
@@ -958,13 +967,16 @@ private theorem alpha_hg_MemLD (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
               (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T l) -
             LinSysOn.restrictL (alphaAuxD D f) (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k)
               (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T k) :
-          RS.LinSysOn (alphaAuxD D f) (𝒱.U k ⊓ 𝒱.U l : Set X)) : RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l : Set X)).ord x
+          RS.LinSysOn (alphaAuxD D f) (𝒱.U k ⊓ 𝒱.U l : Set X)) : RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l :
+              Set X)).ord x
       rw [Submodule.coe_sub, sub_eq_add_neg]
       refine le_trans ?_ (RS.MeroGermOn.ord_add (𝒱.U k ⊓ 𝒱.U l).isOpen hx _ _)
       rw [RS.MeroGermOn.ord_neg]
-      have hkR := RS.Cech.ord_restrictL (alphaAuxD D f) (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k) hx
+      have hkR :=
+          RS.Cech.ord_restrictL (alphaAuxD D f) (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k) hx
         (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T k)
-      have hlR := RS.Cech.ord_restrictL (alphaAuxD D f) (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l) hx
+      have hlR := RS.Cech.ord_restrictL (alphaAuxD D f)
+          (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l) hx
         (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T l)
       rw [hkR, hlR]
       exact le_min hl hk
@@ -1032,7 +1044,8 @@ private theorem alpha_claim1 (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
         (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} k : RS.MeroGermOn X (𝒱.U k : Set X)) := by
     rintro k j hj h0 h1
     fin_cases j
-    · rw [mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' {p} k (Finset.mem_singleton_self p) (h0 rfl)]
+    · rw [mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' {p} k (Finset.mem_singleton_self p) (h0
+        rfl)]
       show RS.MeroGermOn.restrict hj (gOf p Vp hpVp (alphaAuxD D f) ψVp (0 : Fin 2) :
         RS.MeroGermOn X ((pairCover p Vp hpVp).U (0 : Fin 2) : Set X)) = _
       rw [gOf_apply_zero]
@@ -1077,27 +1090,33 @@ private theorem alpha_main (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
     intro hsub
     have hpS : p ∈ (alphaFinset D f) := hsub (Finset.mem_insert_self p T')
     have hT'sub : T' ⊆ (alphaFinset D f) := (Finset.subset_insert p T').trans hsub
-    have hsum_eq : mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} + mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T' =
+    have hsum_eq : mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} + mlSumCochain (𝒱 := 𝒱)
+        (alphaAuxD D f) f hfD' T' =
         mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' (insert p T') := by
       funext k
       by_cases hpk : p ∈ 𝒱.U k
       · rw [Pi.add_apply,
           mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' {p} k (Finset.mem_singleton_self p) hpk,
           mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T' k (fun q hqT' hqk =>
-            (alpha_hexcl D f hOclause) p hpS k hpk q (hT'sub hqT') (fun he => hpT' (he ▸ hqT')) hqk),
-          mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' (insert p T') k (Finset.mem_insert_self p T') hpk]
+            (alpha_hexcl D f hOclause) p hpS k hpk q (hT'sub hqT') (fun he => hpT' (he ▸ hqT'))
+                hqk),
+          mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' (insert p T') k
+              (Finset.mem_insert_self p T') hpk]
         simp
       · by_cases hex' : ∃ q ∈ T', q ∈ 𝒱.U k
         · obtain ⟨q, hqT', hqk⟩ := hex'
-          rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq' hq'k => by
+          rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq'
+              hq'k => by
               rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
             mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' T' k hqT' hqk,
             mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' (insert p T') k
               (Finset.mem_insert_of_mem hqT') hqk]
           simp
-        · rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq' hq'k => by
+        · rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq'
+            hq'k => by
               rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
-            mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T' k (fun q hqT' hqk => hex' ⟨q, hqT', hqk⟩),
+            mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T' k
+                (fun q hqT' hqk => hex' ⟨q, hqT', hqk⟩),
             mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' (insert p T') k (fun q hq hqk => by
               rw [Finset.mem_insert] at hq
               rcases hq with rfl | hq
@@ -1106,7 +1125,8 @@ private theorem alpha_main (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
           simp
     rw [Finset.sum_insert hpT', ih hT'sub, (alpha_claim1 D f hfD' h𝒱Adapted hOclause) p hpS,
       ← RS.Cech.mlClass_add (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p})
-        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T') ((alpha_hg_MemLD D f hfD' h𝒱Adapted) {p}) ((alpha_hg_MemLD D f hfD' h𝒱Adapted) T')
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T')
+            ((alpha_hg_MemLD D f hfD' h𝒱Adapted) {p}) ((alpha_hg_MemLD D f hfD' h𝒱Adapted) T')
         (by rw [hsum_eq]; exact (alpha_hg_MemLD D f hfD' h𝒱Adapted) (insert p T'))]
     exact mlClass_congr hsum_eq
 
@@ -1216,7 +1236,8 @@ theorem mem_injPatch (D : RS.Divisor X) (p : X) : p ∈ injPatch ψ S D p :=
   ⟨mem_cleanNbhd D p (ψ p), RS.Cech.mem_compOpens.mpr (Finset.notMem_erase p S)⟩
 
 omit [ConnectedSpace X] in
-theorem injPatch_sub (D : RS.Divisor X) (p : X) : (injPatch ψ S D p : Set X) ⊆ (chartAt ℂ p).source :=
+theorem injPatch_sub (D : RS.Divisor X) (p : X) : (injPatch ψ S D p : Set X) ⊆
+    (chartAt ℂ p).source :=
   fun _x hx => cleanNbhd_sub_source D p (ψ p) hx.1
 
 omit [ConnectedSpace X] in
@@ -1344,7 +1365,8 @@ theorem inj_hmember_ord (T : Finset X) (k : Fin 𝒱.n) (x : X) (hx : x ∈ (�
 
 include ψ S D D' hD'mem h𝒱Adapted hOclause in
 omit [ConnectedSpace X] in
-theorem inj_hg_MemLD (T : Finset X) : (RS.Cech.d0 D' 𝒱 (injG ψ S D D' hD'mem hOclause T)).MemLD D := by
+theorem inj_hg_MemLD (T : Finset X) : (RS.Cech.d0 D' 𝒱 (injG ψ S D D' hD'mem hOclause T)).MemLD D :=
+    by
   rintro ⟨k, l⟩
   rcases eq_or_ne k l with rfl | hkl
   · rw [d0_diag_eq_zero]
@@ -1375,7 +1397,8 @@ omit [ConnectedSpace X] in
 /-- CLAIM1-analogue: a single marked point's `mlClassAt` equals the big cover's `mlClass` of the
 one-point cochain `injG {p}`. -/
 theorem inj_CLAIM1 (p : X) (hp : p ∈ S) : mlClassAt D p (ψ p) =
-    RS.Cech.mlClass 𝒱 (injG ψ S D D' hD'mem hOclause {p}) (inj_hg_MemLD ψ S D D' hD'mem h𝒱Adapted hOclause {p}) := by
+    RS.Cech.mlClass 𝒱 (injG ψ S D D' hD'mem hOclause {p})
+        (inj_hg_MemLD ψ S D D' hD'mem h𝒱Adapted hOclause {p}) := by
   have key1 : mlClassAt D p (ψ p) =
       mlClassAtOf p D D' (ψ p) (injPatch ψ S D p) (mem_injPatch ψ S D p) (injPatch_sub ψ S D p)
         (fun x hx hxp => cleanNbhd_ord_nonneg D p (ψ p) x hx.1 hxp)

@@ -50,7 +50,8 @@ theorem exists_logBranch_disk {c₀ : ℂ} {r : ℝ} (hr : 0 < r) {h : ℂ → �
   set φ : ℂ → ℂ := fun z => h z * Complex.exp (-(L z)) with hφ_def
   have hφderiv : ∀ z ∈ ball c₀ r, HasDerivAt φ 0 z := by
     intro z hz
-    have hhz : HasDerivAt h (deriv h z) z := (hh.differentiableAt (isOpen_ball.mem_nhds hz)).hasDerivAt
+    have hhz : HasDerivAt h (deriv h z) z :=
+        (hh.differentiableAt (isOpen_ball.mem_nhds hz)).hasDerivAt
     have hLz : HasDerivAt L (deriv h z / h z) z := hL z hz
     have hexpz : HasDerivAt (fun w => Complex.exp (-(L w)))
         (Complex.exp (-(L z)) * -(deriv h z / h z)) z := hLz.neg.cexp
@@ -118,7 +119,8 @@ theorem exists_exteriorLogBranch {a b : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
     exact (((differentiableAt_const 1).sub
       ((differentiableAt_const b).mul differentiableAt_fun_id)).div
       ((differentiableAt_const 1).sub
-        ((differentiableAt_const a).mul differentiableAt_fun_id)) (hden_ne w hw)).differentiableWithinAt
+        ((differentiableAt_const a).mul differentiableAt_fun_id)) (hden_ne w
+            hw)).differentiableWithinAt
   have hH_ne : ∀ w ∈ ball (0 : ℂ) ρ⁻¹, H w ≠ 0 := by
     intro w hw
     exact div_ne_zero (hnum_ne w hw) (hden_ne w hw)

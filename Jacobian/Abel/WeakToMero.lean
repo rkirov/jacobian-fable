@@ -92,7 +92,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 fully discharged by two other units. `form-trace-tower` is not imported anywhere here. -/
 theorem genus_eq_zero_of_exists_simple_pole (F : RS.Mero X) (Q : X) (hpole : F.ord Q = -1)
     (hreg : ∀ x, x ≠ Q → 0 ≤ F.ord x) : genus X = 0 :=
-  RS.SphereTopology.genus_eq_zero_of_homeo_sphere (RS.homeoSphere_of_exists_simple_pole F Q hpole hreg)
+  RS.SphereTopology.genus_eq_zero_of_homeo_sphere
+      (RS.homeoSphere_of_exists_simple_pole F Q hpole hreg)
 
 end RS.Abel
 

@@ -152,7 +152,8 @@ theorem multiplicity_toP1_of_ordAtX_neg (hf : MeromorphicOnX f Set.univ)
       rw [RS.MeroGermOn.ord_mk isOpen_univ (mem_univ x), ← hordeq]
       exact not_le.2 hx'
     exact RS.MeroGermOn.evalAt_of_not_nonneg hnn
-  have hf'inv_ordpos : (0 : ℤ) < meromorphicOrderAt (f'⁻¹ ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) := by
+  have hf'inv_ordpos : (0 : ℤ) < meromorphicOrderAt (f'⁻¹ ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) :=
+      by
     show (0 : ℤ) < meromorphicOrderAt (f' ∘ (chartAt ℂ x).symm)⁻¹ (chartAt ℂ x x)
     rw [meromorphicOrderAt_inv]
     exact LinearOrderedAddCommGroupWithTop.neg_pos.2 (Or.inl hx')

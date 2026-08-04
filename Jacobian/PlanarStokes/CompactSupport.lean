@@ -131,7 +131,8 @@ theorem integral_wirtingerDbar_eq_zero (hU : IsOpen U) (hg : ContDiffOn ℝ 1 g 
     · exact h
   -- Step 4/5: bridge back to the global integral via `Compat`.
   have hFc : Continuous (wirtingerDbar g) := continuous_wirtingerDbar_of_contDiff_one hg'
-  have hFsub : tsupport (wirtingerDbar g) ⊆ Complex.reProdIm (Set.Ioo z.re w.re) (Set.Ioo z.im w.im) :=
+  have hFsub : tsupport (wirtingerDbar g) ⊆ Complex.reProdIm (Set.Ioo z.re w.re)
+      (Set.Ioo z.im w.im) :=
     (tsupport_wirtingerDbar_subset).trans hsub2
   rw [integral_eq_intervalIntegral_of_tsupport_subset_reProdIm hFc hFsub]
   exact hiter0

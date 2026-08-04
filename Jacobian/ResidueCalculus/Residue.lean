@@ -184,7 +184,8 @@ theorem MeromorphicAt.resAt_deriv_div (hf : MeromorphicAt f z₀) :
       rw [hlog, hpow, hzsub, mul_one_div, logDeriv_apply]
     rw [resAt_congr hquot]
     have h1 : MeromorphicAt (fun z => (m : ℂ) / (z - z₀)) z₀ := by fun_prop
-    have h2 : MeromorphicAt (fun z => deriv u z / u z) z₀ := h₁u.deriv.meromorphicAt.div h₁u.meromorphicAt
+    have h2 : MeromorphicAt (fun z => deriv u z / u z) z₀ :=
+        h₁u.deriv.meromorphicAt.div h₁u.meromorphicAt
     rw [resAt_fun_add h1 h2]
     have hterm1 : resAt (fun z => (m : ℂ) / (z - z₀)) z₀ = (m : ℂ) := by
       have : (fun z : ℂ => (m : ℂ) / (z - z₀)) = fun z => (m : ℂ) * (z - z₀)⁻¹ := by
@@ -338,7 +339,8 @@ theorem resAt_mul (hf : MeromorphicAt f z₀) (hg : MeromorphicAt g z₀)
   rw [hexpand, resAt_tail_mul hg]
   -- second term: `rf · g` — analytic-multiplier form
   rw [resAt_analyticAt_mul hrf hg hm]
-  have hreindex : ∑ j ∈ Finset.Icc m (-1), taylorCoeffAt rf z₀ (-1 - j).toNat * laurentCoeffAt g z₀ j
+  have hreindex : ∑ j ∈ Finset.Icc m (-1), taylorCoeffAt rf z₀ (-1 - j).toNat * laurentCoeffAt g
+      z₀ j
       = ∑ k ∈ Finset.Icc 0 (-1 - m), laurentCoeffAt f z₀ k * laurentCoeffAt g z₀ (-1 - k) := by
     apply Finset.sum_nbij' (fun j => -1 - j) (fun k => -1 - k)
     · intro j hj; simp only [Finset.mem_Icc] at hj; simp only [Finset.mem_Icc]; omega

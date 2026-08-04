@@ -80,7 +80,8 @@ theorem form1_eq_zero_of_re_period_eq_zero {η : Form1 X}
     have hint := pathIntegral_segmentPath he hballsub (mem_chart_source ℂ x₀) hxsrc
       (mem_ball_self hr) hxball hg
     rw [hg0, sub_zero] at hint
-    have hsub := hFsub (segmentPath hballsub (mem_chart_source ℂ x₀) hxsrc (mem_ball_self hr) hxball)
+    have hsub :=
+        hFsub (segmentPath hballsub (mem_chart_source ℂ x₀) hxsrc (mem_ball_self hr) hxball)
     rw [hint] at hsub
     linarith
   -- **Step 3**: `F` is continuous, and (`X` compact nonempty) attains a maximum at some `p`.
@@ -122,7 +123,8 @@ theorem form1_eq_zero_of_re_period_eq_zero {η : Form1 X}
       obtain ⟨hzV, hzball⟩ := hz
       have heqconst : g =ᶠ[𝓝 z] (fun _ => g (e p)) :=
         Filter.eventually_of_mem (hVopen.mem_nhds hzV) fun w hw => hVsub hw
-      have hderiv0 : HasDerivAt g 0 z := (hasDerivAt_const z (g (e p))).congr_of_eventuallyEq heqconst
+      have hderiv0 : HasDerivAt g 0 z :=
+          (hasDerivAt_const z (g (e p))).congr_of_eventuallyEq heqconst
       have hderivη : HasDerivAt g (coeffIn e η z) z := hg z hzball
       exact (hderiv0.unique hderivη).symm
     exact form1_eq_zero_of_eventually_coeffIn_zero hzero

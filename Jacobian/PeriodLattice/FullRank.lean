@@ -52,24 +52,28 @@ theorem span_real_periodSubgroup :
     rw [hφmap] at hmem
     exact (Submodule.mem_bot ℝ).mp hmem
   set c : Fin (genus X) → ℂ := fun i =>
-    (φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) : ℂ) - Complex.I * (φ ((Pi.single i Complex.I : Fin (genus X) → ℂ)) : ℂ) with hc_def
+    (φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) : ℂ) - Complex.I *
+        (φ ((Pi.single i Complex.I : Fin (genus X) → ℂ)) : ℂ) with hc_def
   -- The Pi.single decomposition machinery, shared by the two directions we need.
   have hsingle_decomp : ∀ i (w : ℂ),
-      Pi.single i w = w.re • (Pi.single i (1 : ℂ) : Fin (genus X) → ℂ) + w.im • (Pi.single i Complex.I : Fin (genus X) → ℂ) := by
+      Pi.single i w = w.re • (Pi.single i (1 : ℂ) : Fin (genus X) → ℂ) + w.im •
+          (Pi.single i Complex.I : Fin (genus X) → ℂ) := by
     intro i w
     have hw : w = w.re • (1 : ℂ) + w.im • Complex.I := by
       simp []
     conv_lhs => rw [hw]
     rw [Pi.single_add, Pi.single_smul, Pi.single_smul]
   have hφdecomp : ∀ v : Fin (genus X) → ℂ,
-      φ v = ∑ i, ((v i).re * φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) + (v i).im * φ ((Pi.single i Complex.I : Fin (genus X) → ℂ))) := by
+      φ v = ∑ i, ((v i).re * φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) + (v i).im * φ
+          ((Pi.single i Complex.I : Fin (genus X) → ℂ))) := by
     intro v
     conv_lhs => rw [← Finset.univ_sum_single v]
     rw [map_sum]
     refine Finset.sum_congr rfl fun i _ => ?_
     rw [hsingle_decomp i (v i), map_add, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
   have hcomp : ∀ i (w : ℂ),
-      (c i * w).re = w.re * φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) + w.im * φ ((Pi.single i Complex.I : Fin (genus X) → ℂ)) := by
+      (c i * w).re = w.re * φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) + w.im * φ
+          ((Pi.single i Complex.I : Fin (genus X) → ℂ)) := by
     intro i w
     rw [hc_def]
     simp only [Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im,
@@ -107,7 +111,8 @@ theorem span_real_periodSubgroup :
   apply LinearMap.ext
   intro v
   rw [hφdecomp v]
-  have hzero : ∀ i, φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) = 0 ∧ φ ((Pi.single i Complex.I : Fin (genus X) → ℂ)) = 0 := by
+  have hzero : ∀ i, φ ((Pi.single i (1 : ℂ) : Fin (genus X) → ℂ)) = 0 ∧ φ
+      ((Pi.single i Complex.I : Fin (genus X) → ℂ)) = 0 := by
     intro i
     have hci : c i = 0 := congrFun hc0 i
     rw [hc_def] at hci

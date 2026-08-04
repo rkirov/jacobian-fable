@@ -138,7 +138,8 @@ theorem holoRepr_ne_zero_of_ord_eq_zero {f : ℳ X} {x : X} (h0 : f.ord x = 0) :
           rw [RS.MeroGermOn.ord_mk isOpen_univ (mem_univ x)]
       _ = f.ord x := by rw [hmk]
       _ = 0 := h0
-  have hNF : MeromorphicNFAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := hAn.meromorphicNFAt
+  have hNF : MeromorphicNFAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+      hAn.meromorphicNFAt
   have hne := hNF.meromorphicOrderAt_eq_zero_iff.mp hordAmb
   simpa [Function.comp_apply, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)] using hne
 

@@ -148,7 +148,8 @@ theorem exists_localModel_of_isWeakSolutionAt {f : X → ℂ} {a : X} {k : ℤ}
   have hSContDiffAt : ContDiffAt ℝ ∞ S w0 := hSanalytic.contDiffAt.restrict_scalars ℝ
   have hψdiff' : ContDiffAt ℝ ∞ ψ (S w0) := by rw [hSw0]; exact hψdiff
   have hψScontDiffAt : ContDiffAt ℝ ∞ (fun z => ψ (S z)) w0 := hψdiff'.comp w0 hSContDiffAt
-  have hHzpow : ContDiffAt ℝ ∞ (fun z => H z ^ k) w0 := contDiffAt_zpow_of_ne_zero hHcontDiffAt hHw0_ne
+  have hHzpow : ContDiffAt ℝ ∞ (fun z => H z ^ k) w0 :=
+      contDiffAt_zpow_of_ne_zero hHcontDiffAt hHw0_ne
   refine ⟨fun z => ψ (S z) * H z ^ k, ?_, ?_, ?_⟩
   · filter_upwards [hψSne, hHne] with z hz1 hz2
     exact mul_ne_zero hz1 (zpow_ne_zero k hz2)

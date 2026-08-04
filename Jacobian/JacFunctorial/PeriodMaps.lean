@@ -62,7 +62,8 @@ period vector of `γ` to the period vector of its image loop `γ.map hf.continuo
 (`pathIntegral_pullback`'s naturality, transported through the coordinatization). -/
 theorem pushforwardT_periodVector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) {x : X}
     (γ : Path x x) :
-    pushforwardT f hf (periodVector (basis X) γ) = periodVector (basis Y) (γ.map hf.continuous) := by
+    pushforwardT f hf (periodVector (basis X) γ) = periodVector (basis Y) (γ.map hf.continuous) :=
+        by
   have hsymm : (periodCoordEquiv X).symm (periodVector (basis X) γ) = pathIntegralₗ γ := by
     apply (periodCoordEquiv X).injective
     rw [(periodCoordEquiv X).apply_symm_apply]
@@ -73,7 +74,8 @@ theorem pushforwardT_periodVector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
   show periodCoordEquiv Y ((Form1.pullback f hf).dualMap
       ((periodCoordEquiv X).symm (periodVector (basis X) γ))) i = _
   rw [hsymm, periodCoordEquiv_apply, LinearMap.dualMap_apply]
-  show pathIntegral γ (Form1.pullback f hf (basis Y i)) = periodVector (basis Y) (γ.map hf.continuous) i
+  show pathIntegral γ (Form1.pullback f hf (basis Y i)) = periodVector (basis Y)
+      (γ.map hf.continuous) i
   rw [pathIntegral_pullback hf γ (basis Y i)]
   rfl
 

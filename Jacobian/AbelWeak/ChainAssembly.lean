@@ -95,7 +95,8 @@ theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartCh
     (hg : ∀ k, k < C.n → ∀ z ∈ Metric.ball (C.c k) (C.r k),
       HasDerivAt (g k) (RS.coeffIn (C.e k) η z) z) :
     RS.pathIntegral γ η =
-      ∑ k ∈ Finset.range C.n, (g k (C.e k (γ.extend (C.t (k + 1)))) - g k (C.e k (γ.extend (C.t k)))) := by
+      ∑ k ∈ Finset.range C.n,
+          (g k (C.e k (γ.extend (C.t (k + 1)))) - g k (C.e k (γ.extend (C.t k)))) := by
   obtain ⟨F, hF, hF0⟩ := RS.exists_isPrimitiveAlong γ η
   have hFeq : RS.pathIntegral γ η = F 1 - F 0 := hF.pathIntegral_eq
   -- Per-piece cell primitive and comparison with `F`.

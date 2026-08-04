@@ -466,7 +466,8 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
         RS.MeroGermOn.restrict hij_l (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) :
         RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
       (f (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X))
-    rw [hh'_coe, hh'_coe, map_mul, map_mul, MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict]
+    rw [hh'_coe, hh'_coe, map_mul, map_mul, MeroGermOn.restrict_restrict,
+        MeroGermOn.restrict_restrict]
     have hcomb : (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *
           (RS.MeroGermOn.restrict hij_r (h j : RS.MeroGermOn X (𝒱.U j : Set X))) -
         (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *

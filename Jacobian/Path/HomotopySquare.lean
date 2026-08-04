@@ -244,7 +244,8 @@ private theorem projIcc_clampI (u : ℝ) :
     · replace h1 := not_le.mp h1
       have hc : clampI u = 1 := by
         unfold clampI; rw [min_eq_right h1.le, max_eq_right zero_le_one]
-      rw [hc, projIcc_of_right_le zero_le_one (le_refl (1:ℝ)), projIcc_of_right_le zero_le_one h1.le]
+      rw [hc, projIcc_of_right_le zero_le_one (le_refl (1:ℝ)), projIcc_of_right_le zero_le_one
+          h1.le]
 
 /-! ### Column stacking (outer induction) and the square theorem -/
 

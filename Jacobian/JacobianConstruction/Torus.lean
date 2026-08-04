@@ -119,7 +119,8 @@ theorem mk_injOn_ball (x : V) :
     have h2 : ‖x - z₂‖ < injRadius L := by
       rw [mem_ball, dist_eq_norm] at hz₂
       rwa [norm_sub_rev]
-    calc ‖z₁ - z₂‖ = ‖(z₁ - x) + (x - z₂)‖ := by rw [show (z₁ - x) + (x - z₂) = z₁ - z₂ from by abel]
+    calc ‖z₁ - z₂‖ = ‖(z₁ - x) + (x - z₂)‖ :=
+        by rw [show (z₁ - x) + (x - z₂) = z₁ - z₂ from by abel]
       _ ≤ ‖z₁ - x‖ + ‖x - z₂‖ := norm_add_le _ _
       _ < injRadius L + injRadius L := add_lt_add h1 h2
       _ = 2 * injRadius L := by ring
@@ -215,7 +216,8 @@ omit [NormedSpace ℂ V] in
 /-- The canonical chart at `q`, evaluated at any point, agrees with `chartAt'` at the same
 representative. -/
 theorem extChartAt_apply_eq (q q' : V ⧸ L) :
-    extChartAt 𝓘(ℂ, V) q q' = chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q) q' := by
+    extChartAt 𝓘(ℂ, V) q q' = chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q) q' :=
+        by
   rw [extChartAt_coe, Function.comp_apply, modelWithCornersSelf_coe, id_eq, chartAt_eq]
 
 theorem extChartAt_symm_apply_eq (q : V ⧸ L) (w : V) :

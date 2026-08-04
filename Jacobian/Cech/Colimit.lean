@@ -73,7 +73,8 @@ noncomputable abbrev H1 (D : RS.Divisor X) : Type _ :=
 
 /-- The canonical map from a cover-level `H¹` to the colimit. -/
 noncomputable def toH1 (𝒰 : FinCover (⊤ : Opens X)) : H1Cover D 𝒰 →ₗ[ℂ] H1 D :=
-  Module.DirectLimit.of ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h => resH1' D h) 𝒰
+  Module.DirectLimit.of ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰)
+      (fun _ _ h => resH1' D h) 𝒰
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem toH1_resH1' {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ 𝒱) (ξ : H1Cover D 𝒰) :
@@ -147,7 +148,8 @@ noncomputable def H1.lift {P : Type*} [AddCommGroup P] [Module ℂ P]
     (hg : ∀ (𝒰 𝒱 : FinCover (⊤ : Opens X)) (h : 𝒰 ≤ 𝒱) (ξ : H1Cover D 𝒰),
       g 𝒱 (resH1' D h ξ) = g 𝒰 ξ) :
     H1 D →ₗ[ℂ] P :=
-  Module.DirectLimit.lift ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h => resH1' D h)
+  Module.DirectLimit.lift ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰)
+      (fun _ _ h => resH1' D h)
     g (fun i j hij x => hg i j hij x)
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in

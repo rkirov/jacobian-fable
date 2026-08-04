@@ -152,7 +152,8 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
   have hK_compact : IsCompact K :=
     (isCompact_closedBall c ψ.rOut).image_of_continuousOn (e.symm.continuousOn.mono hballsub)
   have hK_closed : IsClosed K := hK_compact.isClosed
-  have hU_open : IsOpen U := e.symm.isOpen_image_of_subset_source Metric.isOpen_ball hball_sub_target
+  have hU_open : IsOpen U :=
+      e.symm.isOpen_image_of_subset_source Metric.isOpen_ball hball_sub_target
   have hU_sub_K : U ⊆ K := Set.image_mono Metric.ball_subset_closedBall
   have hclosureU_sub_K : closure U ⊆ K := closure_minimal hU_sub_K hK_closed
   have hclosureU_compact : IsCompact (closure U) :=

@@ -298,28 +298,32 @@ theorem patch_compat {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.indu
           (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
             𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ (𝒱.induced (𝒰.U j)).U α)
           (gFam j α : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U α : Set X)))) =
-        RS.MeroGermOn.restrict hWαj (gFam j α : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U α : Set X)) :=
+        RS.MeroGermOn.restrict hWαj (gFam j α : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U α : Set X))
+            :=
       RS.MeroGermOn.restrict_restrict _ hWα _
     have e2 : (RS.MeroGermOn.restrict hWα
         (RS.MeroGermOn.restrict
           (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
             𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ (𝒱.induced (𝒰.U i)).U α)
           (gFam i α : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α : Set X)))) =
-        RS.MeroGermOn.restrict hWαi (gFam i α : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α : Set X)) :=
+        RS.MeroGermOn.restrict hWαi (gFam i α : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α : Set X))
+            :=
       RS.MeroGermOn.restrict_restrict _ hWα _
     have e3 : (RS.MeroGermOn.restrict hWβ
         (RS.MeroGermOn.restrict
           (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
             𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U β ≤ (𝒱.induced (𝒰.U j)).U β)
           (gFam j β : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U β : Set X)))) =
-        RS.MeroGermOn.restrict hWβj (gFam j β : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U β : Set X)) :=
+        RS.MeroGermOn.restrict hWβj (gFam j β : RS.MeroGermOn X ((𝒱.induced (𝒰.U j)).U β : Set X))
+            :=
       RS.MeroGermOn.restrict_restrict _ hWβ _
     have e4 : (RS.MeroGermOn.restrict hWβ
         (RS.MeroGermOn.restrict
           (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
             𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U β ≤ (𝒱.induced (𝒰.U i)).U β)
           (gFam i β : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U β : Set X)))) =
-        RS.MeroGermOn.restrict hWβi (gFam i β : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U β : Set X)) :=
+        RS.MeroGermOn.restrict hWβi (gFam i β : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U β : Set X))
+            :=
       RS.MeroGermOn.restrict_restrict _ hWβ _
     rw [e1, e2, e3, e4]
     abel
@@ -589,7 +593,8 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
     rw [← e1, patch_restrict D gFam (τ α) (τ β) α hWτβα hWτα' hWijα]
   -- LHS term 2: `f (α, β)`, unfolded via `splitting_eq_restrict` at `i := τ β`
   have step2 :
-      RS.MeroGermOn.restrict hWτβ' (gFam (τ β) β : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U β : Set X)) -
+      RS.MeroGermOn.restrict hWτβ'
+          (gFam (τ β) β : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U β : Set X)) -
         RS.MeroGermOn.restrict hWτβα
           (gFam (τ β) α : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U α : Set X)) =
       (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) := by

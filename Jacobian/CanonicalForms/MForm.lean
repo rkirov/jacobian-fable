@@ -171,7 +171,8 @@ theorem mem_source_idx (x : X) : x ∈ (D.chart (D.idx x)).source := (D.exists_m
 
 /-- The coefficient of the assembled family, read through an arbitrary maximal-atlas chart `e'`,
 using the per-point chosen index (mirrors `Form1CoeffData.toSection`, without the bundle layer:
-`MFormData` has no covector-bundle backing, so this formula IS the assembled coefficient directly). -/
+`MFormData` has no covector-bundle backing, so this formula IS the assembled coefficient
+    directly). -/
 noncomputable def rawCoeffAt (e' : OpenPartialHomeomorph X ℂ) (z : ℂ) : ℂ :=
   deriv (⇑(D.chart (D.idx (e'.symm z))) ∘ ⇑e'.symm) z *
     D.coeff (D.idx (e'.symm z)) (D.chart (D.idx (e'.symm z)) (e'.symm z))
@@ -220,7 +221,8 @@ end MFormCoeffData
 
 namespace MFormData
 
-/-- Assemble an `MFormData` from compatible chart-coefficient data (D3, mirrors `Form1.ofCoeffs`). -/
+/-- Assemble an `MFormData` from compatible chart-coefficient data (D3, mirrors `Form1.ofCoeffs`).
+    -/
 noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X where
   coeffAt x z := if z ∈ (chartAt ℂ x).target then D.rawCoeffAt (chartAt ℂ x) z else 0
   coeffAt_zero_off x z hz := if_neg hz
@@ -257,7 +259,8 @@ noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X 
     rw [h1, h3, h2]
     ring
 
-/-- The coefficient of `MFormData.ofCoeffs D` in the `i`-th chart of the data, read at a point of the
+/-- The coefficient of `MFormData.ofCoeffs D` in the `i`-th chart of the data, read at a point of
+    the
 preferred chart at `x`, is the given coefficient transported by the transition derivative
 (mirrors `Form1.coeffAt_ofCoeffs`). -/
 theorem coeffAt_ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) {x : X} {i : ι}

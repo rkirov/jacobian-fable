@@ -178,7 +178,8 @@ theorem Jacobian.pushforward_pullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
     Nat.cast_smul_eq_nsmul]
   have h1 : QuotientAddGroup.mk (s := (RS.periodSubgroup Y).topologicalClosure)
       (ContMDiff.degree f hf • v)
-      = ContMDiff.degree f hf • QuotientAddGroup.mk (s := (RS.periodSubgroup Y).topologicalClosure) v := by
+      = ContMDiff.degree f hf • QuotientAddGroup.mk
+          (s := (RS.periodSubgroup Y).topologicalClosure) v := by
     exact map_nsmul (QuotientAddGroup.mk' _) (ContMDiff.degree f hf) v
   rw [h1]
   exact map_nsmul (RS.uliftUpHom.toAddMonoidHom

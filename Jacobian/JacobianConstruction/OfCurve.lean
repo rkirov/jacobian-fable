@@ -83,7 +83,8 @@ theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
   rw [QuotientAddGroup.eq_iff_sub_mem]
   have hmem : RS.periodVector (RS.basis X) (σ.trans σ₀.symm) ∈ RS.periodSubgroup X :=
     RS.periodVector_mem_periodSubgroup (σ.trans σ₀.symm)
-  have heq : (fun i => RS.pathIntegral σ₀ (RS.basis X i)) - (fun i => RS.pathIntegral σ (RS.basis X i))
+  have heq : (fun i => RS.pathIntegral σ₀ (RS.basis X i)) -
+      (fun i => RS.pathIntegral σ (RS.basis X i))
       = -RS.periodVector (RS.basis X) (σ.trans σ₀.symm) := by
     funext i
     simp only [Pi.sub_apply, Pi.neg_apply]
@@ -96,7 +97,8 @@ theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
 
 @[simp] theorem ofCurve_self (P : X) : ofCurve P P = 0 := by
   rw [ofCurve_eq_of_path P P (Path.refl P)]
-  have hzero : (fun i => RS.pathIntegral (Path.refl P) (RS.basis X i)) = (0 : Fin (genus X) → ℂ) := by
+  have hzero : (fun i => RS.pathIntegral (Path.refl P) (RS.basis X i)) = (0 : Fin (genus X) → ℂ) :=
+      by
     funext i
     exact RS.pathIntegral_refl P (RS.basis X i)
   rw [hzero]
@@ -218,7 +220,8 @@ theorem ofCurve_contMDiff (P : X) :
   have hptdom : extChartAt 𝓘(ℂ) x₀ x₀ = e x₀ := rfl
   refine ⟨?_, ?_⟩
   · -- `ContinuousAt (ofCurve P) x₀`
-    have hUev : ofCurve P =ᶠ[𝓝 x₀] fun z => ULift.up (QuotientAddGroup.mk (v₀ + fun i => g i (e z))) :=
+    have hUev : ofCurve P =ᶠ[𝓝 x₀] fun z => ULift.up
+        (QuotientAddGroup.mk (v₀ + fun i => g i (e z))) :=
       Filter.eventually_of_mem (hUopen.mem_nhds hx₀U) (fun z hz => hkey z hz)
     have hRHScont : ContinuousAt
         (fun z => ULift.up (QuotientAddGroup.mk (v₀ + fun i => g i (e z)) : RS.Jac₀ X)) x₀ :=

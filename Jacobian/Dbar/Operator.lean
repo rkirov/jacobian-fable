@@ -371,8 +371,10 @@ theorem exists_dbar_solution_chart_ball {x₀ : X} {r : ℝ} (hr : 0 < r) {V : S
     rw [← hVim]; rintro w ⟨y, hy, rfl⟩; exact (chartAt ℂ x₀).map_source (hVs hy)
   have hg_cd : ContDiffOn ℝ ∞ (η.coeffAt x₀) (Metric.ball (chartAt ℂ x₀ x₀) r) :=
     (η.contDiffOn_coeffAt x₀).mono hballsub
-  obtain ⟨U, hU_cd, hU_dbar⟩ := exists_dbar_solution_ball (η.coeffAt x₀) (chartAt ℂ x₀ x₀) r hr hg_cd
-  have hVeq : V = (chartAt ℂ x₀).source ∩ ⇑(chartAt ℂ x₀) ⁻¹' (Metric.ball (chartAt ℂ x₀ x₀) r) := by
+  obtain ⟨U, hU_cd, hU_dbar⟩ :=
+      exists_dbar_solution_ball (η.coeffAt x₀) (chartAt ℂ x₀ x₀) r hr hg_cd
+  have hVeq : V = (chartAt ℂ x₀).source ∩ ⇑(chartAt ℂ x₀) ⁻¹' (Metric.ball (chartAt ℂ x₀ x₀) r) :=
+      by
     apply Set.Subset.antisymm
     · intro x hx
       exact ⟨hVs hx, hVim ▸ Set.mem_image_of_mem _ hx⟩

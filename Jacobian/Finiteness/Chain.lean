@@ -182,7 +182,8 @@ theorem ShrinkChain.nonempty [T2Space X] [CompactSpace X] : Nonempty (ShrinkChai
   -- Extract the chart-disk witness point/radius for `Ustar` at each reindexed center.
   choose x' r' hr' hx' hsub' himg' using fun k : Fin t.card => hUstarGood (c' k)
   refine ⟨⟨t.card, x', fun k => Ustar (c' k), fun k => U (c' k), fun k => V (c' k),
-    fun k => W (c' k), fun k => ⟨x' k, r' k, hr' k, hx' k, hsub' k, himg' k⟩, hsub', ?_, ?_, ?_, ?_⟩⟩
+    fun k => W (c' k), fun k => ⟨x' k, r' k, hr' k, hx' k, hsub' k, himg' k⟩, hsub', ?_, ?_, ?_,
+        ?_⟩⟩
   · exact fun k => hUsubUstar (c' k)
   · exact fun k => hVsubU (c' k)
   · exact fun k => hWsubV (c' k)

@@ -393,7 +393,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     have hw0im : w0.im = 2 * π := rfl
     have hRec_eq : Complex.reProdIm (Set.uIcc z0.re w0.re) (Set.uIcc z0.im w0.im) = Rec := by
       rw [hz0re, hw0re, hz0im, hw0im, Set.uIcc_of_le hab.le, Set.uIcc_of_le Real.two_pi_pos.le]
-    have hHc' : ContinuousOn F (Complex.reProdIm (Set.uIcc z0.re w0.re) (Set.uIcc z0.im w0.im)) := by
+    have hHc' : ContinuousOn F (Complex.reProdIm (Set.uIcc z0.re w0.re) (Set.uIcc z0.im w0.im)) :=
+        by
       rw [hRec_eq]; exact hHc
     have hHd' : ∀ x ∈ Set.Ioo (min z0.re w0.re) (max z0.re w0.re) ×ℂ
         Set.Ioo (min z0.im w0.im) (max z0.im w0.im), HasFDerivAt F (f' x) x := by
@@ -430,7 +431,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       have hexp_split : Complex.exp ((x0 : ℂ) + y * I) = ρ0 * Complex.exp (y * I) := by
         rw [Complex.exp_add, ← Complex.ofReal_exp, hx0]
       rw [hexp_split]
-    have hcircleR : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((b : ℂ) + y * I)) = ∮ w in C(c, R), u w := by
+    have hcircleR : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((b : ℂ) + y * I)) = ∮ w in C(c, R), u w :=
+        by
       rw [← intervalIntegral.integral_smul]
       apply intervalIntegral.integral_congr
       intro y _
@@ -438,7 +440,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       rw [hFexp b R y heb, deriv_circleMap, circleMap, circleMap]
       simp only [zero_add, smul_eq_mul]
       ring
-    have hcircler : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((a : ℂ) + y * I)) = ∮ w in C(c, r), u w := by
+    have hcircler : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((a : ℂ) + y * I)) = ∮ w in C(c, r), u w :=
+        by
       rw [← intervalIntegral.integral_smul]
       apply intervalIntegral.integral_congr
       intro y _

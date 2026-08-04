@@ -223,7 +223,8 @@ theorem eventually_ord_eq_zero {θ : MFormData X} {x : X} (h : θ.ord x ≠ ⊤)
 
 /-- D6: the divisor of `θ` (local finiteness, connectedness-free — mirrors `MeroGermOn.divisorOn`
 exactly, `Divisor.lean:134`). -/
-noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : Divisor X where
+noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : Divisor X
+    where
   toFun x := (θ.ord x).untop₀
   supportWithinDomain' := by intro x _; trivial
   supportLocallyFiniteWithinDomain' := by

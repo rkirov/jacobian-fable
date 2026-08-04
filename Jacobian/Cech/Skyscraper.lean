@@ -90,9 +90,11 @@ theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0
         (C1.retype (d0 D' 𝒰 g') hg' p :
           RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
     show RS.MeroGermOn.restrict inf_le_right
-          ((g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) + (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X))) -
+          ((g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) + (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set
+              X))) -
         RS.MeroGermOn.restrict inf_le_left
-          ((g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)) + (g' p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) =
+          ((g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)) + (g' p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set
+              X))) =
       (RS.MeroGermOn.restrict inf_le_right (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
           RS.MeroGermOn.restrict inf_le_left (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) +
         (RS.MeroGermOn.restrict inf_le_right (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
@@ -205,7 +207,8 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
     intro p
     apply Subtype.ext
     rw [Submodule.coe_inclusion, C1.retype_apply_coe]
-  set k : C0 D' 𝒰 := fun i => (g i) - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) with hk_def
+  set k : C0 D' 𝒰 :=
+      fun i => (g i) - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) with hk_def
   have hk0 : d0 D' 𝒰 k = 0 := by
     funext p
     obtain ⟨i, j⟩ := p
@@ -215,7 +218,8 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
         LinSysOn.restrictL D' (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U i) (k i) =
         (LinSysOn.restrictL D' inf_le_right (g j) - LinSysOn.restrictL D' inf_le_left (g i)) -
         (Submodule.inclusion (RS.Cech.linSysOn_mono h) (LinSysOn.restrictL D inf_le_right (hc j)) -
-          Submodule.inclusion (RS.Cech.linSysOn_mono h) (LinSysOn.restrictL D inf_le_left (hc i))) := by
+          Submodule.inclusion (RS.Cech.linSysOn_mono h)
+              (LinSysOn.restrictL D inf_le_left (hc i))) := by
       show LinSysOn.restrictL D' inf_le_right
             (g j - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc j)) -
           LinSysOn.restrictL D' inf_le_left
@@ -224,7 +228,8 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
         inclusion_restrictL_comm D inf_le_left h (hc i)]
       abel
     rw [step1]
-    have step2 : Submodule.inclusion (RS.Cech.linSysOn_mono h) (LinSysOn.restrictL D inf_le_right (hc j)) -
+    have step2 : Submodule.inclusion (RS.Cech.linSysOn_mono h)
+        (LinSysOn.restrictL D inf_le_right (hc j)) -
         Submodule.inclusion (RS.Cech.linSysOn_mono h) (LinSysOn.restrictL D inf_le_left (hc i)) =
         Submodule.inclusion (RS.Cech.linSysOn_mono h) (d0 D 𝒰 hc (i, j)) := by
       rw [d0_apply, map_sub]
@@ -239,7 +244,8 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
   refine ⟨⟨(ψ : RS.MeroGermOn X (Set.univ : Set X)), hmemφ⟩, fun i x hx => ?_⟩
   have hrel : (k i : RS.MeroGermOn X (𝒰.U i : Set X)) =
       (g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
-        (Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.MeroGermOn X (𝒰.U i : Set X)) := by
+        (Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.MeroGermOn X (𝒰.U i : Set X)) :=
+            by
     show ((g i - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.LinSysOn D' _) :
       RS.MeroGermOn X (𝒰.U i : Set X)) = _
     rw [Submodule.coe_sub]

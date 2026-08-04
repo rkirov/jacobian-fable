@@ -416,7 +416,8 @@ theorem pairAt_one (θ : MForm X) (p : X) :
   rfl
 
 theorem alpha_eq_sum_singleT (D : RS.Divisor X) (f : RS.Mero X) :
-    alpha D f = ∑ p ∈ alphaFinset D f, singleT p D (RS.MeroGermOn.restrict (Set.subset_univ _) f) := by
+    alpha D f = ∑ p ∈ alphaFinset D f, singleT p D (RS.MeroGermOn.restrict (Set.subset_univ _) f) :=
+        by
   apply DFinsupp.ext
   intro q
   rw [DFinsupp.finsetSum_apply]

@@ -246,7 +246,8 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
     have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
       (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
     have h4 := HasFDerivAt.comp_hasDerivAt_of_eq p.2 h3 h1 rfl
-    have heq : circleMap 0 p.1 p.2 * Complex.I = Complex.I * p.1 * Complex.exp (p.2 * Complex.I) := by
+    have heq : circleMap 0 p.1 p.2 * Complex.I = Complex.I * p.1 * Complex.exp (p.2 * Complex.I) :=
+        by
       rw [circleMap]; ring
     rw [heq] at h4
     simp only [map_neg] at h4

@@ -63,7 +63,8 @@ theorem isSimplyConnected_compl_coeZero :
     simp only [Set.mem_singleton_iff, Set.mem_preimage, inversionHomeomorph_apply,
       ← inversion_eq_infty_iff, eq_comm]
   rw [heq]
-  exact (Homeomorph.isSimplyConnected_preimage inversionHomeomorph).mpr isSimplyConnected_compl_infty
+  exact (Homeomorph.isSimplyConnected_preimage inversionHomeomorph).mpr
+      isSimplyConnected_compl_infty
 
 /-- `OnePoint ℂ` is path connected (local path-connectedness transports through the two-chart
 atlas from `ℂ`'s local convexity, combined with the existing `ConnectedSpace` instance). -/

@@ -155,7 +155,8 @@ theorem schwartz_finite_cospan (u v : E →L[ℂ] F) (hu : Surjective u) (hv : I
       show (f₀ - fk m) + ((u (e (fk m)) - v (e (fk m))) + s (fk m)) =
         f₀ - (fk m - ((u (e (fk m)) - v (e (fk m))) + s (fk m)))
       abel
-  have hL1 : Filter.Tendsto (fun m => ∑ k ∈ Finset.range m, ((u (e (fk k)) - v (e (fk k))) + s (fk k)))
+  have hL1 : Filter.Tendsto
+      (fun m => ∑ k ∈ Finset.range m, ((u (e (fk k)) - v (e (fk k))) + s (fk k)))
       Filter.atTop (nhds ((u a - v a) + σ)) := by
     have heq : ∀ m, (∑ k ∈ Finset.range m, ((u (e (fk k)) - v (e (fk k))) + s (fk k))) =
         (u (∑ k ∈ Finset.range m, e (fk k)) - v (∑ k ∈ Finset.range m, e (fk k))) +
@@ -165,9 +166,11 @@ theorem schwartz_finite_cospan (u v : E →L[ℂ] F) (hu : Surjective u) (hv : I
     simp only [heq]
     have h1 : Filter.Tendsto (fun m => ∑ k ∈ Finset.range m, e (fk k)) Filter.atTop (nhds a) :=
       hsum_e.hasSum.tendsto_sum_nat
-    have h2 : Filter.Tendsto (fun m => u (∑ k ∈ Finset.range m, e (fk k))) Filter.atTop (nhds (u a)) :=
+    have h2 : Filter.Tendsto (fun m => u (∑ k ∈ Finset.range m, e (fk k))) Filter.atTop
+        (nhds (u a)) :=
       (u.continuous.tendsto _).comp h1
-    have h3 : Filter.Tendsto (fun m => v (∑ k ∈ Finset.range m, e (fk k))) Filter.atTop (nhds (v a)) :=
+    have h3 : Filter.Tendsto (fun m => v (∑ k ∈ Finset.range m, e (fk k))) Filter.atTop
+        (nhds (v a)) :=
       (v.continuous.tendsto _).comp h1
     have h4 : Filter.Tendsto (fun m => ∑ k ∈ Finset.range m, s (fk k)) Filter.atTop (nhds σ) :=
       hsum_s.hasSum.tendsto_sum_nat

@@ -92,7 +92,8 @@ theorem hasCompactSupport_indicator_of_eq_zero_off {F : ℂ → E} {T K : Set �
 theorem integrable_indicator_of_eq_zero_off {F : ℂ → E} {T K : Set ℂ} (hT : IsOpen T)
     (hK : IsCompact K) (hKT : K ⊆ T) (hF : ContDiffOn ℝ ∞ F T)
     (h0 : ∀ z ∈ T, z ∉ K → F z = 0) : Integrable (T.indicator F) := by
-  exact ((contDiff_indicator_of_eq_zero_off hT hK hKT hF h0).continuous).integrable_of_hasCompactSupport
+  exact ((contDiff_indicator_of_eq_zero_off hT hK hKT hF
+      h0).continuous).integrable_of_hasCompactSupport
     (hasCompactSupport_indicator_of_eq_zero_off hK h0)
 
 end Planar

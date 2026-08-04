@@ -178,7 +178,8 @@ theorem Z1.rel_res_evalAt {𝒰 : FinCover (⊤ : Opens X)} {f : C1 (0 : RS.Divi
     exact LinSysOn.ord_nonneg (𝒰.U a ⊓ 𝒰.U b).2 hab (f (a, b))
   have hnn_AB : 0 ≤ (RS.MeroGermOn.restrict hbc' (f (b, c) :
         RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X))
-      - RS.MeroGermOn.restrict hac' (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
+      - RS.MeroGermOn.restrict hac'
+          (f (a, c) : RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X))).ord z := by
     rw [sub_eq_add_neg]
     refine le_trans (le_min hnn_A ?_)
       (RS.MeroGermOn.ord_add hopen hzabc _ (-RS.MeroGermOn.restrict hac'
@@ -235,7 +236,8 @@ noncomputable def coverOfP (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈
 
 /-- Germification of a `P`-indexed `1`-cochain of `BddHoloOn`s (§5 step 3). -/
 noncomputable def toGermC1 (P : Fin T.n → Opens X) :
-    NC1 T P →ₗ[ℂ] ∀ p : Fin T.n × Fin T.n, RS.LinSysOn (0 : RS.Divisor X) ((P p.1 ⊓ P p.2 : Opens X) : Set X) :=
+    NC1 T P →ₗ[ℂ] ∀ p : Fin T.n × Fin T.n, RS.LinSysOn (0 : RS.Divisor X)
+        ((P p.1 ⊓ P p.2 : Opens X) : Set X) :=
   LinearMap.pi fun p => (toGermSub (P p.1 ⊓ P p.2)).comp (LinearMap.proj p)
 
 omit [T1Space X] in
@@ -267,7 +269,8 @@ noncomputable def toGermZ1 (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈
 
 omit [T1Space X] in
 theorem toGermZ1_apply_coe (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈ P i) (ξ : NZ1 T P) :
-    (toGermZ1 T P hcov ξ : C1 (0 : RS.Divisor X) (coverOfP T P hcov)) = toGermC1 T P (ξ : NC1 T P) :=
+    (toGermZ1 T P hcov ξ : C1 (0 : RS.Divisor X) (coverOfP T P hcov)) = toGermC1 T P (ξ : NC1 T P)
+        :=
   rfl
 
 variable [T2Space X] [CompactSpace X]
@@ -356,7 +359,8 @@ level `W`). -/
 theorem trade_evalAt {𝒱 : FinCover (⊤ : Opens X)} {τ : Fin 𝒱.n → Fin T.n}
     (hτ : IsRefIdx T.coverStar 𝒱 τ) (F : Z1 (0 : RS.Divisor X) T.coverStar)
     (f : C1 (0 : RS.Divisor X) 𝒱) (g : C0 (0 : RS.Divisor X) 𝒱)
-    (hFg : (resZ1 (0 : RS.Divisor X) τ hτ F : C1 (0 : RS.Divisor X) 𝒱) = f + d0 (0 : RS.Divisor X) 𝒱 g)
+    (hFg : (resZ1 (0 : RS.Divisor X) τ hτ F : C1 (0 : RS.Divisor X) 𝒱) = f + d0 (0 : RS.Divisor X)
+        𝒱 g)
     (α β : Fin 𝒱.n) {z : X} (hz : z ∈ (𝒱.U α ⊓ 𝒱.U β : Opens X)) :
     (starPairGerm T F (τ α) (τ β)).evalAt z =
       (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)).evalAt z
@@ -522,7 +526,8 @@ noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.
 
 omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem classMap_apply (ψ : NZ1 T T.V) :
-    classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
+    classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW
+        (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
   rfl
 
 omit [T2Space X] [CompactSpace X] [T1Space X] in
@@ -568,7 +573,8 @@ omit [T1Space X] [T2Space X] in
 cocycle equals de-germifying with the transitively-composed closure hypothesis). -/
 theorem resZ_boundZ1 {P P' : Fin T.n → Opens X}
     (h : ∀ i, closure (P i : Set X) ⊆ (T.Ustar i : Set X)) (h' : ∀ i, P' i ≤ P i)
-    (h2 : ∀ i, closure (P' i : Set X) ⊆ (T.Ustar i : Set X)) (F : Z1 (0 : RS.Divisor X) T.coverStar) :
+    (h2 : ∀ i, closure (P' i : Set X) ⊆ (T.Ustar i : Set X))
+        (F : Z1 (0 : RS.Divisor X) T.coverStar) :
     resZ T P P' h' ⟨boundZ1 T h F, boundZ1_mem_NZ1 T h F⟩ =
       (⟨boundZ1 T h2 F, boundZ1_mem_NZ1 T h2 F⟩ : NZ1 T P') := by
   apply Subtype.ext
@@ -599,7 +605,8 @@ restriction down to `T.coverW` (`resZ1 0 id T.ref_star_W F`). -/
 theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : Set X))
     (F : Z1 (0 : RS.Divisor X) T.coverStar) :
     (toGermZ1W T ⟨boundZ1 T h F, boundZ1_mem_NZ1 T h F⟩ : C1 (0 : RS.Divisor X) T.coverW) =
-      (resZ1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W F : C1 (0 : RS.Divisor X) T.coverW) := by
+      (resZ1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W F : C1 (0 :
+          RS.Divisor X) T.coverW) := by
   rw [toGermZ1W_apply_coe]
   funext p
   obtain ⟨i, j⟩ := p

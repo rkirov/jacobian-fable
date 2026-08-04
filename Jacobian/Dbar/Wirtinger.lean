@@ -161,7 +161,8 @@ theorem differentiableAt_iff_wirtingerDbar_eq_zero :
 theorem differentiableOn_of_wirtingerDbar_eq_zero {s : Set ℂ} (_hs : IsOpen s)
     (hf : ∀ z ∈ s, DifferentiableAt ℝ f z) (h : ∀ z ∈ s, wirtingerDbar f z = 0) :
     DifferentiableOn ℂ f s :=
-  fun z hz => (differentiableAt_of_wirtingerDbar_eq_zero f z (hf z hz) (h z hz)).differentiableWithinAt
+  fun z hz =>
+      (differentiableAt_of_wirtingerDbar_eq_zero f z (hf z hz) (h z hz)).differentiableWithinAt
 
 theorem analyticOnNhd_of_wirtingerDbar_eq_zero {s : Set ℂ} (hs : IsOpen s)
     (hf : ∀ z ∈ s, DifferentiableAt ℝ f z) (h : ∀ z ∈ s, wirtingerDbar f z = 0) :

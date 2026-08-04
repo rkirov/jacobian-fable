@@ -202,7 +202,8 @@ theorem mulInto_add (f g : RS.Mero X) {D E : RS.Divisor X}
   obtain ⟨ψ, hψ⟩ := TailAt.mk_surjective p D (τ p)
   rw [← hψ, mulIntoAt_mk, mulIntoAt_mk, mulIntoAt_mk,
     show RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ p).source) (f + g)
-        = RS.MeroGermOn.restrict (Set.subset_univ _) f + RS.MeroGermOn.restrict (Set.subset_univ _) g
+        = RS.MeroGermOn.restrict (Set.subset_univ _) f + RS.MeroGermOn.restrict
+            (Set.subset_univ _) g
       from map_add _ f g,
     add_mul, map_add]
 

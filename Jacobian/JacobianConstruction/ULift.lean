@@ -132,7 +132,8 @@ theorem extChartAt_ulift_apply_eq (q q' : ULift.{u} (V ⧸ L)) :
 omit [CompleteSpace V] in
 theorem extChartAt_ulift_symm_apply_eq (q : ULift.{u} (V ⧸ L)) (w : V) :
     (extChartAt 𝓘(ℂ, V) q).symm w
-      = ULift.up ((chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q.down)).symm w) := by
+      = ULift.up ((chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q.down)).symm w) :=
+          by
   rw [extChartAt_coe_symm, Function.comp_apply, modelWithCornersSelf_coe_symm, id_eq,
     chartAt_ulift_eq, uliftChartAt]
   rfl
@@ -166,7 +167,8 @@ theorem contMDiff_uliftDown : ContMDiff 𝓘(ℂ, V) 𝓘(ℂ, V) ω
     rw [extChartAt_ulift_symm_apply_eq, extChartAt_apply_eq]
   have htarget : x ∈ (chartAt' L x).target := by
     rw [chartAt'_target]; exact Metric.mem_ball_self (injRadius_pos L)
-  have hgoal_eq : (fun w : V => extChartAt 𝓘(ℂ, V) q.down (ULift.down ((extChartAt 𝓘(ℂ, V) q).symm w)))
+  have hgoal_eq :
+      (fun w : V => extChartAt 𝓘(ℂ, V) q.down (ULift.down ((extChartAt 𝓘(ℂ, V) q).symm w)))
       =ᶠ[𝓝 x] (id : V → V) := by
     filter_upwards [(chartAt' L x).open_target.mem_nhds htarget] with w hw
     rw [hexact w]

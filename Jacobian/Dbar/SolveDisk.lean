@@ -287,7 +287,8 @@ private theorem solveState_succ (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c 
 
 private theorem solveState_bound (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) (n : ℕ)
     (w : ℂ) (hw : w ∈ closedBall c (solveRho R n)) :
-    ‖(solveState g c R hR hg (n + 1)).1 w - (solveState g c R hR hg n).1 w‖ ≤ (1 / 2 : ℝ) ^ (n + 1) := by
+    ‖(solveState g c R hR hg (n + 1)).1 w - (solveState g c R hR hg n).1 w‖ ≤ (1 / 2 : ℝ) ^
+        (n + 1) := by
   rw [solveState_succ]
   exact (solveStepData g c R hR hg n (solveState g c R hR hg n)).2.2.2 w hw
 

@@ -84,7 +84,8 @@ theorem exists_smooth_partition_of_finite_cover {V : Set ℂ} (hV : IsOpen V) {n
     have hφi_pos : 0 < φ i z := by
       have : φ i z ≠ 0 := by rw [← Function.mem_support, hφsupp i]; exact hi
       exact lt_of_le_of_ne (hφnonneg i z) (Ne.symm this)
-    exact lt_of_lt_of_le hφi_pos (Finset.single_le_sum (fun j _ => hφnonneg j z) (Finset.mem_univ i))
+    exact lt_of_lt_of_le hφi_pos
+        (Finset.single_le_sum (fun j _ => hφnonneg j z) (Finset.mem_univ i))
   refine ⟨fun i z => φ i z / S z, ?_, ?_, ?_, ?_, ?_⟩
   · intro i
     apply ContDiffOn.div (hφcd i).contDiffOn hScd.contDiffOn

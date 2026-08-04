@@ -84,7 +84,8 @@ theorem meromorphicAt_traceZkForm (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
 /-- The Laurent-coefficient formula (design §4.2, ⚠ was gated on mtrace's P6 — now UNCONDITIONAL,
 P6 having landed with zero admitted goals). -/
 theorem laurentCoeffAt_traceZkForm (hh : MeromorphicAt h 0) (hk : k ≠ 0) (j : ℤ) :
-    RS.laurentCoeffAt (traceZkForm h k) 0 j = RS.laurentCoeffAt h 0 ((k : ℤ) * j + ((k : ℤ) - 1)) := by
+    RS.laurentCoeffAt (traceZkForm h k) 0 j = RS.laurentCoeffAt h 0 ((k : ℤ) * j + ((k : ℤ) - 1)) :=
+        by
   unfold traceZkForm
   have hkC : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 hk
   have hzp : MeromorphicAt (fun v : ℂ => v ^ ((k : ℤ) - 1)) 0 := by

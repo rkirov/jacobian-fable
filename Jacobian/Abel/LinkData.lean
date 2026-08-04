@@ -159,7 +159,8 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X]
 def linkOrd [DecidableEq X] (A B x : X) : ℤ :=
   (if x = B then 1 else 0) - (if x = A then 1 else 0)
 
-omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X]
+    in
 theorem linkOrd_self_eq_zero [DecidableEq X] (A x : X) : linkOrd A A x = 0 := by
   rw [linkOrd, sub_self]
 

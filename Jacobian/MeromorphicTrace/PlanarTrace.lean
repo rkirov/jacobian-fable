@@ -317,7 +317,8 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
                 have h3 : ‖u z‖ ≤ Cu := (hu_bound z (mem_ball_zero_iff.mpr hzlt)).le
                 gcongr
           _ = ‖w‖ ^ q * Cu := by ring
-      have hsum : ‖traceZk h k w‖ ≤ (RS.setOf_pow_eq_finite hk w).toFinset.card * (‖w‖ ^ q * Cu) := by
+      have hsum : ‖traceZk h k w‖ ≤ (RS.setOf_pow_eq_finite hk w).toFinset.card * (‖w‖ ^ q * Cu) :=
+          by
         rw [traceZk_apply_of_ne_zero hk hw0]
         calc ‖∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, h z‖
             ≤ ∑ z ∈ (RS.setOf_pow_eq_finite hk w).toFinset, ‖h z‖ := norm_sum_le _ _
@@ -326,7 +327,8 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
           _ = (RS.setOf_pow_eq_finite hk w).toFinset.card * (‖w‖ ^ q * Cu) := by
               rw [Finset.sum_const, nsmul_eq_mul]
       have hcard : (RS.setOf_pow_eq_finite hk w).toFinset.card = k := by
-        rw [← Set.ncard_eq_toFinset_card _ (RS.setOf_pow_eq_finite hk w), RS.ncard_setOf_pow_eq hk hw0]
+        rw [← Set.ncard_eq_toFinset_card _ (RS.setOf_pow_eq_finite hk w), RS.ncard_setOf_pow_eq hk
+            hw0]
       rw [hcard] at hsum
       have hwnorm0 : ‖w‖ ≠ 0 := norm_ne_zero_iff.mpr hw0
       show ‖w ^ (-q) * traceZk h k w‖ ≤ (k : ℝ) * Cu

@@ -30,7 +30,8 @@ namespace RS
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X]
 variable {U V : Set X} {x : X} {c : ℂ}
 
-/-- `limUnder` respects `EventuallyEq` (via `Filter.map_congr`, since `limUnder l f = lim (map f l)`). -/
+/-- `limUnder` respects `EventuallyEq` (via `Filter.map_congr`, since `limUnder l f = lim (map f
+    l)`). -/
 theorem limUnder_congr {α : Type*} {l : Filter α} {g g' : α → ℂ} (h : g =ᶠ[l] g') :
     Filter.limUnder l g = Filter.limUnder l g' := by
   unfold Filter.limUnder
@@ -219,7 +220,8 @@ theorem evalAt_restrict (h : V ⊆ U) (hV : IsOpen V) (hU : IsOpen U) {x : X} (h
   rw [restrict_mk]
   by_cases h0 : 0 ≤ (mk f hf).ord x
   · rw [ord_mk hU (h hx)] at h0
-    have e1 := tendsto_evalAt hV hx (mk f (fun y hy => hf y (h hy))) (by rw [ord_mk hV hx]; exact h0)
+    have e1 :=
+        tendsto_evalAt hV hx (mk f (fun y hy => hf y (h hy))) (by rw [ord_mk hV hx]; exact h0)
       rfl
     have e2 := tendsto_evalAt hU (h hx) (mk f hf) (by rw [ord_mk hU (h hx)]; exact h0) rfl
     exact tendsto_nhds_unique e1 e2

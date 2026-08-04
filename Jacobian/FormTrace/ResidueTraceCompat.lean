@@ -166,7 +166,8 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
     filter_upwards [h1, h2] with z hz1 hz2
     exact ⟨hz1, hz2⟩
   have hstep1 : (RS.MTrace.trace F h ∘ (chartAt ℂ y₀).symm) =ᶠ[𝓝 c₀]
-      (fun z => ∑ i, RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀)) := by
+      (fun z => ∑ i, RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀))
+          := by
     filter_upwards [hVmem] with z hz
     obtain ⟨hzt, hzV⟩ := hz
     show RS.MTrace.trace F h ((chartAt ℂ y₀).symm z)
@@ -180,7 +181,8 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
   rw [resAt_congr (hstep1.filter_mono nhdsWithin_le_nhds)]
   -- Step 2: distribute `resAt` over the finite sum.
   have hmero : ∀ i : Fin S.n, MeromorphicAt
-      (fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀)) c₀ := by
+      (fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀)) c₀ :=
+          by
     intro i
     have h1 : MeromorphicAt (h ∘ (S.A i).e.symm) ((S.A i).e (S.pt i)) :=
       (RS.meromorphicAtX_iff_of_mem_source (S.A i).mem_maximalAtlas
@@ -198,15 +200,18 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
       (RS.meromorphicAtX_iff_of_mem_source (S.A i).mem_maximalAtlas
         (S.mem_source_pt i)).1 (hh (S.pt i) (Set.mem_univ _))
     rw [(S.A i).map_eq_zero] at h1
-    have h2 : MeromorphicAt (RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i))) 0 :=
+    have h2 : MeromorphicAt (RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)))
+        0 :=
       RS.MTrace.meromorphicAt_traceZk h1 (S.mult_ne_zero i)
     have hφ : AnalyticAt ℂ (fun z : ℂ => z - c₀) c₀ := by fun_prop
     have hφderiv : deriv (fun z : ℂ => z - c₀) c₀ = 1 := by
       simp
     have hφ' : deriv (fun z : ℂ => z - c₀) c₀ ≠ 0 := by rw [hφderiv]; exact one_ne_zero
     have hkey := resAt_comp_mul_deriv hφ hφ' (by simp : (fun z : ℂ => z - c₀) c₀ = 0) h2
-    have heq : (fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀))
-        = fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) ((fun w : ℂ => w - c₀) z)
+    have heq :
+        (fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀))
+        = fun z => RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i))
+            ((fun w : ℂ => w - c₀) z)
           * deriv (fun w : ℂ => w - c₀) z := by
       funext z
       have hd : deriv (fun w : ℂ => w - c₀) z = 1 := by simp

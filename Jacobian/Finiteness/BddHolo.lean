@@ -67,7 +67,8 @@ theorem contMDiffOn_const_smul {U : Set X} (hU : IsOpen U) (c : ℂ) {g : X → 
   have hc : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω g x := hg.contMDiffAt (hU.mem_nhds hx)
   have ha : AnalyticAt ℂ (g ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) :=
     RS.contMDiffAt_iff_analyticAt.1 hc
-  have ha' : AnalyticAt ℂ (c • (g ∘ (extChartAt 𝓘(ℂ) x).symm)) (extChartAt 𝓘(ℂ) x x) := ha.const_smul
+  have ha' : AnalyticAt ℂ (c • (g ∘ (extChartAt 𝓘(ℂ) x).symm)) (extChartAt 𝓘(ℂ) x x) :=
+      ha.const_smul
   have heq : (c • g) ∘ (extChartAt 𝓘(ℂ) x).symm = c • (g ∘ (extChartAt 𝓘(ℂ) x).symm) := rfl
   have ha2 : AnalyticAt ℂ ((c • g) ∘ (extChartAt 𝓘(ℂ) x).symm) (extChartAt 𝓘(ℂ) x x) := by
     rw [heq]; exact ha'
@@ -76,7 +77,8 @@ theorem contMDiffOn_const_smul {U : Set X} (hU : IsOpen U) (c : ℂ) {g : X → 
 /-- Bounded-holomorphic elements: BCF on the open subtype agreeing with a holomorphic function
 on `S`. -/
 noncomputable def BddHoloOn (S : Opens X) : Submodule ℂ (↥(S : Set X) →ᵇ ℂ) where
-  carrier := {f | ∃ g : X → ℂ, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g (S : Set X) ∧ ∀ z : ↥(S : Set X), f z = g z}
+  carrier :=
+      {f | ∃ g : X → ℂ, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω g (S : Set X) ∧ ∀ z : ↥(S : Set X), f z = g z}
   zero_mem' := ⟨fun _ => 0, contMDiffOn_const, fun _ => rfl⟩
   add_mem' := by
     rintro f₁ f₂ ⟨g₁, hg₁, hfg₁⟩ ⟨g₂, hg₂, hfg₂⟩
@@ -98,7 +100,8 @@ theorem isClosed_bddHoloOn (S : Opens X) :
   obtain ⟨Fb, hFbmem, hFbtend⟩ := mem_closure_iff_seq_limit.1 hf
   choose g hgc hgeq using hFbmem
   set gLim : X → ℂ := fun x => if hx : x ∈ S then f ⟨x, hx⟩ else 0 with hgLim_def
-  have hunif : ∀ ε > 0, ∀ᶠ n in (atTop : Filter ℕ), ∀ z : ↥(S : Set X), dist (f z) (Fb n z) < ε := by
+  have hunif : ∀ ε > 0, ∀ᶠ n in (atTop : Filter ℕ), ∀ z : ↥(S : Set X), dist (f z) (Fb n z) < ε :=
+      by
     have := BoundedContinuousFunction.tendsto_iff_tendstoUniformly.1 hFbtend
     rwa [tendstoUniformly_iff] at this
   refine ⟨gLim, ?_, fun z => by simp [hgLim_def]⟩
@@ -108,7 +111,8 @@ theorem isClosed_bddHoloOn (S : Opens X) :
   have hxV : x ∈ V := ⟨hx, mem_chart_source ℂ x⟩
   have hVsub : (V : Set X) ⊆ e.source := fun _ hy => hy.2
   have hVS : (V : Set X) ⊆ (S : Set X) := fun _ hy => hy.1
-  have huc : TendstoUniformlyOn (fun n => (g n) ∘ e.symm) (gLim ∘ e.symm) atTop (e '' (V : Set X)) := by
+  have huc : TendstoUniformlyOn (fun n => (g n) ∘ e.symm) (gLim ∘ e.symm) atTop (e '' (V : Set X))
+      := by
     rw [tendstoUniformlyOn_iff]
     intro ε hε
     filter_upwards [hunif ε hε] with n hn
@@ -130,7 +134,8 @@ theorem isClosed_bddHoloOn (S : Opens X) :
   have hUopen : IsOpen (e '' (V : Set X)) := e.isOpen_image_of_subset_source V.2 hVsub
   have hDiffOn : DifferentiableOn ℂ (gLim ∘ e.symm) (e '' (V : Set X)) :=
     huc.tendstoLocallyUniformlyOn.differentiableOn hdiff hUopen
-  have hAnalytic : AnalyticOnNhd ℂ (gLim ∘ e.symm) (e '' (V : Set X)) := hDiffOn.analyticOnNhd hUopen
+  have hAnalytic : AnalyticOnNhd ℂ (gLim ∘ e.symm) (e '' (V : Set X)) :=
+      hDiffOn.analyticOnNhd hUopen
   have hCV : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω gLim (V : Set X) :=
     (RS.contMDiffOn_iff_analyticOnNhd_of_subset_source (chart_mem_atlas ℂ x) hVsub V.2).2 hAnalytic
   exact (hCV.contMDiffAt (V.2.mem_nhds hxV)).contMDiffWithinAt
@@ -165,7 +170,8 @@ theorem restrictFun_smul {S' S : Opens X} (h : S' ≤ S) (c : ℂ) (f : BddHoloO
     restrictFun h (c • f) = c • restrictFun h f := by
   apply BoundedContinuousFunction.ext
   intro z
-  show (c • f : BddHoloOn S).val (Set.inclusion h z) = c • (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z)
+  show (c • f : BddHoloOn S).val (Set.inclusion h z) = c • (f : ↥(S : Set X) →ᵇ ℂ)
+      (Set.inclusion h z)
   rfl
 
 /-- Restriction, norm `≤ 1`. -/
@@ -244,7 +250,8 @@ metavariable unification nor `rw` reliably unfolds the `LinearMap`/`FunLike` lay
 named `toGerm` application on their own). -/
 theorem toGerm_eq_mk {S : Opens X} (f : BddHoloOn S) :
     toGerm S f = MeroGermOn.mk f.2.choose
-      (fun _x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))) :=
+      (fun _x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds
+          hx))) :=
   rfl
 
 omit [T1Space X] in
@@ -272,7 +279,8 @@ theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
   intro x hx
   show (restrictCLM h f).2.choose x = f.2.choose x
   have e1 := (restrictCLM h f).2.choose_spec.2 (⟨x, hx⟩ : ↥(S' : Set X))
-  have e2 : (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) ⟨x, hx⟩ = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, h hx⟩ := rfl
+  have e2 : (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) ⟨x, hx⟩ = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, h hx⟩ :=
+      rfl
   have e3 := f.2.choose_spec.2 (⟨x, h hx⟩ : ↥(S : Set X))
   rw [← e1, e2, e3]
 

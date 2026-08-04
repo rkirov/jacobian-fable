@@ -51,7 +51,8 @@ noncomputable def ordGe (p : X) (m : ℤ) : Submodule ℂ (RS.MeroGermOn X ((cha
     intro a ψ hψ
     show (m : WithTop ℤ) ≤ (a • ψ).ord p
     rcases eq_or_ne a 0 with rfl | ha
-    · rw [zero_smul, RS.MeroGermOn.ord_zero, if_pos ⟨(chartAt ℂ p).open_source, mem_chart_source ℂ p⟩]
+    · rw [zero_smul, RS.MeroGermOn.ord_zero, if_pos ⟨(chartAt ℂ p).open_source, mem_chart_source ℂ
+        p⟩]
       exact le_top
     · rw [RS.MeroGermOn.ord_smul (chartAt ℂ p).open_source (mem_chart_source ℂ p) ha]
       exact hψ
@@ -174,7 +175,8 @@ noncomputable def restrictToChart (D' : RS.Divisor X) (q : X) :
       show ((-(D' q) : ℤ) : WithTop ℤ) ≤
         (RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source)
           (φ : RS.MeroGermOn X (Set.univ : Set X))).ord q
-      rw [RS.MeroGermOn.ord_restrict (Set.subset_univ (chartAt ℂ q).source) (chartAt ℂ q).open_source
+      rw [RS.MeroGermOn.ord_restrict (Set.subset_univ (chartAt ℂ q).source) (chartAt ℂ
+          q).open_source
         isOpen_univ (mem_chart_source ℂ q)]
       exact φ.2 q)
 

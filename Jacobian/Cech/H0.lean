@@ -58,7 +58,8 @@ theorem iUnion_U_eq : (⋃ i, (𝒰.U i : Set X)) = (Ω : Set X) := by
 
 theorem toC0'_injective : Function.Injective (toC0' D 𝒰) := by
   intro φ1 φ2 heq
-  have hcomp : ∀ i, LinSysOn.restrictL D (𝒰.le_base i) φ1 = LinSysOn.restrictL D (𝒰.le_base i) φ2 := by
+  have hcomp : ∀ i, LinSysOn.restrictL D (𝒰.le_base i) φ1 = LinSysOn.restrictL D (𝒰.le_base i) φ2 :=
+      by
     intro i
     have := congrArg (fun x => (x : LinearMap.ker (d0 D 𝒰)).1 i) heq
     simpa [toC0', toC0_apply] using this
@@ -85,8 +86,10 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
   intro f
   set g : ∀ i, RS.MeroGermOn X (𝒰.U i : Set X) := fun i => (f.1 i : RS.MeroGermOn X (𝒰.U i : Set X))
     with hg_def
-  have hcompat : ∀ i j, RS.MeroGermOn.restrict (Set.inter_subset_left : (𝒰.U i : Set X) ∩ 𝒰.U j ⊆ 𝒰.U i)
-      (g i) = RS.MeroGermOn.restrict (Set.inter_subset_right : (𝒰.U i : Set X) ∩ 𝒰.U j ⊆ 𝒰.U j) (g j) := by
+  have hcompat : ∀ i j, RS.MeroGermOn.restrict
+      (Set.inter_subset_left : (𝒰.U i : Set X) ∩ 𝒰.U j ⊆ 𝒰.U i)
+      (g i) = RS.MeroGermOn.restrict (Set.inter_subset_right : (𝒰.U i : Set X) ∩ 𝒰.U j ⊆ 𝒰.U j)
+          (g j) := by
     intro i j
     have hd0 : d0 D 𝒰 f.1 = 0 := f.2
     have hcomp := congrFun hd0 (i, j)

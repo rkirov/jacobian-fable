@@ -76,7 +76,8 @@ zero or pole there). -/
 theorem isWeakSolutionAt_zero_of_ne {f : X → ℂ} {p q x : X}
     (hcm : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {p}ᶜ) (hne : ∀ y, y ≠ p → y ≠ q → f y ≠ 0)
     (hxp : x ≠ p) (hxq : x ≠ q) : IsWeakSolutionAt f x 0 := by
-  have hcm' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f x := hcm.contMDiffAt (isOpen_compl_singleton.mem_nhds hxp)
+  have hcm' : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f x :=
+      hcm.contMDiffAt (isOpen_compl_singleton.mem_nhds hxp)
   have hfx : f x ≠ 0 := hne x hxp hxq
   have hxmem : chartAt ℂ x ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X := IsManifold.chart_mem_maximalAtlas x
   refine ⟨chartAt ℂ x, hxmem, mem_chart_source ℂ x,

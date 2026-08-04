@@ -150,7 +150,8 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   set Aequiv := ((Matrix.mulVecLin A).toContinuousLinearMap
     : (Fin (genus X) → ℂ) →L[ℂ] (Fin (genus X) → ℂ)).toContinuousLinearEquivOfDetNeZero hACLMdet
     with hAequiv_def
-  have hstrict' : HasStrictFDerivAt 𝔉 (Aequiv : (Fin (genus X) → ℂ) →L[ℂ] (Fin (genus X) → ℂ)) c₀ := by
+  have hstrict' : HasStrictFDerivAt 𝔉 (Aequiv : (Fin (genus X) → ℂ) →L[ℂ] (Fin (genus X) → ℂ)) c₀ :=
+      by
     rwa [ContinuousLinearMap.coe_toContinuousLinearEquivOfDetNeZero]
   have hmap : Filter.map 𝔉 (𝓝 c₀) = 𝓝 (𝔉 c₀) := hstrict'.map_nhds_eq_of_equiv
   set polydisc : Set (Fin (genus X) → ℂ) := Set.univ.pi (fun j => ball (c₀ j) (r j))
@@ -229,7 +230,8 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
     · have hmem2 : a (i : Fin (genus X)) ∈ V (i' : Fin (genus X)) := by rw [heq']; exact hVj i'.1
       exact (Set.disjoint_left.mp (hVdisj hii') (haV i.1)) hmem2
   set γ' : ∀ i : (↥S : Type), Path (a' i) (x' i) := fun i => σ i.1 with hγ'_def
-  have hmemS : (fun k => ∑ i : (↥S : Type), pathIntegral (γ' i) (basis X k)) ∈ periodSubgroup X := by
+  have hmemS : (fun k => ∑ i : (↥S : Type), pathIntegral (γ' i) (basis X k)) ∈ periodSubgroup X :=
+      by
     have hSsum : ∀ k, ∑ i : (↥S : Type), pathIntegral (γ' i) (basis X k)
         = ∑ j ∈ S, pathIntegral (σ j) (basis X k) :=
       fun k => Finset.sum_coe_sort S (fun j => pathIntegral (σ j) (basis X k))
@@ -368,7 +370,8 @@ theorem discreteTopology_periodSubgroup (hupgrade : DiscretenessHyp X) :
     DiscreteTopology (periodSubgroup X) := by
   by_cases hgen : genus X = 0
   · haveI hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [hgen]; infer_instance
-    have hsubsingle : Subsingleton (periodSubgroup X) := ⟨fun a b => Subtype.ext (hsub.elim a.1 b.1)⟩
+    have hsubsingle : Subsingleton (periodSubgroup X) :=
+        ⟨fun a b => Subtype.ext (hsub.elim a.1 b.1)⟩
     rw [discreteTopology_iff_forall_isOpen]
     intro s
     rcases Set.eq_empty_or_nonempty s with rfl | ⟨p, hp⟩

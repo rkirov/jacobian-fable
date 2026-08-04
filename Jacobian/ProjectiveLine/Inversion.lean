@@ -113,7 +113,8 @@ theorem continuous_inversion : Continuous inversion := by
         exact (tendsto_congr' heq).2 tendsto_coe_inv_nhdsNE_zero
       · simpa [hval] using
           tendsto_pure_nhds (inversion ∘ ((↑) : ℂ → OnePoint ℂ)) (0 : ℂ)
-    · have heq : (((↑) : ℂ → OnePoint ℂ) ∘ Inv.inv) =ᶠ[𝓝 z] (inversion ∘ ((↑) : ℂ → OnePoint ℂ)) := by
+    · have heq : (((↑) : ℂ → OnePoint ℂ) ∘ Inv.inv) =ᶠ[𝓝 z] (inversion ∘ ((↑) : ℂ → OnePoint ℂ)) :=
+        by
         filter_upwards [isOpen_ne.mem_nhds hz] with w hw
         simp only [Function.comp_apply]
         exact (inversion_coe hw).symm

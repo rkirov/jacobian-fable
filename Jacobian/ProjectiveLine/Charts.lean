@@ -55,7 +55,8 @@ noncomputable def coeChart : OpenPartialHomeomorph (OnePoint ℂ) ℂ where
 @[simp] theorem coeChart_target : coeChart.target = Set.univ := rfl
 
 /-- `inversion` never sends a finite point to `↑(0:ℂ)`. -/
-theorem inversion_coe_ne_coe_zero (w : ℂ) : inversion (w : OnePoint ℂ) ≠ ((0 : ℂ) : OnePoint ℂ) := by
+theorem inversion_coe_ne_coe_zero (w : ℂ) : inversion (w : OnePoint ℂ) ≠ ((0 : ℂ) : OnePoint ℂ) :=
+    by
   by_cases hw : w = 0
   · subst hw; simp
   · rw [inversion_coe hw]

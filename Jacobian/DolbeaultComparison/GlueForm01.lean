@@ -129,7 +129,8 @@ theorem differentiableAt_u_comp_chart_symm_transition (i : Fin d.n) {x : X} (hx 
       (by rw [e.left_inv hex]; exact hxi_src)).differentiableAt
   have heqpt : (⇑(d.chart i) ∘ ⇑e.symm) (e x) = d.chart i x := by
     simp only [Function.comp_apply, e.left_inv hex]
-  have hui_diff : DifferentiableAt ℝ (d.u i ∘ ⇑(d.chart i).symm) ((⇑(d.chart i) ∘ ⇑e.symm) (e x)) := by
+  have hui_diff : DifferentiableAt ℝ (d.u i ∘ ⇑(d.chart i).symm) ((⇑(d.chart i) ∘ ⇑e.symm) (e x)) :=
+      by
     rw [heqpt]
     exact (d.contDiffAt_u_comp_chart_symm i hx).differentiableAt (by norm_num)
   have hcomp : DifferentiableAt ℝ ((d.u i ∘ ⇑(d.chart i).symm) ∘ (⇑(d.chart i) ∘ ⇑e.symm)) (e x) :=
@@ -161,7 +162,8 @@ theorem wirtingerDbar_u_transport (i : Fin d.n) {x : X} (hx : x ∈ d.V i)
       (by rw [e.left_inv hex]; exact hxi_src)).differentiableAt
   have heqpt : (⇑(d.chart i) ∘ ⇑e.symm) (e x) = d.chart i x := by
     simp only [Function.comp_apply, e.left_inv hex]
-  have hui_diff : DifferentiableAt ℝ (d.u i ∘ ⇑(d.chart i).symm) ((⇑(d.chart i) ∘ ⇑e.symm) (e x)) := by
+  have hui_diff : DifferentiableAt ℝ (d.u i ∘ ⇑(d.chart i).symm) ((⇑(d.chart i) ∘ ⇑e.symm) (e x)) :=
+      by
     rw [heqpt]
     exact (d.contDiffAt_u_comp_chart_symm i hx).differentiableAt (by norm_num)
   have hchain := wirtingerDbar_comp_differentiableAt (f := d.u i ∘ ⇑(d.chart i).symm)
