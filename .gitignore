@@ -2,3 +2,4 @@
 *.olean
 *.pdf
 scratch_*.lean
+build/
