@@ -61,7 +61,8 @@ residues, chart handling, and residue-trace compatibility (Miranda Lemma 3.2 glo
 
 ## Notes for downstream consumers
 
-* **`abel-weak-solutions`** (the only DAG-wired consumer): gets `resAtX`, `resAtX_eq_of_mem_source_left`,
+* **`abel-weak-solutions`** (the only DAG-wired consumer): gets `resAtX`,
+`resAtX_eq_of_mem_source_left`,
   `resAtP1`, `resAtP1_trace_eq_sum` (with `hcal`), `trace_const_mul_pullback`. Does **NOT** get
   `trace_eq_zero_of_holomorphic` — if the "necessity of Abel's theorem via genus-0" route is
   actually needed, it must be re-derived against a corrected object (see finding 3); check with

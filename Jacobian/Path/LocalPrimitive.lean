@@ -23,7 +23,8 @@ Main declarations:
   containing the image point (the workhorse for uniqueness/gluing/linearity/bridge).
 * `.sub_eq_sub` — uniqueness up to a constant: two primitives along the same (continuous) map on
   a preconnected set differ by a constant.
-* `.glue` — the junction argument: primitives on `s₁`, `s₂` agreeing at a point of the (preconnected)
+* `.glue` — the junction argument: primitives on `s₁`, `s₂` agreeing at a point of the
+(preconnected)
   overlap glue to a primitive on `s₁ ∪ s₂`, provided `s₁`/`s₂` cover `𝓝[s₁∪s₂]`-neighborhoods of
   every point (`hcov`).
 * `isPrimitiveAlongMap_of_ball` — the constant-chart primitive `g ∘ e ∘ K` on a set mapped by `K`

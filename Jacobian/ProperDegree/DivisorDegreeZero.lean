@@ -8,7 +8,8 @@ import Jacobian.MeromorphicTrace.ArgumentPrinciple
 import Jacobian.Meromorphic.LinearSystem
 
 /-!
-# `deg(div φ) = 0` and the unconditional `L(D) = 0` for negative degree (proper-map-degree, file 2 of 3)
+# `deg(div φ) = 0` and the unconditional `L(D) = 0` for negative degree (proper-map-degree, file 2
+of 3)
 
 Unit: proper-map-degree (`docs/design/proper-map-degree.md` §3.2). The argument principle,
 repackaged from `MeromorphicTrace`'s `ℂ`-valued statement (`RS.MTrace.finsum_ordAtX_eq_zero'`,

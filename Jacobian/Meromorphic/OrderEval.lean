@@ -10,7 +10,8 @@ import Mathlib.Analysis.Meromorphic.NormalForm
 /-!
 # Order, canonical value, and `holoRepr` on germ classes (CC3, D3/D5)
 
-Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.4, proof plans §6.4/6.5).
+Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.4, proof plans
+§6.4/6.5).
 
 * `MeroGermOn.ord φ x : WithTop ℤ`: the order of a class at a point (junk `0` off
   `IsOpen U ∧ x ∈ U`); descends from `ordAtX` (meromorphy-free congr).

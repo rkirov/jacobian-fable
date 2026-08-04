@@ -14,7 +14,8 @@ Unit: cech-cohomology (`docs/design/cech-cohomology.md` §4.5, §5).
 
 * `resH1'`: the transition map for `h : 𝒰 ≤ 𝒱`, via a chosen refinement index — independent of
   the choice by Forster 12.3 (`resH1'_eq_resH1`).
-* `DirectedSystem` instance on `fun 𝒰 => H1Cover D 𝒰`, from `resH1_id`/`resH1_comp` (Refinement.lean).
+* `DirectedSystem` instance on `fun 𝒰 => H1Cover D 𝒰`, from `resH1_id`/`resH1_comp`
+(Refinement.lean).
 * `H1 D`: the colimit (CC8, frozen). `toH1`, `exists_rep(_good/_refined)`, `H1.induction_on`.
 * `H1.lift`: the universal property (target for dolbeault-comparison's comparison map).
 * `H1Incl`: `D`-monotone functoriality (`H1 D →ₗ H1 D'` for `D ≤ D'`), via `Module.DirectLimit.map`.

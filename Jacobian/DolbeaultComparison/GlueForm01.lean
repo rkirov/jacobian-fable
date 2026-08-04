@@ -7,7 +7,8 @@ Authors: Rado Kirov
 import Jacobian.Dbar.Operator
 
 /-!
-# `DbarGlueData`: the Mittag-Leffler-style gluing atom (`Jacobian/DolbeaultComparison/GlueForm01.lean`)
+# `DbarGlueData`: the Mittag-Leffler-style gluing atom
+(`Jacobian/DolbeaultComparison/GlueForm01.lean`)
 
 Unit: dolbeault-comparison (`docs/design/dolbeault-comparison.md` §4.2/§6.1). The reusable
 gluing atom of the comparison: local smooth functions with holomorphic discrepancies on a

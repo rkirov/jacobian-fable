@@ -34,7 +34,8 @@ paths-and-integrals' own loop-perturbation and homotopy-invariance lemmas.
 * **Analysis — the genus-0 engine** (`GlobalPrimitive.lean`, standing surface variables per
   `CONVENTIONS.md`): `contMDiff_and_mdifferential_eq_of_isPrimitiveAlongMap_id` (a primitive of
   `η` along `id : X → X` is a genuine holomorphic global primitive with `mdifferential = η` —
-  reusable verbatim by the monodromy unit, see that file's docstring), `exists_isPrimitiveAlongMap_id`
+  reusable verbatim by the monodromy unit, see that file's docstring),
+  `exists_isPrimitiveAlongMap_id`
   (constructs the global primitive on simply connected `X` via `pathIntegral` from a base point),
   `form1_eq_zero_of_simplyConnectedSpace` (Forster 10.5: every holomorphic 1-form vanishes on a
   simply connected compact surface), the `Subsingleton (Form1 X)` instance, and the headline

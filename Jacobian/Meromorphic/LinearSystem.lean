@@ -10,7 +10,8 @@ import Mathlib.Geometry.Manifold.Complex
 /-!
 # The linear system `L(D)` and `l(D)` (CC3, D4)
 
-Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.7, D4, proof plan §6.7).
+Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.7, D4, proof plan
+§6.7).
 
 * `LinSys D : Submodule ℂ (ℳ X)` (D4's carrier: the `ord` inequality, no case split; `0 ∈ L(D)`
   by `⊤`-arithmetic). `mem_linSys_iff_eq_zero_or_le_divisor` recovers CC3's frozen disjunction as

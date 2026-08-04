@@ -61,7 +61,8 @@ Built **now**, no hypotheses beyond the standing Riemann-surface ones:
 including `g = 0` — no discreteness needed), `Jacobian.ofCurve`, `Jacobian.ofCurve_eq_of_path`,
 `Jacobian.ofCurve_self`.
 
-Built **now**, but the statement itself needs `[DiscreteTopology (periodSubgroup X).topologicalClosure]`
+Built **now**, but the statement itself needs `[DiscreteTopology (periodSubgroup
+X).topologicalClosure]`
 to typecheck (its codomain's manifold structure is gated — see below), so it is stated with that
 extra hypothesis rather than at the challenge's bare signature:
 `Jacobian.ofCurve_contMDiff`, `Jacobian.inducedHom`, `Jacobian.contMDiff_inducedHom`.

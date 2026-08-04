@@ -24,7 +24,8 @@ project imports, no manifold variables, so downstream planar consumers (`planar-
   plain (junk-tolerant) functions via `fderiv ℝ`.
 * `fderiv_apply_eq_wirtinger` : the workhorse decomposition of the real differential on the basis
   `{1, I}`.
-* The Cauchy–Riemann bridge: `DifferentiableAt ℂ f z ↔ DifferentiableAt ℝ f z ∧ wirtingerDbar f z = 0`
+* The Cauchy–Riemann bridge: `DifferentiableAt ℂ f z ↔ DifferentiableAt ℝ f z ∧ wirtingerDbar f z =
+0`
   (hand-built; mathlib has no `Analysis/Complex/CauchyRiemann.lean` at the pin).
 * The `(0,1)` chain rule `wirtingerDbar_comp_differentiableAt` (transition law for `Form01`).
 * Regularity of the operator: `contDiffOn_wirtingerDbar`, `continuous_wirtingerDbar`,

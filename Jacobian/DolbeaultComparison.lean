@@ -10,7 +10,8 @@ import Jacobian.DolbeaultComparison.Splitting
 import Jacobian.DolbeaultComparison.Comparison
 
 /-!
-# dolbeault-comparison: Leray's theorem and the Dolbeault comparison (namespaces `RS`, `RS.Cech`, `RS.Dolb`)
+# dolbeault-comparison: Leray's theorem and the Dolbeault comparison (namespaces `RS`, `RS.Cech`,
+`RS.Dolb`)
 
 API summary (see `docs/design/dolbeault-comparison.md`). Zero sorries throughout.
 

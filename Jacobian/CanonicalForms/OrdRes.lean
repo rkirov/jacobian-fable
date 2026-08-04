@@ -14,11 +14,14 @@ Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D4–D6, §4.2). Eve
 stated for the RAW data carrier `MFormData` and descends to the quotient `MForm` in
 `Quotient.lean` (all reading maps are germ-at-the-chart-center facts, hence congruence-robust).
 
-* `MFormData.ord`/`MFormData.resAt` (D4): read directly via the *fixed* `chartAt`, needing no invariance
-  proof to be well-defined; `MFormData.ord_eq_of_mem_source`/`MFormData.resAt_eq_of_mem_source` supply the
+* `MFormData.ord`/`MFormData.resAt` (D4): read directly via the *fixed* `chartAt`, needing no
+invariance
+  proof to be well-defined; `MFormData.ord_eq_of_mem_source`/`MFormData.resAt_eq_of_mem_source`
+  supply the
   "read in any maximal-atlas chart" corollary (chart-invariance, via
   `meromorphicOrderAt_comp_of_deriv_ne_zero`/`RS.resAt_comp_mul_deriv`).
-* `MFormData.eventually_ord_eq_top`/`MFormData.eventually_ord_eq_zero`: local propagation of the order,
+* `MFormData.eventually_ord_eq_top`/`MFormData.eventually_ord_eq_zero`: local propagation of the
+order,
   the chart-crossing analogues of `eventually_ordAtX_eq_top`/`eventually_ordAtX_eq_zero`
   (`Jacobian/Meromorphic/Predicates.lean`), via `compat`.
 * `MFormData.divisor`/`MFormData.degree` (D6): local finiteness is connectedness-free, mirroring

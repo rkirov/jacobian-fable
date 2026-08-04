@@ -30,13 +30,16 @@ LEDGER at the bottom of this file's docstring.
 | `AddCommGroup (Jacobian X)` | **now** | none |
 | `TopologicalSpace (Jacobian X)` | **now** | none |
 | `T2Space (Jacobian X)` | **now**, every genus incl. `g = 0` (§3, the closure trick) | none |
-| `ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | gated | `[DiscreteTopology (periodSubgroup X).topologicalClosure]` |
+| `ChartedSpace (Fin (genus X) → ℂ) (Jacobian X)` | gated | `[DiscreteTopology (periodSubgroup
+X).topologicalClosure]` |
 | `IsManifold 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X)` | gated | same as above |
 | `LieAddGroup 𝓘(ℂ, Fin (genus X) → ℂ) ω (Jacobian X)` | gated | same as above |
-| `CompactSpace (Jacobian X)` | gated | the above *plus* `[IsZLattice ℝ (periodSubgroup X).topologicalClosure.toIntSubmodule]` |
+| `CompactSpace (Jacobian X)` | gated | the above *plus* `[IsZLattice ℝ (periodSubgroup
+X).topologicalClosure.toIntSubmodule]` |
 
 The gated instances are genuine (`Prop`-valued or data) instances with typeclass *hypotheses* —
-not sorries. Once period-lattice-rank registers `DiscreteTopology (periodSubgroup X).topologicalClosure`
+not sorries. Once period-lattice-rank registers `DiscreteTopology (periodSubgroup
+X).topologicalClosure`
 (and, for compactness, the `IsZLattice` full-rank fact) as instances for the actual period
 subgroup of a given `X`, Lean's instance search discharges all four automatically; nothing further
 needs to change here.

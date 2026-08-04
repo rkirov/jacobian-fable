@@ -33,7 +33,8 @@ Main declarations:
   `AddCommGroup`/`Module ℂ` instances (D2), pointwise on `coeffAt`.
 * `RS.MFormCoeffData X ι` / `RS.MFormData.ofCoeffs` (D3) — the arbitrary-chart-family constructor,
   mirroring `Form1CoeffData`/`Form1.ofCoeffs` (`Jacobian/Forms/OfCoeffs.lean`) with
-  `AnalyticOnNhd ↦ MeromorphicOn`; not used by `MFormData.d`/`dlog` (built directly against `chartAt`
+  `AnalyticOnNhd ↦ MeromorphicOn`; not used by `MFormData.d`/`dlog` (built directly against
+  `chartAt`
   in `Differential.lean`), offered for future covering-family constructions (e.g. laurent-tails).
 -/
 

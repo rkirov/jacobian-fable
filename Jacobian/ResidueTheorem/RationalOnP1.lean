@@ -17,14 +17,16 @@ Unit: residue-theorem (`docs/design/residue-theorem.md` §6, `docs/design/form-t
 genus-0 base case feeding the general-`X` reduction via a nonconstant map to `ℙ¹` (design §6).
 
 **Status: the headline theorem is NOT proved here — read this note before building on this
-file.** What follows is a complete (no open goals anywhere), independently useful collection of atoms toward
+file.** What follows is a complete (no open goals anywhere), independently useful collection of
+atoms toward
 it, plus an honest account of the one remaining gap and how to close it. See `Jacobian/
 ResidueTheorem.lean` (unit root) for the full write-up of what is/isn't delivered and why.
 
 ## What IS built, zero sorries
 
 * `RS.P1.formOfCoeFn`: packages an arbitrary meromorphic "coefficient in the finite chart"
-  function `R : ℂ → ℂ` into a genuine `MFormData (OnePoint ℂ)`, given that its `invChart`-transported
+  function `R : ℂ → ℂ` into a genuine `MFormData (OnePoint ℂ)`, given that its
+  `invChart`-transported
   reading `fun w => -(w²)⁻¹ * R w⁻¹` is *also* meromorphic. The two-chart `compat` check reduces to
   "apply the transition rule twice returns to the start", independent of what `R` is.
 * `RS.P1.coeffAt_coe_eq_coeffAt_coe`: any `MFormData (OnePoint ℂ)`'s finite-chart coefficient is
@@ -49,7 +51,8 @@ remainder `R_mid`, apply the Liouville-free fact above to conclude the remainder
 vanishes, then telescope (the tail's own residue at `∞` is exactly minus the sum of residues it
 reproduces at the finite poles it was built to match, by `resAt_neg_sq_inv_mul_sub_inv_zpow`).
 
-**The blocker, found late and not resolved in the time available**: `resAt_neg_sq_inv_mul_comp_inv_eq_zero`
+**The blocker, found late and not resolved in the time available**:
+`resAt_neg_sq_inv_mul_comp_inv_eq_zero`
 needs `R_mid` genuinely `Differentiable ℂ` — but `R_mid := R - R_tail` is built from `MeromorphicAt`
 data, whose junk convention at a pole/removable point does **not** force the value there to match
 the analytic-repair limit (`MeromorphicAt f x` with witness order `n > 0` puts no constraint on

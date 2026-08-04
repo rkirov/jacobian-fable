@@ -93,7 +93,8 @@ theorem exists_clean_nhds {U : Set X} (hU : IsOpen U) (φ : RS.MeroGermOn X U) {
     · rw [heq] at hcon; exact absurd hcon (by simp)
   exact hx.1.2 hxF
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `C1.retype` commutes with restriction along a refinement index (both sides are literally the
 same restriction of the same underlying germ). -/
 theorem resC1_retype {D D' : RS.Divisor X} {Ω : Opens X} {𝒰 𝒱 : RS.Cech.FinCover Ω}
@@ -113,7 +114,8 @@ theorem resC1_retype {D D' : RS.Divisor X} {Ω : Opens X} {𝒰 𝒱 : RS.Cech.F
     rw [RS.Cech.C1.retype_apply_coe, RS.Cech.resC1_apply, RS.Cech.restrictL_apply_coe]
   rw [hL, hR]
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `mlClass` is compatible with refining the underlying cover: pulling the realizing `0`-cochain
 back along a refinement index gives the same class in `H1 D`. -/
 theorem mlClass_res {D D' : RS.Divisor X} {𝒰 𝒱 : RS.Cech.FinCover (⊤ : Opens X)}
@@ -174,11 +176,13 @@ noncomputable def gOf (p : X) (V : Opens X) (hpV : p ∈ V) (D' : RS.Divisor X)
 noncomputable def bumpDivisor (p : X) (n : ℤ) : RS.Divisor X :=
   Function.locallyFinsuppWithin.single p n
 
-omit [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X]
+    [T1Space X] in
 @[simp] theorem bumpDivisor_apply_self (p : X) (n : ℤ) : bumpDivisor p n p = n := by
   simp [bumpDivisor, Function.locallyFinsuppWithin.single_apply]
 
-omit [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X]
+    [T1Space X] in
 theorem bumpDivisor_apply_of_ne {p x : X} (hx : x ≠ p) (n : ℤ) : bumpDivisor p n x = 0 := by
   simp [bumpDivisor, Function.locallyFinsuppWithin.single_apply, hx]
 
@@ -190,7 +194,8 @@ theorem d0_pairCover_diag {D' : RS.Divisor X} (p : X) (V : Opens X) (hpV : p ∈
 
 /-! ### `mlClass` invariance under raising the auxiliary divisor `D'` (from `scratch_ltails2.lean`) -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem d0_inclC0_coe {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ : RS.Divisor X}
     (h : D₁ ≤ D₂) (g : RS.Cech.C0 D₁ 𝒰) (p : Fin 𝒰.n × Fin 𝒰.n) :
     (RS.Cech.d0 D₂ 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g) p :
@@ -202,7 +207,8 @@ theorem d0_inclC0_coe {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ : R
     RS.Cech.inclC0_apply, RS.Cech.inclC0_apply]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem memLD_inclC0 {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ D : RS.Divisor X}
     (h : D₁ ≤ D₂) {g : RS.Cech.C0 D₁ 𝒰} (hg : (RS.Cech.d0 D₁ 𝒰 g).MemLD D) :
     (RS.Cech.d0 D₂ 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g)).MemLD D := by
@@ -210,7 +216,8 @@ theorem memLD_inclC0 {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ D : 
   rw [d0_inclC0_coe]
   exact hg p
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mlClass_inclC0 {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D₁ D₂ D : RS.Divisor X}
     (h : D₁ ≤ D₂) {g : RS.Cech.C0 D₁ 𝒰} (hg : (RS.Cech.d0 D₁ 𝒰 g).MemLD D) :
     RS.Cech.mlClass 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g) (memLD_inclC0 h hg) = RS.Cech.mlClass 𝒰 g hg := by
@@ -298,11 +305,13 @@ theorem cleanNbhd_D_eq_zero (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (ch
 noncomputable def nOf (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : ℤ :=
   max (D p) (-(ψ.ord p).untop₀)
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem D_p_le_nOf (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     D p ≤ nOf D p ψ := le_max_left _ _
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem neg_nOf_le_ord (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     ((-(nOf D p ψ) : ℤ) : WithTop ℤ) ≤ ψ.ord p := by
   rcases eq_or_ne (ψ.ord p) ⊤ with h | h
@@ -446,7 +455,8 @@ theorem gOf_resC0 (p : X) (V W : Opens X) (hpV : p ∈ V) (hpW : p ∈ W) (hWV :
   funext k
   fin_cases k <;> apply Subtype.ext <;> rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Transport `mlClass` along an equality of the underlying `0`-cochain (avoids the
 "motive is not type correct" failure of `rw` on `mlClass`'s dependent `hg` argument). -/
 theorem mlClass_congr {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D D' : RS.Divisor X}
@@ -768,20 +778,23 @@ theorem tailToH1_apply_single (D : RS.Divisor X) (p : X) (τ : TailAt p D) :
 
 /-! ### General helpers -/
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem d0_diag_eq_zero {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D' : RS.Divisor X}
     (g : RS.Cech.C0 D' 𝒰) (i : Fin 𝒰.n) :
     RS.Cech.d0 D' 𝒰 g (i, i) = 0 := by
   rw [RS.Cech.d0_apply, sub_eq_zero]
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X]
+    [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mlClass_zero {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D D' : RS.Divisor X}
     (hg : (RS.Cech.d0 D' 𝒰 (0 : RS.Cech.C0 D' 𝒰)).MemLD D) :
     RS.Cech.mlClass 𝒰 (0 : RS.Cech.C0 D' 𝒰) hg = 0 := by
   have h := RS.Cech.mlClass_smul (0 : ℂ) (0 : RS.Cech.C0 D' 𝒰) hg (by simpa using hg)
   simpa using h
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem restrict_mem_linSysOn_of_mem_linSys {D' : RS.Divisor X} {f : RS.Mero X}
     (hf : f ∈ RS.LinSys D') (V : Set X) (hV : IsOpen V) :
     RS.MeroGermOn.restrict (Set.subset_univ V) f ∈ RS.LinSysOn D' V := by
@@ -850,7 +863,8 @@ noncomputable def mlSumCochain {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : R
         restrict_mem_linSysOn_of_mem_linSys hf _ (𝒱.U k).isOpen⟩
     else 0
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem mlSumCochain_apply_of_mem {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Divisor X)
     (f : RS.Mero X) (hf : f ∈ RS.LinSys D') (T : Finset X) (k : Fin 𝒱.n) {p : X} (hpT : p ∈ T)
     (hpk : p ∈ 𝒱.U k) :
@@ -860,14 +874,16 @@ theorem mlSumCochain_apply_of_mem {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' 
   unfold mlSumCochain
   rw [dif_pos ⟨p, hpT, hpk⟩]
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem mlSumCochain_apply_of_not_mem {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Divisor X)
     (f : RS.Mero X) (hf : f ∈ RS.LinSys D') (T : Finset X) (k : Fin 𝒱.n)
     (hnot : ∀ p ∈ T, p ∉ 𝒱.U k) : mlSumCochain (𝒱 := 𝒱) D' f hf T k = 0 := by
   unfold mlSumCochain
   rw [dif_neg (fun ⟨p, hpT, hpk⟩ => hnot p hpT hpk)]
 
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] in
 theorem mlSumCochain_empty {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Divisor X)
     (f : RS.Mero X) (hf : f ∈ RS.LinSys D') :
     mlSumCochain (𝒱 := 𝒱) D' f hf (∅ : Finset X) = 0 := by
@@ -952,7 +968,8 @@ private theorem alpha_hg_MemLD (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
         (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T l)
       rw [hkR, hlR]
       exact le_min hl hk
-  -- the global witness `f` realizes the FULL cochain `mlSumCochain (alphaAuxD D f) f hfD' (alphaFinset D f)` with vanishing
+  -- the global witness `f` realizes the FULL cochain `mlSumCochain (alphaAuxD D f) f hfD'
+  -- (alphaFinset D f)` with vanishing
 
 /-- A single marked point's `mlClassAt` equals the adapted cover's `mlClass` of the one-point
 cochain. Split out of `tailToH1_alpha` for the heartbeat budget. -/
@@ -1241,7 +1258,8 @@ variable {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (h𝒱Adapted : 𝒱.IsAdapte
   (hOclause : ∀ p ∈ S, ∀ k, p ∈ 𝒱.U k → 𝒱.U k ≤ injPatch ψ S D p)
 
 include ψ S D D' h𝒱Adapted in
-omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] ψ D D' [ChartedSpace ℂ X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] [CompactSpace X] [ConnectedSpace X] [T1Space X]
+    [DecidableEq X] ψ D D' [ChartedSpace ℂ X] in
 theorem inj_hoffdiag : ∀ k l : Fin 𝒱.n, k ≠ l → ∀ x ∈ (𝒱.U k ⊓ 𝒱.U l : Opens X), x ∉ S := by
   intro k l hkl x hx hxS
   obtain ⟨m, -, hmuniq⟩ := h𝒱Adapted x hxS

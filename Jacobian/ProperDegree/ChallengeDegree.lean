@@ -45,11 +45,13 @@ right junk-`0` convention definitionally, no case split needed. `[Nonempty Y]` (
 noncomputable def _root_.ContMDiff.degree (f : X → Y) (_hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) : ℕ :=
   RS.degree f
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [CompactSpace Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y]
+    [CompactSpace Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 @[simp] theorem _root_.ContMDiff.degree_eq (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) :
     hf.degree = RS.degree f := rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [CompactSpace Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y]
+    [CompactSpace Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Restated junk convention in wrapper form (`RS.degree_of_forall_eq`, unfolded). -/
 theorem _root_.ContMDiff.degree_of_forall_eq {c : Y}
     (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω (fun _ : X => c)) : hf.degree = 0 := by

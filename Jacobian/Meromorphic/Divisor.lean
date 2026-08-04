@@ -10,7 +10,8 @@ import Mathlib.Topology.LocallyFinsupp
 /-!
 # Divisors (CC2) and the divisor map `divisor : ℳ X → Divisor X` (CC3)
 
-Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.6, D7, proof plan §6.3).
+Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.6, D7, proof plan
+§6.3).
 
 * `Function.locallyFinsuppWithin.degree` (Compat, upstreamable): the degree of a divisor on a
   compact `T2Space`, `D.degree := ∑ x ∈ (D.finiteSupport isCompact_univ).toFinset, D x`.

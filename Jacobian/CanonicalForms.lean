@@ -38,7 +38,8 @@ congruences; the raw files remain the foundation every proof works through via r
   `Zero/Add/Neg/Sub/SMul ℂ/AddCommGroup/Module ℂ`); `RS.MFormCoeffData X ι`/`RS.MFormData.ofCoeffs`
   (covering-chart-family constructor, mirrors `Form1CoeffData`); `RS.MFormData.ord`/`resAt` (read
   via the fixed `chartAt`), chart-invariance `RS.MFormData.ord_eq_of_mem_source`/
-  `resAt_eq_of_mem_source`, cross-point reading `RS.MFormData.ord_eq_meromorphicOrderAt_of_mem_source`
+  `resAt_eq_of_mem_source`, cross-point reading
+  `RS.MFormData.ord_eq_meromorphicOrderAt_of_mem_source`
   (`θ.ord p = meromorphicOrderAt (θ.coeffAt x) (chartAt ℂ x p)` for `p` in the chart source —
   D12's engine); propagation `eventually_ord_eq_top`/`eventually_ord_eq_zero`;
   `RS.MFormData.divisor`/`degree`; `RS.MFormData.ofForm1`/`RS.Form1.toMFormData`;

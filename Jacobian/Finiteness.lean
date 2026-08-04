@@ -13,7 +13,8 @@ import Jacobian.Finiteness.H1Finite
 import Jacobian.Finiteness.Chi
 
 /-!
-# finiteness-and-chi: `FiniteDimensional H¹(X, O_D)` via Schwartz/Montel (namespace `RS`/`RS.Finiteness`)
+# finiteness-and-chi: `FiniteDimensional H¹(X, O_D)` via Schwartz/Montel (namespace
+`RS`/`RS.Finiteness`)
 
 API summary (see `docs/design/finiteness-and-chi.md`). **Unit COMPLETE**: all 7 design files are
 written, zero sorries, `scripts/check.sh Jacobian/Finiteness` passes. No file uses the

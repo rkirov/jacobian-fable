@@ -12,7 +12,8 @@ import Jacobian.AbelWeak.Rechart
 import Jacobian.AbelWeak.GeneralChain
 
 /-!
-# abel-weak-solutions: weak solutions, the planar log-branch, and chain assembly (Forster §20.1–20.4)
+# abel-weak-solutions: weak solutions, the planar log-branch, and chain assembly (Forster
+§20.1–20.4)
 
 Unit: abel-weak-solutions (`docs/design/abel-weak-solutions.md`). Builds the weak-solution
 machinery Forster's Abel's-theorem proof (§20.5–20.7) needs, staying in planar pieces glued by

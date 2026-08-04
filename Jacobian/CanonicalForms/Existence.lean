@@ -34,7 +34,8 @@ plan flagged as "the ONLY file gated on finiteness-and-chi" can finally be writt
   `exists_nonconstant_mero` "canonical-forms D9's exact export shape"), importing it *back* from
   here would be a cycle. This is exactly the D9 existence-chain's own nonzero-ness step (§2 D9:
   "`exists_ne_zero_mform` is then `⟨MForm.d f, ...⟩`"), so canonical-forms is its clean home; the
-  proof is transplanted verbatim (renaming the bound meromorphic function `φ ↦ f` to match `MForm.d`'s
+  proof is transplanted verbatim (renaming the bound meromorphic function `φ ↦ f` to match
+  `MForm.d`'s
   own parameter name), and residue-theorem's `Reduction.lean` now imports it from here instead
   (see that file's updated note).
 * **`exists_nonconstant_mero`/`exists_ne_zero_mform`** (D9 itself, Forster 16.11 pattern): pick

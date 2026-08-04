@@ -30,7 +30,8 @@ layer), `NZ1` (bounded cocycles, packaged as `ContinuousLinearMap.ker` of an int
 closed and complete "for free", no hand-rolled pointwise-condition closedness proof needed),
 `resNC0`/`resNC1` (restriction CLMs between same-index levels), the cocycle-relation workhorse
 `NZ1.rel_res` (mirrors `Cech.Refinement`'s `Z1.rel_res`), `resNC1_mapsTo_NZ1` (mirrors
-`resC1_mem_Z1`), and `resZ` (restriction of bounded cocycles, via `ContinuousLinearMap.codRestrict`).
+`resC1_mem_Z1`), and `resZ` (restriction of bounded cocycles, via
+`ContinuousLinearMap.codRestrict`).
 
 Finally, Forster's 14.6(b) Banach geometry (§4.2, §5 step 1): `tradeDefect` (the defect CLM
 `(ζ, ξ, η) ↦ ζ|𝔚 − ξ|𝔚 − δ𝔚 η` on `Z¹(𝔘) × Z¹(𝔙) × C⁰(𝔚)`), `tradeSpace` (Forster's subspace
