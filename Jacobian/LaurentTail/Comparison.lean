@@ -874,14 +874,229 @@ theorem mlSumCochain_empty {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Di
   funext k
   exact mlSumCochain_apply_of_not_mem D' f hf ∅ k (fun p hp => absurd hp (Finset.notMem_empty p))
 
+/-! ### Pieces of `tailToH1_alpha`
+
+The theorem is assembled from these lemmas rather than written as one proof: as a single
+declaration it exceeded both the default heartbeat budget and the 200-line size we hold ourselves
+to. `alphaFinset D f` / `alphaAuxD D f` are spelled out rather than generalized over, because the
+proofs below use that definitional identity. -/
+
+section AlphaPieces
+
+variable (D : RS.Divisor X) (f : RS.Mero X) {𝒱 : RS.Cech.FinCover (⊤ : Opens X)}
+
+/-- Distinct members of an adapted cover never meet on a marked point. -/
+private theorem alpha_hoffdiag (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f)) :
+    ∀ k l : Fin 𝒱.n, k ≠ l → ∀ x ∈ (𝒱.U k ⊓ 𝒱.U l : Opens X), x ∉ alphaFinset D f := by
+    intro k l hkl x hx hxS
+    obtain ⟨m, -, hmuniq⟩ := h𝒱Adapted x hxS
+    exact hkl ((hmuniq k hx.1).trans (hmuniq l hx.2).symm)
+
+/-- A marked point's own member excludes every other marked point. -/
+private theorem alpha_hexcl
+    (hOclause : ∀ p ∈ alphaFinset D f, ∀ k, p ∈ 𝒱.U k →
+      𝒱.U k ≤ alphaPatch D f (alphaFinset D f) p) :
+    ∀ q ∈ alphaFinset D f, ∀ k, q ∈ 𝒱.U k → ∀ p ∈ alphaFinset D f, p ≠ q → p ∉ 𝒱.U k := by
+    intro q hq k hqk p hp hpq hpk
+    have hle := hOclause q hq k hqk
+    have hpA : p ∈ alphaPatch D f (alphaFinset D f) q := hle hpk
+    exact (alphaPatch_excl D f (alphaFinset D f) q p hpA) (Finset.mem_erase.mpr ⟨hpq, hp⟩)
+
+variable (hfD' : f ∈ RS.LinSys (alphaAuxD D f))
+
+/-- Order bound for the multi-point cochain away from the marked set. -/
+private theorem alpha_hmember_ord :
+    ∀ (T : Finset X) (k : Fin 𝒱.n) (x : X), x ∈ (𝒱.U k : Set X) → x ∉ alphaFinset D f →
+      ((-(D x) : ℤ) : WithTop ℤ) ≤
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T k :
+          RS.MeroGermOn X (𝒱.U k : Set X)).ord x := by
+    intro T k x hx hxS
+    by_cases hex : ∃ q ∈ T, q ∈ 𝒱.U k
+    · obtain ⟨q, hqT, hqk⟩ := hex
+      rw [mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' T k hqT hqk]
+      show ((-(D x) : ℤ) : WithTop ℤ) ≤
+        (RS.MeroGermOn.restrict (Set.subset_univ _) f : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
+      rw [RS.MeroGermOn.ord_restrict (Set.subset_univ _) (𝒱.U k).isOpen isOpen_univ hx]
+      exact not_mem_alphaFinset D f hxS
+    · rw [mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T k (fun q hqT hqk => hex ⟨q, hqT, hqk⟩)]
+      show ((-(D x) : ℤ) : WithTop ℤ) ≤ (0 : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
+      rw [RS.MeroGermOn.ord_zero, if_pos ⟨(𝒱.U k).isOpen, hx⟩]
+      exact le_top
+
+/-- The multi-point cochain has `D`-bounded coboundary, at any finite `T`. -/
+private theorem alpha_hg_MemLD (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f)) :
+    ∀ T : Finset X, (RS.Cech.d0 (alphaAuxD D f) 𝒱
+      (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T)).MemLD D := by
+    intro T
+    rintro ⟨k, l⟩
+    rcases eq_or_ne k l with rfl | hkl
+    · rw [d0_diag_eq_zero]
+      exact Submodule.zero_mem _
+    · refine (RS.mem_linSysOn_iff_of_isOpen (𝒱.U k ⊓ 𝒱.U l).isOpen).2 fun x hx => ?_
+      have hxS : x ∉ (alphaFinset D f) := alpha_hoffdiag D f h𝒱Adapted k l hkl x hx
+      have hk := alpha_hmember_ord D f hfD' T k x hx.1 hxS
+      have hl := alpha_hmember_ord D f hfD' T l x hx.2 hxS
+      rw [RS.Cech.d0_apply]
+      show ((-(D x) : ℤ) : WithTop ℤ) ≤
+        ((LinSysOn.restrictL (alphaAuxD D f) (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l)
+              (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T l) -
+            LinSysOn.restrictL (alphaAuxD D f) (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k)
+              (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T k) :
+          RS.LinSysOn (alphaAuxD D f) (𝒱.U k ⊓ 𝒱.U l : Set X)) : RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l : Set X)).ord x
+      rw [Submodule.coe_sub, sub_eq_add_neg]
+      refine le_trans ?_ (RS.MeroGermOn.ord_add (𝒱.U k ⊓ 𝒱.U l).isOpen hx _ _)
+      rw [RS.MeroGermOn.ord_neg]
+      have hkR := RS.Cech.ord_restrictL (alphaAuxD D f) (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k) hx
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T k)
+      have hlR := RS.Cech.ord_restrictL (alphaAuxD D f) (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l) hx
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T l)
+      rw [hkR, hlR]
+      exact le_min hl hk
+  -- the global witness `f` realizes the FULL cochain `mlSumCochain (alphaAuxD D f) f hfD' (alphaFinset D f)` with vanishing
+
+/-- A single marked point's `mlClassAt` equals the adapted cover's `mlClass` of the one-point
+cochain. Split out of `tailToH1_alpha` for the heartbeat budget. -/
+private theorem alpha_claim1 (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
+    (hOclause : ∀ p ∈ alphaFinset D f, ∀ k, p ∈ 𝒱.U k →
+      𝒱.U k ≤ alphaPatch D f (alphaFinset D f) p) :
+    ∀ p ∈ alphaFinset D f, mlClassAt D p (RS.MeroGermOn.restrict (Set.subset_univ _) f) =
+      RS.Cech.mlClass 𝒱 (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p})
+        (alpha_hg_MemLD D f hfD' h𝒱Adapted {p}) := by
+  intro p hp
+  set ψp : RS.MeroGermOn X (chartAt ℂ p).source :=
+    RS.MeroGermOn.restrict (Set.subset_univ _) f with hψp_def
+  set Vp : Opens X := alphaPatch D f (alphaFinset D f) p with hVp_def
+  have hpVp : p ∈ Vp := mem_alphaPatch D f (alphaFinset D f) p
+  have hVpsub : (Vp : Set X) ⊆ (chartAt ℂ p).source := alphaPatch_sub_source D f (alphaFinset D f) p
+  have hVpclean := alphaPatch_clean D f (alphaFinset D f) p
+  have hVpDzero := alphaPatch_D_eq_zero D f (alphaFinset D f) p
+  set ψVp : RS.LinSysOn (alphaAuxD D f) (Vp : Set X) :=
+    ⟨RS.MeroGermOn.restrict (Set.subset_univ (Vp : Set X)) f,
+      restrict_mem_linSysOn_of_mem_linSys hfD' _ Vp.isOpen⟩ with hψVp_def
+  have hψVp : (ψVp : RS.MeroGermOn X (Vp : Set X)) = RS.MeroGermOn.restrict hVpsub ψp := by
+    show RS.MeroGermOn.restrict (Set.subset_univ (Vp : Set X)) f =
+      RS.MeroGermOn.restrict hVpsub (RS.MeroGermOn.restrict (Set.subset_univ _) f)
+    rw [RS.MeroGermOn.restrict_restrict]
+  have key1 : mlClassAt D p ψp =
+      mlClassAtOf p D (alphaAuxD D f) ψp Vp hpVp hVpsub hVpclean hVpDzero ψVp hψVp :=
+    mlClassAt_eq_of_valid D p ψp hpVp hVpsub hVpclean hVpDzero ψVp hψVp
+  rw [key1]
+  unfold mlClassAtOf
+  obtain ⟨kp, hkp_mem, hkp_uniq⟩ := h𝒱Adapted p hp
+  set τp : Fin 𝒱.n → Fin 2 := fun k => if k = kp then 0 else 1 with hτp_def
+  have hτp_zero_iff : ∀ k, τp k = 0 ↔ k = kp := by
+    intro k
+    simp only [hτp_def]
+    split_ifs with hk <;> simp [hk]
+  have hτp_one_iff : ∀ k, τp k = 1 ↔ k ≠ kp := by
+    intro k
+    simp only [hτp_def]
+    split_ifs with hk <;> simp [hk]
+  have hτp : RS.Cech.IsRefIdx (pairCover p Vp hpVp) 𝒱 τp := by
+    intro k
+    show 𝒱.U k ≤ (pairCover p Vp hpVp).U (τp k)
+    by_cases hk : k = kp
+    · rw [(hτp_zero_iff k).mpr hk, pairCover_U_zero, hk]
+      exact hOclause p hp kp hkp_mem
+    · rw [(hτp_one_iff k).mpr hk, pairCover_U_one]
+      intro x hx
+      show x ∈ ({p}ᶜ : Set X)
+      intro hxp
+      rw [Set.mem_singleton_iff] at hxp
+      subst hxp
+      exact hk (hkp_uniq k hx)
+  -- a generic per-index computation of the refined cochain's value, avoiding a dependent
+  -- rewrite on `τp k` by quantifying over the index and its refinement proof directly
+  have gp_eq_at : ∀ (k : Fin 𝒱.n) (j : Fin 2) (hj : 𝒱.U k ≤ (pairCover p Vp hpVp).U j),
+      (j = 0 → p ∈ 𝒱.U k) → (j = 1 → p ∉ 𝒱.U k) →
+      (RS.MeroGermOn.restrict hj (gOf p Vp hpVp (alphaAuxD D f) ψVp j :
+            RS.MeroGermOn X ((pairCover p Vp hpVp).U j : Set X)) :
+          RS.MeroGermOn X (𝒱.U k : Set X)) =
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} k : RS.MeroGermOn X (𝒱.U k : Set X)) := by
+    rintro k j hj h0 h1
+    fin_cases j
+    · rw [mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' {p} k (Finset.mem_singleton_self p) (h0 rfl)]
+      show RS.MeroGermOn.restrict hj (gOf p Vp hpVp (alphaAuxD D f) ψVp (0 : Fin 2) :
+        RS.MeroGermOn X ((pairCover p Vp hpVp).U (0 : Fin 2) : Set X)) = _
+      rw [gOf_apply_zero]
+      exact RS.MeroGermOn.restrict_restrict (Set.subset_univ (Vp : Set X)) hj f
+    · rw [mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q hq hqk => by
+        rw [Finset.mem_singleton] at hq
+        exact (h1 rfl) (hq ▸ hqk))]
+      show RS.MeroGermOn.restrict hj (gOf p Vp hpVp (alphaAuxD D f) ψVp (1 : Fin 2) :
+        RS.MeroGermOn X ((pairCover p Vp hpVp).U (1 : Fin 2) : Set X)) = (0 : RS.MeroGermOn X _)
+      rw [gOf_apply_one]
+      simp
+  have hgp_eq : RS.Cech.resC0 (alphaAuxD D f) τp hτp (gOf p Vp hpVp (alphaAuxD D f) ψVp) =
+      mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} := by
+    funext k
+    apply Subtype.ext
+    rw [RS.Cech.resC0_apply, RS.Cech.restrictL_apply_coe]
+    exact gp_eq_at k (τp k) (hτp k)
+      (fun h => by rw [(hτp_zero_iff k).mp h]; exact hkp_mem)
+      (fun h hpk => (hτp_one_iff k).mp h (hkp_uniq k hpk))
+  rw [(mlClass_res τp hτp (gOf p Vp hpVp (alphaAuxD D f) ψVp)
+    (gOf_memLD_of_clean p D (alphaAuxD D f) ψp Vp hpVp hVpsub hVpclean hVpDzero ψVp hψVp)
+    (hgp_eq ▸ (alpha_hg_MemLD D f hfD' h𝒱Adapted) {p}))]
+  exact mlClass_congr hgp_eq
+-- the multi-point induction: combine the per-point classes over any `T ⊆ (alphaFinset D f)`
+
+/-- The multi-point induction: the per-point classes sum to the cover's class of the multi-point
+cochain, for any `T ⊆ alphaFinset D f`. Split out of `tailToH1_alpha` for the heartbeat budget. -/
+private theorem alpha_main (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
+    (hOclause : ∀ p ∈ alphaFinset D f, ∀ k, p ∈ 𝒱.U k →
+      𝒱.U k ≤ alphaPatch D f (alphaFinset D f) p) :
+    ∀ T : Finset X, T ⊆ alphaFinset D f →
+      ∑ q ∈ T, mlClassAt D q (RS.MeroGermOn.restrict (Set.subset_univ _) f) =
+        RS.Cech.mlClass 𝒱 (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T)
+          (alpha_hg_MemLD D f hfD' h𝒱Adapted T) := by
+  intro T
+  induction T using Finset.induction_on with
+  | empty =>
+    intro _
+    rw [Finset.sum_empty, mlClass_congr (mlSumCochain_empty (𝒱 := 𝒱) (alphaAuxD D f) f hfD')]
+    exact (mlClass_zero _).symm
+  | insert p T' hpT' ih =>
+    intro hsub
+    have hpS : p ∈ (alphaFinset D f) := hsub (Finset.mem_insert_self p T')
+    have hT'sub : T' ⊆ (alphaFinset D f) := (Finset.subset_insert p T').trans hsub
+    have hsum_eq : mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} + mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T' =
+        mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' (insert p T') := by
+      funext k
+      by_cases hpk : p ∈ 𝒱.U k
+      · rw [Pi.add_apply,
+          mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' {p} k (Finset.mem_singleton_self p) hpk,
+          mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T' k (fun q hqT' hqk =>
+            (alpha_hexcl D f hOclause) p hpS k hpk q (hT'sub hqT') (fun he => hpT' (he ▸ hqT')) hqk),
+          mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' (insert p T') k (Finset.mem_insert_self p T') hpk]
+        simp
+      · by_cases hex' : ∃ q ∈ T', q ∈ 𝒱.U k
+        · obtain ⟨q, hqT', hqk⟩ := hex'
+          rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq' hq'k => by
+              rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
+            mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' T' k hqT' hqk,
+            mlSumCochain_apply_of_mem (alphaAuxD D f) f hfD' (insert p T') k
+              (Finset.mem_insert_of_mem hqT') hqk]
+          simp
+        · rw [Pi.add_apply, mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' {p} k (fun q' hq' hq'k => by
+              rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
+            mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' T' k (fun q hqT' hqk => hex' ⟨q, hqT', hqk⟩),
+            mlSumCochain_apply_of_not_mem (alphaAuxD D f) f hfD' (insert p T') k (fun q hq hqk => by
+              rw [Finset.mem_insert] at hq
+              rcases hq with rfl | hq
+              · exact hpk hqk
+              · exact hex' ⟨q, hq, hqk⟩)]
+          simp
+    rw [Finset.sum_insert hpT', ih hT'sub, (alpha_claim1 D f hfD' h𝒱Adapted hOclause) p hpS,
+      ← RS.Cech.mlClass_add (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p})
+        (mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' T') ((alpha_hg_MemLD D f hfD' h𝒱Adapted) {p}) ((alpha_hg_MemLD D f hfD' h𝒱Adapted) T')
+        (by rw [hsum_eq]; exact (alpha_hg_MemLD D f hfD' h𝒱Adapted) (insert p T'))]
+    exact mlClass_congr hsum_eq
+
+end AlphaPieces
+
 /-! ### The main theorem -/
 
--- THE ONE REMAINING HEARTBEAT BUMP in the library (everything else now builds at the default
--- budget). This 244-line proof exceeds it cumulatively, not at any single step: `clear_value` on
--- `S`/`D'` breaks it (their definitional content is used downstream), and the real fix is to
--- extract `CLAIM1` and `main` into private lemmas so each gets its own budget — which is also
--- what the 200-line proof cap needs. Tracked for the lean-pool port, where `set_option` is banned.
-set_option maxHeartbeats 1000000 in
 theorem tailToH1_alpha (D : RS.Divisor X) (f : RS.Mero X) : tailToH1 D (alphaL D f) = 0 := by
   rw [alphaL_apply]
   rcases eq_or_ne f 0 with rfl | hf
@@ -896,62 +1111,14 @@ theorem tailToH1_alpha (D : RS.Divisor X) (f : RS.Mero X) : tailToH1 D (alphaL D
     (RS.Cech.FinCover.single (⊤ : Opens X)) S (fun p _ => trivial) (alphaPatch D f S)
     (fun p _ => mem_alphaPatch D f S p)
   -- off-diagonal overlaps of distinct members never meet `S` (pure adaptedness)
-  have hoffdiag : ∀ k l : Fin 𝒱.n, k ≠ l → ∀ x ∈ (𝒱.U k ⊓ 𝒱.U l : Opens X), x ∉ S := by
-    intro k l hkl x hx hxS
-    obtain ⟨m, -, hmuniq⟩ := h𝒱Adapted x hxS
-    exact hkl ((hmuniq k hx.1).trans (hmuniq l hx.2).symm)
+  have hoffdiag := alpha_hoffdiag D f h𝒱Adapted
   -- a marked point's own dedicated member excludes every other point of `S`
-  have hexcl : ∀ q ∈ S, ∀ k, q ∈ 𝒱.U k → ∀ p ∈ S, p ≠ q → p ∉ 𝒱.U k := by
-    intro q hq k hqk p hp hpq hpk
-    have hle := hOclause q hq k hqk
-    have hpA : p ∈ alphaPatch D f S q := hle hpk
-    exact (alphaPatch_excl D f S q p hpA) (Finset.mem_erase.mpr ⟨hpq, hp⟩)
+  have hexcl := alpha_hexcl D f hOclause
   -- the order of the multi-point cochain's value at any member, at any point outside `S`
-  have hmember_ord : ∀ (T : Finset X) (k : Fin 𝒱.n) (x : X), x ∈ (𝒱.U k : Set X) → x ∉ S →
-      ((-(D x) : ℤ) : WithTop ℤ) ≤
-        (mlSumCochain (𝒱 := 𝒱) D' f hfD' T k : RS.MeroGermOn X (𝒱.U k : Set X)).ord x := by
-    intro T k x hx hxS
-    by_cases hex : ∃ q ∈ T, q ∈ 𝒱.U k
-    · obtain ⟨q, hqT, hqk⟩ := hex
-      rw [mlSumCochain_apply_of_mem D' f hfD' T k hqT hqk]
-      show ((-(D x) : ℤ) : WithTop ℤ) ≤
-        (RS.MeroGermOn.restrict (Set.subset_univ _) f : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
-      rw [RS.MeroGermOn.ord_restrict (Set.subset_univ _) (𝒱.U k).isOpen isOpen_univ hx]
-      exact not_mem_alphaFinset D f hxS
-    · rw [mlSumCochain_apply_of_not_mem D' f hfD' T k (fun q hqT hqk => hex ⟨q, hqT, hqk⟩)]
-      show ((-(D x) : ℤ) : WithTop ℤ) ≤ (0 : RS.MeroGermOn X (𝒱.U k : Set X)).ord x
-      rw [RS.MeroGermOn.ord_zero, if_pos ⟨(𝒱.U k).isOpen, hx⟩]
-      exact le_top
+  have hmember_ord := alpha_hmember_ord D f (𝒱 := 𝒱) hfD'
   -- `MemLD D` for the multi-point cochain, at ANY `T` (diagonal trivial; off-diagonal via
   -- `hoffdiag` + `hmember_ord`)
-  have hg_MemLD : ∀ T : Finset X,
-      (RS.Cech.d0 D' 𝒱 (mlSumCochain (𝒱 := 𝒱) D' f hfD' T)).MemLD D := by
-    intro T
-    rintro ⟨k, l⟩
-    rcases eq_or_ne k l with rfl | hkl
-    · rw [d0_diag_eq_zero]
-      exact Submodule.zero_mem _
-    · refine (RS.mem_linSysOn_iff_of_isOpen (𝒱.U k ⊓ 𝒱.U l).isOpen).2 fun x hx => ?_
-      have hxS : x ∉ S := hoffdiag k l hkl x hx
-      have hk := hmember_ord T k x hx.1 hxS
-      have hl := hmember_ord T l x hx.2 hxS
-      rw [RS.Cech.d0_apply]
-      show ((-(D x) : ℤ) : WithTop ℤ) ≤
-        ((LinSysOn.restrictL D' (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l)
-              (mlSumCochain (𝒱 := 𝒱) D' f hfD' T l) -
-            LinSysOn.restrictL D' (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k)
-              (mlSumCochain (𝒱 := 𝒱) D' f hfD' T k) :
-          RS.LinSysOn D' (𝒱.U k ⊓ 𝒱.U l : Set X)) : RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l : Set X)).ord x
-      rw [Submodule.coe_sub, sub_eq_add_neg]
-      refine le_trans ?_ (RS.MeroGermOn.ord_add (𝒱.U k ⊓ 𝒱.U l).isOpen hx _ _)
-      rw [RS.MeroGermOn.ord_neg]
-      have hkR := RS.Cech.ord_restrictL D' (inf_le_left : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U k) hx
-        (mlSumCochain (𝒱 := 𝒱) D' f hfD' T k)
-      have hlR := RS.Cech.ord_restrictL D' (inf_le_right : (𝒱.U k ⊓ 𝒱.U l : Opens X) ≤ 𝒱.U l) hx
-        (mlSumCochain (𝒱 := 𝒱) D' f hfD' T l)
-      rw [hkR, hlR]
-      exact le_min hl hk
-  -- the global witness `f` realizes the FULL cochain `mlSumCochain D' f hfD' S` with vanishing
+  have hg_MemLD := alpha_hg_MemLD D f hfD' h𝒱Adapted
   -- (indeed literally-zero-or-`D`-bounded) difference everywhere
   have hφ : ∀ k : Fin 𝒱.n, ∀ x ∈ (𝒱.U k : Set X),
       ((-(D x) : ℤ) : WithTop ℤ) ≤
@@ -979,131 +1146,8 @@ theorem tailToH1_alpha (D : RS.Divisor X) (f : RS.Mero X) : tailToH1 D (alphaL D
       (⟨f, hfD'⟩ : RS.LinSys D') hφ
   -- CLAIM1: a single marked point's `mlClassAt` equals the big cover's `mlClass` restricted to
   -- the single-point cochain `mlSumCochain D' f hfD' {p}`
-  have CLAIM1 : ∀ p ∈ S, mlClassAt D p (RS.MeroGermOn.restrict (Set.subset_univ _) f) =
-      RS.Cech.mlClass 𝒱 (mlSumCochain (𝒱 := 𝒱) D' f hfD' {p}) (hg_MemLD {p}) := by
-    intro p hp
-    set ψp : RS.MeroGermOn X (chartAt ℂ p).source :=
-      RS.MeroGermOn.restrict (Set.subset_univ _) f with hψp_def
-    set Vp : Opens X := alphaPatch D f S p with hVp_def
-    have hpVp : p ∈ Vp := mem_alphaPatch D f S p
-    have hVpsub : (Vp : Set X) ⊆ (chartAt ℂ p).source := alphaPatch_sub_source D f S p
-    have hVpclean := alphaPatch_clean D f S p
-    have hVpDzero := alphaPatch_D_eq_zero D f S p
-    set ψVp : RS.LinSysOn D' (Vp : Set X) :=
-      ⟨RS.MeroGermOn.restrict (Set.subset_univ (Vp : Set X)) f,
-        restrict_mem_linSysOn_of_mem_linSys hfD' _ Vp.isOpen⟩ with hψVp_def
-    have hψVp : (ψVp : RS.MeroGermOn X (Vp : Set X)) = RS.MeroGermOn.restrict hVpsub ψp := by
-      show RS.MeroGermOn.restrict (Set.subset_univ (Vp : Set X)) f =
-        RS.MeroGermOn.restrict hVpsub (RS.MeroGermOn.restrict (Set.subset_univ _) f)
-      rw [RS.MeroGermOn.restrict_restrict]
-    have key1 : mlClassAt D p ψp =
-        mlClassAtOf p D D' ψp Vp hpVp hVpsub hVpclean hVpDzero ψVp hψVp :=
-      mlClassAt_eq_of_valid D p ψp hpVp hVpsub hVpclean hVpDzero ψVp hψVp
-    rw [key1]
-    unfold mlClassAtOf
-    obtain ⟨kp, hkp_mem, hkp_uniq⟩ := h𝒱Adapted p hp
-    set τp : Fin 𝒱.n → Fin 2 := fun k => if k = kp then 0 else 1 with hτp_def
-    have hτp_zero_iff : ∀ k, τp k = 0 ↔ k = kp := by
-      intro k
-      simp only [hτp_def]
-      split_ifs with hk <;> simp [hk]
-    have hτp_one_iff : ∀ k, τp k = 1 ↔ k ≠ kp := by
-      intro k
-      simp only [hτp_def]
-      split_ifs with hk <;> simp [hk]
-    have hτp : RS.Cech.IsRefIdx (pairCover p Vp hpVp) 𝒱 τp := by
-      intro k
-      show 𝒱.U k ≤ (pairCover p Vp hpVp).U (τp k)
-      by_cases hk : k = kp
-      · rw [(hτp_zero_iff k).mpr hk, pairCover_U_zero, hk]
-        exact hOclause p hp kp hkp_mem
-      · rw [(hτp_one_iff k).mpr hk, pairCover_U_one]
-        intro x hx
-        show x ∈ ({p}ᶜ : Set X)
-        intro hxp
-        rw [Set.mem_singleton_iff] at hxp
-        subst hxp
-        exact hk (hkp_uniq k hx)
-    -- a generic per-index computation of the refined cochain's value, avoiding a dependent
-    -- rewrite on `τp k` by quantifying over the index and its refinement proof directly
-    have gp_eq_at : ∀ (k : Fin 𝒱.n) (j : Fin 2) (hj : 𝒱.U k ≤ (pairCover p Vp hpVp).U j),
-        (j = 0 → p ∈ 𝒱.U k) → (j = 1 → p ∉ 𝒱.U k) →
-        (RS.MeroGermOn.restrict hj (gOf p Vp hpVp D' ψVp j :
-              RS.MeroGermOn X ((pairCover p Vp hpVp).U j : Set X)) :
-            RS.MeroGermOn X (𝒱.U k : Set X)) =
-          (mlSumCochain (𝒱 := 𝒱) D' f hfD' {p} k : RS.MeroGermOn X (𝒱.U k : Set X)) := by
-      rintro k j hj h0 h1
-      fin_cases j
-      · rw [mlSumCochain_apply_of_mem D' f hfD' {p} k (Finset.mem_singleton_self p) (h0 rfl)]
-        show RS.MeroGermOn.restrict hj (gOf p Vp hpVp D' ψVp (0 : Fin 2) :
-          RS.MeroGermOn X ((pairCover p Vp hpVp).U (0 : Fin 2) : Set X)) = _
-        rw [gOf_apply_zero]
-        exact RS.MeroGermOn.restrict_restrict (Set.subset_univ (Vp : Set X)) hj f
-      · rw [mlSumCochain_apply_of_not_mem D' f hfD' {p} k (fun q hq hqk => by
-          rw [Finset.mem_singleton] at hq
-          exact (h1 rfl) (hq ▸ hqk))]
-        show RS.MeroGermOn.restrict hj (gOf p Vp hpVp D' ψVp (1 : Fin 2) :
-          RS.MeroGermOn X ((pairCover p Vp hpVp).U (1 : Fin 2) : Set X)) = (0 : RS.MeroGermOn X _)
-        rw [gOf_apply_one]
-        simp
-    have hgp_eq : RS.Cech.resC0 D' τp hτp (gOf p Vp hpVp D' ψVp) =
-        mlSumCochain (𝒱 := 𝒱) D' f hfD' {p} := by
-      funext k
-      apply Subtype.ext
-      rw [RS.Cech.resC0_apply, RS.Cech.restrictL_apply_coe]
-      exact gp_eq_at k (τp k) (hτp k)
-        (fun h => by rw [(hτp_zero_iff k).mp h]; exact hkp_mem)
-        (fun h hpk => (hτp_one_iff k).mp h (hkp_uniq k hpk))
-    rw [(mlClass_res τp hτp (gOf p Vp hpVp D' ψVp)
-      (gOf_memLD_of_clean p D D' ψp Vp hpVp hVpsub hVpclean hVpDzero ψVp hψVp)
-      (hgp_eq ▸ hg_MemLD {p}))]
-    exact mlClass_congr hgp_eq
-  -- the multi-point induction: combine the per-point classes over any `T ⊆ S`
-  have main : ∀ T : Finset X, T ⊆ S →
-      ∑ q ∈ T, mlClassAt D q (RS.MeroGermOn.restrict (Set.subset_univ _) f) =
-        RS.Cech.mlClass 𝒱 (mlSumCochain (𝒱 := 𝒱) D' f hfD' T) (hg_MemLD T) := by
-    intro T
-    induction T using Finset.induction_on with
-    | empty =>
-      intro _
-      rw [Finset.sum_empty, mlClass_congr (mlSumCochain_empty (𝒱 := 𝒱) D' f hfD')]
-      exact (mlClass_zero _).symm
-    | insert p T' hpT' ih =>
-      intro hsub
-      have hpS : p ∈ S := hsub (Finset.mem_insert_self p T')
-      have hT'sub : T' ⊆ S := (Finset.subset_insert p T').trans hsub
-      have hsum_eq : mlSumCochain (𝒱 := 𝒱) D' f hfD' {p} + mlSumCochain (𝒱 := 𝒱) D' f hfD' T' =
-          mlSumCochain (𝒱 := 𝒱) D' f hfD' (insert p T') := by
-        funext k
-        by_cases hpk : p ∈ 𝒱.U k
-        · rw [Pi.add_apply,
-            mlSumCochain_apply_of_mem D' f hfD' {p} k (Finset.mem_singleton_self p) hpk,
-            mlSumCochain_apply_of_not_mem D' f hfD' T' k (fun q hqT' hqk =>
-              hexcl p hpS k hpk q (hT'sub hqT') (fun he => hpT' (he ▸ hqT')) hqk),
-            mlSumCochain_apply_of_mem D' f hfD' (insert p T') k (Finset.mem_insert_self p T') hpk]
-          simp
-        · by_cases hex' : ∃ q ∈ T', q ∈ 𝒱.U k
-          · obtain ⟨q, hqT', hqk⟩ := hex'
-            rw [Pi.add_apply, mlSumCochain_apply_of_not_mem D' f hfD' {p} k (fun q' hq' hq'k => by
-                rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
-              mlSumCochain_apply_of_mem D' f hfD' T' k hqT' hqk,
-              mlSumCochain_apply_of_mem D' f hfD' (insert p T') k
-                (Finset.mem_insert_of_mem hqT') hqk]
-            simp
-          · rw [Pi.add_apply, mlSumCochain_apply_of_not_mem D' f hfD' {p} k (fun q' hq' hq'k => by
-                rw [Finset.mem_singleton] at hq'; exact hpk (hq' ▸ hq'k)),
-              mlSumCochain_apply_of_not_mem D' f hfD' T' k (fun q hqT' hqk => hex' ⟨q, hqT', hqk⟩),
-              mlSumCochain_apply_of_not_mem D' f hfD' (insert p T') k (fun q hq hqk => by
-                rw [Finset.mem_insert] at hq
-                rcases hq with rfl | hq
-                · exact hpk hqk
-                · exact hex' ⟨q, hq, hqk⟩)]
-            simp
-      rw [Finset.sum_insert hpT', ih hT'sub, CLAIM1 p hpS,
-        ← RS.Cech.mlClass_add (mlSumCochain (𝒱 := 𝒱) D' f hfD' {p})
-          (mlSumCochain (𝒱 := 𝒱) D' f hfD' T') (hg_MemLD {p}) (hg_MemLD T')
-          (by rw [hsum_eq]; exact hg_MemLD (insert p T'))]
-      exact mlClass_congr hsum_eq
+  have CLAIM1 := alpha_claim1 D f hfD' h𝒱Adapted hOclause
+  have main := alpha_main D f hfD' h𝒱Adapted hOclause
   have hsum0 : ∑ q ∈ S, mlClassAt D q (RS.MeroGermOn.restrict (Set.subset_univ _) f) = 0 :=
     (main S (Finset.Subset.refl S)).trans hzero
   -- assemble: `tailToH1 D (alpha D f)` unfolds to exactly this sum
