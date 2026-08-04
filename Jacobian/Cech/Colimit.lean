@@ -163,7 +163,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat: requested from meromorphic-and-divisors (`docs/requests/meromorphic-and-divisors.md`
 item 1), not yet upstreamed — proved locally (one-line carrier implication). -/
-theorem RS.linSysOn_mono {U : Set X} {D D' : RS.Divisor X} (h : D ≤ D') :
+theorem linSysOn_mono {U : Set X} {D D' : RS.Divisor X} (h : D ≤ D') :
     RS.LinSysOn D U ≤ RS.LinSysOn D' U := by
   intro φ hφ hU x hx
   have hDx : (D x : ℤ) ≤ D' x := Function.locallyFinsuppWithin.le_def.1 h x
@@ -176,26 +176,26 @@ variable {D' : RS.Divisor X}
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclusion_restrictL_comm {V U : Opens X} (h' : V ≤ U) (hD : D ≤ D')
     (φ : RS.LinSysOn D (U : Set X)) :
-    Submodule.inclusion (RS.linSysOn_mono hD) (LinSysOn.restrictL D h' φ) =
-      LinSysOn.restrictL D' h' (Submodule.inclusion (RS.linSysOn_mono hD) φ) :=
+    Submodule.inclusion (RS.Cech.linSysOn_mono hD) (LinSysOn.restrictL D h' φ) =
+      LinSysOn.restrictL D' h' (Submodule.inclusion (RS.Cech.linSysOn_mono hD) φ) :=
   Subtype.ext rfl
 
 /-- `D`-inclusion of `1`-cochains (`Submodule.inclusion`, componentwise). -/
 noncomputable def inclC1 {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D') : C1 D 𝒰 →ₗ[ℂ] C1 D' 𝒰 :=
-  LinearMap.pi fun p => (Submodule.inclusion (RS.linSysOn_mono h)).comp (LinearMap.proj p)
+  LinearMap.pi fun p => (Submodule.inclusion (RS.Cech.linSysOn_mono h)).comp (LinearMap.proj p)
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC1_apply {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : C1 D 𝒰)
     (p : Fin 𝒰.n × Fin 𝒰.n) :
-    inclC1 D 𝒰 h f p = Submodule.inclusion (RS.linSysOn_mono h) (f p) := rfl
+    inclC1 D 𝒰 h f p = Submodule.inclusion (RS.Cech.linSysOn_mono h) (f p) := rfl
 
 /-- `D`-inclusion of `0`-cochains. -/
 noncomputable def inclC0 {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D') : C0 D 𝒰 →ₗ[ℂ] C0 D' 𝒰 :=
-  LinearMap.pi fun i => (Submodule.inclusion (RS.linSysOn_mono h)).comp (LinearMap.proj i)
+  LinearMap.pi fun i => (Submodule.inclusion (RS.Cech.linSysOn_mono h)).comp (LinearMap.proj i)
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC0_apply {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : C0 D 𝒰) (i : Fin 𝒰.n) :
-    inclC0 D 𝒰 h f i = Submodule.inclusion (RS.linSysOn_mono h) (f i) := rfl
+    inclC0 D 𝒰 h f i = Submodule.inclusion (RS.Cech.linSysOn_mono h) (f i) := rfl
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem inclC1_mem_Z1 {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') {f : C1 D 𝒰}
@@ -235,7 +235,7 @@ theorem inclC1_comp_resC1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D'
     (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C1 D 𝒰) :
     inclC1 D 𝒱 h (resC1 D τ hτ f) = resC1 D' τ hτ (inclC1 D 𝒰 h f) := by
   funext p
-  show Submodule.inclusion (RS.linSysOn_mono h) (resC1 D τ hτ f p) =
+  show Submodule.inclusion (RS.Cech.linSysOn_mono h) (resC1 D τ hτ f p) =
     resC1 D' τ hτ (inclC1 D 𝒰 h f) p
   rw [resC1_apply, resC1_apply, inclC1_apply]
   exact inclusion_restrictL_comm D (inf_le_inf (hτ p.1) (hτ p.2)) h (f (τ p.1, τ p.2))
@@ -263,6 +263,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
     H1Incl D h (toH1 D 𝒰 c) = toH1 D' 𝒰 (h1CoverIncl D 𝒰 h c) :=
   Module.DirectLimit.map_apply_of _ _ c
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem H1Incl_id : H1Incl D (le_refl D) = LinearMap.id := by
   apply LinearMap.ext
   intro ξ
@@ -274,6 +275,7 @@ theorem H1Incl_id : H1Incl D (le_refl D) = LinearMap.id := by
     rw [h1CoverIncl_mk]
     congr 1
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem H1Incl_comp {D'' : RS.Divisor X} (h : D ≤ D') (h' : D' ≤ D'') :
     H1Incl D' h' ∘ₗ H1Incl D h = H1Incl D (h.trans h') := by
   apply LinearMap.ext

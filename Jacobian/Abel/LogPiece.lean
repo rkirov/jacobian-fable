@@ -300,7 +300,6 @@ theorem wirtingerDbar_g {z : ℂ} (hzα : z ≠ P.α) (_hzβ : z ≠ P.β) :
       (P.contDiffAt_chiL hzρ).differentiableAt (by norm_num)
     rw [RS.wirtingerDbar_congr_nhds _ _ z heq, wirtingerDbar_cexp _ z hv, dlog,
       Set.indicator_of_mem (P.mem_exterior hzρ), P.g_exp hzρ]
-    push_cast
     ring
 
 /-! ## Punctured-limit factorizations (order bookkeeping inputs) -/

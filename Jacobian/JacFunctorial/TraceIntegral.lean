@@ -51,6 +51,7 @@ def sectionAt {y₀ : Y} (S : RS.FiberStack f y₀) (i : Fin S.n) (y : Y) : X :=
 
 variable {y₀ : Y} {S : RS.FiberStack f y₀} {i : Fin S.n}
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem e'_mem_e_target_of_regular (hm : multiplicity f (S.pt i) = 1) {y : Y} (hy : y ∈ S.V) :
     (S.A i).e' y ∈ (S.A i).e.target := by
   have hball := S.map_V_mem_ball i y hy
@@ -61,14 +62,17 @@ theorem e'_mem_e_target_of_regular (hm : multiplicity f (S.pt i) = 1) {y : Y} (h
   rw [(S.A i).target_eq]
   exact hball
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem sectionAt_mem_source (hm : multiplicity f (S.pt i) = 1) {y : Y} (hy : y ∈ S.V) :
     sectionAt S i y ∈ (S.A i).e.source :=
   (S.A i).e.map_target (e'_mem_e_target_of_regular hm hy)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem e_sectionAt (hm : multiplicity f (S.pt i) = 1) {y : Y} (hy : y ∈ S.V) :
     (S.A i).e (sectionAt S i y) = (S.A i).e' y :=
   (S.A i).e.right_inv (e'_mem_e_target_of_regular hm hy)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- The sections are genuine sections: `f ∘ sectionAt S i = id` on `S.V`. -/
 theorem f_sectionAt (hm : multiplicity f (S.pt i) = 1) {y : Y} (hy : y ∈ S.V) :
     f (sectionAt S i y) = y := by
@@ -80,6 +84,7 @@ theorem f_sectionAt (hm : multiplicity f (S.pt i) = 1) {y : Y} (hy : y ∈ S.V) 
     rw [hm, pow_one]
   exact (S.A i).e'.injOn ((S.A i).mapsTo hxs) (S.V_subset i hy) (by rw [hpow, hone])
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem continuousOn_sectionAt (hm : multiplicity f (S.pt i) = 1) :
     ContinuousOn (sectionAt S i) S.V := by
   apply ContinuousOn.comp ((S.A i).e.continuousOn_symm)
@@ -87,6 +92,7 @@ theorem continuousOn_sectionAt (hm : multiplicity f (S.pt i) = 1) :
   intro y hy
   exact e'_mem_e_target_of_regular hm hy
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Fibre sums over any point of a regular stack's neighborhood enumerate along the sections. -/
 theorem finsum_mem_fiber_eq_sum_sectionAt (hm : ∀ j : Fin S.n, multiplicity f (S.pt j) = 1)
     {y : Y} (hy : y ∈ S.V) (t : X → ℂ) :
@@ -108,6 +114,7 @@ def liftSeg (hm : multiplicity f (S.pt i) = 1) {a b : Y} (p : Path a b)
   source' := by rw [Path.source]
   target' := by rw [Path.target]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 @[simp] theorem liftSeg_coe (hm : multiplicity f (S.pt i) = 1) {a b : Y} (p : Path a b)
     (hV : ∀ s : I, p s ∈ S.V) : ⇑(liftSeg hm p hV) = fun s => sectionAt S i (p s) := rfl
 

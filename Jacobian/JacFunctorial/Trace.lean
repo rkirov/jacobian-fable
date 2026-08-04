@@ -205,7 +205,7 @@ theorem analyticOnNhd_traceCoeffFun (η : Form1 X) (y : Y) :
       ((stackAt hf hne y).mult_ne_zero i) ?_ _ (branchTrans_mem_ball hf hne y hw i)
     rw [← ((stackAt hf hne y).A i).target_eq]
     exact η.analyticOnNhd_coeffIn ((stackAt hf hne y).A i).mem_maximalAtlas
-  exact hψ.deriv.fun_mul (htc.comp' hψ)
+  exact hψ.deriv.fun_mul (htc.fun_comp hψ)
 
 /-! ### The canonical per-fibre-point coefficient `qCoeff` -/
 
@@ -480,7 +480,7 @@ theorem traceCoeffFun_compat (η : Form1 X) (y y' p : Y)
       analyticAt_trans (chart_mem_maximalAtlas y) (chart_mem_maximalAtlas y') hzt hzs
     have hcan : AnalyticAt ℂ (traceCoeffFun hf hne η y) (τ z) :=
       analyticOnNhd_traceCoeffFun hf hne η y _ hzτ
-    exact ((hτan.deriv.fun_mul (hcan.comp' hτan)).continuousAt).continuousWithinAt
+    exact ((hτan.deriv.fun_mul (hcan.fun_comp hτan)).continuousAt).continuousWithinAt
   have hEqT : Set.EqOn (traceCoeffFun hf hne η y')
       (fun z => deriv τ z * traceCoeffFun hf hne η y (τ z))
       (U \ {chartAt ℂ y' y, chartAt ℂ y' y'}) := by

@@ -145,7 +145,7 @@ theorem det_fderiv_eq_normSq_deriv {τ : ℂ → ℂ} {ζ : ℂ} (hτ : Differen
     (fderiv ℝ τ ζ).det = Complex.normSq (deriv τ ζ) := by
   have hr : fderiv ℝ τ ζ = (fderiv ℂ τ ζ).restrictScalars ℝ := hτ.fderiv_restrictScalars ℝ
   have hspan : fderiv ℂ τ ζ = ContinuousLinearMap.toSpanSingleton ℂ (deriv τ ζ) := by
-    ext v
+    ext
     rw [ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul, fderiv_eq_deriv_mul]
     ring
   rw [hr, hspan]

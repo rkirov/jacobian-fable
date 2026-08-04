@@ -33,7 +33,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat (requested from meromorphic-and-divisors, not upstreamed): chart-transported analogue
 of mathlib's `tendsto_zero_iff_meromorphicOrderAt_pos`. -/
-theorem RS.tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.MeromorphicAtX f x) :
+theorem tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.MeromorphicAtX f x) :
     Tendsto f (𝓝[≠] x) (𝓝 0) ↔ 0 < RS.ordAtX f x := by
   rw [RS.ordAtX_def, ← tendsto_zero_iff_meromorphicOrderAt_pos hf]
   exact RS.tendsto_nhdsNE_comp_chart_iff
@@ -41,7 +41,7 @@ theorem RS.tendsto_zero_iff_ordAtX_pos {f : X → ℂ} {x : X} (hf : RS.Meromorp
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compat (requested from meromorphic-and-divisors §1.4(b), not upstreamed): `evalAt` vanishes
 (given `0 ≤ ord`) iff the order is strictly positive. -/
-theorem RS.MeroGermOn.evalAt_eq_zero_iff {U : Set X} {x : X} (hU : IsOpen U) (hx : x ∈ U)
+theorem MeroGermOn.evalAt_eq_zero_iff {U : Set X} {x : X} (hU : IsOpen U) (hx : x ∈ U)
     (φ : RS.MeroGermOn X U) (h : 0 ≤ φ.ord x) :
     φ.evalAt x = 0 ↔ 0 < φ.ord x := by
   obtain ⟨f, hf, rfl⟩ := RS.MeroGermOn.exists_rep φ
@@ -50,9 +50,9 @@ theorem RS.MeroGermOn.evalAt_eq_zero_iff {U : Set X} {x : X} (hU : IsOpen U) (hx
   constructor
   · intro heq
     rw [heq] at htend
-    exact (RS.tendsto_zero_iff_ordAtX_pos (hf x hx)).1 htend
+    exact (RS.Cech.tendsto_zero_iff_ordAtX_pos (hf x hx)).1 htend
   · intro hpos
-    exact tendsto_nhds_unique htend ((RS.tendsto_zero_iff_ordAtX_pos (hf x hx)).2 hpos)
+    exact tendsto_nhds_unique htend ((RS.Cech.tendsto_zero_iff_ordAtX_pos (hf x hx)).2 hpos)
 
 /-! ### `leadCoeff` detects the exact order -/
 
@@ -90,7 +90,7 @@ theorem leadCoeff_eq_zero_iff (p : X) (m : ℤ) (ψ : ordGe p m) :
       exact_mod_cast this
     rwa [hz] at hstep
   show (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).evalAt p = 0 ↔ _
-  rw [RS.MeroGermOn.evalAt_eq_zero_iff (chartAt ℂ p).open_source (mem_chart_source ℂ p) _ h0,
+  rw [RS.Cech.MeroGermOn.evalAt_eq_zero_iff (chartAt ℂ p).open_source (mem_chart_source ℂ p) _ h0,
     hmul_ord, withTop_lt_neg_add_iff]
 
 /-- Leading-coefficient normalization (up to a nonzero scalar, all that induction needs):

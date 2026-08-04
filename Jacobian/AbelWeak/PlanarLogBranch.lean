@@ -67,7 +67,7 @@ theorem exists_logBranch_disk {c₀ : ℂ} {r : ℝ} (hr : 0 < r) {h : ℂ → �
     apply Convex.is_const_of_fderivWithin_eq_zero (𝕜 := ℂ) (convex_ball c₀ r) hφdiffOn
       (fun x hx => ?_) hz hc₀
     rw [fderivWithin_of_isOpen isOpen_ball hx, (hφderiv x hx).hasFDerivAt.fderiv]
-    ext v
+    ext
     simp []
   have hφc₀ : φ c₀ = 1 := by
     have hne' := hne c₀ hc₀

@@ -267,6 +267,7 @@ theorem mulH1_congr {f g : ℳ X} (hfg : f = g) {D E : RS.Divisor X} (hf : MulBo
   subst hfg
   rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulH1_add {f g : ℳ X} {D E : RS.Divisor X} (hf : MulBound f D E) (hg : MulBound g D E)
     (hfg : MulBound (f + g) D E) (ξ : H1 D) :
     mulH1 (f + g) hfg ξ = mulH1 f hf ξ + mulH1 g hg ξ := by
@@ -286,6 +287,7 @@ theorem mulH1_add {f g : ℳ X} {D E : RS.Divisor X} (hf : MulBound f D E) (hg :
     apply Subtype.ext
     rw [Submodule.coe_add, mulOn_apply_coe, mulOn_apply_coe, mulOn_apply_coe, map_add, add_mul]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulH1_smul {f : ℳ X} {D E : RS.Divisor X} (a : ℂ) (hf : MulBound f D E)
     (haf : MulBound (a • f) D E) (ξ : H1 D) :
     mulH1 (a • f) haf ξ = a • mulH1 f hf ξ := by
@@ -305,6 +307,7 @@ theorem mulH1_smul {f : ℳ X} {D E : RS.Divisor X} (a : ℂ) (hf : MulBound f D
     apply Subtype.ext
     rw [Submodule.coe_smul, mulOn_apply_coe, mulOn_apply_coe, map_smul, smul_mul_assoc]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Composition of multiplications is multiplication by the product. -/
 theorem mulH1_mulH1 {f g : ℳ X} {D D' E : RS.Divisor X} (hf : MulBound f D' E)
     (hg : MulBound g D D') (hfg : MulBound (f * g) D E) (ξ : H1 D) :
@@ -324,6 +327,7 @@ theorem mulH1_mulH1 {f g : ℳ X} {D D' E : RS.Divisor X} (hf : MulBound f D' E)
     simp only [mulOn_apply_coe]
     rw [map_mul, mul_assoc]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication by `1` is the divisor inclusion. -/
 theorem mulH1_one {D E : RS.Divisor X} (h1 : MulBound (1 : ℳ X) D E) (hDE : D ≤ E) (ξ : H1 D) :
     mulH1 (1 : ℳ X) h1 ξ = H1Incl D hDE ξ := by
@@ -341,6 +345,7 @@ theorem mulH1_one {D E : RS.Divisor X} (h1 : MulBound (1 : ℳ X) D E) (hDE : D 
     apply Subtype.ext
     rw [mulOn_apply_coe, map_one, one_mul, Submodule.coe_inclusion]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication absorbs a preceding divisor inclusion. -/
 theorem mulH1_H1Incl {f : ℳ X} {D D' E : RS.Divisor X} (h : D ≤ D') (hf' : MulBound f D' E)
     (hf : MulBound f D E) (ξ : H1 D) :

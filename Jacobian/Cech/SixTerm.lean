@@ -152,7 +152,7 @@ private theorem exists_tail_step [T1Space X] (q : X) {W : Set X} (hW : IsOpen W)
     rcases eq_or_ne c 0 with hc0 | hc0
     · rw [hc0, zero_smul, sub_zero]
       have hu0 : u.evalAt q = 0 := by rw [← hc_def]; exact hc0
-      exact (RS.MeroGermOn.evalAt_eq_zero_iff hW hq u hordu).1 hu0
+      exact (RS.Cech.MeroGermOn.evalAt_eq_zero_iff hW hq u hordu).1 hu0
     · have hord1 : ((-c) • (1 : RS.MeroGermOn X W)).ord q = 0 := by
         rw [RS.MeroGermOn.ord_smul hW hq (neg_ne_zero.2 hc0), RS.MeroGermOn.ord_one hW hq]
       have hordsum : (0 : WithTop ℤ) ≤ (u + (-c) • 1).ord q :=
@@ -167,7 +167,7 @@ private theorem exists_tail_step [T1Space X] (q : X) {W : Set X} (hW : IsOpen W)
         ring
       have hsub_eq : u - c • 1 = u + (-c) • 1 := by rw [sub_eq_add_neg, neg_smul]
       rw [hsub_eq]
-      exact (RS.MeroGermOn.evalAt_eq_zero_iff hW hq _ hordsum).1 hevalsum
+      exact (RS.Cech.MeroGermOn.evalAt_eq_zero_iff hW hq _ hordsum).1 hevalsum
   have hfactor : γ - c • T = T * (u - c • 1) := by
     rw [hu_def, mul_sub, ← mul_assoc, hTt, one_mul, mul_smul_comm, mul_one]
   rw [hfactor, RS.MeroGermOn.ord_mul hW hq, hordT]
@@ -368,6 +368,7 @@ theorem memLD_d0_smul (a : ℂ) {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D) :
 
 /-! ### `mlClass` is refinement-stable (§6.9(a), `mlClass_res`) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mlClass_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     (hgr : (d0 D' 𝒱 (resC0 D' τ hτ g)).MemLD D) :
@@ -412,7 +413,7 @@ theorem memLD_of_isAdapted {𝒲 : FinCover (⊤ : Opens X)} (hadapt : 𝒲.IsAd
 -- sequence, no snake lemma anywhere. Every class of `H1 D'` is already, on a cover adapted to
 -- `diffSupp D D'`, represented by a genuine `Z1 D`-cocycle (retyping across the finite set where
 -- `D ≠ D'` costs nothing since cocycles vanish there anyway).
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Pushing a cocycle to a refinement does not change its colimit class. Split out for the same
 budget reason as `H1Incl_toH1_retype`. -/
 private theorem toH1_mk_resZ1 {𝒰₀ 𝒲 : FinCover (⊤ : Opens X)} (τ : Fin 𝒲.n → Fin 𝒰₀.n)
@@ -420,7 +421,7 @@ private theorem toH1_mk_resZ1 {𝒰₀ 𝒲 : FinCover (⊤ : Opens X)} (τ : Fi
     toH1 D' 𝒲 (H1Cover.mk D' 𝒲 (resZ1 D' τ hτ f')) = toH1 D' 𝒰₀ (H1Cover.mk D' 𝒰₀ f') := by
   rw [← resH1_mk, toH1_resH1 D' τ hτ]
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `H1Incl` sends the retyped class of a `D`-bounded `D'`-cocycle back to the cocycle's own
 class. Split out of `H1Incl_surjective`: these two rewrites go through `H1Cover`'s direct-limit
 types and, kept inline, push that proof past the default heartbeat budget. -/
@@ -431,6 +432,7 @@ private theorem H1Incl_toH1_retype (h : D ≤ D') {𝒲 : FinCover (⊤ : Opens 
       toH1 D' 𝒲 (H1Cover.mk D' 𝒲 g) := by
   rw [H1Incl_toH1, h1CoverIncl_mk_retype h g.2 hmemld]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem H1Incl_surjective (h : D ≤ D') : Function.Surjective (H1Incl D h) := by
   intro ξ'
   obtain ⟨𝒰₀, f'c, hf'c⟩ := exists_rep D' ξ'
@@ -548,6 +550,7 @@ theorem Realizes.smul {𝒰 : FinCover (⊤ : Opens X)} (a : ℂ) {g : C0 D' �
 
 /-! ### Lemma A (§6.9(d)): independence of the realization -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **Lemma A (§6.9(d))**: any two Mittag-Leffler realizations of the same window vector give
 the same `H¹(D)`-class. No adaptedness is needed: at `diffSupp`-points the two `Realizes`
 bounds control the difference, everywhere else `D = D'` and the `D'`-bounds do. -/
@@ -928,7 +931,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
     have hmemld : (d0 D' 𝒱 g').MemLD D := by
       intro p
       rw [hg'd0']
-      show (Submodule.inclusion (RS.linSysOn_mono h) ((f : C1 D 𝒱) p) :
+      show (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
         RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)) ∈
         RS.LinSysOn D ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)
       rw [Submodule.coe_inclusion]
@@ -1025,7 +1028,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
       funext p
       apply Subtype.ext
       rw [C1.retype_apply_coe, hg'd0']
-      show (Submodule.inclusion (RS.linSysOn_mono h) ((f : C1 D 𝒱) p) :
+      show (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
         RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)) =
         ((f : C1 D 𝒱) p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X))
       rw [Submodule.coe_inclusion]

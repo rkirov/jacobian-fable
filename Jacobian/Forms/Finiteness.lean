@@ -112,17 +112,20 @@ variable (G : GoodCover X)
 /-- The chart of the `i`-th cover element. -/
 def e (i : Fin G.n) : OpenPartialHomeomorph X ℂ := chartAt ℂ (G.c i)
 
-omit [IsManifold 𝓘(ℂ, ℂ) ω X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem W_subset_source (i : Fin G.n) : G.W i ⊆ (G.e i).source :=
   subset_closure.trans (G.closure_W_subset i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem closureV_subset_source (i : Fin G.n) : closure (G.V i) ⊆ (G.e i).source :=
   (G.closure_V_subset i).trans (G.W_subset_source i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem V_subset_source (i : Fin G.n) : G.V i ⊆ (G.e i).source :=
   subset_closure.trans (G.closureV_subset_source i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem exists_mem_V (x : X) : ∃ i, x ∈ G.V i :=
   Set.mem_iUnion.mp (G.iUnion_V ▸ Set.mem_univ x)
 
@@ -135,39 +138,50 @@ def K (i : Fin G.n) : Set ℂ := G.e i '' closure (G.V i)
 /-- Open chart image of the outer set: the Montel domain. -/
 def U (i : Fin G.n) : Set ℂ := G.e i '' G.W i
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem isOpen_O (i : Fin G.n) : IsOpen (G.O i) :=
   (G.e i).isOpen_image_of_subset_source (G.isOpen_V i) (G.V_subset_source i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem isOpen_U (i : Fin G.n) : IsOpen (G.U i) :=
   (G.e i).isOpen_image_of_subset_source (G.isOpen_W i) (G.W_subset_source i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem isCompact_K [CompactSpace X] (i : Fin G.n) : IsCompact (G.K i) :=
   isClosed_closure.isCompact.image_of_continuousOn
     ((G.e i).continuousOn.mono (G.closureV_subset_source i))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem O_subset_K (i : Fin G.n) : G.O i ⊆ G.K i := Set.image_mono subset_closure
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem K_subset_U (i : Fin G.n) : G.K i ⊆ G.U i := Set.image_mono (G.closure_V_subset i)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem O_subset_target (i : Fin G.n) : G.O i ⊆ (G.e i).target := by
   rintro _ ⟨p, hp, rfl⟩
   exact (G.e i).map_source (G.V_subset_source i hp)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem K_subset_target (i : Fin G.n) : G.K i ⊆ (G.e i).target := by
   rintro _ ⟨p, hp, rfl⟩
   exact (G.e i).map_source (G.closureV_subset_source i hp)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem U_subset_target (i : Fin G.n) : G.U i ⊆ (G.e i).target := by
   rintro _ ⟨p, hp, rfl⟩
   exact (G.e i).map_source (G.W_subset_source i hp)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem K_subset_closure_O (i : Fin G.n) : G.K i ⊆ closure (G.O i) :=
   ((G.e i).continuousOn.mono (G.closureV_subset_source i)).image_closure
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem symm_mem_W {i : Fin G.n} {z : ℂ} (hz : z ∈ G.U i) : (G.e i).symm z ∈ G.W i := by
   obtain ⟨p, hp, rfl⟩ := hz
   rwa [(G.e i).left_inv (G.W_subset_source i hp)]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mem_K_of_mem_V {i : Fin G.n} {x : X} (hx : x ∈ G.V i) : G.e i x ∈ G.K i :=
   Set.mem_image_of_mem _ (subset_closure hx)
 
@@ -178,15 +192,18 @@ theorem e_mem_maximalAtlas [IsManifold 𝓘(ℂ) ω X] (i : Fin G.n) :
 
 /-! #### Restricted charts -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem restr_source_eq (i : Fin G.n) :
     ((G.e i).restr (G.V i)).source = (G.e i).source ∩ G.V i := by
   rw [OpenPartialHomeomorph.restr_source, (G.isOpen_V i).interior_eq]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mem_restr_source {i : Fin G.n} {x : X} (hx : x ∈ G.V i) :
     x ∈ ((G.e i).restr (G.V i)).source := by
   rw [G.restr_source_eq i]
   exact ⟨G.V_subset_source i hx, hx⟩
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem restr_target_eq (i : Fin G.n) : ((G.e i).restr (G.V i)).target = G.O i := by
   rw [OpenPartialHomeomorph.restr_target, (G.isOpen_V i).interior_eq]
   ext z
@@ -207,7 +224,6 @@ instance instCompactSpaceK [CompactSpace X] (i : Fin G.n) : CompactSpace (G.K i)
 continuous functions on the compact sets `K i`. -/
 abbrev P : Type _ := ∀ i : Fin G.n, C(G.K i, ℂ)
 
-variable [IsManifold 𝓘(ℂ) ω X]
 
 /-- The coefficient embedding: a holomorphic 1-form goes to the tuple of restrictions of its
 chart coefficients to the compacta `K i`. The norm `‖J η‖ = max_i sup_{K i} ‖coeffIn (e i) η‖`
@@ -457,7 +473,6 @@ end GoodCover
 
 /-! ### Riesz and the instance -/
 
-variable [IsManifold 𝓘(ℂ) ω X]
 
 /-- **Finite-dimensionality of the space of holomorphic 1-forms** on a compact Riemann surface
 (design §2.6 step 6): the coefficient embedding has compact unit ball, so its range is

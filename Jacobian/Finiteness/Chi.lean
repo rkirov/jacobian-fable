@@ -98,6 +98,7 @@ private theorem sixterm_rank2 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D �
   rw [hexact] at hrn
   omega
 
+omit [T1Space X] in
 private theorem sixterm_rank3 {D D' : RS.Divisor X} (h : D ≤ D') :
     h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D' := by
   have hrn := LinearMap.finrank_range_add_finrank_ker (H1Incl D h)
@@ -115,6 +116,7 @@ private theorem sixterm_rank3 {D D' : RS.Divisor X} (h : D ≤ D') :
   unfold RS.Finiteness.h1 at hrn ⊢
   omega
 
+omit [T1Space X] in
 theorem sixterm_ranks [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     ∃ p q : ℕ, RS.l D' = RS.l D + p ∧ Module.finrank ℂ (Window D D') = p + q ∧
       h1 D = q + h1 D' :=
@@ -122,26 +124,31 @@ theorem sixterm_ranks [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     Module.finrank ℂ (LinearMap.range (windowConnect h)),
     sixterm_rank1 h, sixterm_rank2 h, sixterm_rank3 h⟩
 
+omit [T1Space X] in
 theorem l_mono [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') : RS.l D ≤ RS.l D' := by
   obtain ⟨p, q, hp, -, -⟩ := sixterm_ranks h
   omega
 
+omit [T1Space X] in
 theorem l_le_l_add_degree [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     RS.l D' ≤ RS.l D + ((D' - D).degree).toNat := by
   obtain ⟨p, q, hp, hpq, -⟩ := sixterm_ranks h
   rw [finrank_window h] at hpq
   omega
 
+omit [T1Space X] in
 theorem h1_le_of_le [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') : h1 D' ≤ h1 D := by
   obtain ⟨p, q, -, -, hq⟩ := sixterm_ranks h
   omega
 
+omit [T1Space X] in
 theorem h1_le_h1_add_degree [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     h1 D ≤ h1 D' + ((D' - D).degree).toNat := by
   obtain ⟨p, q, -, hpq, hq⟩ := sixterm_ranks h
   rw [finrank_window h] at hpq
   omega
 
+omit [T1Space X] in
 /-- **The ledger step**: `χ(D') = χ(D) + deg(D' − D)` for `D ≤ D'`. -/
 theorem chi_of_le [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     chi D' = chi D + (D' - D).degree := by
@@ -167,6 +174,7 @@ theorem degree_single (P : X) :
       exact hx (by rw [Function.locallyFinsuppWithin.single_apply, if_neg hxP]))]
   simp
 
+omit [T1Space X] in
 theorem chi_single_add [ConnectedSpace X] (D : RS.Divisor X) (P : X) :
     chi (D + Function.locallyFinsuppWithin.single P (1 : ℤ)) = chi D + 1 := by
   have hle : D ≤ D + Function.locallyFinsuppWithin.single P (1 : ℤ) := by
@@ -176,6 +184,7 @@ theorem chi_single_add [ConnectedSpace X] (D : RS.Divisor X) (P : X) :
     rw [add_sub_cancel_left, degree_single]
   rw [chi_of_le hle, hdeg]
 
+omit [T1Space X] in
 /-- **§8's anchor**: `χ(D) = χ(0) + deg D` for every `D` (no induction — derive from
 `chi_of_le` twice at `D' := D ⊔ 0`). -/
 theorem chi_eq_chi_zero_add_degree [ConnectedSpace X] (D : RS.Divisor X) :
@@ -192,6 +201,7 @@ theorem chi_eq_chi_zero_add_degree [ConnectedSpace X] (D : RS.Divisor X) :
   rw [hdeg2] at e2
   omega
 
+omit [T1Space X] in
 /-- **The Riemann-inequality seed** (canonical-forms' workhorse): `χ(0) + deg D ≤ l(D)`. -/
 theorem chi_zero_add_degree_le_l [ConnectedSpace X] (D : RS.Divisor X) :
     chi (0 : RS.Divisor X) + D.degree ≤ (RS.l D : ℤ) := by
@@ -200,6 +210,7 @@ theorem chi_zero_add_degree_le_l [ConnectedSpace X] (D : RS.Divisor X) :
   have : (0 : ℤ) ≤ (h1 D : ℤ) := Int.natCast_nonneg _
   omega
 
+omit [T1Space X] in
 /-- **The existence half** (Forster 16.11 pattern): once `χ(0) + deg D > 0`, `L(D)` is
 nontrivial. -/
 theorem exists_ne_zero_mem_linSys [ConnectedSpace X] {D : RS.Divisor X}

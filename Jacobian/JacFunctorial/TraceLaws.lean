@@ -111,6 +111,7 @@ variable [CompactSpace Y] [ConnectedSpace Y]
 variable {Z : Type*} [TopologicalSpace Z] [T2Space Z] [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 variable {f : X → Y} {g : Y → Z}
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [CompactSpace Y] [ConnectedSpace Y] [T2Space Z] [IsManifold 𝓘(ℂ, ℂ) ω Z] in
 /-- Chain rule for `qCoeff`: the canonical coefficient of a composite splits through the
 preferred chart at the intermediate point. Unconditional (junk-inverse compatible). -/
 theorem qCoeff_comp (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g)
@@ -284,6 +285,7 @@ theorem traceForm_pullback (η : Form1 Y) :
   rw [hcard, nsmul_eq_mul]
 
 variable (f) in
+omit [CompactSpace Y] in
 /-- **The projection formula (challenge form)**: `Form1.trace f hf ∘ Form1.pullback f hf` is
 multiplication by the challenge degree `ContMDiff.degree f hf` — including the constant case
 (both sides vanish). -/

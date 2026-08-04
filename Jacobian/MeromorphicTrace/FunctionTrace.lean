@@ -68,10 +68,12 @@ noncomputable def trace (F : X → Y) (h : X → ℂ) (y₀ : Y) : ℂ :=
     ∑ i, traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) ((S.A i).e' y₀)
   else 0
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem trace_def (F : X → Y) (h : X → ℂ) (y₀ : Y) (hS : Nonempty (RS.FiberStack F y₀)) :
     trace F h y₀ = ∑ i, traceZk (h ∘ (hS.some.A i).e.symm) (RS.multiplicity F (hS.some.pt i))
       ((hS.some.A i).e' y₀) := dif_pos hS
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem trace_of_not_nonempty (hns : ¬ Nonempty (RS.FiberStack F y₀)) : trace F h y₀ = 0 :=
   dif_neg hns
 
@@ -88,6 +90,7 @@ private theorem infinite_of_chartedSpace_complex {Z : Type*} [TopologicalSpace Z
     exact ⟨{Classical.arbitrary Z}, isOpen_discrete _, rfl, by simp⟩
   exact hne.ne (Filter.empty_mem_iff_bot.mp hmem)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Junk convention (R2, resolved): `trace` vanishes identically for constant `F`. Away from the
 constant value, the fibre is empty, giving a genuine (degenerate, `n = 0`) `FiberStack` directly;
 AT the constant value, `X` being infinite (`infinite_of_chartedSpace_complex`) makes
@@ -202,6 +205,7 @@ theorem sum_traceZk_stack {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy : y 
         (finsum_mem_iUnion hdisj hfin).symm
     _ = ∑ᶠ x ∈ F ⁻¹' {y}, h x := by rw [← S.fiber_eq_iUnion hy]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- **Well-definedness of `trace` (design risk R1, resolved)**: at any point where a
 `FiberStack` exists at all, `trace` equals the naive fibre sum `∑ᶠ x ∈ F⁻¹{y₀}, h x` — in
 particular the stack picked by `Classical.choice` in `trace`'s definition is immaterial. -/
