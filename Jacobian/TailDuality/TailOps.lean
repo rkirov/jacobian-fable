@@ -52,7 +52,7 @@ omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
     truncAt p h (TailAt.mk p D₁ ψ) = TailAt.mk p D₂ ψ :=
   Submodule.mapQ_apply _ _ _ ψ
 
-omit [T2Space X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem truncAt_surjective (p : X) {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) :
     Function.Surjective (truncAt p h) := by
   intro z
@@ -78,7 +78,7 @@ theorem truncT_apply {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (τ : T D₁
     truncT h τ p = truncAt p h (τ p) :=
   DFinsupp.mapRange_apply (fun p => truncAt p h) (fun _ => map_zero _) τ p
 
-omit [DecidableEq X] in
+omit [DecidableEq X] [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem truncT_surjective {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) :
     Function.Surjective (truncT h) :=
   (DFinsupp.mapRange_surjective (fun p => truncAt p h) (fun _ => map_zero _)).mpr
@@ -115,7 +115,7 @@ theorem singleT_eq_zero_iff (p : X) (D : RS.Divisor X)
     singleT p D ψ = 0 ↔ (-(D p) : WithTop ℤ) ≤ ψ.ord p := by
   rw [singleT, DFinsupp.single_eq_zero, TailAt.mk_eq_zero_iff]
 
-omit [T2Space X] in
+omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem truncT_singleT {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     truncT h (singleT p D₁ ψ) = singleT p D₂ ψ := by
@@ -215,7 +215,7 @@ theorem mulInto_smul (c : ℂ) (f : RS.Mero X) {D E : RS.Divisor X}
   intro τ
   apply DFinsupp.ext
   intro p
-  simp only [LinearMap.smul_apply, DFinsupp.smul_apply, mulInto_apply, RingHom.id_apply]
+  simp only [LinearMap.smul_apply, DFinsupp.smul_apply, mulInto_apply]
   obtain ⟨ψ, hψ⟩ := TailAt.mk_surjective p D (τ p)
   rw [← hψ, mulIntoAt_mk, mulIntoAt_mk,
     show RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ p).source) (c • f)
@@ -231,6 +231,7 @@ theorem mulInto_alpha [CompactSpace X] [ConnectedSpace X] (f : RS.Mero X)
   show mulIntoAt f p (hf p) (alpha D g p) = alpha E (f * g) p
   rw [alpha_apply, mulIntoAt_mk, ← map_mul, alpha_apply]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem mulInto_surjective {f : RS.Mero X} (hf0 : f ≠ 0) [ConnectedSpace X] {D E : RS.Divisor X}
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) :
     Function.Surjective (mulInto f hf) :=
@@ -270,6 +271,7 @@ noncomputable def nuL (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] :
     (nu_bound A C (f + g))
   map_smul' c f := mulInto_smul c (f : RS.Mero X) (nu_bound A C f) (nu_bound A C (c • f))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem nuL_apply (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     (f : ↥(RS.LinSys C)) : nuL A C f = mulInto (f : RS.Mero X) (nu_bound A C f) := rfl
 
@@ -278,6 +280,7 @@ theorem nuL_alpha (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     nuL A C f (alphaL (A - C) g) = alphaL A ((f : RS.Mero X) * g) := by
   rw [nuL_apply, mulInto_alpha]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
 theorem nuL_surjective (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0) : Function.Surjective (nuL A C f) := by
   rw [nuL_apply]
@@ -302,6 +305,7 @@ theorem sub_divisor_le (A C : RS.Divisor X) [ConnectedSpace X]
   rw [RS.divisor_apply]
   exact WithTop.untop₀_le_untop₀ (RS.Mero.ord_ne_top hf0 p) h
 
+omit [DecidableEq X] in
 /-- The `μ_{1/f}` inversion identity (endgame step): inverting `f` and truncating recovers the
 plain truncation. -/
 theorem nuL_mulInto_inv (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]

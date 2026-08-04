@@ -112,7 +112,7 @@ theorem exists_mul_functional_eq (A : RS.Divisor X) (φ₁ φ₂ : T A →ₗ[�
       (f₁ : RS.Mero X) ≠ 0 ∧ (f₂ : RS.Mero X) ≠ 0 ∧
       φ₁ ∘ₗ nuL A C f₁ = φ₂ ∘ₗ nuL A C f₂ := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hinj : ∀ C : RS.Divisor X, 0 ≤ C →
       Function.Injective (nuPairDual A C φ₁ φ₂ hα₁ hα₂) := by
     intro C hC

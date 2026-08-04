@@ -172,6 +172,7 @@ noncomputable def pairAt (θ : MForm X) (p : X) :
 omit [T2Space X] in
 theorem pairAt_apply_mk (θ : MFormData X) (p : X) : pairAt (MForm.mk θ) p = pairAtData θ p := rfl
 
+omit [T2Space X] in
 theorem pairAt_tailGerm (θ : MForm X) (p : X) (m : ℤ) :
     pairAt θ p (RS.Cech.tailGerm p m) = θ.laurentCoeffAt p (-1 - m) := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
@@ -184,6 +185,7 @@ theorem pairAt_tailGerm (θ : MForm X) (p : X) (m : ℤ) :
     rw [(chartAt ℂ p).right_inv hz]
   rw [RS.resAt_congr heq, RS.resAt_zpow_mul (θdata.meromorphicAt_coeffAt p)]
 
+omit [T2Space X] in
 theorem pairAt_eq_zero_of_mem_ordGe {θ : MForm X} {D : RS.Divisor X} {p : X}
     (hθ : θ ∈ MForm.OmegaSpace (-D)) {ψ : RS.MeroGermOn X (chartAt ℂ p).source}
     (hψ : ψ ∈ RS.Cech.ordGe p (-(D p))) : pairAt θ p ψ = 0 := by
@@ -208,6 +210,7 @@ theorem pairAt_eq_zero_of_mem_ordGe {θ : MForm X} {D : RS.Divisor X} {p : X}
 
 /-! ### Linearity of `pairAt` in `θ` (unconditional; feeds `resMap`'s `map_add'`/`map_smul'`) -/
 
+omit [T2Space X] in
 theorem pairAt_add (θ η : MForm X) (p : X) : pairAt (θ + η) p = pairAt θ p + pairAt η p := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
   obtain ⟨ηdata, rfl⟩ := MForm.exists_rep η
@@ -226,6 +229,7 @@ theorem pairAt_add (θ η : MForm X) (p : X) : pairAt (θ + η) p = pairAt θ p 
     ((show MeromorphicAt (fun z => f ((chartAt ℂ p).symm z)) (chartAt ℂ p p) from
       hf p (mem_chart_source ℂ p)).mul (ηdata.meromorphicAt_coeffAt p))
 
+omit [T2Space X] in
 theorem pairAt_smul (c : ℂ) (θ : MForm X) (p : X) : pairAt (c • θ) p = c • pairAt θ p := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
   rw [MForm.mk_smul, pairAt_apply_mk, pairAt_apply_mk]
@@ -238,6 +242,7 @@ theorem pairAt_smul (c : ℂ) (θ : MForm X) (p : X) : pairAt (c • θ) p = c �
       funext z; simp [MFormData.coeffAt_smul]; ring]
   exact RS.resAt_const_mul c
 
+omit [T2Space X] in
 theorem pairAt_sub (θ η : MForm X) (p : X) : pairAt (θ - η) p = pairAt θ p - pairAt η p := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
   obtain ⟨ηdata, rfl⟩ := MForm.exists_rep η
@@ -259,6 +264,7 @@ theorem pairAt_sub (θ η : MForm X) (p : X) : pairAt (θ - η) p = pairAt θ p 
 
 /-! ### `pairAt_tailGerm_order_ne_zero`: the shared core of injectivity and Lemma 3.6 -/
 
+omit [T2Space X] in
 theorem pairAt_tailGerm_order_ne_zero {θ : MForm X} {p : X} (hne : θ.ord p ≠ ⊤) :
     pairAt θ p (RS.Cech.tailGerm p (-1 - (θ.ord p).untop₀)) ≠ 0 := by
   rw [pairAt_tailGerm, show (-1 - (-1 - (θ.ord p).untop₀)) = (θ.ord p).untop₀ from by ring]
@@ -277,7 +283,7 @@ noncomputable def pairTailAt (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MFo
   Submodule.liftQ _ (pairAt θ p) (fun _ψ hψ => LinearMap.mem_ker.mpr
     (pairAt_eq_zero_of_mem_ordGe hθ hψ))
 
-omit [DecidableEq X] in
+omit [DecidableEq X] [T2Space X] in
 theorem pairTailAt_mk (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.OmegaSpace (-D)) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     pairTailAt θ hθ p (TailAt.mk p D ψ) = pairAt θ p ψ :=
@@ -288,12 +294,14 @@ noncomputable def pairT (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.Om
     T D →ₗ[ℂ] ℂ :=
   DFinsupp.lsum ℕ (pairTailAt θ hθ)
 
+omit [T2Space X] in
 @[simp] theorem pairT_singleT (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.OmegaSpace (-D))
     (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     pairT θ hθ (singleT p D ψ) = pairAt θ p ψ := by
   show DFinsupp.lsum ℕ (pairTailAt θ hθ) (DFinsupp.single p (TailAt.mk p D ψ)) = _
   rw [DFinsupp.lsum_single ℕ (pairTailAt θ hθ) p (TailAt.mk p D ψ), pairTailAt_mk]
 
+omit [T2Space X] in
 theorem pairT_zero (D : RS.Divisor X) : pairT (0 : MForm X) (zero_mem _) = (0 : T D →ₗ[ℂ] ℂ) := by
   apply DFinsupp.lhom_ext
   intro p x
@@ -335,6 +343,7 @@ theorem smul_mem_omegaSpace {f : RS.Mero X} {θ : MForm X} {E F : RS.Divisor X}
     _ ≤ θ.ord p + f.ord p := add_le_add hEp (hf p)
     _ = f.ord p + θ.ord p := add_comm _ _
 
+omit [T2Space X] in
 theorem pairT_trunc {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (θ : MForm X)
     (hθ₂ : θ ∈ MForm.OmegaSpace (-D₂)) :
     (pairT θ hθ₂) ∘ₗ truncT h = pairT θ (omegaSpace_anti h hθ₂) := by
@@ -358,7 +367,7 @@ theorem mulInto_singleT (f : RS.Mero X) {D E : RS.Divisor X}
   rw [DFinsupp.mapRange_single, mulIntoAt_mk]
   rfl
 
-omit [DecidableEq X] in
+omit [DecidableEq X] [T2Space X] in
 /-- Miranda's `Res_ω∘μ_f = Res_{fω}`, at the raw germ level. -/
 theorem pairAt_mulInto (f : RS.Mero X) (p : X) (θ : MForm X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
@@ -379,6 +388,7 @@ theorem pairAt_mulInto (f : RS.Mero X) (p : X) (θ : MForm X)
   rw [MFormData.coeffAt_smul_mero]
   ring
 
+omit [T2Space X] in
 theorem pairT_mulInto {D E : RS.Divisor X} (f : RS.Mero X)
     (hf : ∀ p, ((D p - E p : ℤ) : WithTop ℤ) ≤ f.ord p) (θ : MForm X)
     (hθ : θ ∈ MForm.OmegaSpace (-E)) (hfθ : f • θ ∈ MForm.OmegaSpace (-D)) :
@@ -393,7 +403,7 @@ theorem pairT_mulInto {D E : RS.Divisor X} (f : RS.Mero X)
 
 variable [CompactSpace X] [ConnectedSpace X] [T1Space X]
 
-omit [DecidableEq X] [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [DecidableEq X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [T2Space X] in
 theorem pairAt_one (θ : MForm X) (p : X) :
     pairAt θ p (1 : RS.MeroGermOn X (chartAt ℂ p).source) = θ.resAt p := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
@@ -466,7 +476,7 @@ theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaS
 
 /-! ### `pairT` linearity in `θ` (feeds `resMap`) and injectivity -/
 
-omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] [T2Space X] in
 theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
     (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ + θ₂ ∈ MForm.OmegaSpace (-D)) :
     pairT (θ₁ + θ₂) hθ12 = pairT θ₁ hθ₁ + pairT θ₂ hθ₂ := by
@@ -477,7 +487,7 @@ theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   rw [LinearMap.add_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_add,
     LinearMap.add_apply]
 
-omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] [T2Space X] in
 theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈ MForm.OmegaSpace (-D))
     (hθ₂ : θ₂ ∈ MForm.OmegaSpace (-D)) (hθ12 : θ₁ - θ₂ ∈ MForm.OmegaSpace (-D)) :
     pairT (θ₁ - θ₂) hθ12 = pairT θ₁ hθ₁ - pairT θ₂ hθ₂ := by
@@ -488,7 +498,7 @@ theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   rw [LinearMap.sub_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_sub,
     LinearMap.sub_apply]
 
-omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] [T2Space X] in
 theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MForm.OmegaSpace (-D))
     (hcθ : c • θ ∈ MForm.OmegaSpace (-D)) :
     pairT (c • θ) hcθ = c • pairT θ hθ := by
@@ -498,7 +508,7 @@ theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MFo
   show pairT (c • θ) hcθ (singleT p D ψ) = (c • pairT θ hθ) (singleT p D ψ)
   rw [LinearMap.smul_apply, pairT_singleT, pairT_singleT, pairAt_smul, LinearMap.smul_apply]
 
-omit [CompactSpace X] [ConnectedSpace X] in
+omit [CompactSpace X] [ConnectedSpace X] [T2Space X] in
 theorem pairT_ne_zero [ConnectedSpace X] {D : RS.Divisor X} {θ : MForm X} (hθ0 : θ ≠ 0)
     (hθ : θ ∈ MForm.OmegaSpace (-D)) : pairT θ hθ ≠ 0 := by
   intro hz

@@ -68,7 +68,7 @@ theorem exists_logBranch_disk {c₀ : ℂ} {r : ℝ} (hr : 0 < r) {h : ℂ → �
       (fun x hx => ?_) hz hc₀
     rw [fderivWithin_of_isOpen isOpen_ball hx, (hφderiv x hx).hasFDerivAt.fderiv]
     ext v
-    simp [ContinuousLinearMap.smulRight_apply]
+    simp []
   have hφc₀ : φ c₀ = 1 := by
     have hne' := hne c₀ hc₀
     show h c₀ * Complex.exp (-(L c₀)) = 1

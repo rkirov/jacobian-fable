@@ -85,6 +85,7 @@ private theorem eventuallyEq_of_eventuallyEq_nhdsNE_of_eq {α : Type*} [Topologi
   · exact hval
   · exact hz hzc
 
+omit [CompactSpace X] [ConnectedSpace X] in
 /-- Zero case (P2): at a zero of `f`, CC4's multiplicity of `toP1 f` IS the vanishing order. -/
 theorem multiplicity_toP1_of_ordAtX_pos (hf : MeromorphicOnX f Set.univ)
     (hx : 0 < RS.ordAtX f x) :
@@ -135,6 +136,7 @@ theorem multiplicity_toP1_of_ordAtX_pos (hf : MeromorphicOnX f Set.univ)
   | top => simp
   | coe n => simp
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Pole case (P2): at a pole of `f`, CC4's multiplicity of `toP1 f` IS the order of the pole
 (made positive). -/
 theorem multiplicity_toP1_of_ordAtX_neg (hf : MeromorphicOnX f Set.univ)

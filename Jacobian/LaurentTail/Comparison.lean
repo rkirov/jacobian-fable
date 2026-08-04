@@ -136,7 +136,8 @@ theorem mlClass_res {D D' : RS.Divisor X} {𝒰 𝒱 : RS.Cech.FinCover (⊤ : O
     rw [resC1_retype τ hτ (RS.Cech.d0 D' 𝒰 g) hg hg'']
     congr 1
     exact hd0.symm
-  rw [RS.Cech.mlClass, RS.Cech.mlClass, ← RS.Cech.toH1_resH1 D τ hτ, RS.Cech.resH1_mk, key]
+  simp only [RS.Cech.mlClass]
+  rw [← RS.Cech.toH1_resH1 D τ hτ, RS.Cech.resH1_mk, key]
 
 /-! ### The per-point construction: realizing a clean representative -/
 
@@ -199,7 +200,7 @@ theorem d0_inclC0_coe {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ : R
     RS.Cech.inclC0_apply, RS.Cech.inclC0_apply]
   rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem memLD_inclC0 {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ D : RS.Divisor X}
     (h : D₁ ≤ D₂) {g : RS.Cech.C0 D₁ 𝒰} (hg : (RS.Cech.d0 D₁ 𝒰 g).MemLD D) :
     (RS.Cech.d0 D₂ 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g)).MemLD D := by
@@ -207,7 +208,7 @@ theorem memLD_inclC0 {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D₁ D₂ D : 
   rw [d0_inclC0_coe]
   exact hg p
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mlClass_inclC0 {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D₁ D₂ D : RS.Divisor X}
     (h : D₁ ≤ D₂) {g : RS.Cech.C0 D₁ 𝒰} (hg : (RS.Cech.d0 D₁ 𝒰 g).MemLD D) :
     RS.Cech.mlClass 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g) (memLD_inclC0 h hg) = RS.Cech.mlClass 𝒰 g hg := by
@@ -215,7 +216,8 @@ theorem mlClass_inclC0 {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D₁ D₂ D : 
       RS.Cech.C1.retype (RS.Cech.d0 D₁ 𝒰 g) hg := by
     funext p
     apply Subtype.ext
-    rw [RS.Cech.C1.retype_apply_coe, RS.Cech.C1.retype_apply_coe, d0_inclC0_coe]
+    simp only [RS.Cech.C1.retype_apply_coe]
+    rw [d0_inclC0_coe]
   show RS.Cech.toH1 D 𝒰 (RS.Cech.H1Cover.mk D 𝒰
       ⟨RS.Cech.C1.retype (RS.Cech.d0 D₂ 𝒰 (RS.Cech.inclC0 D₁ 𝒰 h g)) (memLD_inclC0 h hg),
         RS.Cech.C1.retype_mem_Z1 (memLD_inclC0 h hg)⟩) =
@@ -436,7 +438,7 @@ theorem gOf_resC0 (p : X) (V W : Opens X) (hpV : p ∈ V) (hpW : p ∈ W) (hWV :
   funext k
   fin_cases k <;> apply Subtype.ext <;> rfl
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Transport `mlClass` along an equality of the underlying `0`-cochain (avoids the
 "motive is not type correct" failure of `rw` on `mlClass`'s dependent `hg` argument). -/
 theorem mlClass_congr {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D D' : RS.Divisor X}
@@ -457,6 +459,7 @@ noncomputable def mlClassAtOf (p : X) (D D' : RS.Divisor X)
   RS.Cech.mlClass (pairCover p V hpV) (gOf p V hpV D' ψV)
     (gOf_memLD_of_clean p D D' ψ V hpV hVsub hVclean hVDzero ψV hψV)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Raise-then-refine identity: `mlClassAtOf` computed via `(D',V)` equals the one computed via
 `(D'', W)` for `W ≤ V` and `D' ≤ D''`, provided the `D''`-typed representative on `W` is again
 `restrict ψ`. -/
@@ -507,6 +510,7 @@ theorem mlClassAtOf_raise_res (p : X) (D D' D'' : RS.Divisor X)
       exact hψW.symm))
   exact mlClass_congr hval
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- **Independence of choices.** `mlClassAtOf`'s value does not depend on which valid
 `(V, D', ψV)` data is used to represent the same ambient germ `ψ`. -/
 theorem mlClassAtOf_agree (p : X) (D : RS.Divisor X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source)
@@ -755,7 +759,7 @@ theorem d0_diag_eq_zero {Ω : Opens X} {𝒰 : RS.Cech.FinCover Ω} {D' : RS.Div
     RS.Cech.d0 D' 𝒰 g (i, i) = 0 := by
   rw [RS.Cech.d0_apply, sub_eq_zero]
 
-omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] in
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T1Space X] [DecidableEq X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mlClass_zero {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D D' : RS.Divisor X}
     (hg : (RS.Cech.d0 D' 𝒰 (0 : RS.Cech.C0 D' 𝒰)).MemLD D) :
     RS.Cech.mlClass 𝒰 (0 : RS.Cech.C0 D' 𝒰) hg = 0 := by
@@ -853,6 +857,12 @@ theorem mlSumCochain_empty {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Di
 
 /-! ### The main theorem -/
 
+-- THE ONE REMAINING HEARTBEAT BUMP in the library (everything else now builds at the default
+-- budget). This 244-line proof exceeds it cumulatively, not at any single step: `clear_value` on
+-- `S`/`D'` breaks it (their definitional content is used downstream), and the real fix is to
+-- extract `CLAIM1` and `main` into private lemmas so each gets its own budget — which is also
+-- what the 200-line proof cap needs. Tracked for the lean-pool port, where `set_option` is banned.
+set_option maxHeartbeats 1000000 in
 theorem tailToH1_alpha (D : RS.Divisor X) (f : RS.Mero X) : tailToH1 D (alphaL D f) = 0 := by
   rw [alphaL_apply]
   rcases eq_or_ne f 0 with rfl | hf

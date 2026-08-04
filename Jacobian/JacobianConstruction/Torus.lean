@@ -87,7 +87,7 @@ theorem exists_uniform_injRadius :
   refine ⟨r / 2, by linarith, ?_⟩
   intro ℓ hℓL hℓne
   by_contra hlt
-  push_neg at hlt
+  push Not at hlt
   have hballmem : (ℓ : V) ∈ ball (0 : V) r := by
     rw [mem_ball, dist_eq_norm, sub_zero]
     linarith
@@ -142,27 +142,34 @@ def rawChartAux (x : V) : OpenPartialHomeomorph V (V ⧸ L) :=
     (QuotientAddGroup.isOpenMap_coe)
     Metric.isOpen_ball
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem rawChartAux_apply (x z : V) : rawChartAux L x z = QuotientAddGroup.mk z := rfl
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem rawChartAux_source (x : V) : (rawChartAux L x).source = ball x (injRadius L) := rfl
 
 /-- The chart at representative `x : V`: sends a class near `x` to its unique representative in
 `ball x (injRadius L)`. -/
 def chartAt' (x : V) : OpenPartialHomeomorph (V ⧸ L) V := (rawChartAux L x).symm
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem chartAt'_symm (x : V) : (chartAt' L x).symm = rawChartAux L x := rfl
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem chartAt'_source (x : V) :
     (chartAt' L x).source = QuotientAddGroup.mk '' ball x (injRadius L) := rfl
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem chartAt'_target (x : V) : (chartAt' L x).target = ball x (injRadius L) := rfl
 
+omit [NormedSpace ℂ V] in
 /-- The defining property of `chartAt'`: on a representative `z` inside the ball, the chart
 recovers `z`. -/
 theorem chartAt'_apply_mk {x z : V} (hz : z ∈ ball x (injRadius L)) :
     chartAt' L x (QuotientAddGroup.mk z) = z :=
   (rawChartAux L x).left_inv hz
 
+omit [NormedSpace ℂ V] in
 /-- If `w + ℓ` lands in the ball around `x'` for some `ℓ ∈ L`, the chart at `x'` reads the class
 of `w` as `w + ℓ`. This is the single computation underlying every transition/smoothness proof
 below. -/
@@ -175,6 +182,7 @@ theorem chartAt'_eq_add_of_mem_ball {x' w ℓ : V} (hℓ : ℓ ∈ L)
   rw [← hmk]
   exact chartAt'_apply_mk L hmem
 
+omit [NormedSpace ℂ V] in
 /-- Local constancy: the identity `chartAt' L x' (mk w) = w + ℓ` persists on a whole neighborhood
 of `w`, for the *same* `ℓ`. -/
 theorem chartAt'_eventuallyEq_add {x' w ℓ : V} (hℓ : ℓ ∈ L)
@@ -187,6 +195,7 @@ theorem chartAt'_eventuallyEq_add {x' w ℓ : V} (hℓ : ℓ ∈ L)
   rw [mem_ball, dist_eq_norm] at hw' ⊢
   simpa [add_sub_add_right_eq_sub] using hw'
 
+omit [NormedSpace ℂ V] in
 theorem chartAt'_mem_source (q : V ⧸ L) :
     q ∈ (chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q)).source := by
   set x := Function.surjInv QuotientAddGroup.mk_surjective q with hx_def
@@ -199,6 +208,7 @@ instance instChartedSpace : ChartedSpace V (V ⧸ L) :=
   chartedSpaceOfFamily' (chartAt' L) (fun q => Function.surjInv QuotientAddGroup.mk_surjective q)
     (chartAt'_mem_source L)
 
+omit [NormedSpace ℂ V] in
 @[simp] theorem chartAt_eq (q : V ⧸ L) :
     chartAt V q = chartAt' L (Function.surjInv QuotientAddGroup.mk_surjective q) := rfl
 

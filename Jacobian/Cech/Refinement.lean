@@ -69,6 +69,7 @@ theorem resC1_comp_d0 : (resC1 D τ hτ) ∘ₗ (d0 D 𝒰) = (d0 D 𝒱) ∘ₗ
     restrictL_restrictL D (hτ p.2) inf_le_right (inf_le_right.trans (hτ p.2)),
     restrictL_restrictL D (hτ p.1) inf_le_left (inf_le_left.trans (hτ p.1))]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_mem_B1 {f : C1 D 𝒰} (hf : f ∈ B1 D 𝒰) : resC1 D τ hτ f ∈ B1 D 𝒱 := by
   obtain ⟨g, rfl⟩ := hf
   exact ⟨resC0 D τ hτ g, (LinearMap.congr_fun (resC1_comp_d0 D τ hτ) g).symm⟩
@@ -92,6 +93,7 @@ theorem Z1.rel_res {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) (a b c : Fin 𝒰.n) {
     restrictL_restrictL D inf_le_left h hab] at hcongr
   exact hcongr
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resC1_mem_Z1 {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) : resC1 D τ hτ f ∈ Z1 D 𝒱 := by
   rw [mem_Z1_iff]
   rintro ⟨k, l, m⟩
@@ -116,6 +118,7 @@ theorem resC1_mem_Z1 {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) : resC1 D τ hτ f �
 noncomputable def resZ1 : Z1 D 𝒰 →ₗ[ℂ] Z1 D 𝒱 :=
   LinearMap.restrict (resC1 D τ hτ) (fun _ hf => resC1_mem_Z1 D τ hτ hf)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resZ1_apply_coe (f : Z1 D 𝒰) :
     (resZ1 D τ hτ f : C1 D 𝒱) = resC1 D τ hτ (f : C1 D 𝒰) := rfl
 
@@ -125,12 +128,14 @@ noncomputable def resH1 : H1Cover D 𝒰 →ₗ[ℂ] H1Cover D 𝒱 :=
     simp only [Submodule.mem_comap] at hz ⊢
     exact resC1_mem_B1 D τ hτ hz)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem resH1_mk (f : Z1 D 𝒰) :
     resH1 D τ hτ (H1Cover.mk D 𝒰 f) = H1Cover.mk D 𝒱 (resZ1 D τ hτ f) :=
   Submodule.mapQ_apply _ _ _ f
 
 /-! ### Refinement independence (Forster 12.3) -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resH1_indep (τ τ' : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (hτ' : IsRefIdx 𝒰 𝒱 τ') :
     resH1 D τ hτ = resH1 D τ' hτ' := by
   apply LinearMap.ext
@@ -217,6 +222,7 @@ theorem resC1_id (h : IsRefIdx 𝒰 𝒰 id) : resC1 D id h = LinearMap.id := by
   obtain ⟨i, j⟩ := p
   exact restrictL_id D (f (i, j))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resZ1_id (h : IsRefIdx 𝒰 𝒰 id) : resZ1 D id h = LinearMap.id := by
   apply LinearMap.ext
   intro f
@@ -226,6 +232,7 @@ theorem resZ1_id (h : IsRefIdx 𝒰 𝒰 id) : resZ1 D id h = LinearMap.id := by
   rw [resC1_id]
   rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resH1_id (h : IsRefIdx 𝒰 𝒰 id) : resH1 D id h = LinearMap.id := by
   apply LinearMap.ext
   intro ξ
@@ -260,12 +267,14 @@ theorem resC1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   exact restrictL_restrictL D (inf_le_inf (hτ (σ k)) (hτ (σ l))) (inf_le_inf (hσ k) (hσ l))
     (inf_le_inf ((hσ k).trans (hτ (σ k))) ((hσ l).trans (hτ (σ l)))) (f (τ (σ k), τ (σ l)))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resZ1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : IsRefIdx 𝒱 𝒲 σ) (f : Z1 D 𝒰) :
     (resZ1 D σ hσ) (resZ1 D τ hτ f) = resZ1 D (τ ∘ σ) (fun k => (hσ k).trans (hτ (σ k))) f := by
   apply Subtype.ext
   rw [resZ1_apply_coe, resZ1_apply_coe, resZ1_apply_coe]
   exact LinearMap.congr_fun (resC1_comp D τ hτ σ hσ) (f : C1 D 𝒰)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resH1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : IsRefIdx 𝒱 𝒲 σ) :
     (resH1 D σ hσ) ∘ₗ (resH1 D τ hτ) = resH1 D (τ ∘ σ) (fun k => (hσ k).trans (hτ (σ k))) := by
   apply LinearMap.ext

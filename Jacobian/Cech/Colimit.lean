@@ -39,6 +39,7 @@ variable (D : RS.Divisor X)
 noncomputable def resH1' {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ 𝒱) :
     H1Cover D 𝒰 →ₗ[ℂ] H1Cover D 𝒱 := resH1 D (chosenRefIdx h) (chosenRefIdx_spec h)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Forster 12.3: `resH1'` does not depend on the chosen witness. -/
 theorem resH1'_eq_resH1 {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ 𝒱) (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) : resH1' D h = resH1 D τ hτ :=
@@ -73,17 +74,21 @@ noncomputable abbrev H1 (D : RS.Divisor X) : Type _ :=
 noncomputable def toH1 (𝒰 : FinCover (⊤ : Opens X)) : H1Cover D 𝒰 →ₗ[ℂ] H1 D :=
   Module.DirectLimit.of ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h => resH1' D h) 𝒰
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem toH1_resH1' {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ 𝒱) (ξ : H1Cover D 𝒰) :
     toH1 D 𝒱 (resH1' D h ξ) = toH1 D 𝒰 ξ :=
   Module.DirectLimit.of_f
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem toH1_resH1 {𝒰 𝒱 : FinCover (⊤ : Opens X)} (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ)
     (ξ : H1Cover D 𝒰) : toH1 D 𝒱 (resH1 D τ hτ ξ) = toH1 D 𝒰 ξ := by
   rw [← resH1'_eq_resH1 D (le_def.2 ⟨τ, hτ⟩) τ hτ, toH1_resH1']
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem exists_rep (ξ : H1 D) : ∃ 𝒰 c, toH1 D 𝒰 c = ξ :=
   Module.DirectLimit.exists_of ξ
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Refine the produced cover to a good one, pushing the class along (§5.3). -/
 theorem exists_rep_good [CompactSpace X] (ξ : H1 D) :
     ∃ 𝒰 : FinCover (⊤ : Opens X), 𝒰.IsGood ∧ ∃ c, toH1 D 𝒰 c = ξ := by
@@ -91,18 +96,21 @@ theorem exists_rep_good [CompactSpace X] (ξ : H1 D) :
   obtain ⟨𝒰, h, hgood⟩ := exists_good_refinement 𝒰₀
   exact ⟨𝒰, hgood, resH1' D h c₀, by rw [toH1_resH1', hc₀]⟩
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem exists_rep_refined (𝒰₀ : FinCover (⊤ : Opens X)) (ξ : H1 D) :
     ∃ (𝒰 : FinCover (⊤ : Opens X)) (_ : 𝒰₀ ≤ 𝒰), ∃ c, toH1 D 𝒰 c = ξ := by
   obtain ⟨𝒰₁, c₁, hc₁⟩ := exists_rep D ξ
   obtain ⟨𝒰, h₀, h₁⟩ := exists_ge_ge 𝒰₀ 𝒰₁
   exact ⟨𝒰, h₀, resH1' D h₁ c₁, by rw [toH1_resH1', hc₁]⟩
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[elab_as_elim] theorem H1.induction_on {C : H1 D → Prop} (ξ : H1 D)
     (ih : ∀ (𝒰 : FinCover (⊤ : Opens X)) (c : H1Cover D 𝒰), C (toH1 D 𝒰 c)) : C ξ :=
   Module.DirectLimit.induction_on ξ ih
 
 /-! ### Subsingleton criteria not requiring 12.4 -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- If every cover-level `H¹` vanishes, so does the colimit (no injectivity needed: every class
 already has a cover-level representative, and the hypothesis kills every representative). -/
 theorem subsingleton_H1_of_all_subsingleton
@@ -116,6 +124,7 @@ theorem subsingleton_H1_of_all_subsingleton
       have hc' : c' = (0 : H1Cover D 𝒱) := Subsingleton.elim _ _
       rw [hc, hc', map_zero, map_zero]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- If every *good* cover-level `H¹` vanishes, so does the colimit (good covers are cofinal). -/
 theorem subsingleton_H1_of_good [CompactSpace X]
     (h : ∀ 𝒰 : FinCover (⊤ : Opens X), 𝒰.IsGood → Subsingleton (H1Cover D 𝒰)) :
@@ -140,6 +149,7 @@ noncomputable def H1.lift {P : Type*} [AddCommGroup P] [Module ℂ P]
   Module.DirectLimit.lift ℂ (FinCover (⊤ : Opens X)) (fun 𝒰 => H1Cover D 𝒰) (fun _ _ h => resH1' D h)
     g (fun i j hij x => hg i j hij x)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem H1.lift_toH1 {P : Type*} [AddCommGroup P] [Module ℂ P]
     (g : ∀ 𝒰 : FinCover (⊤ : Opens X), H1Cover D 𝒰 →ₗ[ℂ] P)
     (hg : ∀ (𝒰 𝒱 : FinCover (⊤ : Opens X)) (h : 𝒰 ≤ 𝒱) (ξ : H1Cover D 𝒰),
@@ -214,6 +224,7 @@ noncomputable def h1CoverIncl {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D')
       rw [d0_apply, inclC1_apply, d0_apply, inclC0_apply, inclC0_apply, map_sub,
         inclusion_restrictL_comm (hD := h), inclusion_restrictL_comm (hD := h)])
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem h1CoverIncl_mk {Ω : Opens X} {𝒰 : FinCover Ω} (h : D ≤ D') (f : Z1 D 𝒰) :
     h1CoverIncl D 𝒰 h (H1Cover.mk D 𝒰 f) =
       H1Cover.mk D' 𝒰 (LinearMap.restrict (inclC1 D 𝒰 h) (fun _ hf => inclC1_mem_Z1 D h hf) f) :=
@@ -229,6 +240,7 @@ theorem inclC1_comp_resC1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D'
   rw [resC1_apply, resC1_apply, inclC1_apply]
   exact inclusion_restrictL_comm D (inf_le_inf (hτ p.1) (hτ p.2)) h (f (τ p.1, τ p.2))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem h1CoverIncl_resH1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D') (τ : Fin 𝒱.n → Fin 𝒰.n)
     (hτ : IsRefIdx 𝒰 𝒱 τ) (ξ : H1Cover D 𝒰) :
     h1CoverIncl D 𝒱 h (resH1 D τ hτ ξ) = resH1 D' τ hτ (h1CoverIncl D 𝒰 h ξ) := by
@@ -246,6 +258,7 @@ noncomputable def H1Incl (h : D ≤ D') : H1 D →ₗ[ℂ] H1 D' :=
       resH1'_eq_resH1 D' h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱)]
     exact h1CoverIncl_resH1 D h (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱) ξ)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem H1Incl_toH1 (h : D ≤ D') (𝒰 : FinCover (⊤ : Opens X)) (c : H1Cover D 𝒰) :
     H1Incl D h (toH1 D 𝒰 c) = toH1 D' 𝒰 (h1CoverIncl D 𝒰 h c) :=
   Module.DirectLimit.map_apply_of _ _ c

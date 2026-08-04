@@ -139,10 +139,60 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem goodRef_isGood [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     (goodRef 𝒰).IsGood := (exists_good_refinement 𝒰).choose_spec.2
 
+
 /-- `toDolb` extended to every cover by pushing to a good refinement. -/
 noncomputable def toDolbAll [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     H1Cover (0 : RS.Divisor X) 𝒰 →ₗ[ℂ] H01 X :=
   toDolb (goodRef_isGood 𝒰) ∘ₗ resH1' (0 : RS.Divisor X) (goodRef_le 𝒰)
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+/-- Restriction along `h : 𝒰 ≤ 𝒱` followed by any `𝒱 → 𝒲` refinement index is restriction along
+the composite. Term-level, so it does not spend the compat proof's budget. -/
+private theorem resH1_resH1' {𝒰 𝒱 𝒲 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ 𝒱)
+    {ρ : Fin 𝒱.n → Fin 𝒰.n} (hρ : IsRefIdx 𝒰 𝒱 ρ)
+    {c : Fin 𝒲.n → Fin 𝒱.n} (hc : IsRefIdx 𝒱 𝒲 c) (hidx : IsRefIdx 𝒰 𝒲 (ρ ∘ c))
+    (ξ : H1Cover (0 : RS.Divisor X) 𝒰) :
+    resH1 (0 : RS.Divisor X) c hc (resH1' (0 : RS.Divisor X) h ξ) =
+      resH1 (0 : RS.Divisor X) (ρ ∘ c) hidx ξ := by
+  rw [resH1'_eq_resH1 (0 : RS.Divisor X) h ρ hρ]
+  exact LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) ρ hρ c hc) ξ
+
+/-- `toDolb` does not see which refinement index was used (`resH1_indep`). -/
+private theorem toDolb_resH1_congr [T2Space X] [CompactSpace X]
+    {𝒴 𝒲 : FinCover (⊤ : Opens X)} (h𝒲good : 𝒲.IsGood)
+    {a b : Fin 𝒲.n → Fin 𝒴.n} (ha : IsRefIdx 𝒴 𝒲 a) (hb : IsRefIdx 𝒴 𝒲 b)
+    (η : H1Cover (0 : RS.Divisor X) 𝒴) :
+    toDolb h𝒲good (resH1 (0 : RS.Divisor X) a ha η) =
+      toDolb h𝒲good (resH1 (0 : RS.Divisor X) b hb η) :=
+  congrArg (toDolb h𝒲good) (LinearMap.congr_fun (resH1_indep (0 : RS.Divisor X) a b ha hb) η)
+
+/-- `toDolbAll 𝒴` computed through ANY good cover `𝒲` refining `goodRef 𝒴`, via ANY refinement
+index `𝒴 → 𝒲`.
+
+`goodRef`'s own indices appear only inside this proof, never in the statement: they have type
+`Fin (goodRef 𝒴).n → _`, and since `goodRef` is a `Classical.choice`, every such type sends
+`whnf` through the choice term. Keeping them out of the statement is what lets the caller
+(`toDolbAll_compat`) stay inside the default heartbeat budget. -/
+private theorem toDolbAll_eq_toDolb [T2Space X] [CompactSpace X]
+    {𝒴 𝒲 : FinCover (⊤ : Opens X)} (hg : goodRef 𝒴 ≤ 𝒲) (h𝒲good : 𝒲.IsGood)
+    {a : Fin 𝒲.n → Fin 𝒴.n} (ha : IsRefIdx 𝒴 𝒲 a) (η : H1Cover (0 : RS.Divisor X) 𝒴) :
+    toDolbAll 𝒴 η = toDolb h𝒲good (resH1 (0 : RS.Divisor X) a ha η) := by
+  obtain ⟨τ, hτ⟩ : ∃ τ, IsRefIdx 𝒴 (goodRef 𝒴) τ :=
+    ⟨chosenRefIdx (goodRef_le 𝒴), chosenRefIdx_spec (goodRef_le 𝒴)⟩
+  obtain ⟨σ, hσ⟩ : ∃ σ, IsRefIdx (goodRef 𝒴) 𝒲 σ := ⟨chosenRefIdx hg, chosenRefIdx_spec hg⟩
+  have hidx : IsRefIdx 𝒴 𝒲 (τ ∘ σ) := fun k => (hσ k).trans (hτ (σ k))
+  have h1 : toDolbAll 𝒴 η = toDolb h𝒲good (resH1 (0 : RS.Divisor X) (τ ∘ σ) hidx η) := by
+    show toDolb (goodRef_isGood 𝒴) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒴) η) = _
+    rw [resH1'_eq_resH1 (0 : RS.Divisor X) (goodRef_le 𝒴) τ hτ]
+    have hc1 : resH1 (0 : RS.Divisor X) σ hσ (resH1 (0 : RS.Divisor X) τ hτ η) =
+        resH1 (0 : RS.Divisor X) (τ ∘ σ) hidx η :=
+      LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) τ hτ σ hσ) η
+    have hc2 : toDolb h𝒲good (resH1 (0 : RS.Divisor X) σ hσ (resH1 (0 : RS.Divisor X) τ hτ η)) =
+        toDolb (goodRef_isGood 𝒴) (resH1 (0 : RS.Divisor X) τ hτ η) :=
+      LinearMap.congr_fun (toDolb_res (goodRef_isGood 𝒴) h𝒲good σ hσ)
+        (resH1 (0 : RS.Divisor X) τ hτ η)
+    rw [← hc2, hc1]
+  exact h1.trans (toDolb_resH1_congr h𝒲good hidx ha η)
 
 theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤ : Opens X)) (h : 𝒰 ≤ 𝒱)
     (ξ : H1Cover (0 : RS.Divisor X) 𝒰) :
@@ -150,61 +200,18 @@ theorem toDolbAll_compat [T2Space X] [CompactSpace X] (𝒰 𝒱 : FinCover (⊤
   obtain ⟨𝒲, h𝒲le, h𝒲good⟩ := exists_good_refinement ((goodRef 𝒰).meet (goodRef 𝒱))
   have hU𝒲 : goodRef 𝒰 ≤ 𝒲 := (le_meet_left _ _).trans h𝒲le
   have hV𝒲 : goodRef 𝒱 ≤ 𝒲 := (le_meet_right _ _).trans h𝒲le
-  -- `resH1'_eq_resH1` accepts ANY refinement index, so the indices are obtained opaquely
-  -- rather than `set` to `chosenRefIdx …`: with the definitions visible, `whnf` unfolds them
-  -- repeatedly while checking the `resH1`/`toDolb` rewrites and blows the heartbeat budget.
-  obtain ⟨τ𝒰, hτ𝒰⟩ : ∃ τ, IsRefIdx 𝒰 (goodRef 𝒰) τ :=
-    ⟨chosenRefIdx (goodRef_le 𝒰), chosenRefIdx_spec (goodRef_le 𝒰)⟩
-  obtain ⟨τ𝒱, hτ𝒱⟩ : ∃ τ, IsRefIdx 𝒱 (goodRef 𝒱) τ :=
-    ⟨chosenRefIdx (goodRef_le 𝒱), chosenRefIdx_spec (goodRef_le 𝒱)⟩
-  obtain ⟨σU, hσU⟩ : ∃ σ, IsRefIdx (goodRef 𝒰) 𝒲 σ := ⟨chosenRefIdx hU𝒲, chosenRefIdx_spec hU𝒲⟩
-  obtain ⟨σV, hσV⟩ : ∃ σ, IsRefIdx (goodRef 𝒱) 𝒲 σ := ⟨chosenRefIdx hV𝒲, chosenRefIdx_spec hV𝒲⟩
+  obtain ⟨a, ha⟩ : ∃ a, IsRefIdx 𝒰 𝒲 a :=
+    ⟨chosenRefIdx ((goodRef_le 𝒰).trans hU𝒲), chosenRefIdx_spec ((goodRef_le 𝒰).trans hU𝒲)⟩
+  obtain ⟨b, hb⟩ : ∃ b, IsRefIdx 𝒱 𝒲 b :=
+    ⟨chosenRefIdx ((goodRef_le 𝒱).trans hV𝒲), chosenRefIdx_spec ((goodRef_le 𝒱).trans hV𝒲)⟩
   obtain ⟨ρ, hρ⟩ : ∃ ρ, IsRefIdx 𝒰 𝒱 ρ := ⟨chosenRefIdx h, chosenRefIdx_spec h⟩
-  have hidx1 : IsRefIdx 𝒰 𝒲 (τ𝒰 ∘ σU) := fun k => (hσU k).trans (hτ𝒰 (σU k))
-  have hidx2 : IsRefIdx 𝒰 𝒲 (ρ ∘ τ𝒱 ∘ σV) :=
-    fun k => (hσV k).trans ((hτ𝒱 (σV k)).trans (hρ (τ𝒱 (σV k))))
-  have hRHS : toDolbAll 𝒰 ξ = toDolb h𝒲good (resH1 (0 : RS.Divisor X) (τ𝒰 ∘ σU) hidx1 ξ) := by
-    show toDolb (goodRef_isGood 𝒰) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒰) ξ) = _
-    rw [resH1'_eq_resH1 (0 : RS.Divisor X) (goodRef_le 𝒰) τ𝒰 hτ𝒰]
-    have hc1 : resH1 (0 : RS.Divisor X) σU hσU (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ) =
-        resH1 (0 : RS.Divisor X) (τ𝒰 ∘ σU) hidx1 ξ := by
-      have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) τ𝒰 hτ𝒰 σU hσU) ξ
-      exact this
-    have hc2 : toDolb h𝒲good (resH1 (0 : RS.Divisor X) σU hσU
-        (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ)) =
-        toDolb (goodRef_isGood 𝒰) (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ) := by
-      have := LinearMap.congr_fun (toDolb_res (goodRef_isGood 𝒰) h𝒲good σU hσU)
-        (resH1 (0 : RS.Divisor X) τ𝒰 hτ𝒰 ξ)
-      exact this
-    rw [← hc2, hc1]
-  have hLHS : toDolbAll 𝒱 (resH1' (0 : RS.Divisor X) h ξ) =
-      toDolb h𝒲good (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) hidx2 ξ) := by
-    show toDolb (goodRef_isGood 𝒱)
-        (resH1' (0 : RS.Divisor X) (goodRef_le 𝒱) (resH1' (0 : RS.Divisor X) h ξ)) = _
-    rw [resH1'_eq_resH1 (0 : RS.Divisor X) h ρ hρ,
-      resH1'_eq_resH1 (0 : RS.Divisor X) (goodRef_le 𝒱) τ𝒱 hτ𝒱]
-    have hc1 : resH1 (0 : RS.Divisor X) τ𝒱 hτ𝒱 (resH1 (0 : RS.Divisor X) ρ hρ ξ) =
-        resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ := by
-      have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) ρ hρ τ𝒱 hτ𝒱) ξ
-      exact this
-    rw [hc1]
-    have hc2 : resH1 (0 : RS.Divisor X) σV hσV
-        (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ) =
-        resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) hidx2 ξ := by
-      have := LinearMap.congr_fun (resH1_comp (0 : RS.Divisor X) (ρ ∘ τ𝒱)
-        (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) σV hσV) ξ
-      exact this
-    have hc3 : toDolb h𝒲good (resH1 (0 : RS.Divisor X) σV hσV
-        (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ)) =
-        toDolb (goodRef_isGood 𝒱)
-          (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ) := by
-      have := LinearMap.congr_fun (toDolb_res (goodRef_isGood 𝒱) h𝒲good σV hσV)
-        (resH1 (0 : RS.Divisor X) (ρ ∘ τ𝒱) (fun k => (hτ𝒱 k).trans (hρ (τ𝒱 k))) ξ)
-      exact this
-    rw [← hc3, hc2]
-  rw [hLHS, hRHS]
-  exact congrArg (toDolb h𝒲good)
-    (LinearMap.congr_fun (resH1_indep (0 : RS.Divisor X) (ρ ∘ τ𝒱 ∘ σV) (τ𝒰 ∘ σU) hidx2 hidx1) ξ)
+  have hidx : IsRefIdx 𝒰 𝒲 (ρ ∘ b) := fun k => (hb k).trans (hρ (b k))
+  -- composed as terms rather than by `rw`: building rewrite motives over the `H1Cover`
+  -- direct-limit types is expensive here.
+  exact (toDolbAll_eq_toDolb hV𝒲 h𝒲good hb (resH1' (0 : RS.Divisor X) h ξ)).trans
+    (((congrArg (toDolb h𝒲good) (resH1_resH1' h hρ hb hidx ξ)).trans
+      (toDolb_resH1_congr h𝒲good hidx ha ξ)).trans
+      (toDolbAll_eq_toDolb hU𝒲 h𝒲good ha ξ).symm)
 
 /-- **THE comparison map on the colimit** (Forster 15.14(a), forward map). -/
 noncomputable def cechToH01 [T2Space X] [CompactSpace X] :
@@ -360,8 +367,10 @@ noncomputable def dolbeaultEquiv [T2Space X] [CompactSpace X] :
     H1 (0 : RS.Divisor X) ≃ₗ[ℂ] H01 X :=
   LinearEquiv.ofBijective cechToH01 ⟨cechToH01_injective, cechToH01_surjective⟩
 
+-- `(X := X)` pins the equiv's implicit type argument before the `CoeFun` search starts; left to
+-- unification it searches with `H01 ?X` still a metavariable and exhausts the instance budget.
 @[simp] theorem dolbeaultEquiv_apply [T2Space X] [CompactSpace X] (ξ : H1 (0 : RS.Divisor X)) :
-    dolbeaultEquiv ξ = cechToH01 ξ := rfl
+    dolbeaultEquiv (X := X) ξ = cechToH01 ξ := rfl
 
 /-- The blueprint's stated purpose: Čech finiteness transfers to `H^{0,1}`. Gated on
 `[FiniteDimensional ℂ (H1 (0 : Divisor X))]` — the unconditional discharge of this hypothesis

@@ -81,6 +81,7 @@ private theorem resAt_smul_d (h φ : ℳ X) (x : X) :
 
 /-! ### Honesty of `toP1 ∘ holoRepr` at nonnegative-order points -/
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Pointwise: at a point of nonnegative order, `toP1 φ.holoRepr` is the literal coercion. -/
 private theorem toP1_holoRepr_point (φ : ℳ X) {x : X} (hx : 0 ≤ ordAtX φ.holoRepr x) :
     MTrace.toP1 φ.holoRepr x = ((φ.holoRepr x : ℂ) : OnePoint ℂ) := by
@@ -91,6 +92,7 @@ private theorem toP1_holoRepr_point (φ : ℳ X) {x : X} (hx : 0 ≤ ordAtX φ.h
   have h := MTrace.toP1_holoRepr_eq_coe_of_nonneg hf₀ (y := x) (by rw [hrepr]; exact hx)
   rwa [hrepr] at h
 
+omit [CompactSpace X] [ConnectedSpace X] in
 /-- Full-neighborhood version. -/
 private theorem toP1_holoRepr_eventually (φ : ℳ X) {x : X} (hx : 0 ≤ ordAtX φ.holoRepr x) :
     MTrace.toP1 φ.holoRepr =ᶠ[𝓝 x] fun p => ((φ.holoRepr p : ℂ) : OnePoint ℂ) := by
@@ -104,6 +106,7 @@ private theorem toP1_holoRepr_eventually (φ : ℳ X) {x : X} (hx : 0 ≤ ordAtX
 
 /-! ### The two bridging lemmas: `resAtX` against `(h • d φ).resAt` -/
 
+omit [CompactSpace X] [ConnectedSpace X] in
 /-- **Bridge, finite-value case**: over a point where `φ` has nonnegative order (so
 `F x = toP1 φ.holoRepr x` is finite and the target chart is `coeChart`), the pair-form residue
 of `h.holoRepr` along `F` IS the residue of the 1-form `h • d φ`. -/
@@ -138,6 +141,7 @@ theorem resAtX_toP1_eq_of_ord_nonneg (φ h : ℳ X) {x : X}
     = h.holoRepr ((chartAt ℂ x).symm z) * deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) z
   rw [hz]
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- **Bridge, `∞`-fibre case**: over a pole of `φ` (so `F x = ∞` and the target chart is
 `invChart`, i.e. the pullback convention reads against `F^*(dw)` with `w = 1/z`), the pair-form
 residue of the CORRECTED coefficient `H∞ := -(φ.holoRepr)²·h.holoRepr` along `F` is the residue

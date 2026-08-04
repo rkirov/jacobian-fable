@@ -101,7 +101,7 @@ theorem isClosed_bddHoloOn (S : Opens X) :
   have hunif : ∀ ε > 0, ∀ᶠ n in (atTop : Filter ℕ), ∀ z : ↥(S : Set X), dist (f z) (Fb n z) < ε := by
     have := BoundedContinuousFunction.tendsto_iff_tendstoUniformly.1 hFbtend
     rwa [tendstoUniformly_iff] at this
-  refine ⟨gLim, ?_, fun z => by simp [hgLim_def, z.2]⟩
+  refine ⟨gLim, ?_, fun z => by simp [hgLim_def]⟩
   intro x hx
   set e := chartAt ℂ x with he_def
   set V : Opens X := S ⊓ ⟨e.source, e.open_source⟩ with hV_def
@@ -332,7 +332,7 @@ theorem toGerm_restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
       = (φ : RS.MeroGermOn X (S : Set X)).holoRepr x := rfl
   rw [← e1, e2]
 
-omit [T2Space X] in
+omit [T2Space X] [T1Space X] in
 theorem restrictGerm_toGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
     (f : BddHoloOn S) :
     restrictGerm hc ⟨toGerm S f, toGerm_mem_linSysOn f⟩ = restrictCLM (le_of_closure hc) f := by

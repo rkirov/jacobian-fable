@@ -58,7 +58,7 @@ theorem span_real_periodSubgroup :
       Pi.single i w = w.re • (Pi.single i (1 : ℂ) : Fin (genus X) → ℂ) + w.im • (Pi.single i Complex.I : Fin (genus X) → ℂ) := by
     intro i w
     have hw : w = w.re • (1 : ℂ) + w.im • Complex.I := by
-      simp [Complex.ext_iff]
+      simp []
     conv_lhs => rw [hw]
     rw [Pi.single_add, Pi.single_smul, Pi.single_smul]
   have hφdecomp : ∀ v : Fin (genus X) → ℂ,

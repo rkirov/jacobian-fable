@@ -51,6 +51,7 @@ theorem Z1.repr_contMDiffOn {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Di
   exact (RS.mem_linSysOn_iff_of_isOpen (𝒰.U p.1 ⊓ 𝒰.U p.2).isOpen).1
     ((f : C1 (0 : RS.Divisor X) 𝒰) p).2 x hx
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Pointwise cocycle identity (via `evalAt` rigidity; same pattern as dbar DiskAcyclic's
 member-splitting computation). -/
 theorem Z1.repr_cocycle {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Divisor X) 𝒰)

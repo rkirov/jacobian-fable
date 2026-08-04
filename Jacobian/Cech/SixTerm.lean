@@ -63,6 +63,7 @@ theorem C1.retype_mem_Z1' {f : C1 D' 𝒰} (hf : f ∈ Z1 D' 𝒰) (hmem : f.Mem
   rw [hcoe, (mem_Z1_iff D' 𝒰 f).1 hf t]
   simp
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The `D`-inclusion of a retyped `Z1 D 𝒰` class recovers the original `Z1 D' 𝒰` class. -/
 theorem h1CoverIncl_mk_retype (h : D ≤ D') {f : C1 D' 𝒰} (hf : f ∈ Z1 D' 𝒰) (hmem : f.MemLD D) :
     h1CoverIncl D 𝒰 h (H1Cover.mk D 𝒰 ⟨C1.retype f hmem, C1.retype_mem_Z1' hf hmem⟩) =
@@ -328,6 +329,7 @@ theorem C1.MemLD.res {𝒱 : FinCover Ω} {f : C1 D' 𝒰} (hf : f.MemLD D)
   exact RS.restrict_mem_linSysOn (inf_le_inf (hτ p.1) (hτ p.2))
     (𝒱.U p.1 ⊓ 𝒱.U p.2).isOpen (𝒰.U (τ p.1) ⊓ 𝒰.U (τ p.2)).isOpen (hf (τ p.1, τ p.2))
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem memLD_d0_res {𝒱 : FinCover Ω} {g : C0 D' 𝒰} (hg : (d0 D' 𝒰 g).MemLD D)
     (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) :
     (d0 D' 𝒱 (resC0 D' τ hτ g)).MemLD D := by
@@ -380,10 +382,12 @@ theorem mlClass_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} (τ : Fin 𝒱.n → 
     apply Subtype.ext
     rw [C1.retype_apply_coe, ← congrFun hcomm p]
     rfl
-  rw [mlClass, mlClass, hkey, ← resH1_mk, toH1_resH1]
+  simp only [mlClass]
+  rw [hkey, ← resH1_mk, toH1_resH1]
 
 variable [T2Space X] [CompactSpace X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- On a cover adapted to `diffSupp D D'`, every `Z1 D'`-cocycle already satisfies the `D`-bound
 componentwise: diagonal components vanish to order `⊤`, off-diagonal components avoid the finite
 set where `D ≠ D'` (adaptedness), hence `D = D'` there and the `D'`-bound *is* the `D`-bound. -/
@@ -408,22 +412,40 @@ theorem memLD_of_isAdapted {𝒲 : FinCover (⊤ : Opens X)} (hadapt : 𝒲.IsAd
 -- sequence, no snake lemma anywhere. Every class of `H1 D'` is already, on a cover adapted to
 -- `diffSupp D D'`, represented by a genuine `Z1 D`-cocycle (retyping across the finite set where
 -- `D ≠ D'` costs nothing since cocycles vanish there anyway).
+omit [T2Space X] [CompactSpace X] in
+/-- Pushing a cocycle to a refinement does not change its colimit class. Split out for the same
+budget reason as `H1Incl_toH1_retype`. -/
+private theorem toH1_mk_resZ1 {𝒰₀ 𝒲 : FinCover (⊤ : Opens X)} (τ : Fin 𝒲.n → Fin 𝒰₀.n)
+    (hτ : IsRefIdx 𝒰₀ 𝒲 τ) (f' : Z1 D' 𝒰₀) :
+    toH1 D' 𝒲 (H1Cover.mk D' 𝒲 (resZ1 D' τ hτ f')) = toH1 D' 𝒰₀ (H1Cover.mk D' 𝒰₀ f') := by
+  rw [← resH1_mk, toH1_resH1 D' τ hτ]
+
+omit [T2Space X] [CompactSpace X] in
+/-- `H1Incl` sends the retyped class of a `D`-bounded `D'`-cocycle back to the cocycle's own
+class. Split out of `H1Incl_surjective`: these two rewrites go through `H1Cover`'s direct-limit
+types and, kept inline, push that proof past the default heartbeat budget. -/
+private theorem H1Incl_toH1_retype (h : D ≤ D') {𝒲 : FinCover (⊤ : Opens X)} (g : Z1 D' 𝒲)
+    (hmemld : (g : C1 D' 𝒲).MemLD D) :
+    H1Incl D h (toH1 D 𝒲 (H1Cover.mk D 𝒲
+        ⟨C1.retype (g : C1 D' 𝒲) hmemld, C1.retype_mem_Z1' g.2 hmemld⟩)) =
+      toH1 D' 𝒲 (H1Cover.mk D' 𝒲 g) := by
+  rw [H1Incl_toH1, h1CoverIncl_mk_retype h g.2 hmemld]
+
 theorem H1Incl_surjective (h : D ≤ D') : Function.Surjective (H1Incl D h) := by
   intro ξ'
   obtain ⟨𝒰₀, f'c, hf'c⟩ := exists_rep D' ξ'
   obtain ⟨f', hf'⟩ := H1Cover.mk_surjective D' 𝒰₀ f'c
   obtain ⟨𝒲, hle, hadapt, -⟩ := exists_adapted_refinement 𝒰₀ (diffSupp D D')
     (fun _ _ => trivial) (fun _ => ⊤) (fun _ _ => trivial)
-  set τ := chosenRefIdx hle with hτ_def
-  have hτspec := chosenRefIdx_spec hle
-  set g' := resZ1 D' τ hτspec f' with hg'_def
+  -- opaque refinement index: `toH1_resH1` holds for any of them, and leaving
+  -- `chosenRefIdx hle` visible makes `whnf` unfold the choice term on every rewrite below.
+  obtain ⟨τ, hτspec⟩ : ∃ τ, IsRefIdx 𝒰₀ 𝒲 τ := ⟨chosenRefIdx hle, chosenRefIdx_spec hle⟩
+  obtain ⟨g', hg'_def⟩ : ∃ g', g' = resZ1 D' τ hτspec f' := ⟨_, rfl⟩
   have hgmem : (g' : C1 D' 𝒲) ∈ Z1 D' 𝒲 := g'.2
   have hmemld : (g' : C1 D' 𝒲).MemLD D := memLD_of_isAdapted hadapt hgmem
   refine ⟨toH1 D 𝒲 (H1Cover.mk D 𝒲 ⟨C1.retype (g' : C1 D' 𝒲) hmemld,
     C1.retype_mem_Z1' hgmem hmemld⟩), ?_⟩
-  rw [H1Incl_toH1, h1CoverIncl_mk_retype h hgmem hmemld]
-  show toH1 D' 𝒲 (H1Cover.mk D' 𝒲 (resZ1 D' τ hτspec f')) = ξ'
-  rw [← resH1_mk, hf', toH1_resH1 D' τ hτspec, hf'c]
+  rw [H1Incl_toH1_retype h g' hmemld, hg'_def, toH1_mk_resZ1 τ hτspec f', hf', hf'c]
 
 /-! ### `Realizes` (§6.9(c), D7): the pointwise-`ord` realization predicate -/
 
@@ -936,8 +958,9 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
           (g' i : RS.MeroGermOn X (𝒱.U i : Set X))) hγord
       exact ⟨i, hi, ψ, hψb⟩
     choose i hi ψ hψb using hbase
-    set w : Window D D' := fun q => WindowAt.mk (q : X) (D (q : X)) (D' (q : X)) (ψ q)
-      with hwdef
+    obtain ⟨w, hwdef⟩ : ∃ w : Window D D',
+        w = fun q : ↥(diffSupp D D') =>
+          WindowAt.mk (q : X) (D (q : X)) (D' (q : X)) (ψ q) := ⟨_, rfl⟩
     have hreal : Realizes 𝒱 g' w := by
       intro q ψ' hψ' j hqj
       have hstep : ((-(D (q : X)) : ℤ) : WithTop ℤ) ≤

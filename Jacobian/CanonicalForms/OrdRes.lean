@@ -204,7 +204,7 @@ theorem eventually_ord_eq_zero {θ : MFormData X} {x : X} (h : θ.ord x ≠ ⊤)
     have hgf : AnalyticAt ℂ (θ.coeffAt x)
         ((⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y y)) := by
       rw [Function.comp_apply, hsymm]; exact h2y
-    exact AnalyticAt.comp' hgf hτ
+    exact AnalyticAt.fun_comp hgf hτ
   have hprodAn : AnalyticAt ℂ (θ.coeffAt y) (chartAt ℂ y y) :=
     (hτ.deriv.fun_mul hcompAn).congr hcross.symm
   have hval : θ.coeffAt y (chartAt ℂ y y) ≠ 0 := by

@@ -41,7 +41,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-! ### Miranda Lemma 3.6 (the order downgrade) -/
 
-omit [CompactSpace X] in
+omit [CompactSpace X] [T2Space X] in
 /-- **MIRANDA LEMMA 3.6.** -/
 theorem mem_omegaSpace_of_vanishing_ker_trunc {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂)
     {θ : MForm X} (hθ : θ ∈ MForm.OmegaSpace (-D₁))
@@ -51,7 +51,7 @@ theorem mem_omegaSpace_of_vanishing_ker_trunc {D₁ D₂ : RS.Divisor X} (h : D�
   · rw [hθ0]; exact zero_mem _
   rw [MForm.mem_omegaSpace_iff]
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   obtain ⟨p, hp⟩ := hcon
   rw [Divisor.neg_apply, neg_neg] at hp
   have hne : θ.ord p ≠ ⊤ := MForm.ord_ne_top hθ0 p
@@ -75,7 +75,7 @@ theorem mem_omegaSpace_of_vanishing_ker_trunc {D₁ D₂ : RS.Divisor X} (h : D�
 
 /-! ### The surjectivity endgame (Miranda Thm 3.3, hard half) -/
 
-omit [CompactSpace X] [ConnectedSpace X] [T1Space X] in
+omit [CompactSpace X] [ConnectedSpace X] [T1Space X] [T2Space X] in
 /-- `pairT` only depends on its `MForm` argument up to equality (proof-irrelevant in the
 membership proof) — avoids a dependent `rw`/`▸` inside `pairT`'s own proof argument, which
 `rw` cannot abstract into a well-typed motive. -/

@@ -165,6 +165,7 @@ theorem mulC1_apply (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰
     (c : C1 D 𝒰) (p : Fin 𝒰.n × Fin 𝒰.n) :
     mulC1 f hf 𝒰 c p = mulOn f hf (𝒰.U p.1 ⊓ 𝒰.U p.2) (c p) := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication commutes with the coboundary `d0`. -/
 theorem mulC1_d0 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (𝒰 : FinCover Ω)
     (g : C0 D 𝒰) : mulC1 f hf 𝒰 (d0 D 𝒰 g) = d0 E 𝒰 (mulC0 f hf 𝒰 g) := by
@@ -172,6 +173,7 @@ theorem mulC1_d0 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (𝒰 : 
   rw [mulC1_apply, d0_apply, d0_apply, mulC0_apply, mulC0_apply, map_sub,
     ← restrictL_mulOn inf_le_right f hf (g p.2), ← restrictL_mulOn inf_le_left f hf (g p.1)]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication preserves cocycles. -/
 theorem mulC1_mem_Z1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     {c : C1 D 𝒰} (hc : c ∈ Z1 D 𝒰) : mulC1 f hf 𝒰 c ∈ Z1 E 𝒰 := by
@@ -183,6 +185,7 @@ theorem mulC1_mem_Z1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {�
     restrictL_mulOn inf_le_left f hf (c (i, j)),
     ← map_sub, ← map_add, ← d1_apply, (mem_Z1_iff D 𝒰 c).1 hc (i, j, k), map_zero]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication preserves coboundaries. -/
 theorem mulC1_mem_B1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     {c : C1 D 𝒰} (hc : c ∈ B1 D 𝒰) : mulC1 f hf 𝒰 c ∈ B1 E 𝒰 := by
@@ -196,6 +199,7 @@ noncomputable def mulZ1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) (
     Z1 D 𝒰 →ₗ[ℂ] Z1 E 𝒰 :=
   LinearMap.restrict (mulC1 f hf 𝒰) (fun _c hc => mulC1_mem_Z1 f hf hc)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulZ1_apply_coe (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     (c : Z1 D 𝒰) : (mulZ1 f hf 𝒰 c : C1 E 𝒰) = mulC1 f hf 𝒰 (c : C1 D 𝒰) := rfl
 
@@ -206,11 +210,13 @@ noncomputable def mulH1Cover (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D
     simp only [Submodule.mem_comap] at hz ⊢
     exact mulC1_mem_B1 f hf hz)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem mulH1Cover_mk (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 : FinCover Ω}
     (c : Z1 D 𝒰) :
     mulH1Cover f hf 𝒰 (H1Cover.mk D 𝒰 c) = H1Cover.mk E 𝒰 (mulZ1 f hf 𝒰 c) :=
   Submodule.mapQ_apply _ _ _ c
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication commutes with refinement of `1`-cochains. -/
 theorem mulC1_resC1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰 𝒱 : FinCover Ω}
     (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (c : C1 D 𝒰) :
@@ -219,12 +225,13 @@ theorem mulC1_resC1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) {𝒰
   rw [mulC1_apply, resC1_apply, resC1_apply, mulC1_apply,
     restrictL_mulOn (inf_le_inf (hτ p.1) (hτ p.2)) f hf (c (τ p.1, τ p.2))]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Multiplication commutes with refinement of cover-level `H¹`. -/
 theorem mulH1Cover_resH1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E)
     {𝒰 𝒱 : FinCover Ω} (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) (ξ : H1Cover D 𝒰) :
     mulH1Cover f hf 𝒱 (resH1 D τ hτ ξ) = resH1 E τ hτ (mulH1Cover f hf 𝒰 ξ) := by
   obtain ⟨c, rfl⟩ := H1Cover.mk_surjective D 𝒰 ξ
-  rw [resH1_mk, mulH1Cover_mk, mulH1Cover_mk, resH1_mk]
+  simp only [resH1_mk, mulH1Cover_mk]
   congr 1
   exact Subtype.ext (mulC1_resC1 f hf τ hτ (c : C1 D 𝒰))
 
@@ -244,6 +251,7 @@ noncomputable def mulH1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) :
         resH1'_eq_resH1 E h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱)]
       exact mulH1Cover_resH1 f hf (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱) ξ)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem mulH1_toH1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E)
     (𝒰 : FinCover (⊤ : Opens X)) (c : H1Cover D 𝒰) :
     mulH1 f hf (toH1 D 𝒰 c) = toH1 E 𝒰 (mulH1Cover f hf 𝒰 c) :=
@@ -251,6 +259,7 @@ noncomputable def mulH1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) :
 
 /-! ### Algebra laws for `mulH1` -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `mulH1` only depends on the function, not on the bound proof (and transports along equality
 of functions). -/
 theorem mulH1_congr {f g : ℳ X} (hfg : f = g) {D E : RS.Divisor X} (hf : MulBound f D E)
@@ -263,10 +272,12 @@ theorem mulH1_add {f g : ℳ X} {D E : RS.Divisor X} (hf : MulBound f D E) (hg :
     mulH1 (f + g) hfg ξ = mulH1 f hf ξ + mulH1 g hg ξ := by
   induction ξ using H1.induction_on with
   | ih 𝒰 c =>
-    rw [mulH1_toH1, mulH1_toH1, mulH1_toH1, ← map_add]
+    simp only [mulH1_toH1]
+    rw [← map_add]
     congr 1
     obtain ⟨z, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
-    rw [mulH1Cover_mk, mulH1Cover_mk, mulH1Cover_mk, ← map_add]
+    simp only [mulH1Cover_mk]
+    rw [← map_add]
     congr 1
     apply Subtype.ext
     rw [Submodule.coe_add, mulZ1_apply_coe, mulZ1_apply_coe, mulZ1_apply_coe]
@@ -280,10 +291,12 @@ theorem mulH1_smul {f : ℳ X} {D E : RS.Divisor X} (a : ℂ) (hf : MulBound f D
     mulH1 (a • f) haf ξ = a • mulH1 f hf ξ := by
   induction ξ using H1.induction_on with
   | ih 𝒰 c =>
-    rw [mulH1_toH1, mulH1_toH1, ← map_smul]
+    simp only [mulH1_toH1]
+    rw [← map_smul]
     congr 1
     obtain ⟨z, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
-    rw [mulH1Cover_mk, mulH1Cover_mk, ← map_smul]
+    simp only [mulH1Cover_mk]
+    rw [← map_smul]
     congr 1
     apply Subtype.ext
     rw [Submodule.coe_smul, mulZ1_apply_coe, mulZ1_apply_coe]
@@ -298,17 +311,18 @@ theorem mulH1_mulH1 {f g : ℳ X} {D D' E : RS.Divisor X} (hf : MulBound f D' E)
     mulH1 f hf (mulH1 g hg ξ) = mulH1 (f * g) hfg ξ := by
   induction ξ using H1.induction_on with
   | ih 𝒰 c =>
-    rw [mulH1_toH1, mulH1_toH1, mulH1_toH1]
+    simp only [mulH1_toH1]
     congr 1
     obtain ⟨z, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
-    rw [mulH1Cover_mk, mulH1Cover_mk, mulH1Cover_mk]
+    simp only [mulH1Cover_mk]
     congr 1
     apply Subtype.ext
-    rw [mulZ1_apply_coe, mulZ1_apply_coe, mulZ1_apply_coe]
+    simp only [mulZ1_apply_coe]
     funext p
-    rw [mulC1_apply, mulC1_apply, mulC1_apply]
+    simp only [mulC1_apply]
     apply Subtype.ext
-    rw [mulOn_apply_coe, mulOn_apply_coe, mulOn_apply_coe, map_mul, mul_assoc]
+    simp only [mulOn_apply_coe]
+    rw [map_mul, mul_assoc]
 
 /-- Multiplication by `1` is the divisor inclusion. -/
 theorem mulH1_one {D E : RS.Divisor X} (h1 : MulBound (1 : ℳ X) D E) (hDE : D ≤ E) (ξ : H1 D) :
@@ -333,10 +347,12 @@ theorem mulH1_H1Incl {f : ℳ X} {D D' E : RS.Divisor X} (h : D ≤ D') (hf' : M
     mulH1 f hf' (H1Incl D h ξ) = mulH1 f hf ξ := by
   induction ξ using H1.induction_on with
   | ih 𝒰 c =>
-    rw [H1Incl_toH1, mulH1_toH1, mulH1_toH1]
+    rw [H1Incl_toH1]
+    simp only [mulH1_toH1]
     congr 1
     obtain ⟨z, rfl⟩ := H1Cover.mk_surjective D 𝒰 c
-    rw [h1CoverIncl_mk, mulH1Cover_mk, mulH1Cover_mk]
+    rw [h1CoverIncl_mk]
+    simp only [mulH1Cover_mk]
     congr 1
 
 end RS.Cech

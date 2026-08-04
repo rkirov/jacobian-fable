@@ -220,7 +220,7 @@ theorem exact_windowMap_windowConnectT {D D' : RS.Divisor X} (h : D ≤ D') :
 
 /-! ### Exactness at `H1Tail D`: `ker (H1TailIncl h) = range (windowConnectT h)` -/
 
-omit [ConnectedSpace X] [T1Space X] in
+omit [ConnectedSpace X] [T1Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- The window's image, truncated one step further, vanishes IDENTICALLY (not merely mod
 `range(alphaL D')`) — the tail-level shadow of Čech's `H1Incl_windowConnect`, but here a direct
 computation: a window representative already has order `≥ -(D' p)` at its marked point, so

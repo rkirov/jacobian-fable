@@ -128,7 +128,7 @@ theorem analyticAt_coeffInFun_toSection (x : X) :
     analyticAt_trans (D.mem_maximalAtlas i) hchart (mem_chart_target ℂ x) hxs
   have hcoeff : AnalyticAt ℂ
       (fun w => D.coeff i ((⇑(D.chart i) ∘ ⇑(chartAt ℂ x).symm) w)) (chartAt ℂ x x) := by
-    refine AnalyticAt.comp' ?_ hτ
+    refine AnalyticAt.fun_comp ?_ hτ
     exact D.analyticOnNhd i _ ((D.chart i).map_source hxs)
   exact (AnalyticAt.fun_mul hτ.deriv hcoeff).congr heq.symm
 

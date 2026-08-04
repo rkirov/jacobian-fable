@@ -32,6 +32,7 @@ namespace RS
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+omit [T2Space X] in
 /-- **Nondegeneracy** (Forster 21.4(c)): if every based loop's period has vanishing real part, the
 form is identically zero. Proof: the maximum principle (§5.1), replacing Forster's
 19.4+19.5+19.7+10.15 chain. -/

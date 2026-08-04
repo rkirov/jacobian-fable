@@ -200,7 +200,7 @@ def form : RS.Form01 X where
         have h1 := Complex.conjCLE.contDiff.contDiffAt.comp z hderiv
         refine h1.congr_of_eventuallyEq ?_
         filter_upwards with w
-        simp [Complex.conjCLE_apply]
+        simp []
       have hhcomp : ContDiffAt ℝ ∞ (fun w => D.h (D.e ((chartAt ℂ x).symm w))) z := by
         have hτr : ContDiffAt ℝ ∞ (⇑D.e ∘ ⇑(chartAt ℂ x).symm) z :=
           hτ.contDiffAt.restrict_scalars ℝ

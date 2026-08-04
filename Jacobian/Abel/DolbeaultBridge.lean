@@ -98,28 +98,28 @@ theorem exists_dbar_eq_zero_of_forall_basis_pairing_eq_zero
     (h : ∀ i : Fin (genus X),
       formDualEquiv (RS.basis X i)
         ((RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
-          (RS.dolbeaultEquiv.symm (RS.H01.mk η))) = 0) :
+          ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η))) = 0) :
     ∃ u : RS.SmoothC X, RS.dbar u = η := by
   apply RS.H01.mk_eq_zero_iff.1
   have hzero :
       (RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
-        (RS.dolbeaultEquiv.symm (RS.H01.mk η)) = 0 := by
+        ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η)) = 0 := by
     rw [← Module.forall_dual_apply_eq_zero_iff ℂ]
     intro φ
     obtain ⟨g, rfl⟩ := formDualEquiv.surjective φ
     have hL : ((LinearMap.applyₗ
           ((RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
-            (RS.dolbeaultEquiv.symm (RS.H01.mk η)))).comp formDualEquiv.toLinearMap
+            ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η)))).comp formDualEquiv.toLinearMap
         : RS.Form1 X →ₗ[ℂ] ℂ) = 0 := by
       apply (RS.basis X).ext
       intro i
       simpa using h i
     have := congrArg (fun L => L g) hL
     simpa using this
-  have hde : RS.dolbeaultEquiv.symm (RS.H01.mk η) = 0 := by
+  have hde : (RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η) = 0 := by
     have h2 := congrArg (RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj) hzero
     rwa [LinearEquiv.apply_symm_apply, map_zero] at h2
-  have h3 := congrArg RS.dolbeaultEquiv hde
+  have h3 := congrArg (RS.dolbeaultEquiv (X := X)) hde
   rwa [LinearEquiv.apply_symm_apply, map_zero] at h3
 
 end RS.Abel

@@ -84,7 +84,7 @@ theorem exists_simple_pole_of_genus_eq_zero (hg : genus X = 0) :
     rwa [hDP] at h
   have hPneg : φ.ord P < 0 := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     have hmem0 : φ ∈ RS.LinSys (0 : RS.Divisor X) := by
       rw [RS.mem_linSys_iff]
       intro x

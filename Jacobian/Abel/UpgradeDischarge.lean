@@ -57,6 +57,7 @@ theorem pairing_zero_left (PU : SurfPoU X) (θ : RS.Form1 X) :
   rw [show (0 : RS.Form01 X) = (0 : ℂ) • (0 : RS.Form01 X) from (zero_smul ℂ _).symm,
     pairing_smul_left, zero_mul]
 
+omit [T2Space X] in
 theorem pairing_finsetSum_left (PU : SurfPoU X) {ι : Type*} (s : Finset ι)
     (F : ι → RS.Form01 X) (θ : RS.Form1 X) :
     pairing PU (∑ i ∈ s, F i) θ = ∑ i ∈ s, pairing PU (F i) θ := by

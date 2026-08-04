@@ -116,7 +116,7 @@ theorem differentiableAt_finset_prod {ι : Type*} (s : Finset ι) {f : ι → �
     (hf : ∀ i ∈ s, DifferentiableAt ℝ (f i) z) :
     DifferentiableAt ℝ (fun w => ∏ i ∈ s, f i w) z := by
   induction s using Finset.cons_induction with
-  | empty => simpa using differentiableAt_const (1 : ℂ)
+  | empty => simp
   | cons a s ha ih =>
       have hshape : (fun w => ∏ i ∈ Finset.cons a s ha, f i w)
           = fun w => f a w * ∏ i ∈ s, f i w := by
@@ -313,7 +313,7 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
           (P.g ∘ (⇑e ∘ ⇑(chartAt ℂ x).symm)) := by
       intro x hxe
       have hsymm_cont : ContinuousAt (⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
-        (chartAt ℂ x).symm.continuousAt (by simpa using mem_chart_target ℂ x)
+        (chartAt ℂ x).symm.continuousAt (by simp)
       have hpre : (⇑(chartAt ℂ x).symm) ⁻¹' e.source ∈ nhds (chartAt ℂ x x) := by
         refine hsymm_cont.preimage_mem_nhds (e.open_source.mem_nhds ?_)
         rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
@@ -325,7 +325,7 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
       intro x hxe
       have hxK : x ∉ Kf := fun hxK' => hxe (hKf_sub_source hxK')
       have hsymm_cont : ContinuousAt (⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
-        (chartAt ℂ x).symm.continuousAt (by simpa using mem_chart_target ℂ x)
+        (chartAt ℂ x).symm.continuousAt (by simp)
       have hpre : (⇑(chartAt ℂ x).symm) ⁻¹' (Kf)ᶜ ∈ nhds (chartAt ℂ x x) := by
         refine hsymm_cont.preimage_mem_nhds
           (hKf_compact.isClosed.isOpen_compl.mem_nhds ?_)

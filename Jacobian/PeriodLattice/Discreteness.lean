@@ -136,7 +136,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       intro v
       funext i
       show (∑ j, A i j • proj' j) v = _
-      simp [hproj_def, sum_apply, Matrix.mulVecLin_apply, Matrix.mulVec,
+      simp [hproj_def, sum_apply, Matrix.mulVec,
         dotProduct]
     rwa [heq] at hpi
   have hACLMdet : ((Matrix.mulVecLin A).toContinuousLinearMap
@@ -200,7 +200,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   -- `t ≠ 0` forces some `x j ≠ a j`.
   have hSne : ∃ j, x j ≠ a j := by
     by_contra hcon
-    push_neg at hcon
+    push Not at hcon
     apply htne
     have hweq : w = c₀ := by
       funext j
@@ -239,7 +239,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       intro j hj
       have hjnS : j ∉ S := Finset.mem_compl.mp hj
       rw [hSmem] at hjnS
-      push_neg at hjnS
+      push Not at hjnS
       have hwj_eq : w j = c₀ j := by rw [← hexj j, hjnS]
       rw [hσint, hwj_eq, hgp0]
     have heqk : ∀ k, ∑ i : (↥S : Type), pathIntegral (γ' i) (basis X k) = t k := by
@@ -335,7 +335,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
         have hFy : F.ord y = 1 := hi ▸ hFordx i
         rw [hFy]
         exact add_nonneg (by decide) (MForm.ofForm1_ord_nonneg (basis X k) y)
-      · push_neg at hyx
+      · push Not at hyx
         have hya : ∀ i : (↥S : Type), y ≠ a' i := by
           intro i hcon
           exact hy (Finset.mem_coe.mpr (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, hcon.symm⟩))

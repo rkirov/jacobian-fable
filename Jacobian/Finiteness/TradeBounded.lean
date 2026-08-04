@@ -83,6 +83,7 @@ theorem isCompactOperator_resNC1_U_V : IsCompactOperator (resNC1 T T.U T.V T.V_l
     (closure_inf_pair_subset T T.closure_V_subset p.1 p.2)).comp_clm
     (ContinuousLinearMap.proj p : NC1 T T.U →L[ℂ] BddHoloOn (T.U p.1 ⊓ T.U p.2))
 
+omit [T1Space X] [T2Space X] in
 /-- **§4.4**: the finite-`Pi` Montel assembly of the cocycle-level `U → V` restriction. -/
 theorem isCompactOperator_resZ_UV : IsCompactOperator (resZ T T.U T.V T.V_le_U) := by
   have hval : IsCompactOperator (fun x : NZ1 T T.U => (resZ T T.U T.V T.V_le_U x : NC1 T T.V)) := by
@@ -95,6 +96,7 @@ theorem isCompactOperator_resZ_UV : IsCompactOperator (resZ T T.U T.V T.V_le_U) 
   exact isCompactOperator_of_isCompactOperator_val (ContinuousLinearMap.isClosed_ker (d1NC T T.V))
     (resZ T T.U T.V T.V_le_U) hval
 
+omit [T1Space X] [T2Space X] in
 /-- **§4.4**: the Montel-compact leg of the Schwartz cospan. -/
 theorem isCompactOperator_tradeCompact : IsCompactOperator (tradeCompact T) := by
   have heq : (tradeCompact T : tradeSpace T → NZ1 T T.V) =
@@ -206,9 +208,11 @@ noncomputable def toGermSub (S : Opens X) :
     BddHoloOn S →ₗ[ℂ] RS.LinSysOn (0 : RS.Divisor X) (S : Set X) :=
   LinearMap.codRestrict _ (toGerm S) (fun f => toGerm_mem_linSysOn f)
 
+omit [T1Space X] in
 theorem toGermSub_apply_coe (S : Opens X) (f : BddHoloOn S) :
     (toGermSub S f : RS.MeroGermOn X (S : Set X)) = toGerm S f := rfl
 
+omit [T1Space X] in
 theorem toGermSub_restrictCLM_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     toGermSub S' (restrictCLM h f) = LinSysOn.restrictL (0 : RS.Divisor X) h (toGermSub S f) := by
   apply Subtype.ext
@@ -234,9 +238,11 @@ noncomputable def toGermC1 (P : Fin T.n → Opens X) :
     NC1 T P →ₗ[ℂ] ∀ p : Fin T.n × Fin T.n, RS.LinSysOn (0 : RS.Divisor X) ((P p.1 ⊓ P p.2 : Opens X) : Set X) :=
   LinearMap.pi fun p => (toGermSub (P p.1 ⊓ P p.2)).comp (LinearMap.proj p)
 
+omit [T1Space X] in
 theorem toGermC1_apply (P : Fin T.n → Opens X) (f : NC1 T P) (p : Fin T.n × Fin T.n) :
     toGermC1 T P f p = toGermSub (P p.1 ⊓ P p.2) (f p) := rfl
 
+omit [T1Space X] in
 theorem toGermC1_mem_Z1 (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈ P i)
     {f : NC1 T P} (hf : f ∈ NZ1 T P) :
     toGermC1 T P f ∈ Z1 (0 : RS.Divisor X) (coverOfP T P hcov) := by
@@ -259,6 +265,7 @@ noncomputable def toGermZ1 (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈
   LinearMap.codRestrict _ ((toGermC1 T P).comp (NZ1 T P).subtype)
     (fun ξ => toGermC1_mem_Z1 T P hcov ξ.2)
 
+omit [T1Space X] in
 theorem toGermZ1_apply_coe (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈ P i) (ξ : NZ1 T P) :
     (toGermZ1 T P hcov ξ : C1 (0 : RS.Divisor X) (coverOfP T P hcov)) = toGermC1 T P (ξ : NC1 T P) :=
   rfl
@@ -294,6 +301,7 @@ theorem boundZ1_apply_eq_evalAt {P : Fin T.n → Opens X}
   rw [boundZ1, restrictGerm_apply]
   rfl
 
+omit [T1Space X] [T2Space X] in
 /-- **§5 step 5's `NZ1`-membership**: the de-germified cochain is a genuine bounded cocycle
 (the "repr\_cocycle" pattern: evaluate `F`'s germ cocycle relation pointwise). -/
 theorem boundZ1_mem_NZ1 {P : Fin T.n → Opens X}
@@ -412,12 +420,13 @@ noncomputable def cComp (ξ : NZ1 T T.V) (α β : Fin T.n) :
     RS.MeroGermOn X ((T.V α ⊓ T.V β : Opens X) : Set X) :=
   cCompMem T ξ α β
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem cComp_eq (ξ : NZ1 T T.V) (α β : Fin T.n) :
     cComp T ξ α β = toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β)) := by
   rw [cComp, cCompMem, cC1, toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
   rfl
 
+omit [T1Space X] in
 /-- **§5's centerpiece**: the trade projection `π : L →L Z¹(𝔙)` is onto (Forster 14.6(a) upgraded
 to the Banach layer). -/
 theorem tradePi_surjective (T : ShrinkChain X) : Function.Surjective (tradePi T) := by
@@ -470,11 +479,11 @@ noncomputable def toGermC0 (P : Fin T.n → Opens X) :
     NC0 T P →ₗ[ℂ] ∀ i : Fin T.n, RS.LinSysOn (0 : RS.Divisor X) ((P i : Opens X) : Set X) :=
   LinearMap.pi fun i => (toGermSub (P i)).comp (LinearMap.proj i)
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem toGermC0_apply (P : Fin T.n → Opens X) (h : NC0 T P) (i : Fin T.n) :
     toGermC0 T P h i = toGermSub (P i) (h i) := rfl
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 /-- Naturality: germifying a `0`-cochain then taking its cover-level coboundary agrees with
 germifying the Banach-level coboundary (§5 step 8's "`toGermZ1 ∘ δ_W = d0 ∘ toGermC0`"). -/
 theorem toGermC1_deltaCLM_eq_d0 (η : NC0 T T.W) (p : Fin T.n × Fin T.n) :
@@ -489,7 +498,7 @@ two-step naming device as `cC1`). -/
 noncomputable def toGermZ1W (ψ : NZ1 T T.W) : Z1 (0 : RS.Divisor X) T.coverW :=
   (toGermZ1 T T.W T.covers_W ψ : Z1 (0 : RS.Divisor X) (coverOfP T T.W T.covers_W))
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem toGermZ1W_apply_coe (ψ : NZ1 T T.W) :
     (toGermZ1W T ψ : C1 (0 : RS.Divisor X) T.coverW) = toGermC1 T T.W (ψ : NC1 T T.W) := rfl
 
@@ -511,29 +520,37 @@ noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.
          rw [map_smul, toGermZ1W_apply_coe]
          rfl } ∘ₗ (resZ T T.V T.W T.W_le_V))
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem classMap_apply (ψ : NZ1 T T.V) :
     classMap T ψ = H1Cover.mk (0 : RS.Divisor X) T.coverW (toGermZ1W T (resZ T T.V T.W T.W_le_V ψ)) :=
   rfl
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [T1Space X] in
+/-- The trade defect, restricted to `W`, is minus the coboundary of `x`'s `W`-component.
+
+Split out of `classMap_tradeDiff_eq_zero`: the two halves together exceed the default heartbeat
+budget, and as separate declarations each elaborates well inside it. -/
+private theorem resZ_tradeDiff_eq_neg_deltaCLM (x : tradeSpace T) :
+    (resZ T T.V T.W T.W_le_V (tradePi T x - tradeCompact T x) : NC1 T T.W) =
+      -(deltaCLM T T.W x.1.2.2) := by
+  have hxmem := (mem_tradeSpace_iff_eq T x.1).1 x.2
+  rw [map_sub]
+  funext p
+  obtain ⟨α, β⟩ := p
+  simp only [Submodule.coe_sub, Pi.sub_apply, Pi.neg_apply]
+  rw [tradePi_apply]
+  have hcomp : resZ T T.V T.W T.W_le_V (tradeCompact T x) = resZ T T.U T.W T.W_le_U x.1.1 := by
+    rw [tradeCompact_apply, resZ_resZ]
+  rw [hcomp, resZ_apply_coe, resZ_apply_coe, resNC1_apply, resNC1_apply, deltaCLM_apply]
+  have e1 := hxmem (α, β)
+  rw [e1]
+  abel
+
+omit [T2Space X] [CompactSpace X] [T1Space X] in
 /-- **Schwartz-consumer property 1** (§5 step 8): the trade defect dies in `H¹(𝔚)`. -/
 theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
     classMap T (tradePi T x - tradeCompact T x) = 0 := by
-  have hxmem := (mem_tradeSpace_iff_eq T x.1).1 x.2
-  have hkey : (resZ T T.V T.W T.W_le_V (tradePi T x - tradeCompact T x) : NC1 T T.W) =
-      -(deltaCLM T T.W x.1.2.2) := by
-    rw [map_sub]
-    funext p
-    obtain ⟨α, β⟩ := p
-    simp only [Submodule.coe_sub, Pi.sub_apply, Pi.neg_apply]
-    rw [tradePi_apply]
-    have hcomp : resZ T T.V T.W T.W_le_V (tradeCompact T x) = resZ T T.U T.W T.W_le_U x.1.1 := by
-      rw [tradeCompact_apply, resZ_resZ]
-    rw [hcomp, resZ_apply_coe, resZ_apply_coe, resNC1_apply, resNC1_apply, deltaCLM_apply]
-    have e1 := hxmem (α, β)
-    rw [e1]
-    abel
+  have hkey := resZ_tradeDiff_eq_neg_deltaCLM T x
   simp only [classMap_apply, H1Cover.mk_eq_zero_iff]
   refine ⟨-(toGermC0 T T.W x.1.2.2), ?_⟩
   rw [toGermZ1W_apply_coe, hkey]
@@ -546,6 +563,7 @@ theorem classMap_tradeDiff_eq_zero (x : tradeSpace T) :
   funext p
   exact (toGermC1_deltaCLM_eq_d0 T x.1.2.2 p).symm
 
+omit [T1Space X] [T2Space X] in
 /-- Restriction commutes with `boundZ1` (Banach-level restriction of a de-germified good-cover
 cocycle equals de-germifying with the transitively-composed closure hypothesis). -/
 theorem resZ_boundZ1 {P P' : Fin T.n → Opens X}
@@ -575,6 +593,7 @@ noncomputable def wPairGerm (c : Z1 (0 : RS.Divisor X) T.coverW) (i j : Fin T.n)
     RS.MeroGermOn X ((T.W i ⊓ T.W j : Opens X) : Set X) :=
   wPairMem T c i j
 
+omit [T2Space X] [T1Space X] in
 /-- The germ roundtrip: germifying the `T.W`-level de-germified `F` recovers `F`'s own germ
 restriction down to `T.coverW` (`resZ1 0 id T.ref_star_W F`). -/
 theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : Set X))
@@ -593,6 +612,7 @@ theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : S
     restrictL_apply_coe]
   rfl
 
+omit [T1Space X] in
 /-- **§5's second centerpiece**: `classMap` is surjective (§5 step 9). -/
 theorem classMap_surjective : Function.Surjective (classMap T) := by
   intro c'

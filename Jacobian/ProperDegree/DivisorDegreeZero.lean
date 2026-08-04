@@ -53,7 +53,7 @@ theorem divisor_degree_eq_zero (φ : ℳ X) (hφ : φ ≠ 0) : (divisor φ).degr
   by_cases hc : ∃ c : ℂ, MeroGermOn.mk f hf = algebraMap ℂ (ℳ X) c
   · obtain ⟨c, hc⟩ := hc
     rw [hc, divisor_algebraMap, Function.locallyFinsuppWithin.degree_zero]
-  · push_neg at hc
+  · push Not at hc
     have hnc : MTrace.NotEventuallyConstX f := by
       intro c hcontra
       apply hc c

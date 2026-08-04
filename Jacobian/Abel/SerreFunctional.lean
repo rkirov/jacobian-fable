@@ -154,6 +154,7 @@ private theorem stokesA_core_contDiffOn (i : Fin PU.n) : ContDiffOn ℝ ∞
     ((u.contDiffOn_comp_chartAt_symm (PU.pt i)).mul
       (contDiffOn_coeffIn θ (PU.chart_mem_maximalAtlas i)))
 
+omit [T2Space X] in
 private theorem integrable_stokesA (i : Fin PU.n) : Integrable (stokesA PU u θ i) :=
   integrable_indicator_of_eq_zero_off (PU.chart i).open_target (PU.isCompact_K i)
     (PU.K_subset_target i) (stokesA_core_contDiffOn PU u θ i) (stokesA_core_zero PU u θ i)
@@ -191,6 +192,7 @@ private theorem stokesB_core_zero (i j : Fin PU.n) :
     rw [PU.wirtingerDbar_psiC_eq_zero i hzT hyi, zero_mul, smul_zero]
   · rw [image_eq_zero_of_notMem_tsupport hyj, zero_smul]
 
+omit [T2Space X] in
 private theorem integrable_stokesB (i j : Fin PU.n) : Integrable (stokesB PU u θ i j) := by
   refine integrable_indicator_of_eq_zero_off (isOpen_image_overlap PU i j)
     (isCompact_Kover PU i j) (Kover_subset PU i j) ?_ (stokesB_core_zero PU u θ i j)
@@ -246,10 +248,12 @@ private theorem stokesC_core_contDiffOn (i j : Fin PU.n) : ContDiffOn ℝ ∞
     ((u.contDiffOn_comp_chartAt_symm (PU.pt j)).mul
       (contDiffOn_coeffIn θ (PU.chart_mem_maximalAtlas j)))).mono hsub)
 
+omit [T2Space X] in
 private theorem integrable_stokesC (i j : Fin PU.n) : Integrable (stokesC PU u θ i j) :=
   integrable_indicator_of_eq_zero_off (isOpen_image_overlap' PU i j) (isCompact_Kover' PU i j)
     (Kover_subset' PU i j) (stokesC_core_contDiffOn PU u θ i j) (stokesC_core_zero PU u θ i j)
 
+omit [T2Space X] in
 /-- **Step 1** (per-chart planar Stokes): `∫ ψᵢ ∂̄u θᵢ = -∫ ∂̄ψᵢ u θᵢ`. -/
 private theorem stokes_step1 (i : Fin PU.n) :
     ∫ z : ℂ, pairingTerm PU (RS.dbar u) θ i z = -∫ z : ℂ, stokesA PU u θ i z := by
@@ -321,6 +325,7 @@ private theorem stokes_step1 (i : Fin PU.n) :
   rw [hsplit] at hstokes
   linear_combination hstokes
 
+omit [T2Space X] in
 /-- **Step 2** (PoU insertion): `∫ stokesA i = ∑ⱼ ∫ stokesB i j`. -/
 private theorem stokes_step2 (i : Fin PU.n) :
     ∫ z : ℂ, stokesA PU u θ i z = ∑ j, ∫ z : ℂ, stokesB PU u θ i j z := by
@@ -461,6 +466,7 @@ private theorem stokes_step4 (j : Fin PU.n) (w : ℂ) :
 
 end StokesLemmas
 
+omit [T2Space X] in
 /-- **The compact-surface Stokes vanishing** (Forster 19.6's exactness half): for every global
 smooth function `u` and holomorphic `1`-form `θ`, `∬_X ∂̄u ∧ θ = 0`. Fully unconditional. -/
 theorem pairing_dbar_eq_zero (PU : SurfPoU X) (u : RS.SmoothC X) (θ : RS.Form1 X) :
@@ -501,7 +507,7 @@ def conjForm (θ : RS.Form1 X) : RS.Form01 X where
         (contDiffOn_coeffIn θ (IsManifold.chart_mem_maximalAtlas x))
     refine ContDiffOn.congr (ContDiffOn.congr h1 (fun z hz => ?_))
       (fun z hz => Set.indicator_of_mem hz _)
-    simp [Complex.conjCLE_apply]
+    simp []
   compat x y z hz := by
     have hzT : z ∈ (chartAt ℂ y).target := by
       rcases hz with ⟨q, hq, rfl⟩
@@ -609,7 +615,7 @@ theorem eq_zero_of_pairing_conjForm_eq_zero (PU : SurfPoU X) (θ : RS.Form1 X)
   rw [RS.coeffAt_zero]
   have hex : ∃ i, PU.ψ i x ≠ 0 := by
     by_contra hall
-    push_neg at hall
+    push Not at hall
     have h1 := PU.sum_eq_one x
     rw [Finset.sum_eq_zero (fun i _ => hall i)] at h1
     exact zero_ne_one h1
@@ -648,6 +654,7 @@ def pairingH01 (PU : SurfPoU X) (θ : RS.Form1 X) : RS.H01 X →ₗ[ℂ] ℂ :=
     rintro _ ⟨u, rfl⟩
     exact pairing_dbar_eq_zero PU u θ)
 
+omit [T2Space X] in
 @[simp] theorem pairingH01_mk (PU : SurfPoU X) (θ : RS.Form1 X) (σ : RS.Form01 X) :
     pairingH01 PU θ (RS.H01.mk σ) = pairing PU σ θ := rfl
 
@@ -665,6 +672,7 @@ def pairingDual (PU : SurfPoU X) : RS.Form1 X →ₗ[ℂ] Module.Dual ℂ (RS.H0
     simp only [pairingH01_mk, LinearMap.smul_apply, RingHom.id_apply, smul_eq_mul]
     exact pairing_smul_right PU c σ θ
 
+omit [T2Space X] in
 /-- **Positivity injection** (Forster 19.5-19.6, Hodge-free): the Serre functional is injective
 on holomorphic `1`-forms. Fully unconditional. -/
 theorem pairingDual_injective (PU : SurfPoU X) : Function.Injective (pairingDual PU) := by

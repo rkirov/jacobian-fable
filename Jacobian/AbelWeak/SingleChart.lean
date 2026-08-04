@@ -180,7 +180,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     by_cases hye : y ∈ e.source
     · have hnotmem : ¬ e y ∈ Metric.closedBall c ψ.rOut := fun h => hyK ((hmem_K_iff y hye).2 h)
       rw [Metric.mem_closedBall] at hnotmem
-      push_neg at hnotmem
+      push Not at hnotmem
       have hgeq1 : g (e y) = 1 := hg_one (e y) (le_of_lt (by rwa [dist_eq_norm] at hnotmem))
       rw [hf_source y hye, hgeq1]
     · exact hf_not_source y hye
@@ -189,7 +189,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     by_cases hxe : x ∈ e.source
     · have hnotmem : ¬ e x ∈ Metric.ball c ψ.rOut := fun h => hxU ((hmem_U_iff x hxe).2 h)
       rw [Metric.mem_ball] at hnotmem
-      push_neg at hnotmem
+      push Not at hnotmem
       have hgeq1 : g (e x) = 1 := hg_one (e x) (by rwa [dist_eq_norm] at hnotmem)
       rw [hf_source x hxe, hgeq1]
     · exact hf_not_source x hxe

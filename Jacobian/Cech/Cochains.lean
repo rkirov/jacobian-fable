@@ -215,6 +215,7 @@ noncomputable instance instAddCommGroupZ1 : AddCommGroup (Z1 D 𝒰) := (Z1 D �
 
 noncomputable instance instModuleZ1 : Module ℂ (Z1 D 𝒰) := (Z1 D 𝒰).module
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem B1_le_Z1 : B1 D 𝒰 ≤ Z1 D 𝒰 := by
   rintro y ⟨x, rfl⟩
   show d1 D 𝒰 (d0 D 𝒰 x) = 0

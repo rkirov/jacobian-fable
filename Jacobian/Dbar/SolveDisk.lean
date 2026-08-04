@@ -43,7 +43,7 @@ theorem contDiff_indicator_bump_smul {s : Set ℂ} (φ : ContDiffBump c) (hs : I
     exact ((φ.contDiff.contDiffAt).smul (hg.contDiffAt (hs.mem_nhds hz))).congr_of_eventuallyEq heq
   · have hzclosed : z ∉ closedBall c φ.rOut := fun h => hz (hsub h)
     rw [mem_closedBall] at hzclosed
-    push_neg at hzclosed
+    push Not at hzclosed
     have hzero : ∀ᶠ w in 𝓝 z, φ w = 0 := by
       have hop : IsOpen {w : ℂ | φ.rOut < dist w c} :=
         isOpen_lt continuous_const (continuous_id.dist continuous_const)
@@ -60,7 +60,7 @@ theorem hasCompactSupport_indicator_bump_smul {s : Set ℂ} (φ : ContDiffBump c
   apply HasCompactSupport.intro (isCompact_closedBall c φ.rOut)
   intro w hw
   rw [mem_closedBall] at hw
-  push_neg at hw
+  push Not at hw
   by_cases hws : w ∈ s
   · rw [Set.indicator_of_mem hws, φ.zero_of_le_dist hw.le, zero_smul]
   · exact Set.indicator_of_notMem hws _
@@ -180,7 +180,7 @@ private def solveState0 (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball c R)) : So
 private theorem differentiable_partialSum (p : FormalMultilinearSeries ℂ ℂ ℂ) (m : ℕ) :
     Differentiable ℂ (fun x => p.partialSum m x) := by
   induction m with
-  | zero => simpa [FormalMultilinearSeries.partialSum] using differentiable_const (0 : ℂ)
+  | zero => simp [FormalMultilinearSeries.partialSum]
   | succ k ih =>
     have hstep : (fun x => p.partialSum (k + 1) x) =
         fun x => p.partialSum k x + x ^ k * p.coeff k := by

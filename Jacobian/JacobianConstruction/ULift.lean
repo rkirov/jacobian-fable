@@ -49,7 +49,7 @@ variable (L : AddSubgroup V) [DiscreteTopology L]
 def uliftChartAt (x : V) : OpenPartialHomeomorph (ULift.{u} (V ⧸ L)) V :=
   (Homeomorph.ulift (X := V ⧸ L)).toOpenPartialHomeomorph.trans (chartAt' L x)
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 theorem uliftChartAt_mem_source (q : ULift.{u} (V ⧸ L)) :
     q ∈ (uliftChartAt L (Function.surjInv QuotientAddGroup.mk_surjective q.down)).source := by
   rw [uliftChartAt, OpenPartialHomeomorph.trans_source]
@@ -59,29 +59,29 @@ instance instChartedSpaceULift : ChartedSpace V (ULift.{u} (V ⧸ L)) :=
   chartedSpaceOfFamily' (uliftChartAt L)
     (fun q => Function.surjInv QuotientAddGroup.mk_surjective q.down) (uliftChartAt_mem_source L)
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 theorem chartAt_ulift_eq (q : ULift.{u} (V ⧸ L)) :
     chartAt V q = uliftChartAt L (Function.surjInv QuotientAddGroup.mk_surjective q.down) := rfl
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 /-- `Homeomorph.ulift`'s associated `OpenPartialHomeomorph.symm`, precomposed into a
 `uliftChartAt`, cancels by `rfl` (`PartialEquiv.coe_trans_symm`). -/
 theorem uliftChartAt_symm_apply (x w : V) :
     (uliftChartAt L x).symm w = ULift.up ((chartAt' L x).symm w) := rfl
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 theorem uliftChartAt_target (x : V) : (uliftChartAt L x).target = (chartAt' L x).target := by
   rw [uliftChartAt, OpenPartialHomeomorph.trans_target]
   simp
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 theorem uliftChartAt_source' (x : V) :
     (uliftChartAt L x).source = ULift.down ⁻¹' (chartAt' L x).source := by
   rw [uliftChartAt, OpenPartialHomeomorph.trans_source]
   simp
   rfl
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 /-- The `ULift`-wrapped transition function agrees *exactly* with the unwrapped one (no
 neighborhood needed: `ULift.up`/`.down` cancel by `rfl`). -/
 theorem uliftChartAt_trans_eq (x x' : V) :
@@ -91,7 +91,7 @@ theorem uliftChartAt_trans_eq (x x' : V) :
   simp only [uliftChartAt, OpenPartialHomeomorph.trans_apply]
   rfl
 
-omit [CompleteSpace V] in
+omit [CompleteSpace V] [NormedSpace ℂ V] in
 theorem uliftChartAt_trans_source (x x' : V) :
     ((uliftChartAt L x).symm ≫ₕ uliftChartAt L x').source
       = ((chartAt' L x).symm ≫ₕ chartAt' L x').source := by
@@ -137,6 +137,7 @@ theorem extChartAt_ulift_symm_apply_eq (q : ULift.{u} (V ⧸ L)) (w : V) :
     chartAt_ulift_eq, uliftChartAt]
   rfl
 
+omit [CompleteSpace V] in
 theorem extChartAt_ulift_self_eq (q : ULift.{u} (V ⧸ L)) :
     extChartAt 𝓘(ℂ, V) q q = Function.surjInv QuotientAddGroup.mk_surjective q.down := by
   rw [extChartAt_ulift_apply_eq]

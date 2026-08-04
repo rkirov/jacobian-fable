@@ -44,6 +44,7 @@ theorem toH1_coverW_surjective (T : ShrinkChain X) :
   refine ⟨resH1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W η, ?_⟩
   rw [toH1_resH1, hη]
 
+omit [T1Space X] in
 /-- **§6.5's assembly**: the Schwartz cospan lemma finishes off `H1Cover 0 T.coverW`. -/
 theorem finiteDimensional_h1Cover_W (T : ShrinkChain X) :
     FiniteDimensional ℂ (H1Cover (0 : RS.Divisor X) T.coverW) :=

@@ -211,6 +211,7 @@ theorem toP1_holoRepr_eq_coe_of_nonneg (hf : MeromorphicOnX f Set.univ) {y : X}
   rw [toP1_eq_coe_iff]
   exact ⟨hy, (hcy.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).limUnder_eq⟩
 
+omit [CompactSpace X] [ConnectedSpace X] in
 /-- Full-neighborhood upgrade of `toP1_holoRepr_eq_coe_of_nonneg`: at a regular point (finite or
 `⊤` order), `toP1 (holoRepr)` agrees with the coercion on a *full* neighborhood (isolated
 zeros/poles). -/
@@ -231,6 +232,7 @@ theorem toP1_holoRepr_eventuallyEq_coe_of_nonneg (hf : MeromorphicOnX f Set.univ
     · exact toP1_holoRepr_eq_coe_of_nonneg hf hy
     · exact toP1_holoRepr_eq_coe_of_nonneg hf (hz hzy ▸ le_rfl)
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- The `invChart` chart-composite of `toP1 (holoRepr)` at a pole matches the (inverted) chart
 composite of `holoRepr` itself, off the pole. -/
 theorem invChart_toP1_holoRepr_eventuallyEq_of_neg (hf : MeromorphicOnX f Set.univ) {y : X}

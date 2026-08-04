@@ -49,7 +49,7 @@ theorem deriv_chartRead_ne_zero {f : X → Y} {x : X} {k : ℕ} (A : RS.AdaptedC
     rw [h0, mul_zero] at hprod
     exact zero_ne_one hprod
   have hB := deriv_transition_ne_zero A.mem_maximalAtlas A.mem_source
-  simp only [Nat.cast_one, one_mul, Nat.sub_self, pow_zero, mul_one]
+  simp only [Nat.cast_one, Nat.sub_self, pow_zero, mul_one]
   exact mul_ne_zero hT hB
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
@@ -60,7 +60,7 @@ theorem not_exists_const_id : ¬ ∃ c : X, ∀ x : X, (id : X → X) x = c := b
   have hne : (𝓝[≠] (c : X)).NeBot := RS.nhdsNE_neBot c
   obtain ⟨z, hz⟩ : ∃ z : X, z ≠ c := by
     by_contra h'
-    push_neg at h'
+    push Not at h'
     have hempty : ({c}ᶜ : Set X) = ∅ := by
       ext u
       simp [h' u]

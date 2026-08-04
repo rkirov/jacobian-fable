@@ -47,6 +47,7 @@ noncomputable def injPatch (f : C1 D 𝒰) (g : C0 D 𝒱) (i : Fin 𝒰.n) (k :
   LinSysOn.restrictL D (inf_le_inf (le_refl (𝒰.U i)) (hτ k)) (f (i, τ k)) -
     LinSysOn.restrictL D (inf_le_right : 𝒰.U i ⊓ 𝒱.U k ≤ 𝒱.U k) (g k)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem injPatch_compat {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) {g : C0 D 𝒱}
     (hgeq : resC1 D τ hτ f = d0 D 𝒱 g) (i : Fin 𝒰.n) (k l : Fin 𝒱.n) :
     RS.MeroGermOn.restrict

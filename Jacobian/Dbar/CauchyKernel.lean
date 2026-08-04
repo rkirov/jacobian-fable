@@ -48,7 +48,7 @@ theorem integrableOn_cauchyKernel_ball (ρ : ℝ) :
     IntegrableOn cauchyKernel (ball (0 : ℂ) ρ) volume := by
   by_cases hρ0 : ρ ≤ 0
   · simp [ball_eq_empty.2 hρ0]
-  push_neg at hρ0
+  push Not at hρ0
   have hρ : 0 < ρ := hρ0
   refine ⟨aestronglyMeasurable_cauchyKernel.restrict, ?_⟩
   rw [hasFiniteIntegral_iff_enorm]
@@ -78,7 +78,7 @@ theorem integrableOn_cauchyKernel_ball (ρ : ℝ) :
           norm_cauchyKernel, hnorm, smul_eq_mul, ← ENNReal.ofReal_mul hr.le]
         have heq : r * (Real.pi * r)⁻¹ = Real.pi⁻¹ := by field_simp
         rw [heq]
-      · push_neg at hrρ
+      · push Not at hrρ
         have hnotmem_ball : Complex.polarCoord.symm (r, θ) ∉ ball (0 : ℂ) ρ := by
           rw [mem_ball_zero_iff, Complex.norm_polarCoord_symm, abs_of_pos hr]
           exact not_lt.2 hrρ
@@ -324,7 +324,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
       have hθ : θ ∈ Set.Ioo (-Real.pi) Real.pi := hp.2
       have hrR' : R' < r := by
         by_contra hle
-        push_neg at hle
+        push Not at hle
         exact hpT ⟨⟨hr, hle⟩, hθ⟩
       have hzero : h (z - circleMap 0 r θ) = 0 := hvanish_h r θ hrR'.le
       show r • F (Complex.polarCoord.symm (r, θ)) = 0

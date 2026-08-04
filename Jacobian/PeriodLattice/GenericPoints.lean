@@ -132,7 +132,7 @@ theorem exists_finset_card_finrank_le (k : ℕ) :
       have hlt' := Submodule.finrank_lt_finrank_of_lt hlt
       have hklt : k < genus X := by
         by_contra hcon
-        push_neg at hcon
+        push Not at hcon
         exact hbot (Submodule.finrank_eq_zero.mp
           (Nat.le_zero.mp (hsfr.trans_eq (Nat.sub_eq_zero_of_le hcon))))
       refine ⟨insert x s, by rw [Finset.card_insert_of_notMem hxs, hscard], ?_⟩

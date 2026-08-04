@@ -424,6 +424,7 @@ theorem hasCompactSupport_pairingTerm (PU : SurfPoU X) (σ : RS.Form01 X) (θ : 
   hasCompactSupport_indicator_of_eq_zero_off (PU.isCompact_K i)
     (pairingTerm_core_eq_zero_off PU σ θ i)
 
+omit [T2Space X] in
 theorem integrable_pairingTerm (PU : SurfPoU X) (σ : RS.Form01 X) (θ : RS.Form1 X)
     (i : Fin PU.n) : Integrable (pairingTerm PU σ θ i) :=
   ((contDiff_pairingTerm PU σ θ i).continuous).integrable_of_hasCompactSupport
@@ -443,7 +444,7 @@ theorem pairingTerm_add_left (PU : SurfPoU X) (σ σ' : RS.Form01 X) (θ : RS.Fo
   funext z
   simp only [pairingTerm]
   by_cases hz : z ∈ (PU.chart i).target
-  · simp only [Set.indicator_of_mem hz, RS.Form01.coeffAt_add, Pi.add_apply,
+  · simp only [Set.indicator_of_mem hz, RS.Form01.coeffAt_add, 
       Complex.real_smul]
     ring
   · simp [Set.indicator_of_notMem hz]
@@ -454,7 +455,7 @@ theorem pairingTerm_smul_left (PU : SurfPoU X) (c : ℂ) (σ : RS.Form01 X) (θ 
   funext z
   simp only [pairingTerm]
   by_cases hz : z ∈ (PU.chart i).target
-  · simp only [Set.indicator_of_mem hz, RS.Form01.coeffAt_smul, Pi.smul_apply, smul_eq_mul,
+  · simp only [Set.indicator_of_mem hz, RS.Form01.coeffAt_smul, 
       Complex.real_smul]
     ring
   · simp [Set.indicator_of_notMem hz]
@@ -480,6 +481,7 @@ theorem pairingTerm_smul_right (PU : SurfPoU X) (c : ℂ) (σ : RS.Form01 X) (θ
     ring
   · simp [Set.indicator_of_notMem hz]
 
+omit [T2Space X] in
 theorem pairing_add_left (PU : SurfPoU X) (σ σ' : RS.Form01 X) (θ : RS.Form1 X) :
     pairing PU (σ + σ') θ = pairing PU σ θ + pairing PU σ' θ := by
   rw [pairing, pairing, pairing, ← Finset.sum_add_distrib]
@@ -496,6 +498,7 @@ theorem pairing_smul_left (PU : SurfPoU X) (c : ℂ) (σ : RS.Form01 X) (θ : RS
   rw [pairingTerm_smul_left]
   exact MeasureTheory.integral_const_mul c _
 
+omit [T2Space X] in
 theorem pairing_add_right (PU : SurfPoU X) (σ : RS.Form01 X) (θ θ' : RS.Form1 X) :
     pairing PU σ (θ + θ') = pairing PU σ θ + pairing PU σ θ' := by
   rw [pairing, pairing, pairing, ← Finset.sum_add_distrib]

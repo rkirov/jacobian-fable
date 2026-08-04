@@ -74,6 +74,7 @@ along the "drop the `𝒰.U i` factor" lattice map. -/
 noncomputable def indCocycle (i : Fin 𝒰.n) (f : C1 D 𝒱) : C1 D (𝒱.induced (𝒰.U i)) :=
   fun p => LinSysOn.restrictL D (inf_inf_inf_le (𝒰.U i) (𝒱.U p.1) (𝒱.U p.2)) (f p)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem indCocycle_mem_Z1 (i : Fin 𝒰.n) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱) :
     indCocycle D i f ∈ Z1 D (𝒱.induced (𝒰.U i)) := by
   rw [mem_Z1_iff]
@@ -193,7 +194,7 @@ theorem splitting_eq' {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.ind
       (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) := by
   exact congrArg Subtype.val (splitting_eq D hgFam i α β)
 
-omit [T2Space X] [CompactSpace X] in
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- `splitting_eq'`, restricted down to an arbitrary smaller open `W` (§5 step 3's workhorse:
 lets us compare the splittings at TWO different good-cover members `i`, `j` on their common
 overlap with a member of `𝒱`). -/
@@ -254,6 +255,7 @@ theorem patch_coe (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))) (i
             𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ (𝒱.induced (𝒰.U i)).U α)
           (gFam i α : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α : Set X))) := rfl
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Compatibility of the patches on overlaps (§5 step 3). -/
 theorem patch_compat {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
     (hgFam : ∀ i, d0 D (𝒱.induced (𝒰.U i)) (gFam i) = indCocycle D i f) (i j : Fin 𝒰.n)
@@ -329,6 +331,7 @@ theorem patch_compat {f : C1 D 𝒱} {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.indu
     linear_combination hi - hj
   exact sub_eq_zero.mp hfinal
 
+omit [T2Space X] [CompactSpace X] in
 /-- The glued section `F_{ij}` on `𝒰.U i ⊓ 𝒰.U j`, restricting back to `patch` on each
 `Uᵢ⊓Uⱼ⊓Vα` (§5 step 3). -/
 theorem exists_crossGlue {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
@@ -356,6 +359,7 @@ theorem exists_crossGlue {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
       (patch D gFam i j α : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α : Set X))
   exact hstep.trans (hΨ α)
 
+omit [T2Space X] [CompactSpace X] in
 /-- The glued section, packaged as a `LinSysOn` element (§5 step 3, `LinSysOn`-level): the
 `crossGlue` witness restricts back to `patch` on each `Uᵢ⊓Uⱼ⊓Vα`. -/
 theorem exists_crossGlueLinSysOn {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
@@ -406,6 +410,7 @@ theorem patch_restrict (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i)
   rw [e1, e2]
   rfl
 
+omit [T2Space X] [CompactSpace X] in
 /-- The glued sections `F_{ij}`, packaged as a full `1`-cochain on `𝒰` (§5 step 3, `LinSysOn`
 level): a choice of `crossGlue`-witness for every pair. -/
 theorem exists_crossGlueFam {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱)
@@ -546,6 +551,7 @@ noncomputable def tradeH0 (gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U
   fun α => LinSysOn.restrictL D
     (le_inf (hτ α) le_rfl : 𝒱.U α ≤ 𝒰.U (τ α) ⊓ 𝒱.U α) (gFam (τ α) α)
 
+omit [T2Space X] [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Step 5's frozen conclusion: `resC1 F + f = d0 h`. -/
 theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
     {gFam : ∀ i : Fin 𝒰.n, C0 D (𝒱.induced (𝒰.U i))}
