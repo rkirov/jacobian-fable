@@ -43,6 +43,7 @@ noncomputable def pullbackT (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω
   (periodCoordEquiv X).toLinearMap ∘ₗ
     ((Form1.trace f hf).dualMap ∘ₗ (periodCoordEquiv Y).symm.toLinearMap)
 
+omit [ConnectedSpace Y] in
 /-- The pullback period map computed at a based loop. -/
 theorem pullbackT_periodVector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) {y : Y}
     (γ : Path y y) :

@@ -41,7 +41,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 /-- The upgrade hypothesis this unit consumes, universally over every `Finset`-indexed shape that
 can arise (the `k`-point Abel sufficiency direction, threaded exactly as `Jacobian.Abel` states
 it). -/
-abbrev DiscretenessHyp (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+abbrev DiscretenessHyp (X : Type*) [TopologicalSpace X] [T2Space X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   ∀ S : Finset (Fin (genus X)), RS.Abel.WeakSolutionUpgradeFinset X (↥S : Type)
 

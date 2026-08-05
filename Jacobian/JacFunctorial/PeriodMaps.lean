@@ -41,6 +41,7 @@ dual-basis coordinates (§8.1, spiked in `scratch_jfun.lean`). -/
 noncomputable def periodCoordEquiv : Module.Dual ℂ (RS.Form1 X) ≃ₗ[ℂ] (Fin (genus X) → ℂ) :=
   (RS.basis X).dualBasis.equivFun
 
+omit [ConnectedSpace X] in
 theorem periodCoordEquiv_apply (φ : Module.Dual ℂ (Form1 X)) (i : Fin (genus X)) :
     periodCoordEquiv X φ i = φ (basis X i) :=
   (basis X).dualBasis_equivFun φ i
@@ -57,6 +58,7 @@ noncomputable def pushforwardT (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ)
   (periodCoordEquiv Y).toLinearMap ∘ₗ
     ((Form1.pullback f hf).dualMap ∘ₗ (periodCoordEquiv X).symm.toLinearMap)
 
+omit [ConnectedSpace X] [ConnectedSpace Y] in
 /-- The pushforward map on period vectors, computed at a based loop: `pushforwardT` sends the
 period vector of `γ` to the period vector of its image loop `γ.map hf.continuous`
 (`pathIntegral_pullback`'s naturality, transported through the coordinatization). -/

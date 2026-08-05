@@ -76,6 +76,7 @@ theorem Jacobian.inducedHom_apply_up_mk
 
 /-! ### `T`-level functoriality -/
 
+omit [ConnectedSpace X] in
 theorem pushforwardT_id : pushforwardT (id : X → X) contMDiff_id = LinearMap.id := by
   unfold pushforwardT
   rw [Form1.pullback_id, LinearMap.dualMap_id]
@@ -91,6 +92,7 @@ theorem pullbackT_id : pullbackT (id : X → X) contMDiff_id = LinearMap.id := b
 variable {Z : Type u} [TopologicalSpace Z] [T2Space Z] [CompactSpace Z] [ConnectedSpace Z]
   [ChartedSpace ℂ Z] [IsManifold 𝓘(ℂ) ω Z]
 
+omit [ConnectedSpace X] [ConnectedSpace Y] [ConnectedSpace Z] in
 theorem pushforwardT_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
     pushforwardT (g ∘ f) (hg.comp hf) = (pushforwardT g hg).comp (pushforwardT f hf) := by
@@ -99,6 +101,7 @@ theorem pushforwardT_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f
   ext v i
   simp
 
+omit [ConnectedSpace Z] in
 theorem pullbackT_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
     (g : Y → Z) (hg : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω g) :
     pullbackT (g ∘ f) (hg.comp hf) = (pullbackT f hf).comp (pullbackT g hg) := by

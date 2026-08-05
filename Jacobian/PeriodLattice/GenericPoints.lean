@@ -156,6 +156,7 @@ theorem exists_genericPoints (_hg : 1 ≤ genus X) : ∃ a : Fin (genus X) → X
   rw [hbot] at hηmem
   simpa using hηmem
 
+omit [ConnectedSpace X] in
 /-- The generic-point evaluation matrix `A i j := coeffAt (a j) (basis X i)` is invertible
 (transpose of the natural evaluation map; §21.4(a)). -/
 theorem det_genericMatrix_ne_zero {a : Fin (genus X) → X}

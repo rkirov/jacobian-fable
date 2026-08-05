@@ -288,7 +288,7 @@ noncomputable def holomorphicMFormsEquiv : Form1 X ≃ₗ[ℂ] MForm.OmegaSpace 
 /-- The genus counts meromorphic 1-forms of nonnegative divisor (the cech-h1-genus/riemann-roch
 export; `l(K) = g` becomes a one-line corollary of this + `i_eq_l_add_canonicalDivisorOf` once
 Serre duality lands downstream). -/
-theorem genus_eq_finrank_omegaSpace_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] :
+theorem genus_eq_finrank_omegaSpace_zero :
     genus X = Module.finrank ℂ ↥(MForm.OmegaSpace (0 : Divisor X)) :=
   (holomorphicMFormsEquiv (X := X)).finrank_eq
 
