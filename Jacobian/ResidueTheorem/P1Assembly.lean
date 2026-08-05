@@ -97,6 +97,105 @@ theorem coeffAt_infty_eq (θ : RS.MFormData (OnePoint ℂ)) {z : ℂ} (hz : z �
 
 /-! ### THE `ℙ¹` base case -/
 
+/-- After subtracting the principal parts at every pole, the remainder is holomorphic everywhere.
+Split out of `sum_resAt_eq_zero` for the 200-line proof size we hold ourselves to; `tail`/`Rmid`
+are rebuilt here so the body reads as it did inline. -/
+private theorem meromorphicOrderAt_sub_tail_nonneg {R : ℂ → ℂ} (hR : MeromorphicOn R Set.univ)
+    (P : Finset ℂ) (hmemP : ∀ a : ℂ, a ∈ P ↔ meromorphicOrderAt R a < 0)
+    (htail_anal : ∀ v : ℂ, (∀ a ∈ P, v ≠ a) →
+      AnalyticAt ℂ (fun v => ∑ a ∈ P, RS.principalPartAt R a v) v) :
+    ∀ v : ℂ, 0 ≤ meromorphicOrderAt (fun v => R v - ∑ a ∈ P, RS.principalPartAt R a v) v := by
+  set tail : ℂ → ℂ := fun v => ∑ a ∈ P, RS.principalPartAt R a v with htail_def
+  set Rmid : ℂ → ℂ := fun v => R v - tail v with hRmid_def
+  show ∀ v : ℂ, 0 ≤ meromorphicOrderAt Rmid v
+  intro v
+  by_cases hvP : v ∈ P
+  · set f₁ : ℂ → ℂ := fun u => R u - RS.principalPartAt R v u with hf₁_def
+    set f₂ : ℂ → ℂ := fun u => -(∑ a ∈ P.erase v, RS.principalPartAt R a u) with hf₂_def
+    have hsplit : Rmid = f₁ + f₂ := by
+      funext u
+      show R u - tail u = f₁ u + f₂ u
+      rw [hf₁_def, hf₂_def, htail_def]
+      simp only
+      rw [← Finset.add_sum_erase P (fun a => RS.principalPartAt R a u) hvP]
+      ring
+    have hf₁m : MeromorphicAt f₁ v :=
+      (hR v (Set.mem_univ v)).sub RS.meromorphicAt_principalPartAt
+    have hf₂anal : AnalyticAt ℂ (fun u => ∑ a ∈ P.erase v, RS.principalPartAt R a u) v := by
+      apply Finset.analyticAt_fun_sum
+      intro a ha
+      have hne : v ≠ a := fun hcon => (Finset.ne_of_mem_erase ha) (hcon ▸ rfl)
+      exact RS.analyticOnNhd_principalPartAt v hne
+    have hf₂m : MeromorphicAt f₂ v := hf₂anal.neg.meromorphicAt
+    have h1 : 0 ≤ meromorphicOrderAt f₁ v :=
+      RS.MeromorphicAt.orderAt_sub_principalPartAt_nonneg (hR v (Set.mem_univ v))
+    have h2 : 0 ≤ meromorphicOrderAt f₂ v := hf₂anal.neg.meromorphicOrderAt_nonneg
+    rw [hsplit]
+    exact le_trans (le_min h1 h2) (meromorphicOrderAt_add hf₁m hf₂m)
+  · have hvne : ∀ a ∈ P, v ≠ a := fun a ha hcon => hvP (hcon ▸ ha)
+    have h1 : 0 ≤ meromorphicOrderAt R v :=
+      not_lt.1 (fun hlt => hvP ((hmemP v).2 hlt))
+    have h2anal : AnalyticAt ℂ (fun u => -(tail u)) v := (htail_anal v hvne).neg
+    have hsplit : Rmid = R + fun u => -(tail u) := by
+      funext u
+      show R u - tail u = R u + -(tail u)
+      ring
+    rw [hsplit]
+    exact le_trans (le_min h1 h2anal.meromorphicOrderAt_nonneg)
+      (meromorphicOrderAt_add (hR v (Set.mem_univ v)) h2anal.meromorphicAt)
+
+/-- A meromorphic coefficient that is meromorphic at `∞` is analytic outside a large disc.
+Split out of `sum_resAt_eq_zero` for the 200-line proof size we hold ourselves to. -/
+private theorem exists_analyticAt_far {θ : RS.MFormData (OnePoint ℂ)} {R : ℂ → ℂ}
+    (hInfMero : MeromorphicAt (θ.coeffAt (∞ : OnePoint ℂ)) 0)
+    (hcompat : ∀ z : ℂ, z ≠ 0 → θ.coeffAt (∞ : OnePoint ℂ) z = -(z ^ 2)⁻¹ * R z⁻¹) :
+    ∃ M : ℝ, 0 < M ∧ ∀ v : ℂ, M < ‖v‖ → AnalyticAt ℂ R v := by
+  have hev : ∀ᶠ w in 𝓝[≠] (0 : ℂ), AnalyticAt ℂ (θ.coeffAt (∞ : OnePoint ℂ)) w :=
+    hInfMero.eventually_analyticAt
+  rw [Filter.eventually_iff, Metric.mem_nhdsWithin_iff] at hev
+  obtain ⟨ε, hε, hball⟩ := hev
+  refine ⟨ε⁻¹, by positivity, ?_⟩
+  intro v hv
+  have hv0 : v ≠ 0 := by
+    intro hcon
+    rw [hcon, norm_zero] at hv
+    exact absurd hv (not_lt.2 (by positivity))
+  have hvinv : AnalyticAt ℂ (θ.coeffAt (∞ : OnePoint ℂ)) v⁻¹ := by
+    apply hball
+    constructor
+    · rw [Metric.mem_ball, dist_zero_right, norm_inv]
+      exact inv_lt_of_inv_lt₀ hε hv
+    · exact inv_ne_zero hv0
+  have hAcomp : AnalyticAt ℂ
+      (fun u : ℂ => -(u ^ 2)⁻¹ * θ.coeffAt (∞ : OnePoint ℂ) u⁻¹) v := by
+    apply AnalyticAt.mul
+    · exact ((analyticAt_id.pow 2).inv (pow_ne_zero 2 hv0)).neg
+    · exact hvinv.comp (analyticAt_id.inv hv0)
+  apply hAcomp.congr
+  filter_upwards [isOpen_compl_singleton.mem_nhds
+    (Set.mem_compl_singleton_iff.mpr hv0)] with u hu
+  have hu0 : u ≠ 0 := hu
+  have h1 := hcompat u⁻¹ (inv_ne_zero hu0)
+  rw [inv_inv, inv_pow, inv_inv] at h1
+  rw [h1, show -(u ^ 2)⁻¹ * (-(u ^ 2) * R u) = ((u ^ 2)⁻¹ * u ^ 2) * R u by ring,
+    inv_mul_cancel₀ (pow_ne_zero 2 hu0), one_mul]
+
+/-- Only finitely many points carry a pole of the finite-chart coefficient. Split out of
+`sum_resAt_eq_zero` for the 200-line proof size we hold ourselves to. -/
+private theorem finite_setOf_meromorphicOrderAt_neg {θ : RS.MFormData (OnePoint ℂ)} {R : ℂ → ℂ}
+    (hord_coe : ∀ v : ℂ, (RS.MForm.mk θ).ord ((v : ℂ) : OnePoint ℂ) = meromorphicOrderAt R v) :
+    {v : ℂ | meromorphicOrderAt R v < 0}.Finite := by
+  have hfin := RS.MForm.finite_setOf_ord_neg (RS.MForm.mk θ)
+  have hsub : {v : ℂ | meromorphicOrderAt R v < 0}
+      ⊆ (fun v : ℂ => ((v : ℂ) : OnePoint ℂ)) ⁻¹'
+        {y : OnePoint ℂ | (RS.MForm.mk θ).ord y < 0} := by
+    intro v hv
+    simp only [Set.mem_setOf_eq, Set.mem_preimage] at hv ⊢
+    rw [hord_coe v]
+    exact hv
+  exact Set.Finite.subset
+    (hfin.preimage (Set.injOn_of_injective OnePoint.coe_injective)) hsub
+
 /-- **The residue theorem on `ℙ¹`** (the genus-0 base case of the residue theorem, task item 2):
 the residues of any meromorphic 1-form on the projective line sum to zero. -/
 theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y = 0 := by
@@ -112,36 +211,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
   have hcompat : ∀ z : ℂ, z ≠ 0 → θ.coeffAt (∞ : OnePoint ℂ) z = -(z ^ 2)⁻¹ * R z⁻¹ :=
     fun z hz => coeffAt_infty_eq θ hz
   -- `R` is honestly analytic near `∞`
-  have hRfar : ∃ M : ℝ, 0 < M ∧ ∀ v : ℂ, M < ‖v‖ → AnalyticAt ℂ R v := by
-    have hev : ∀ᶠ w in 𝓝[≠] (0 : ℂ), AnalyticAt ℂ (θ.coeffAt (∞ : OnePoint ℂ)) w :=
-      hInfMero.eventually_analyticAt
-    rw [Filter.eventually_iff, Metric.mem_nhdsWithin_iff] at hev
-    obtain ⟨ε, hε, hball⟩ := hev
-    refine ⟨ε⁻¹, by positivity, ?_⟩
-    intro v hv
-    have hv0 : v ≠ 0 := by
-      intro hcon
-      rw [hcon, norm_zero] at hv
-      exact absurd hv (not_lt.2 (by positivity))
-    have hvinv : AnalyticAt ℂ (θ.coeffAt (∞ : OnePoint ℂ)) v⁻¹ := by
-      apply hball
-      constructor
-      · rw [Metric.mem_ball, dist_zero_right, norm_inv]
-        exact inv_lt_of_inv_lt₀ hε hv
-      · exact inv_ne_zero hv0
-    have hAcomp : AnalyticAt ℂ
-        (fun u : ℂ => -(u ^ 2)⁻¹ * θ.coeffAt (∞ : OnePoint ℂ) u⁻¹) v := by
-      apply AnalyticAt.mul
-      · exact ((analyticAt_id.pow 2).inv (pow_ne_zero 2 hv0)).neg
-      · exact hvinv.comp (analyticAt_id.inv hv0)
-    apply hAcomp.congr
-    filter_upwards [isOpen_compl_singleton.mem_nhds
-      (Set.mem_compl_singleton_iff.mpr hv0)] with u hu
-    have hu0 : u ≠ 0 := hu
-    have h1 := hcompat u⁻¹ (inv_ne_zero hu0)
-    rw [inv_inv, inv_pow, inv_inv] at h1
-    rw [h1, show -(u ^ 2)⁻¹ * (-(u ^ 2) * R u) = ((u ^ 2)⁻¹ * u ^ 2) * R u by ring,
-      inv_mul_cancel₀ (pow_ne_zero 2 hu0), one_mul]
+  have hRfar := exists_analyticAt_far hInfMero hcompat
   obtain ⟨M, hM0, hRfarM⟩ := hRfar
   -- residue/order readings at the two kinds of points
   have hord_coe : ∀ v : ℂ,
@@ -157,17 +227,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
       (chartAt ℂ (((v : ℂ) : OnePoint ℂ)) (((v : ℂ) : OnePoint ℂ))) = _
     rw [coeffAt_coe_eq_coeffAt_coe θ v 0, chartAt_coe, coeChart_apply_coe, ← hR_def]
   -- the finite pole set
-  have hfinP : {v : ℂ | meromorphicOrderAt R v < 0}.Finite := by
-    have hfin := RS.MForm.finite_setOf_ord_neg (RS.MForm.mk θ)
-    have hsub : {v : ℂ | meromorphicOrderAt R v < 0}
-        ⊆ (fun v : ℂ => ((v : ℂ) : OnePoint ℂ)) ⁻¹'
-          {y : OnePoint ℂ | (RS.MForm.mk θ).ord y < 0} := by
-      intro v hv
-      simp only [Set.mem_setOf_eq, Set.mem_preimage] at hv ⊢
-      rw [hord_coe v]
-      exact hv
-    exact Set.Finite.subset
-      (hfin.preimage (Set.injOn_of_injective OnePoint.coe_injective)) hsub
+  have hfinP := finite_setOf_meromorphicOrderAt_neg hord_coe
   set P : Finset ℂ := hfinP.toFinset with hP_def
   have hmemP : ∀ a : ℂ, a ∈ P ↔ meromorphicOrderAt R a < 0 := fun a =>
     hfinP.mem_toFinset
@@ -189,42 +249,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
     · exact (RS.analyticOnNhd_principalPartAt v hva).meromorphicAt
   have hmid_mero : MeromorphicOn Rmid Set.univ :=
     fun v _ => (hR v (Set.mem_univ v)).sub (htail_mero v)
-  have hmid_ord : ∀ v : ℂ, 0 ≤ meromorphicOrderAt Rmid v := by
-    intro v
-    by_cases hvP : v ∈ P
-    · set f₁ : ℂ → ℂ := fun u => R u - RS.principalPartAt R v u with hf₁_def
-      set f₂ : ℂ → ℂ := fun u => -(∑ a ∈ P.erase v, RS.principalPartAt R a u) with hf₂_def
-      have hsplit : Rmid = f₁ + f₂ := by
-        funext u
-        show R u - tail u = f₁ u + f₂ u
-        rw [hf₁_def, hf₂_def, htail_def]
-        simp only
-        rw [← Finset.add_sum_erase P (fun a => RS.principalPartAt R a u) hvP]
-        ring
-      have hf₁m : MeromorphicAt f₁ v :=
-        (hR v (Set.mem_univ v)).sub RS.meromorphicAt_principalPartAt
-      have hf₂anal : AnalyticAt ℂ (fun u => ∑ a ∈ P.erase v, RS.principalPartAt R a u) v := by
-        apply Finset.analyticAt_fun_sum
-        intro a ha
-        have hne : v ≠ a := fun hcon => (Finset.ne_of_mem_erase ha) (hcon ▸ rfl)
-        exact RS.analyticOnNhd_principalPartAt v hne
-      have hf₂m : MeromorphicAt f₂ v := hf₂anal.neg.meromorphicAt
-      have h1 : 0 ≤ meromorphicOrderAt f₁ v :=
-        RS.MeromorphicAt.orderAt_sub_principalPartAt_nonneg (hR v (Set.mem_univ v))
-      have h2 : 0 ≤ meromorphicOrderAt f₂ v := hf₂anal.neg.meromorphicOrderAt_nonneg
-      rw [hsplit]
-      exact le_trans (le_min h1 h2) (meromorphicOrderAt_add hf₁m hf₂m)
-    · have hvne : ∀ a ∈ P, v ≠ a := fun a ha hcon => hvP (hcon ▸ ha)
-      have h1 : 0 ≤ meromorphicOrderAt R v :=
-        not_lt.1 (fun hlt => hvP ((hmemP v).2 hlt))
-      have h2anal : AnalyticAt ℂ (fun u => -(tail u)) v := (htail_anal v hvne).neg
-      have hsplit : Rmid = R + fun u => -(tail u) := by
-        funext u
-        show R u - tail u = R u + -(tail u)
-        ring
-      rw [hsplit]
-      exact le_trans (le_min h1 h2anal.meromorphicOrderAt_nonneg)
-        (meromorphicOrderAt_add (hR v (Set.mem_univ v)) h2anal.meromorphicAt)
+  have hmid_ord := meromorphicOrderAt_sub_tail_nonneg hR P hmemP htail_anal
   -- a bound past which `Rmid` is honestly analytic
   obtain ⟨B, hB⟩ := Set.Finite.bddAbove (P.finite_toSet.image fun a : ℂ => ‖a‖)
   set C : ℝ := max M B with hC_def
