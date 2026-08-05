@@ -433,6 +433,33 @@ private theorem stokes_integrand_eq {u : ℂ → ℂ} {c : ℂ} {r R : ℝ}
     linear_combination (-(fderiv ℝ F ζ I)) * hI2
   rw [h2i, hwF, Complex.mul_conj, Complex.real_smul]
 
+/-- Each horizontal boundary of the rectangle integrates to the corresponding circle integral.
+Split out of `circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the
+200-line proof size we hold ourselves to. -/
+private theorem smul_intervalIntegral_eq_circleIntegral {u : ℂ → ℂ} {c : ℂ} {t ρ : ℝ}
+    (heρ : Real.exp t = ρ) :
+    I • (∫ y : ℝ in (0 : ℝ)..(2 * π),
+        (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ) ((t : ℂ) + y * I))
+      = ∮ w in C(c, ρ), u w := by
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set F : ℂ → ℂ := fun ζ => u (τ ζ) * Complex.exp ζ with hF_def
+  have hFexp : ∀ (x0 ρ0 y : ℝ), Real.exp x0 = ρ0 →
+      F ((x0 : ℂ) + y * I) = u (c + ρ0 * Complex.exp (y * I)) * (ρ0 * Complex.exp (y * I)) := by
+    intro x0 ρ0 y hx0
+    rw [hF_def, hτ_def]
+    simp only
+    have hexp_split : Complex.exp ((x0 : ℂ) + y * I) = ρ0 * Complex.exp (y * I) := by
+      rw [Complex.exp_add, ← Complex.ofReal_exp, hx0]
+    rw [hexp_split]
+  show I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((t : ℂ) + y * I)) = ∮ w in C(c, ρ), u w
+  rw [← intervalIntegral.integral_smul]
+  apply intervalIntegral.integral_congr
+  intro y _
+  show I • F ((t : ℂ) + y * I) = deriv (circleMap c ρ) y • u (circleMap c ρ y)
+  rw [hFexp t ρ y heρ, deriv_circleMap, circleMap, circleMap]
+  simp only [zero_add, smul_eq_mul]
+  ring
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -579,24 +606,8 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       have hexp_split : Complex.exp ((x0 : ℂ) + y * I) = ρ0 * Complex.exp (y * I) := by
         rw [Complex.exp_add, ← Complex.ofReal_exp, hx0]
       rw [hexp_split]
-    have hcircleR : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((b : ℂ) + y * I)) = ∮ w in C(c, R), u w :=
-        by
-      rw [← intervalIntegral.integral_smul]
-      apply intervalIntegral.integral_congr
-      intro y _
-      show I • F ((b : ℂ) + y * I) = deriv (circleMap c R) y • u (circleMap c R y)
-      rw [hFexp b R y heb, deriv_circleMap, circleMap, circleMap]
-      simp only [zero_add, smul_eq_mul]
-      ring
-    have hcircler : I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((a : ℂ) + y * I)) = ∮ w in C(c, r), u w :=
-        by
-      rw [← intervalIntegral.integral_smul]
-      apply intervalIntegral.integral_congr
-      intro y _
-      show I • F ((a : ℂ) + y * I) = deriv (circleMap c r) y • u (circleMap c r y)
-      rw [hFexp a r y hea, deriv_circleMap, circleMap, circleMap]
-      simp only [zero_add, smul_eq_mul]
-      ring
+    have hcircleR := smul_intervalIntegral_eq_circleIntegral (u := u) (c := c) heb
+    have hcircler := smul_intervalIntegral_eq_circleIntegral (u := u) (c := c) hea
     rw [hLHS_yb, zero_add, hcircleR, hcircler] at hrect
     clear hHc hHd hHc' hHd' hHi' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
       hRec_int hτ_CD hexp_CD hRec_eq hperiod hLHS_yb hFexp hcircleR hcircler
