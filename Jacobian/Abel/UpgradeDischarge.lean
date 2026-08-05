@@ -82,6 +82,90 @@ theorem contMDiffAt_mul_real' {f g : X → ℂ} {x : X}
 
 /-! ## The core discharge -/
 
+/-- The exp-corrected product has vanishing `∂̄` off the divisor set. Split out of
+`exists_mero_of_sum_pathIntegral_eq_zero` for the 200-line proof size we hold ourselves to; the
+`ηT`/`fT`/`F₀` abbreviations are rebuilt here so the body reads as it did inline. -/
+private theorem isDbarOn_exp_neg_mul_prod {Λ : Type*} [Fintype Λ] [DecidableEq Λ]
+    {f : Λ → X → ℂ} {η : Λ → RS.Form01 X} {lA lB : Λ → X} {S : Set X}
+    (hsmooth : ∀ l, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f l) {lA l}ᶜ)
+    (hne : ∀ l, ∀ x, x ≠ lA l → x ≠ lB l → f l x ≠ 0)
+    (hdlog : ∀ l, ∀ x, x ≠ lA l → x ≠ lB l →
+      RS.wirtingerDbar (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+        (η l).coeffAt x (chartAt ℂ x x) * f l x)
+    (u : RS.SmoothC X) (hu : RS.dbar u = ∑ l : Λ, η l)
+    (hmemSc : ∀ x ∈ Sᶜ, ∀ l : Λ, x ≠ lA l ∧ x ≠ lB l) :
+    RS.IsDbarOn (fun x => Complex.exp (-(u x)) * ∏ l : Λ, f l x) 0 Sᶜ := by
+  set ηT : RS.Form01 X := ∑ l : Λ, η l with hηT_def
+  set fT : X → ℂ := fun x => ∏ l : Λ, f l x with hfT_def
+  set F₀ : X → ℂ := fun x => Complex.exp (-(u x)) * fT x with hF₀_def
+  show RS.IsDbarOn F₀ 0 Sᶜ
+  intro x hx
+  -- chart representatives
+  have hdiffs : ∀ l : Λ, DifferentiableAt ℝ (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
+    intro l
+    have h1 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f l) x :=
+      (hsmooth l).contMDiffAt (isOpen_compl_singleton.mem_nhds (hmemSc x hx l).1)
+    exact (RS.contMDiffAt_real_iff_contDiffAt.mp h1).differentiableAt (by norm_num)
+  have hfTd : DifferentiableAt ℝ (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
+    have := differentiableAt_finset_prod (f := fun l => f l ∘ ⇑(chartAt ℂ x).symm)
+      Finset.univ (fun l _ => hdiffs l)
+    exact this
+  have hud : DifferentiableAt ℝ (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
+    u.differentiableAt_comp_chartAt_symm x (mem_chart_target ℂ x)
+  -- the dbar log identity for the product
+  have hfT_ne : fT x ≠ 0 := by
+    rw [hfT_def]
+    refine Finset.prod_ne_zero_iff.mpr (fun l _ => ?_)
+    exact hne l x (hmemSc x hx l).1 (hmemSc x hx l).2
+  have hprod_dlog : RS.wirtingerDbar (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+      = ηT.coeffAt x (chartAt ℂ x x) * fT x := by
+    have hrule := wirtingerDbar_finset_prod (f := fun l => f l ∘ ⇑(chartAt ℂ x).symm)
+      Finset.univ (fun l _ => hdiffs l)
+    have hshape : (fT ∘ ⇑(chartAt ℂ x).symm)
+        = fun w => ∏ l : Λ, (f l ∘ ⇑(chartAt ℂ x).symm) w := by
+      funext w
+      simp [hfT_def, Function.comp]
+    rw [hshape, hrule]
+    have hcoeff : ηT.coeffAt x (chartAt ℂ x x) = ∑ l : Λ, (η l).coeffAt x (chartAt ℂ x x) := by
+      rw [hηT_def]
+      exact Form01.coeffAt_finsetSum Finset.univ η x (chartAt ℂ x x)
+    rw [hcoeff, Finset.sum_mul]
+    refine Finset.sum_congr rfl (fun l _ => ?_)
+    have hval : ∀ j : Λ, (f j ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = f j x := by
+      intro j
+      simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+    calc RS.wirtingerDbar (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) *
+          ∏ j ∈ Finset.univ.erase l, (f j ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+        = ((η l).coeffAt x (chartAt ℂ x x) * f l x) *
+          ∏ j ∈ Finset.univ.erase l, f j x := by
+          rw [hdlog l x (hmemSc x hx l).1 (hmemSc x hx l).2,
+            Finset.prod_congr rfl (fun j _ => hval j)]
+      _ = (η l).coeffAt x (chartAt ℂ x x) *
+          (f l x * ∏ j ∈ Finset.univ.erase l, f j x) := by ring
+      _ = (η l).coeffAt x (chartAt ℂ x x) * fT x := by
+          rw [Finset.mul_prod_erase Finset.univ (fun j => f j x) (Finset.mem_univ l)]
+  -- the dbar equation for `u`
+  have hux : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+      = ηT.coeffAt x (chartAt ℂ x x) := by
+    have h1 : RS.IsDbarOn (⇑u) ηT Set.univ := RS.dbar_eq_iff.mp hu
+    exact h1 x (Set.mem_univ x)
+  -- combine
+  show RS.wirtingerDbar (F₀ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+    = (0 : RS.Form01 X).coeffAt x (chartAt ℂ x x)
+  rw [RS.Form01.coeffAt_zero]
+  have hkey : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+      = RS.wirtingerDbar (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+        / (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
+    have hval : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = fT x := by
+      simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+    rw [hux, hprod_dlog, hval, mul_div_cancel_right₀ _ hfT_ne]
+  have hval : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = fT x := by
+    simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+  have hfT_ne' : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ≠ 0 := by
+    rw [hval]
+    exact hfT_ne
+  exact RS.Abel.wirtingerDbar_exp_neg_mul_eq_zero hud hfTd hkey hfT_ne'
+
 /-- **The Abel sufficiency engine** (Forster 20.5 + 20.7(a), assembled; gated only on
 `serre-duality-tails`'s remaining external fact): finitely many paths with vanishing total
 period produce a global meromorphic function whose divisor is exactly the endpoint divisor. -/
@@ -173,73 +257,7 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
     exact (contMDiffAt_mul_real' (hexp_smooth.contMDiffAt)
       ((hfT_smooth x hx).contMDiffAt (hSc_open.mem_nhds hx))).contMDiffWithinAt
   -- the dbar-closure of `F₀` off `S`
-  have hdbar_zero : RS.IsDbarOn F₀ 0 Sᶜ := by
-    intro x hx
-    -- chart representatives
-    have hdiffs : ∀ l : Λ, DifferentiableAt ℝ (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
-      intro l
-      have h1 : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f l) x :=
-        (hsmooth l).contMDiffAt (isOpen_compl_singleton.mem_nhds (hmemSc x hx l).1)
-      exact (RS.contMDiffAt_real_iff_contDiffAt.mp h1).differentiableAt (by norm_num)
-    have hfTd : DifferentiableAt ℝ (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
-      have := differentiableAt_finset_prod (f := fun l => f l ∘ ⇑(chartAt ℂ x).symm)
-        Finset.univ (fun l _ => hdiffs l)
-      exact this
-    have hud : DifferentiableAt ℝ (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
-      u.differentiableAt_comp_chartAt_symm x (mem_chart_target ℂ x)
-    -- the dbar log identity for the product
-    have hfT_ne : fT x ≠ 0 := by
-      rw [hfT_def]
-      refine Finset.prod_ne_zero_iff.mpr (fun l _ => ?_)
-      exact hne l x (hmemSc x hx l).1 (hmemSc x hx l).2
-    have hprod_dlog : RS.wirtingerDbar (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-        = ηT.coeffAt x (chartAt ℂ x x) * fT x := by
-      have hrule := wirtingerDbar_finset_prod (f := fun l => f l ∘ ⇑(chartAt ℂ x).symm)
-        Finset.univ (fun l _ => hdiffs l)
-      have hshape : (fT ∘ ⇑(chartAt ℂ x).symm)
-          = fun w => ∏ l : Λ, (f l ∘ ⇑(chartAt ℂ x).symm) w := by
-        funext w
-        simp [hfT_def, Function.comp]
-      rw [hshape, hrule]
-      have hcoeff : ηT.coeffAt x (chartAt ℂ x x) = ∑ l : Λ, (η l).coeffAt x (chartAt ℂ x x) := by
-        rw [hηT_def]
-        exact Form01.coeffAt_finsetSum Finset.univ η x (chartAt ℂ x x)
-      rw [hcoeff, Finset.sum_mul]
-      refine Finset.sum_congr rfl (fun l _ => ?_)
-      have hval : ∀ j : Λ, (f j ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = f j x := by
-        intro j
-        simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
-      calc RS.wirtingerDbar (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) *
-            ∏ j ∈ Finset.univ.erase l, (f j ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-          = ((η l).coeffAt x (chartAt ℂ x x) * f l x) *
-            ∏ j ∈ Finset.univ.erase l, f j x := by
-            rw [hdlog l x (hmemSc x hx l).1 (hmemSc x hx l).2,
-              Finset.prod_congr rfl (fun j _ => hval j)]
-        _ = (η l).coeffAt x (chartAt ℂ x x) *
-            (f l x * ∏ j ∈ Finset.univ.erase l, f j x) := by ring
-        _ = (η l).coeffAt x (chartAt ℂ x x) * fT x := by
-            rw [Finset.mul_prod_erase Finset.univ (fun j => f j x) (Finset.mem_univ l)]
-    -- the dbar equation for `u`
-    have hux : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-        = ηT.coeffAt x (chartAt ℂ x x) := by
-      have h1 : RS.IsDbarOn (⇑u) ηT Set.univ := RS.dbar_eq_iff.mp hu
-      exact h1 x (Set.mem_univ x)
-    -- combine
-    show RS.wirtingerDbar (F₀ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-      = (0 : RS.Form01 X).coeffAt x (chartAt ℂ x x)
-    rw [RS.Form01.coeffAt_zero]
-    have hkey : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-        = RS.wirtingerDbar (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
-          / (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
-      have hval : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = fT x := by
-        simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
-      rw [hux, hprod_dlog, hval, mul_div_cancel_right₀ _ hfT_ne]
-    have hval : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = fT x := by
-      simp [Function.comp, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
-    have hfT_ne' : (fT ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ≠ 0 := by
-      rw [hval]
-      exact hfT_ne
-    exact RS.Abel.wirtingerDbar_exp_neg_mul_eq_zero hud hfTd hkey hfT_ne'
+  have hdbar_zero := isDbarOn_exp_neg_mul_prod hsmooth hne hdlog u hu hmemSc
   -- holomorphy off `S`
   have hholo : ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω F₀ Sᶜ :=
     RS.contMDiffOn_omega_of_isDbarOn_zero hSc_open hF₀_smooth hdbar_zero
