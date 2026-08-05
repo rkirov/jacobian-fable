@@ -35,7 +35,7 @@ via representatives + residue-calculus's `laurentCoeffAt_fun_add`/`_const_mul`/`
 (coordination note filed to `docs/requests/canonical-forms.md`).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 
 noncomputable section
 
@@ -87,10 +87,10 @@ def pairAt (θ : MForm X) (x : X) : (ℤ →₀ ℂ) →ₗ[ℂ] ℂ :=
 
 theorem pairAt_single (θ : MForm X) (x : X) (n : ℤ) (c : ℂ) :
     pairAt θ x (Finsupp.single n c) = c * θ.laurentCoeffAt x (-1 - n) := by
-  show Finsupp.lsum ℂ (fun k => θ.laurentCoeffAt x (-1 - k) • (LinearMap.id : ℂ →ₗ[ℂ] ℂ))
+  change Finsupp.lsum ℂ (fun k => θ.laurentCoeffAt x (-1 - k) • (LinearMap.id : ℂ →ₗ[ℂ] ℂ))
       (Finsupp.single n c) = _
   rw [Finsupp.lsum_single]
-  show θ.laurentCoeffAt x (-1 - n) • (LinearMap.id : ℂ →ₗ[ℂ] ℂ) c = _
+  change θ.laurentCoeffAt x (-1 - n) • (LinearMap.id : ℂ →ₗ[ℂ] ℂ) c = _
   rw [LinearMap.id_apply, smul_eq_mul, mul_comm]
 
 theorem pairAt_add_left (θ η : MForm X) (x : X) :
@@ -142,12 +142,12 @@ def pairL : MForm X →ₗ[ℂ] Tail X →ₗ[ℂ] ℂ where
 @[simp] theorem pairL_apply (θ : MForm X) (τ : Tail X) : pairL θ τ = pair θ τ := rfl
 
 theorem pair_add_left (θ η : MForm X) (τ : Tail X) : pair (θ + η) τ = pair θ τ + pair η τ := by
-  show pairTail (θ + η) τ = pairTail θ τ + pairTail η τ
+  change pairTail (θ + η) τ = pairTail θ τ + pairTail η τ
   rw [pairTail_add_left]
   rfl
 
 theorem pair_smul_left (c : ℂ) (θ : MForm X) (τ : Tail X) : pair (c • θ) τ = c * pair θ τ := by
-  show pairTail (c • θ) τ = c * pairTail θ τ
+  change pairTail (c • θ) τ = c * pairTail θ τ
   rw [pairTail_smul_left, LinearMap.smul_apply, smul_eq_mul]
 
 theorem pair_zero_left (τ : Tail X) : pair (0 : MForm X) τ = 0 := by
@@ -158,7 +158,7 @@ theorem pair_add_right (θ : MForm X) (τ σ : Tail X) : pair θ (τ + σ) = pai
   map_add (pairTail θ) τ σ
 
 theorem pair_smul_right (θ : MForm X) (c : ℂ) (τ : Tail X) : pair θ (c • τ) = c * pair θ τ := by
-  show pairTail θ (c • τ) = c * pairTail θ τ
+  change pairTail θ (c • τ) = c * pairTail θ τ
   rw [map_smul, smul_eq_mul]
 
 theorem pair_zero_right (θ : MForm X) : pair θ (0 : Tail X) = 0 :=
@@ -167,8 +167,8 @@ theorem pair_zero_right (θ : MForm X) : pair θ (0 : Tail X) = 0 :=
 /-- The atom the injectivity witness (`Duality.lean`) uses directly. -/
 theorem pair_single (θ : MForm X) (p : X) (n : ℤ) (c : ℂ) :
     pair θ (Tail.single p n c) = c * θ.laurentCoeffAt p (-1 - n) := by
-  show pairTail θ (Tail.single p n c) = _
-  show Finsupp.lsum ℂ (pairAt θ) (Finsupp.single p (Finsupp.single n c)) = _
+  change pairTail θ (Tail.single p n c) = _
+  change Finsupp.lsum ℂ (pairAt θ) (Finsupp.single p (Finsupp.single n c)) = _
   rw [Finsupp.lsum_single]
   exact pairAt_single θ p n c
 

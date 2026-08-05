@@ -64,7 +64,7 @@ theorem ofCurve_inj' (hupgrade : RS.Abel.WeakSolutionUpgrade X) (P : X) (h : 0 <
       = -((fun i => RS.pathIntegral (PathConnectedSpace.somePath P x) (RS.basis X i))
           - (fun i => RS.pathIntegral (PathConnectedSpace.somePath P y) (RS.basis X i))) := by
     funext i
-    show RS.pathIntegral ((PathConnectedSpace.somePath P x).symm.trans
+    change RS.pathIntegral ((PathConnectedSpace.somePath P x).symm.trans
       (PathConnectedSpace.somePath P y)) (RS.basis X i) = _
     rw [RS.pathIntegral_trans, RS.pathIntegral_symm]
     simp only [Pi.neg_apply, Pi.sub_apply]

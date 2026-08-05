@@ -28,7 +28,7 @@ Main declarations: `RS.exists_isolating_nhds_periodSubgroup`, `RS.discreteTopolo
 `RS.periodSubgroup_topologicalClosure_eq`, `RS.discreteTopology_periodSubgroup_topologicalClosure`.
 -/
 
-open scoped ContDiff Manifold Classical Topology
+open scoped ContDiff Manifold  Topology
 open Set Filter Metric IsManifold
 
 noncomputable section
@@ -61,7 +61,7 @@ private theorem hasStrictFDerivAt_coordMap {e : Fin (genus X) → OpenPartialHom
   set 𝔉 : (Fin (genus X) → ℂ) → (Fin (genus X) → ℂ) := fun w i => ∑ j, gp i j (w j) with h𝔉_def
   set proj' : Fin (genus X) → (Fin (genus X) → ℂ) →L[ℂ] ℂ :=
     fun j => ContinuousLinearMap.proj (R := ℂ) (φ := fun _ : Fin (genus X) => ℂ) j with hproj_def
-  show HasStrictFDerivAt 𝔉
+  change HasStrictFDerivAt 𝔉
     ((Matrix.mulVecLin A).toContinuousLinearMap :
       (Fin (genus X) → ℂ) →L[ℂ] (Fin (genus X) → ℂ)) c₀
   have happly : ∀ j, HasStrictFDerivAt (fun w : Fin (genus X) → ℂ => w j) (proj' j) c₀ :=
@@ -94,11 +94,12 @@ private theorem hasStrictFDerivAt_coordMap {e : Fin (genus X) → OpenPartialHom
     apply ContinuousLinearMap.ext
     intro v
     funext i
-    show (∑ j, A i j • proj' j) v = _
+    change (∑ j, A i j • proj' j) v = _
     simp [hproj_def, sum_apply, Matrix.mulVec,
       dotProduct]
   rwa [heq] at hpi
 
+open scoped Classical in
 omit [ConnectedSpace X] in
 /-- The residue of the `k`-th twisted form at the `j`-th base point is the generic-matrix entry
 times the local residue. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line
@@ -119,12 +120,12 @@ private theorem resAt_twisted_eq {a x : Fin (genus X) → X}
   set Θ : Fin (genus X) → MForm X := fun k => F • MForm.ofForm1 (basis X k) with hΘ_def
   set c : Fin (genus X) → ℂ := fun j =>
     RS.resAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) with hc_def
-  show ∀ k j, (Θ k).resAt (a j) = A k j * c j
+  change ∀ k j, (Θ k).resAt (a j) = A k j * c j
   intro k j
   have hcoeffAt : (MFormData.smul F (MFormData.ofForm1 (basis X k))).coeffAt (a j)
       =ᶠ[𝓝 (c₀ j)] fun z => F.holoRepr ((e j).symm z) * coeffIn (e j) (basis X k) z := by
     filter_upwards [(e j).open_target.mem_nhds (mem_chart_target ℂ (a j))] with z hz
-    show F.holoRepr ((e j).symm z) *
+    change F.holoRepr ((e j).symm z) *
       (if z ∈ (e j).target then coeffIn (e j) (basis X k) z else 0) = _
     rw [if_pos hz]
   have hresrw : RS.resAt ((MFormData.smul F (MFormData.ofForm1 (basis X k))).coeffAt (a j))
@@ -136,7 +137,7 @@ private theorem resAt_twisted_eq {a x : Fin (genus X) → X}
   have hordF : (-1 : WithTop ℤ) ≤ meromorphicOrderAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) := by
     have := Mero.ord_eq_meromorphicOrderAt_holoRepr F (a j)
     rw [hc₀_def]
-    show ((-1 : ℤ) : WithTop ℤ) ≤ meromorphicOrderAt (F.holoRepr ∘ ⇑(e j).symm) (e j (a j))
+    change ((-1 : ℤ) : WithTop ℤ) ≤ meromorphicOrderAt (F.holoRepr ∘ ⇑(e j).symm) (e j (a j))
     rw [← this, hFordAll j]
     split_ifs with hcase
     · decide
@@ -146,12 +147,12 @@ private theorem resAt_twisted_eq {a x : Fin (genus X) → X}
   have hmul := resAt_analyticAt_mul hanalytic hmerF hordF
   have hfun : (fun z => F.holoRepr ((e j).symm z) * coeffIn (e j) (basis X k) z)
       = fun z => coeffIn (e j) (basis X k) z * (F.holoRepr ∘ ⇑(e j).symm) z := by
-    funext z; show F.holoRepr ((e j).symm z) * _ = _ * F.holoRepr ((e j).symm z); ring
-  show RS.resAt ((MFormData.smul F (MFormData.ofForm1 (basis X k))).coeffAt (a j)) (c₀ j) = _
+    funext z; change F.holoRepr ((e j).symm z) * _ = _ * F.holoRepr ((e j).symm z); ring
+  change RS.resAt ((MFormData.smul F (MFormData.ofForm1 (basis X k))).coeffAt (a j)) (c₀ j) = _
   rw [hresrw, hfun, hmul]
   have hIcc : Finset.Icc (-1 : ℤ) (-1) = {-1} := rfl
   rw [hIcc, Finset.sum_singleton]
-  show taylorCoeffAt (coeffIn (e j) (basis X k)) (c₀ j) (-1 - (-1)).toNat
+  change taylorCoeffAt (coeffIn (e j) (basis X k)) (c₀ j) (-1 - (-1)).toNat
     * laurentCoeffAt (F.holoRepr ∘ ⇑(e j).symm) (c₀ j) (-1) = A k j * c j
   norm_num
   rw [hAij k j, hc_def]
@@ -167,7 +168,7 @@ private theorem exists_ball_subset_sep {a : Fin (genus X) → X} {U : X → Set 
       ball (chartAt ℂ (a j) (a j)) r ⊆ (chartAt ℂ (a j)).target ∧
       (chartAt ℂ (a j)).symm '' ball (chartAt ℂ (a j) (a j)) r ⊆ U (a j) := by
   set e : Fin (genus X) → OpenPartialHomeomorph X ℂ := fun j => chartAt ℂ (a j) with he_def
-  show ∀ j : Fin (genus X), ∃ r : ℝ, 0 < r ∧ ball (e j (a j)) r ⊆ (e j).target ∧
+  change ∀ j : Fin (genus X), ∃ r : ℝ, 0 < r ∧ ball (e j (a j)) r ⊆ (e j).target ∧
     (e j).symm '' ball (e j (a j)) r ⊆ U (a j)
   intro j
   have h1 : IsOpen (e j '' (U (a j) ∩ (e j).source)) :=
@@ -186,6 +187,7 @@ private theorem exists_ball_subset_sep {a : Fin (genus X) → X} {U : X → Set 
   rw [← hyz, (e j).left_inv hysrc]
   exact hyU
 
+open scoped Classical in
 omit [ConnectedSpace X] in
 /-- Away from the base points the twisted form has no residue. Split out of
 `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold ourselves to. -/
@@ -196,11 +198,11 @@ private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
     ∀ k, ∀ y ∉ (Finset.univ.image a : Set X),
       ((F • MForm.ofForm1 (basis X k) : MForm X)).resAt y = 0 := by
   set Θ : Fin (genus X) → MForm X := fun k => F • MForm.ofForm1 (basis X k) with hΘ_def
-  show ∀ k, ∀ y ∉ (Finset.univ.image a : Set X), (Θ k).resAt y = 0
+  change ∀ k, ∀ y ∉ (Finset.univ.image a : Set X), (Θ k).resAt y = 0
   intro k y hy
   have hordΘ : 0 ≤ (Θ k).ord y := by
     rw [hΘ_def]
-    show 0 ≤ (F • MForm.ofForm1 (basis X k)).ord y
+    change 0 ≤ (F • MForm.ofForm1 (basis X k)).ord y
     rw [MForm.ord_smul_mero]
     by_cases hyx : ∃ i : (↥S : Type), y = x' i
     · obtain ⟨i, hi⟩ := hyx
@@ -210,7 +212,8 @@ private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
     · push Not at hyx
       have hya : ∀ i : (↥S : Type), y ≠ a' i := by
         intro i hcon
-        exact hy (Finset.mem_coe.mpr (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, (ha'_def ▸ hcon).symm⟩))
+        exact hy (Finset.mem_coe.mpr
+          (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, (ha'_def ▸ hcon).symm⟩))
       have hFy : F.ord y = 0 := hFord0 y hya hyx
       rw [hFy]
       simpa using MForm.ofForm1_ord_nonneg (basis X k) y
@@ -223,14 +226,17 @@ ourselves to. -/
 private theorem local_residue_ne_zero {a : Fin (genus X) → X} {F : RS.Mero X}
     (j₀ : Fin (genus X)) (hordj₀ : F.ord (a j₀) = -1) :
     RS.resAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) ≠ 0 := by
-  have hordeq : meromorphicOrderAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) = -1 := by
+  have hordeq : meromorphicOrderAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm)
+      (chartAt ℂ (a j₀) (a j₀)) = -1 := by
     rw [← Mero.ord_eq_meromorphicOrderAt_holoRepr, hordj₀]
   have hmerF : MeromorphicAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) :=
-    (meromorphicAtX_iff_of_mem_source (chart_mem_maximalAtlas (a j₀)) (mem_chart_source ℂ (a j₀))).mp
+    (meromorphicAtX_iff_of_mem_source (chart_mem_maximalAtlas (a j₀))
+        (mem_chart_source ℂ (a j₀))).mp
       (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j₀) (mem_univ _))
   have := laurentCoeffAt_order_ne_zero hmerF (by rw [hordeq]; simp)
   rwa [hordeq] at this
 
+open scoped Classical in
 /-- **Forster 21.4(a)+(b)**: the local Jacobi map (inverse function theorem) plus the Abel
 `k`-point sufficiency direction plus the residue theorem isolate `0` in the period subgroup. -/
 theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : DiscretenessHyp X) :
@@ -265,7 +271,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   have hAdet : A.det ≠ 0 := det_genericMatrix_ne_zero ha
   have h𝔉c₀ : 𝔉 c₀ = 0 := by
     funext i
-    show ∑ j, gp i j (c₀ j) = 0
+    change ∑ j, gp i j (c₀ j) = 0
     simp [hgp0]
   have hAij : ∀ i j, coeffIn (e j) (basis X i) (c₀ j) = A i j := fun i j => rfl
   set proj' : Fin (genus X) → (Fin (genus X) → ℂ) →L[ℂ] ℂ :=
@@ -274,7 +280,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   have hstrict := hasStrictFDerivAt_coordMap hr hgp hAij
   have hACLMdet : ((Matrix.mulVecLin A).toContinuousLinearMap
       : (Fin (genus X) → ℂ) →L[ℂ] (Fin (genus X) → ℂ)).det ≠ 0 := by
-    show LinearMap.det ((Matrix.mulVecLin A).toContinuousLinearMap
+    change LinearMap.det ((Matrix.mulVecLin A).toContinuousLinearMap
       : (Fin (genus X) → ℂ) →ₗ[ℂ] (Fin (genus X) → ℂ)) ≠ 0
     have hcoe : ((Matrix.mulVecLin A).toContinuousLinearMap
         : (Fin (genus X) → ℂ) →ₗ[ℂ] (Fin (genus X) → ℂ)) = Matrix.mulVecLin A := rfl
@@ -323,10 +329,10 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
         simp [LinearMap.sum_apply, pathIntegralₗ]
       rw [hlhs]
       simp only [hσint]
-      show ∑ j, gp i j (w j) = pathIntegral γ (basis X i)
+      change ∑ j, gp i j (w j) = pathIntegral γ (basis X i)
       have : ∑ j, gp i j (w j) = 𝔉 w i := rfl
       rw [this, hwt]
-      show t i = period γ (basis X i)
+      change t i = period γ (basis X i)
       rw [← hγ]; rfl
     intro η
     have := congrFun (congrArg DFunLike.coe hL) η
@@ -434,7 +440,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   have hex : ∃ v : Fin (genus X) → ℂ, v ≠ 0 ∧ Matrix.mulVec A v = 0 := by
     refine ⟨c, hcne, ?_⟩
     funext k
-    show ∑ j, A k j * c j = 0
+    change ∑ j, A k j * c j = 0
     exact hsum0 k
   exact hAdet (Matrix.exists_mulVec_eq_zero_iff.mp hex)
 

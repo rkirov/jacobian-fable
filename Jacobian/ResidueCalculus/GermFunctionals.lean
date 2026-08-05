@@ -46,14 +46,14 @@ def meromorphicGermsAt (z₀ : ℂ) : Submodule ℂ (Filter.Germ (𝓝[≠] z₀
       | _ g =>
         have hf : MeromorphicAt f z₀ := hγ
         have hg : MeromorphicAt g z₀ := hδ
-        show MeromorphicGerm z₀ ((f : Filter.Germ (𝓝[≠] z₀) ℂ) + (g : Filter.Germ (𝓝[≠] z₀) ℂ))
+        change MeromorphicGerm z₀ ((f : Filter.Germ (𝓝[≠] z₀) ℂ) + (g : Filter.Germ (𝓝[≠] z₀) ℂ))
         rw [← Filter.Germ.coe_add]
         exact hf.add hg
   smul_mem' c γ hγ := by
     induction γ using Filter.Germ.inductionOn with
     | _ f =>
       have hf : MeromorphicAt f z₀ := hγ
-      show MeromorphicGerm z₀ (c • (f : Filter.Germ (𝓝[≠] z₀) ℂ))
+      change MeromorphicGerm z₀ (c • (f : Filter.Germ (𝓝[≠] z₀) ℂ))
       rw [← Filter.Germ.coe_smul]
       exact (MeromorphicAt.const c z₀).mul hf
 
@@ -72,7 +72,7 @@ noncomputable def laurentCoeffL (z₀ : ℂ) (k : ℤ) : meromorphicGermsAt z₀
       | _ g =>
         have hf : MeromorphicAt f z₀ := hγ
         have hg : MeromorphicAt g z₀ := hδ
-        show laurentCoeffAt (fun z => f z + g z) z₀ k
+        change laurentCoeffAt (fun z => f z + g z) z₀ k
           = laurentCoeffAt f z₀ k + laurentCoeffAt g z₀ k
         exact laurentCoeffAt_fun_add hf hg k
   map_smul' := by
@@ -80,7 +80,7 @@ noncomputable def laurentCoeffL (z₀ : ℂ) (k : ℤ) : meromorphicGermsAt z₀
     induction γ using Filter.Germ.inductionOn with
     | _ f =>
       have hf : MeromorphicAt f z₀ := hγ
-      show laurentCoeffAt (fun z => c * f z) z₀ k = c * laurentCoeffAt f z₀ k
+      change laurentCoeffAt (fun z => c * f z) z₀ k = c * laurentCoeffAt f z₀ k
       exact laurentCoeffAt_const_mul c k
 
 /-- The residue functional. -/

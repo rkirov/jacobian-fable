@@ -72,10 +72,10 @@ theorem exists_logBranch_disk {c₀ : ℂ} {r : ℝ} (hr : 0 < r) {h : ℂ → �
     simp []
   have hφc₀ : φ c₀ = 1 := by
     have hne' := hne c₀ hc₀
-    show h c₀ * Complex.exp (-(L c₀)) = 1
+    change h c₀ * Complex.exp (-(L c₀)) = 1
     rw [hL0, Complex.exp_neg, Complex.exp_log hne', mul_inv_cancel₀ hne']
   have hz' : φ z = 1 := hφc₀ ▸ hconst
-  show Complex.exp (L z) = h z
+  change Complex.exp (L z) = h z
   have hexpz := congrArg (· * Complex.exp (L z)) hz'
   simp only [φ, one_mul, mul_assoc, ← Complex.exp_add, neg_add_cancel, Complex.exp_zero,
     mul_one] at hexpz
@@ -160,7 +160,7 @@ theorem exists_exteriorLogBranch {a b : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
           simpa using (hasDerivAt_id z⁻¹).const_mul a |>.const_sub (1 : ℂ)
         exact h1.div h2 hden0
       rw [hderivH.deriv]
-      show ((-b * (1 - a * z⁻¹) - (1 - b * z⁻¹) * (-a)) / (1 - a * z⁻¹) ^ 2)
+      change ((-b * (1 - a * z⁻¹) - (1 - b * z⁻¹) * (-a)) / (1 - a * z⁻¹) ^ 2)
           / ((1 - b * z⁻¹) / (1 - a * z⁻¹)) = (a - b) / ((1 - a * z⁻¹) * (1 - b * z⁻¹))
       field_simp
       ring
@@ -181,12 +181,12 @@ theorem exists_exteriorLogBranch {a b : ℂ} {ρ : ℝ} (hρ : 0 < ρ)
   · obtain ⟨hzne, hwmem⟩ := hzmem z hz
     have heq := hexpLext z⁻¹ hwmem
     rw [hH_def] at heq
-    show Complex.exp (Lext z⁻¹) = (z - b) / (z - a)
+    change Complex.exp (Lext z⁻¹) = (z - b) / (z - a)
     rw [heq]
     have haz' := haz z hz
     have e1 : (1 : ℂ) - a * z⁻¹ = (z - a) / z := by field_simp
     have e2 : (1 : ℂ) - b * z⁻¹ = (z - b) / z := by field_simp
-    show (1 - b * z⁻¹) / (1 - a * z⁻¹) = (z - b) / (z - a)
+    change (1 - b * z⁻¹) / (1 - a * z⁻¹) = (z - b) / (z - a)
     rw [e1, e2]
     field_simp
 

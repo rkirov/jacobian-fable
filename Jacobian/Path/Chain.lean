@@ -54,8 +54,8 @@ structure ChartChain (γ : Path x y) where
     γ.extend u ∈ (e k).source ∧ e k (γ.extend u) ∈ ball (c k) (r k)
 
 /-- For every `τ ∈ I`, an open (in `I`) neighbourhood `V` of `τ` and chart-ball data
-`(e, c, r)` such that `γ.extend` maps `V` into `e.source` with image inside `ball c r ⊆ e.target`.
-    -/
+`(e, c, r)` such that `γ.extend` maps `V` into `e.source` with image inside
+`ball c r ⊆ e.target`. -/
 private theorem exists_chart_nhds (γ : Path x y) (τ : ↥unitInterval) :
     ∃ V : Set ↥unitInterval, IsOpen V ∧ τ ∈ V ∧
       ∃ (e : OpenPartialHomeomorph X ℂ) (c : ℂ) (r : ℝ), e ∈ maximalAtlas 𝓘(ℂ) ω X ∧ 0 < r ∧

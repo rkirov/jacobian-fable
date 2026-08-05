@@ -152,7 +152,7 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
     have hcompeq :
         (⇑RS.P1.invChart ∘ (toP1 f') ∘ ⇑e.symm) =ᶠ[𝓝[≠] c] (f' ∘ e.symm)⁻¹ := by
       filter_upwards [heqchart] with z hz
-      show RS.P1.invChart (toP1 f' (e.symm z)) = ((f' ∘ e.symm) z)⁻¹
+      change RS.P1.invChart (toP1 f' (e.symm z)) = ((f' ∘ e.symm) z)⁻¹
       rw [hz, RS.P1.invChart_apply_coe]
       rfl
     have hordinv : meromorphicOrderAt (⇑RS.P1.invChart ∘ (toP1 f') ∘ ⇑e.symm) c
@@ -161,7 +161,7 @@ theorem toP1_contMDiff (hf : MeromorphicOnX f Set.univ) :
       rw [hordinv, meromorphicOrderAt_inv]
       exact LinearOrderedAddCommGroupWithTop.neg_pos.2 (Or.inl hordg)
     have hvalz : (⇑RS.P1.invChart ∘ (toP1 f') ∘ ⇑e.symm) c = 0 := by
-      show RS.P1.invChart (toP1 f' (e.symm c)) = 0
+      change RS.P1.invChart (toP1 f' (e.symm c)) = 0
       rw [show e.symm c = y from e.left_inv (mem_chart_source ℂ y), hFinf,
         RS.P1.invChart_apply_infty]
     exact AnalyticAt.of_meromorphicOrderAt_pos hpos hvalz
@@ -250,7 +250,7 @@ theorem invChart_toP1_holoRepr_eventuallyEq_of_neg (hf : MeromorphicOnX f Set.un
   have heqchart : ∀ᶠ z in 𝓝[≠] e y, toP1 f' (e.symm z) = ((f' (e.symm z) : ℂ) : OnePoint ℂ) :=
     RS.eventually_nhdsNE_iff_comp_chart.mp heq
   filter_upwards [heqchart] with z hz
-  show RS.P1.invChart (toP1 f' (e.symm z)) = ((f' ∘ e.symm) z)⁻¹
+  change RS.P1.invChart (toP1 f' (e.symm z)) = ((f' ∘ e.symm) z)⁻¹
   rw [hz, RS.P1.invChart_apply_coe]
   rfl
 

@@ -30,7 +30,7 @@ own `mulInto` (built directly on `T D`/`TailAt p D` from this file) supersedes `
 is a genuine scope relief, not a shortfall.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 
 namespace RS.LaurentTail
@@ -57,7 +57,7 @@ omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem TailAt.mk_eq_zero_iff {p : X} {D : RS.Divisor X}
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     TailAt.mk p D ψ = 0 ↔ (-(D p) : WithTop ℤ) ≤ ψ.ord p := by
-  show Submodule.Quotient.mk ψ =
+  change Submodule.Quotient.mk ψ =
     (0 : RS.MeroGermOn X (chartAt ℂ p).source ⧸ RS.Cech.ordGe p (-(D p))) ↔ _
   rw [Submodule.Quotient.mk_eq_zero]
   exact RS.Cech.mem_ordGe_iff
@@ -156,7 +156,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowToT_apply (D D' : RS.Divisor X) (h : D ≤ D') (w : RS.Cech.Window D D')
     (q : RS.Cech.diffSupp D D') :
     windowToT D D' h w (q : X) = windowAtToTailAt (q : X) D (D' q) (w q) := by
-  show T.mk D (RS.Cech.diffSupp D D') (fun q => windowAtToTailAt (q : X) D (D' q) (w q))
+  change T.mk D (RS.Cech.diffSupp D D') (fun q => windowAtToTailAt (q : X) D (D' q) (w q))
     (q : X) = _
   exact T.mk_apply_mem q.2
 

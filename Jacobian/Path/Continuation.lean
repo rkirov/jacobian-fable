@@ -28,7 +28,6 @@ noncomputable section
 
 namespace RS
 
-open scoped Classical
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {x y z : X}
@@ -115,7 +114,7 @@ theorem exists_isPrimitiveAlong (γ : Path x y) (η : Form1 X) :
     have hKeq : Set.EqOn (γ.extend ∘ clampI) γ.extend Set.univ :=
       fun u _ => extend_clampI γ u
     refine ⟨F ∘ clampI, hcomp.congr_map hKeq, ?_⟩
-    show F (clampI 0) = 0
+    change F (clampI 0) = 0
     rw [clampI_zero]; exact hF0
   intro k
   induction k with
@@ -169,7 +168,7 @@ theorem IsPrimitiveAlong.pathIntegral_eq {γ : Path x y} {η : Form1 X} {F : ℝ
   obtain ⟨hF', hF'0⟩ := (exists_isPrimitiveAlong γ η).choose_spec
   have h := hF'.sub_eq_sub isPreconnected_univ γ.continuous_extend.continuousOn hF
     (mem_univ (0:ℝ)) (mem_univ (1:ℝ))
-  show (exists_isPrimitiveAlong γ η).choose 1 = F 1 - F 0
+  change (exists_isPrimitiveAlong γ η).choose 1 = F 1 - F 0
   rw [hF'0] at h
   linear_combination h
 
@@ -200,7 +199,7 @@ theorem pathIntegral_symm (γ : Path x y) (η : Form1 X) :
     have := hF.comp (φ := fun u : ℝ => 1 - u) (t := Set.univ) hc.continuousOn (mapsTo_univ _ _)
     rwa [heq] at this
   rw [hcomp.pathIntegral_eq]
-  show F (1 - (1:ℝ)) - F (1 - (0:ℝ)) = -pathIntegral γ η
+  change F (1 - (1:ℝ)) - F (1 - (0:ℝ)) = -pathIntegral γ η
   norm_num
   rw [hF.pathIntegral_eq]
   ring
@@ -236,7 +235,7 @@ theorem pathIntegral_trans (γ : Path x y) (γ' : Path y z) (η : Form1 X) :
         Set.univ := fun u _ => heqγ' u
     exact h1.congr_map hK
   rw [hH.pathIntegral_eq, hcompγ.pathIntegral_eq, hcompγ'.pathIntegral_eq]
-  show H 1 - H 0 =
+  change H 1 - H 0 =
     H (clampI 1 / 2) - H (clampI 0 / 2) + (H ((1 + clampI 1)/2) - H ((1 + clampI 0)/2))
   rw [clampI_zero, clampI_one]
   norm_num
@@ -251,31 +250,31 @@ theorem pathIntegral_reparam (γ : Path x y) {f : I → I} (hf : Continuous f)
     funext u
     by_cases h0 : u ≤ 0
     · have hp : projIcc (0:ℝ) 1 zero_le_one u = 0 := projIcc_of_le_left zero_le_one h0
-      show γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
+      change γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
       rw [hp, h₀, Set.Icc.coe_zero, γ.extend_zero, (γ.reparam f hf h₀ h₁).extend_of_le_zero h0]
     · replace h0 := not_le.mp h0
       by_cases h1 : u ≤ 1
       · have hp : projIcc (0:ℝ) 1 zero_le_one u = ⟨u, ⟨h0.le, h1⟩⟩ :=
           projIcc_of_mem zero_le_one ⟨h0.le, h1⟩
-        show γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
+        change γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
         rw [hp, γ.extend_apply (f ⟨u, ⟨h0.le, h1⟩⟩).2,
           (γ.reparam f hf h₀ h₁).extend_apply ⟨h0.le, h1⟩]
         rfl
       · replace h1 := not_le.mp h1
         have hp : projIcc (0:ℝ) 1 zero_le_one u = 1 := projIcc_of_right_le zero_le_one h1.le
-        show γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
+        change γ.extend (f (projIcc 0 1 zero_le_one u) : ℝ) = _
         rw [hp, h₁, Set.Icc.coe_one, γ.extend_one, (γ.reparam f hf h₀ h₁).extend_of_one_le h1.le]
   have hcomp : IsPrimitiveAlong (γ.reparam f hf h₀ h₁) η (F ∘ φ) := by
     have h1 := hF.comp (φ := φ) (t := Set.univ) hcont.continuousOn (mapsTo_univ _ _)
     rwa [heq] at h1
   rw [hcomp.pathIntegral_eq, hF.pathIntegral_eq]
-  show F (φ 1) - F (φ 0) = F 1 - F 0
+  change F (φ 1) - F (φ 0) = F 1 - F 0
   have hφ1 : φ 1 = 1 := by
-    show (f (projIcc 0 1 zero_le_one (1:ℝ)) : ℝ) = 1
+    change (f (projIcc 0 1 zero_le_one (1:ℝ)) : ℝ) = 1
     have hp : projIcc (0:ℝ) 1 zero_le_one (1:ℝ) = 1 := projIcc_of_right_le zero_le_one le_rfl
     rw [hp, h₁, Set.Icc.coe_one]
   have hφ0 : φ 0 = 0 := by
-    show (f (projIcc 0 1 zero_le_one (0:ℝ)) : ℝ) = 0
+    change (f (projIcc 0 1 zero_le_one (0:ℝ)) : ℝ) = 0
     have hp : projIcc (0:ℝ) 1 zero_le_one (0:ℝ) = 0 := projIcc_of_le_left zero_le_one le_rfl
     rw [hp, h₀, Set.Icc.coe_zero]
   rw [hφ1, hφ0]

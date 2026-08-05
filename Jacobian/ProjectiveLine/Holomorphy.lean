@@ -120,7 +120,7 @@ theorem contMDiffAt_of_pole {g : ℂ → ℂ} {z₀ : ℂ} (_hg : MeromorphicAt 
   refine ⟨hcontF, ?_⟩
   have hcompeq : (⇑invChart ∘ F ∘ ⇑(chartAt ℂ z₀).symm) =ᶠ[𝓝[≠] z₀] g⁻¹ := by
     filter_upwards [hF] with z hz
-    show invChart (F ((chartAt ℂ z₀).symm z)) = (g⁻¹) z
+    change invChart (F ((chartAt ℂ z₀).symm z)) = (g⁻¹) z
     rw [chartAt_self_eq]
     simp [hz]
   have hordinv : meromorphicOrderAt (⇑invChart ∘ F ∘ ⇑(chartAt ℂ z₀).symm) z₀ =
@@ -129,7 +129,7 @@ theorem contMDiffAt_of_pole {g : ℂ → ℂ} {z₀ : ℂ} (_hg : MeromorphicAt 
     rw [hordinv, meromorphicOrderAt_inv]
     exact LinearOrderedAddCommGroupWithTop.neg_pos.2 (Or.inl hord)
   have hval : (⇑invChart ∘ F ∘ ⇑(chartAt ℂ z₀).symm) z₀ = 0 := by
-    show invChart (F ((chartAt ℂ z₀).symm z₀)) = 0
+    change invChart (F ((chartAt ℂ z₀).symm z₀)) = 0
     rw [chartAt_self_eq]
     simp [hFinf]
   exact AnalyticAt.of_meromorphicOrderAt_pos hpos hval
@@ -142,7 +142,7 @@ theorem meromorphicAt_coeChart_comp {f : Z → OnePoint ℂ} {x : Z}
   have hGψ : (⇑coeChart ∘ f ∘ ⇑(chartAt ℂ x).symm : ℂ → ℂ) =
       (⇑invChart ∘ f ∘ ⇑(chartAt ℂ x).symm)⁻¹ := by
     funext y
-    show coeChart (f ((chartAt ℂ x).symm y)) = (invChart (f ((chartAt ℂ x).symm y)))⁻¹
+    change coeChart (f ((chartAt ℂ x).symm y)) = (invChart (f ((chartAt ℂ x).symm y)))⁻¹
     induction (f ((chartAt ℂ x).symm y)) using OnePoint.rec with
     | infty => simp
     | coe w => simp
@@ -165,7 +165,7 @@ theorem contMDiff_inversion : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω inversion := by
     refine ⟨continuous_inversion.continuousAt, ?_⟩
     have hfun : (⇑coeChart ∘ inversion ∘ ⇑invChart.symm : ℂ → ℂ) = id := by
       funext w
-      show coeChart (inversion (invChart.symm w)) = w
+      change coeChart (inversion (invChart.symm w)) = w
       rw [invChart_symm_apply, inversion_involutive]
       exact coeChart_apply_coe w
     rw [hfun]
@@ -178,7 +178,7 @@ theorem contMDiff_inversion : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω inversion := by
       refine ⟨continuous_inversion.continuousAt, ?_⟩
       have hfun : (⇑invChart ∘ inversion ∘ ⇑coeChart.symm : ℂ → ℂ) = id := by
         funext w
-        show invChart (inversion (coeChart.symm w)) = w
+        change invChart (inversion (coeChart.symm w)) = w
         rw [coeChart_symm_apply]
         exact invChart_inversion_coe w
       rw [hfun]
@@ -188,7 +188,7 @@ theorem contMDiff_inversion : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω inversion := by
       refine ⟨continuous_inversion.continuousAt, ?_⟩
       have hfun : (⇑coeChart ∘ inversion ∘ ⇑coeChart.symm : ℂ → ℂ) = Inv.inv := by
         funext w
-        show coeChart (inversion (coeChart.symm w)) = w⁻¹
+        change coeChart (inversion (coeChart.symm w)) = w⁻¹
         rw [coeChart_symm_apply]
         exact coeChart_inversion_coe w
       rw [hfun]

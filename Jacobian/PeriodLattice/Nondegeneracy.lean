@@ -56,7 +56,7 @@ theorem form1_eq_zero_of_re_period_eq_zero {η : Form1 X}
     have hre : (pathIntegral α η).re = 0 := h α
     rw [hα_int] at hre
     simp only [Complex.sub_re, Complex.add_re] at hre
-    show F y - F x = (pathIntegral σ η).re
+    change F y - F x = (pathIntegral σ η).re
     rw [hF_def]
     linarith
   -- **Step 2**: local expression of `F` through each chart, as an eventual equality.

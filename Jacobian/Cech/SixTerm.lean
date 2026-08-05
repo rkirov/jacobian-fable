@@ -119,7 +119,7 @@ theorem tailGerm_mul_tailGerm_neg [T1Space X] (q : X) (m : ℤ) :
     apply hyq
     have hsymm := congrArg (chartAt ℂ q).symm heq
     rwa [(chartAt ℂ q).left_inv hy, (chartAt ℂ q).left_inv (mem_chart_source ℂ q)] at hsymm
-  show (chartAt ℂ q y - chartAt ℂ q q) ^ m * (chartAt ℂ q y - chartAt ℂ q q) ^ (-m) = 1
+  change (chartAt ℂ q y - chartAt ℂ q q) ^ m * (chartAt ℂ q y - chartAt ℂ q q) ^ (-m) = 1
   rw [← zpow_add₀ hne0, add_neg_cancel, zpow_zero]
 
 /-- One-step leading-coefficient subtraction on an arbitrary open `W ∋ q` inside the chart
@@ -209,7 +209,7 @@ private theorem exists_tail_approx_aux [T1Space X] (q : X) {W : Set X} (hW : IsO
         exact_mod_cast (show (-d' : ℤ) ≤ -(d' - 1) by omega)
       refine ⟨⟨c • tailGerm q (-d') + (ψ₁ : RS.MeroGermOn X _),
         Submodule.add_mem _ (Submodule.smul_mem _ c htm) hψ₁m⟩, ?_⟩
-      show ((-d : ℤ) : WithTop ℤ) ≤
+      change ((-d : ℤ) : WithTop ℤ) ≤
         (γ - RS.MeroGermOn.restrict hWs
           (c • tailGerm q (-d') + (ψ₁ : RS.MeroGermOn X ((chartAt ℂ q).source)))).ord q
       have hrw : γ - RS.MeroGermOn.restrict hWs
@@ -325,7 +325,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.res {𝒱 : FinCover Ω} {f : C1 D' 𝒰} (hf : f.MemLD D)
     (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 𝒱 τ) : (resC1 D' τ hτ f).MemLD D := by
   intro p
-  show RS.MeroGermOn.restrict (inf_le_inf (hτ p.1) (hτ p.2))
+  change RS.MeroGermOn.restrict (inf_le_inf (hτ p.1) (hτ p.2))
       (f (τ p.1, τ p.2) : RS.MeroGermOn X ((𝒰.U (τ p.1) ⊓ 𝒰.U (τ p.2) : Opens X) : Set X)) ∈
     RS.LinSysOn D ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)
   exact RS.restrict_mem_linSysOn (inf_le_inf (hτ p.1) (hτ p.2))
@@ -344,7 +344,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.add {f f' : C1 D' 𝒰} (hf : f.MemLD D) (hf' : f'.MemLD D) :
     (f + f').MemLD D := by
   intro p
-  show ((f p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) +
+  change ((f p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) +
       (f' p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))) ∈
     RS.LinSysOn D ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)
   exact Submodule.add_mem _ (hf p) (hf' p)
@@ -352,7 +352,7 @@ theorem C1.MemLD.add {f f' : C1 D' 𝒰} (hf : f.MemLD D) (hf' : f'.MemLD D) :
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem C1.MemLD.smul (a : ℂ) {f : C1 D' 𝒰} (hf : f.MemLD D) : (a • f).MemLD D := by
   intro p
-  show (a • (f p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))) ∈
+  change (a • (f p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))) ∈
     RS.LinSysOn D ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)
   exact Submodule.smul_mem _ a (hf p)
 
@@ -496,7 +496,7 @@ theorem Realizes.add {𝒰 : FinCover (⊤ : Opens X)} {g g' : C0 D' 𝒰} {w w'
         (ψ₁ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source)) +
       windowDefect (g' i : RS.MeroGermOn X (𝒰.U i : Set X))
         (ψ₂ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source)) := by
-    show RS.MeroGermOn.restrict Set.inter_subset_left
+    change RS.MeroGermOn.restrict Set.inter_subset_left
         ((g i : RS.MeroGermOn X (𝒰.U i : Set X)) + (g' i : RS.MeroGermOn X (𝒰.U i : Set X))) -
       RS.MeroGermOn.restrict Set.inter_subset_right
         ((ψ₁ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source)) +
@@ -542,7 +542,7 @@ theorem Realizes.smul {𝒰 : FinCover (⊤ : Opens X)} (a : ℂ) {g : C0 D' �
           RS.MeroGermOn X ((chartAt ℂ (q : X)).source)) =
         a • windowDefect (g i : RS.MeroGermOn X (𝒰.U i : Set X))
           (ψ₁ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source)) := by
-      show RS.MeroGermOn.restrict Set.inter_subset_left
+      change RS.MeroGermOn.restrict Set.inter_subset_left
           (a • (g i : RS.MeroGermOn X (𝒰.U i : Set X))) -
         RS.MeroGermOn.restrict Set.inter_subset_right
           (a • (ψ₁ : RS.MeroGermOn X ((chartAt ℂ (q : X)).source))) = _
@@ -617,7 +617,7 @@ theorem mlClass_eq_of_realizes {𝒰 𝒰' : FinCover (⊤ : Opens X)} {g : C0 D
     refine ⟨hcw, ?_⟩
     funext p
     apply Subtype.ext
-    show RS.MeroGermOn.restrict inf_le_right
+    change RS.MeroGermOn.restrict inf_le_right
           ((G p.2 : RS.MeroGermOn X ((𝒰.meet 𝒰').U p.2 : Set X)) -
             (G' p.2 : RS.MeroGermOn X ((𝒰.meet 𝒰').U p.2 : Set X))) -
         RS.MeroGermOn.restrict inf_le_left
@@ -934,7 +934,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
     have hmemld : (d0 D' 𝒱 g').MemLD D := by
       intro p
       rw [hg'd0']
-      show (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
+      change (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
         RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)) ∈
         RS.LinSysOn D ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)
       rw [Submodule.coe_inclusion]
@@ -1010,7 +1010,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
               RS.MeroGermOn.restrict hTj (g' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
                 RS.MeroGermOn.restrict hTiq
                   (g' (i q) : RS.MeroGermOn X (𝒱.U (i q) : Set X)) := by
-            show RS.MeroGermOn.restrict hTinf
+            change RS.MeroGermOn.restrict hTinf
                 (RS.MeroGermOn.restrict inf_le_right
                     (g' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
                   RS.MeroGermOn.restrict inf_le_left
@@ -1031,7 +1031,7 @@ theorem exact_windowConnect_H1Incl (h : D ≤ D') :
       funext p
       apply Subtype.ext
       rw [C1.retype_apply_coe, hg'd0']
-      show (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
+      change (Submodule.inclusion (RS.Cech.linSysOn_mono h) ((f : C1 D 𝒱) p) :
         RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)) =
         ((f : C1 D 𝒱) p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X))
       rw [Submodule.coe_inclusion]

@@ -28,7 +28,8 @@ The three analytic/linear-algebraic properties of the area pairing `pairing PU �
   cancellation against `Form01.compat`-type `conj`-factors and `coeffIn_trans`), and summing
   `∑ᵢ dbarψᵢ = dbar1 = 0` in chart `j`.
 * **`conjForm`/`pairingDual_injective`** (Forster 19.5's positivity, localized): the conjugate
-  `(0,1)`-form `theta-bar` of a holomorphic `1`-form pairs against `θ` to `∑ᵢ ∫ ψᵢ |θᵢ|² ≥ 0`, zero only
+  `(0,1)`-form `theta-bar` of a holomorphic `1`-form pairs against `θ` to
+  `∑ᵢ ∫ ψᵢ |θᵢ|² ≥ 0`, zero only
   for `θ = 0` — so `θ ↦ pairing · θ` is an INJECTION `Form1 X ↪ Dual (H01 X)`. No Hodge theory:
   this is pointwise positivity of the integrand plus `volume`'s open-positivity.
 * **`exists_dbar_of_forall_pairing_eq_zero`** — the integral-pairing Dolbeault bridge: a
@@ -524,7 +525,7 @@ omit [T2Space X] [CompactSpace X] in
 /-- The chart coefficient of the conjugate form. -/
 theorem conjForm_coeffAt (θ : RS.Form1 X) (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target) :
     (conjForm θ).coeffAt x z = (starRingEnd ℂ) (RS.coeffIn (chartAt ℂ x) θ z) := by
-  show ((chartAt ℂ x).target).indicator
+  change ((chartAt ℂ x).target).indicator
     (fun z => (starRingEnd ℂ) (RS.coeffIn (chartAt ℂ x) θ z)) z = _
   exact Set.indicator_of_mem hz _
 
@@ -717,7 +718,7 @@ theorem exists_dbar_of_forall_pairing_eq_zero (PU : SurfPoU X)
   rw [← Module.forall_dual_apply_eq_zero_iff ℂ]
   intro φ
   obtain ⟨θ, rfl⟩ := hsurjPsi φ
-  show pairingH01 PU θ (RS.H01.mk η) = 0
+  change pairingH01 PU θ (RS.H01.mk η) = 0
   rw [pairingH01_mk]
   exact h θ
 

@@ -149,7 +149,7 @@ theorem tangentCLM_apply_eq_mul {w : ℂ} {q : X}
     (T : TangentSpace 𝓘(ℂ) w →L[ℂ] TangentSpace 𝓘(ℂ) q) (c : ℂ) :
     tangentCoord (T c) = c * tangentCoord (T (1 : ℂ)) := by
   have h : (c : TangentSpace 𝓘(ℂ) w) = c • ((1 : ℂ) : TangentSpace 𝓘(ℂ) w) := by
-    show c = c * (1 : ℂ)
+    change c = c * (1 : ℂ)
     rw [mul_one]
   -- `T.map_smul` is stated with `T`'s own module instances; naming the instance here (rather
   -- than letting `rw` unify through `TangentSpace`'s unfolding) keeps the rewrite syntactic.
@@ -190,7 +190,7 @@ theorem Form1.apply_eq_smul_coeffAt (η : Form1 X) (x : X) (v : TangentSpace �
     η x v = tangentCoord v * coeffAt x η := by
   rw [coeffAt_eq_apply_one]
   have h : (v : TangentSpace 𝓘(ℂ) x) = tangentCoord v • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x) := by
-    show v = tangentCoord v * (1 : ℂ)
+    change v = tangentCoord v * (1 : ℂ)
     rw [mul_one]
   calc (η x) v = (η x) (tangentCoord v • ((1 : ℂ) : TangentSpace 𝓘(ℂ) x)) := by rw [← h]
     _ = tangentCoord v * η x (1 : ℂ) :=

@@ -62,7 +62,7 @@ noncomputable def poleZeroLocus (f : ℳ X) : Opens X :=
 
 theorem mem_poleZeroLocus_iff {f : ℳ X} (hf : f ≠ 0) {x : X} :
     x ∈ poleZeroLocus f ↔ f.ord x = 0 := by
-  show x ∈ openLocusOfFinite (RS.finite_support_divisor f) ↔ f.ord x = 0
+  change x ∈ openLocusOfFinite (RS.finite_support_divisor f) ↔ f.ord x = 0
   rw [mem_openLocusOfFinite, Function.mem_support, not_not, RS.divisor_apply,
     WithTop.untop₀_eq_zero]
   constructor
@@ -129,7 +129,7 @@ theorem holoRepr_ne_zero_of_ord_eq_zero {f : ℳ X} {x : X} (h0 : f.ord x = 0) :
   have hAn : AnalyticAt ℂ (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
     RS.contMDiffAt_iff_analyticAt_comp_chartAt.mp hcm
   have hordAmb : meromorphicOrderAt (f.holoRepr ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = 0 := by
-    show RS.ordAtX f.holoRepr x = 0
+    change RS.ordAtX f.holoRepr x = 0
     have hmk : RS.MeroGermOn.mk f.holoRepr (RS.MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f)
         = f := RS.MeroGermOn.mk_holoRepr isOpen_univ f
     calc RS.ordAtX f.holoRepr x
@@ -167,7 +167,7 @@ theorem coeffIn_dlogForm (f : ℳ X) (hf : f ≠ 0)
     RS.coeffIn e (dlogForm f hf) z =
       (f.holoRepr ((e.symm z : X)))⁻¹ *
         deriv ((fun p : poleZeroLocus f => f.holoRepr (p : X)) ∘ ⇑e.symm) z := by
-  show RS.coeffIn e (RS.Form1.smulFun _ _
+  change RS.coeffIn e (RS.Form1.smulFun _ _
     (RS.mdifferential (fun p : poleZeroLocus f => f.holoRepr (p : X))
       (contMDiff_holoRepr_poleZeroLocus f hf))) z = _
   rw [RS.coeffIn_smulFun]
@@ -249,7 +249,7 @@ theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X}
     have hHeq_of : ∀ {t : ℝ}, γ'.extend t ∈ e.source ∧ F t = g' (e (γ'.extend t)) →
         H t = φ (e (γ'.extend t)) := by
       intro t ht
-      show f.holoRepr (γ.extend t) * Complex.exp (-(F t)) =
+      change f.holoRepr (γ.extend t) * Complex.exp (-(F t)) =
         f.holoRepr ((e.symm (e (γ'.extend t)) : X)) * Complex.exp (-(g' (e (γ'.extend t))))
       rw [e.left_inv ht.1, ← ht.2, Path.liftPoleZeroLocus_extend]
     have hHeq : ∀ᶠ t in 𝓝 t₀, H t = φ (e (γ'.extend t)) := hFeq'.mono fun t ht => hHeq_of ht
@@ -257,13 +257,13 @@ theorem exp_eq_holoRepr_of_isPrimitiveAlong {f : ℳ X} (hf : f ≠ 0) {x y : X}
     filter_upwards [hHeq, hktendsto.eventually hφconst] with t ht1 ht2
     rw [ht1, ht2, hHt₀]
   have h0 : H 0 = 1 := by
-    show f.holoRepr (γ.extend 0) * Complex.exp (-(F 0)) = 1
+    change f.holoRepr (γ.extend 0) * Complex.exp (-(F 0)) = 1
     rw [γ.extend_zero, ← hc₀, ← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
   intro t
   have hHt : H t = H 0 := hlc.apply_eq_of_preconnectedSpace t 0
   rw [h0] at hHt
   have hexpand : H t * Complex.exp (F t) = f.holoRepr (γ.extend t) := by
-    show f.holoRepr (γ.extend t) * Complex.exp (-(F t)) * Complex.exp (F t) =
+    change f.holoRepr (γ.extend t) * Complex.exp (-(F t)) * Complex.exp (F t) =
       f.holoRepr (γ.extend t)
     rw [mul_assoc, ← Complex.exp_add, neg_add_cancel, Complex.exp_zero, mul_one]
   calc Complex.exp (F t) = 1 * Complex.exp (F t) := (one_mul _).symm
@@ -282,7 +282,7 @@ theorem exists_logBranchAlong {f : ℳ X} (hf : f ≠ 0) {x y : X} (γ : Path x 
   obtain ⟨F₀, hF₀, hF₀0⟩ :=
     RS.exists_isPrimitiveAlong (Path.liftPoleZeroLocus γ hγ)
       (dlogForm f hf)
-  refine ⟨fun t => F₀ t + c₀, hF₀.add_const c₀, by show F₀ 0 + c₀ = c₀; rw [hF₀0, zero_add], ?_⟩
+  refine ⟨fun t => F₀ t + c₀, hF₀.add_const c₀, by change F₀ 0 + c₀ = c₀; rw [hF₀0, zero_add], ?_⟩
   refine exp_eq_holoRepr_of_isPrimitiveAlong hf hγ (hF₀.add_const c₀) ?_
   show Complex.exp (F₀ 0 + c₀) = f.holoRepr x
   rw [hF₀0, zero_add]

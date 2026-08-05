@@ -75,7 +75,7 @@ noncomputable def ofCurve (P : X) : X → Jacobian X := fun x =>
 `PathConnectedSpace.somePath` — the any-path recipe, and the source of well-definedness. -/
 theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
     ofCurve P x = ULift.up (QuotientAddGroup.mk (fun i => RS.pathIntegral σ (RS.basis X i))) := by
-  show ULift.up (QuotientAddGroup.mk
+  change ULift.up (QuotientAddGroup.mk
       (fun i => RS.pathIntegral (PathConnectedSpace.somePath P x) (RS.basis X i)))
     = ULift.up (QuotientAddGroup.mk (fun i => RS.pathIntegral σ (RS.basis X i)))
   congr 1
@@ -88,7 +88,7 @@ theorem ofCurve_eq_of_path (P x : X) (σ : Path P x) :
       = -RS.periodVector (RS.basis X) (σ.trans σ₀.symm) := by
     funext i
     simp only [Pi.sub_apply, Pi.neg_apply]
-    show _ = -(RS.pathIntegral (σ.trans σ₀.symm) (RS.basis X i))
+    change _ = -(RS.pathIntegral (σ.trans σ₀.symm) (RS.basis X i))
     rw [RS.pathIntegral_trans, RS.pathIntegral_symm]
     ring
   rw [heq]
@@ -256,10 +256,10 @@ theorem ofCurve_contMDiff (P : X) :
       rw [hstep, hkey (e.symm ζ) hζU]
       have hze : e (e.symm ζ) = ζ := e.right_inv hζtarget
       rw [hze, RS.extChartAt_ulift_apply_eq]
-      show RS.uliftChartAt L (Function.surjInv QuotientAddGroup.mk_surjective q₀.down)
+      change RS.uliftChartAt L (Function.surjInv QuotientAddGroup.mk_surjective q₀.down)
           (ULift.up (QuotientAddGroup.mk (v₀ + fun i => g i ζ))) = _
       rw [← hx'_def]
-      show RS.chartAt' L x' (QuotientAddGroup.mk (v₀ + fun i => g i ζ)) = _
+      change RS.chartAt' L x' (QuotientAddGroup.mk (v₀ + fun i => g i ζ)) = _
       exact hζEv
     have hAnalytic : AnalyticAt ℂ (fun ζ : ℂ => x' + fun i => g i ζ) (e x₀) :=
       AnalyticAt.add analyticAt_const

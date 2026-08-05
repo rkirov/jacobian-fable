@@ -34,7 +34,6 @@ interface.
 -/
 
 open Filter Topology Metric Function
-open scoped Classical
 
 namespace RS
 
@@ -150,6 +149,7 @@ noncomputable def mlCoeff (f : ℂ → ℂ) (U : Set ℂ) (p : ℂ) : ℤ →₀
         · simp [hk0] at hk
       · simp [hp] at hk)
 
+open scoped Classical in
 theorem mlCoeff_apply {f : ℂ → ℂ} {U : Set ℂ} (p : ℂ) (k : ℤ) :
     mlCoeff f U p k = if p ∈ U ∧ k < 0 then laurentCoeffAt f p k else 0 :=
   Finsupp.onFinset_apply
@@ -201,7 +201,7 @@ theorem realizes_ofMeromorphicOn {f : ℂ → ℂ} (hf : MeromorphicOn f U)
     (hfin : {p ∈ U | meromorphicOrderAt f p < 0}.Finite) :
     Realizes f (ofMeromorphicOn hf hfin) := by
   refine ⟨hf, fun p hp k hk => ?_⟩
-  show laurentCoeffAt f p k = mlCoeff f U p k
+  change laurentCoeffAt f p k = mlCoeff f U p k
   rw [mlCoeff_apply, if_pos ⟨hp, hk⟩]
 
 theorem Realizes.add {f g : ℂ → ℂ} {D E : PrincipalPartData U} (hf : Realizes f D)

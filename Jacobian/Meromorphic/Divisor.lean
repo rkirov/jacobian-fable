@@ -24,7 +24,7 @@ Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.6,
   `finite_setOf_ord_neg/pos`, `eventually_ord_eq_zero`).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set Filter Topology
 
 /-! ### Compat: `degree` (upstreamable to `Function.locallyFinsuppWithin`) -/
@@ -59,6 +59,7 @@ theorem degree_eq_sum_of_subset {Y : Type*} [AddCommMonoid Y]
 theorem degree_add {Y : Type*} [AddCommMonoid Y]
     (D E : Function.locallyFinsuppWithin (Set.univ : Set X) Y) :
     (D + E).degree = D.degree + E.degree := by
+  classical
   set S := (D.finiteSupport isCompact_univ).toFinset ∪ (E.finiteSupport isCompact_univ).toFinset
     with hS_def
   have hDS : D.support ⊆ (S : Set X) := by
@@ -106,6 +107,7 @@ theorem degree_neg {Y : Type*} [AddCommGroup Y]
 
 theorem degree_mono {D E : Function.locallyFinsuppWithin (Set.univ : Set X) ℤ} (h : D ≤ E) :
     D.degree ≤ E.degree := by
+  classical
   set S := (D.finiteSupport isCompact_univ).toFinset ∪ (E.finiteSupport isCompact_univ).toFinset
     with hS_def
   have hDS : D.support ⊆ (S : Set X) := by
@@ -217,26 +219,26 @@ theorem divisor_mul [ConnectedSpace X] {φ ψ : ℳ X} (hφ : φ ≠ 0) (hψ : �
     divisor (φ * ψ) = divisor φ + divisor ψ := by
   apply Function.locallyFinsuppWithin.ext
   intro y
-  show (MeroGermOn.ord (φ * ψ) y).untop₀ = (φ.ord y).untop₀ + (ψ.ord y).untop₀
+  change (MeroGermOn.ord (φ * ψ) y).untop₀ = (φ.ord y).untop₀ + (ψ.ord y).untop₀
   rw [MeroGermOn.ord_mul isOpen_univ (mem_univ y),
     WithTop.untop₀_add (Mero.ord_ne_top hφ y) (Mero.ord_ne_top hψ y)]
 
 theorem divisor_inv (φ : ℳ X) : divisor φ⁻¹ = -divisor φ := by
   apply Function.locallyFinsuppWithin.ext
   intro y
-  show (MeroGermOn.ord φ⁻¹ y).untop₀ = -(φ.ord y).untop₀
+  change (MeroGermOn.ord φ⁻¹ y).untop₀ = -(φ.ord y).untop₀
   rw [MeroGermOn.ord_inv isOpen_univ (mem_univ y), WithTop.untop₀_neg]
 
 theorem divisor_smul {φ : ℳ X} (hc : c ≠ 0) : divisor (c • φ) = divisor φ := by
   apply Function.locallyFinsuppWithin.ext
   intro y
-  show (MeroGermOn.ord (c • φ) y).untop₀ = (φ.ord y).untop₀
+  change (MeroGermOn.ord (c • φ) y).untop₀ = (φ.ord y).untop₀
   rw [MeroGermOn.ord_smul isOpen_univ (mem_univ y) hc]
 
 theorem divisor_algebraMap (c : ℂ) : divisor (algebraMap ℂ (ℳ X) c) = 0 := by
   apply Function.locallyFinsuppWithin.ext
   intro y
-  show (MeroGermOn.ord (algebraMap ℂ (ℳ X) c) y).untop₀ = 0
+  change (MeroGermOn.ord (algebraMap ℂ (ℳ X) c) y).untop₀ = 0
   rcases eq_or_ne c 0 with rfl | hc
   · rw [map_zero]
     show (MeroGermOn.ord (0 : ℳ X) y).untop₀ = 0
@@ -277,7 +279,7 @@ theorem divisor_nonneg_iff {φ : ℳ X} : 0 ≤ divisor φ ↔ ∀ x, 0 ≤ φ.o
     rw [divisor_apply] at h0
     exact WithTop.untop₀_nonneg.1 h0
   · intro hall y
-    show (0 : ℤ) ≤ divisor φ y
+    change (0 : ℤ) ≤ divisor φ y
     rw [divisor_apply]
     exact WithTop.untop₀_nonneg.2 (hall y)
 

@@ -67,7 +67,7 @@ private theorem multiplicityENat_toP1_eq_of_eventuallyEq {G g : X → ℂ} {x : 
     rwa [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)] at h
   have hinChartAt_eq : RS.inChartAt (toP1 G) x =ᶠ[𝓝 (chartAt ℂ x x)] RS.inChartAt g x := by
     filter_upwards [hcompeq'] with z hz
-    show chartAt ℂ (toP1 G x) (toP1 G ((chartAt ℂ x).symm z)) - chartAt ℂ (toP1 G x) (toP1 G x)
+    change chartAt ℂ (toP1 G x) (toP1 G ((chartAt ℂ x).symm z)) - chartAt ℂ (toP1 G x) (toP1 G x)
       = chartAt ℂ (g x) (g ((chartAt ℂ x).symm z)) - chartAt ℂ (g x) (g x)
     rw [hchart, hz, hzc, chartAt_self_eq]
     rfl
@@ -124,7 +124,7 @@ theorem multiplicity_toP1_of_ordAtX_pos (hf : MeromorphicOnX f Set.univ)
       rw [← hmap, eventually_map] at heqfull2
       exact heqfull2
     filter_upwards [heqfull'] with z hz
-    show RS.P1.coeChart (toP1 f' ((chartAt ℂ x).symm z)) = f' ((chartAt ℂ x).symm z)
+    change RS.P1.coeChart (toP1 f' ((chartAt ℂ x).symm z)) = f' ((chartAt ℂ x).symm z)
     rw [hz, RS.P1.coeChart_apply_coe]
   have hmultEq : RS.multiplicityENat (toP1 f') x = RS.multiplicityENat f' x :=
     multiplicityENat_toP1_eq_of_eventuallyEq hchartcoe hcompeq
@@ -154,18 +154,18 @@ theorem multiplicity_toP1_of_ordAtX_neg (hf : MeromorphicOnX f Set.univ)
     exact RS.MeroGermOn.evalAt_of_not_nonneg hnn
   have hf'inv_ordpos : (0 : ℤ) < meromorphicOrderAt (f'⁻¹ ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) :=
       by
-    show (0 : ℤ) < meromorphicOrderAt (f' ∘ (chartAt ℂ x).symm)⁻¹ (chartAt ℂ x x)
+    change (0 : ℤ) < meromorphicOrderAt (f' ∘ (chartAt ℂ x).symm)⁻¹ (chartAt ℂ x x)
     rw [meromorphicOrderAt_inv]
     exact LinearOrderedAddCommGroupWithTop.neg_pos.2 (Or.inl hx')
   have hf'invx0 : (f'⁻¹ ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = 0 := by
-    show (f' ((chartAt ℂ x).symm (chartAt ℂ x x)))⁻¹ = 0
+    change (f' ((chartAt ℂ x).symm (chartAt ℂ x x)))⁻¹ = 0
     rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x), hf'x0, inv_zero]
   have hcxinv : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f'⁻¹ x :=
     RS.contMDiffAt_iff_analyticAt_comp_chartAt.2
       (AnalyticAt.of_meromorphicOrderAt_pos hf'inv_ordpos hf'invx0)
   have hordfinv : RS.ordAtX f'⁻¹ x = -RS.ordAtX f' x := RS.ordAtX_inv
   have hf'invx0' : f'⁻¹ x = 0 := by
-    show (f' x)⁻¹ = 0
+    change (f' x)⁻¹ = 0
     rw [hf'x0, inv_zero]
   -- CC3 ↔ CC4 bridge for the ℂ-valued `f'⁻¹`.
   have hbridge : RS.ordAtX f'⁻¹ x = (RS.multiplicityENat f'⁻¹ x).map (Nat.cast : ℕ → ℤ) :=
@@ -178,7 +178,7 @@ theorem multiplicity_toP1_of_ordAtX_neg (hf : MeromorphicOnX f Set.univ)
       (f' ∘ (chartAt ℂ x).symm)⁻¹ := invChart_toP1_holoRepr_eventuallyEq_of_neg hf hx'
   have hval : (⇑RS.P1.invChart ∘ (toP1 f') ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
       (f' ∘ (chartAt ℂ x).symm)⁻¹ (chartAt ℂ x x) := by
-    show RS.P1.invChart (toP1 f' ((chartAt ℂ x).symm (chartAt ℂ x x))) = _
+    change RS.P1.invChart (toP1 f' ((chartAt ℂ x).symm (chartAt ℂ x x))) = _
     rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x), htoP1xinf, RS.P1.invChart_apply_infty]
     exact hf'invx0.symm
   have hcompeq : (⇑RS.P1.invChart ∘ (toP1 f') ∘ ⇑(chartAt ℂ x).symm) =ᶠ[𝓝 (chartAt ℂ x x)]

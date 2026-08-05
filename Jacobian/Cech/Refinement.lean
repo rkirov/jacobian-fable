@@ -58,7 +58,7 @@ theorem resC1_comp_d0 : (resC1 D τ hτ) ∘ₗ (d0 D 𝒰) = (d0 D 𝒱) ∘ₗ
   apply LinearMap.ext
   intro f
   funext p
-  show LinSysOn.restrictL D (inf_le_inf (hτ p.1) (hτ p.2)) (d0 D 𝒰 f (τ p.1, τ p.2)) =
+  change LinSysOn.restrictL D (inf_le_inf (hτ p.1) (hτ p.2)) (d0 D 𝒰 f (τ p.1, τ p.2)) =
     d0 D 𝒱 (resC0 D τ hτ f) p
   rw [d0_apply, d0_apply, resC0_apply, resC0_apply]
   simp only [map_sub]
@@ -148,7 +148,7 @@ theorem resH1_indep (τ τ' : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 �
   have hdiff : (resZ1 D τ hτ f : C1 D 𝒱) - (resZ1 D τ' hτ' f : C1 D 𝒱) = d0 D 𝒱 (-h) := by
     funext p
     obtain ⟨k, l⟩ := p
-    show resC1 D τ hτ (f : C1 D 𝒰) (k, l) - resC1 D τ' hτ' (f : C1 D 𝒰) (k, l) =
+    change resC1 D τ hτ (f : C1 D 𝒰) (k, l) - resC1 D τ' hτ' (f : C1 D 𝒰) (k, l) =
       d0 D 𝒱 (-h) (k, l)
     set hab : 𝒱.U k ⊓ 𝒱.U l ≤ 𝒰.U (τ k) ⊓ 𝒰.U (τ l) :=
       le_inf (inf_le_left.trans (hτ k)) (inf_le_right.trans (hτ l)) with hhab_def
@@ -183,25 +183,25 @@ theorem resH1_indep (τ τ' : Fin 𝒱.n → Fin 𝒰.n) (hτ : IsRefIdx 𝒰 �
       exact sub_eq_zero.1 e
     have eεδ : LinSysOn.restrictL D hbc ((f : C1 D 𝒰) (τ l, τ' l)) =
         LinSysOn.restrictL D (inf_le_right : 𝒱.U k ⊓ 𝒱.U l ≤ 𝒱.U l) (h l) := by
-      show LinSysOn.restrictL D hbc ((f : C1 D 𝒰) (τ l, τ' l)) =
+      change LinSysOn.restrictL D hbc ((f : C1 D 𝒰) (τ l, τ' l)) =
         LinSysOn.restrictL D inf_le_right
           (LinSysOn.restrictL D (le_inf (hτ l) (hτ' l)) ((f : C1 D 𝒰) (τ l, τ' l)))
       rw [restrictL_restrictL]
     have eγhab' : LinSysOn.restrictL D hab' ((f : C1 D 𝒰) (τ k, τ' k)) =
         LinSysOn.restrictL D (inf_le_left : 𝒱.U k ⊓ 𝒱.U l ≤ 𝒱.U k) (h k) := by
-      show LinSysOn.restrictL D hab' ((f : C1 D 𝒰) (τ k, τ' k)) =
+      change LinSysOn.restrictL D hab' ((f : C1 D 𝒰) (τ k, τ' k)) =
         LinSysOn.restrictL D inf_le_left
           (LinSysOn.restrictL D (le_inf (hτ k) (hτ' k)) ((f : C1 D 𝒰) (τ k, τ' k)))
       rw [restrictL_restrictL]
-    show LinSysOn.restrictL D hab ((f : C1 D 𝒰) (τ k, τ l)) -
+    change LinSysOn.restrictL D hab ((f : C1 D 𝒰) (τ k, τ l)) -
       LinSysOn.restrictL D hbc' ((f : C1 D 𝒰) (τ' k, τ' l)) = d0 D 𝒱 (-h) (k, l)
     rw [hcomb, eγhab', eεδ, d0_apply]
-    show LinSysOn.restrictL D inf_le_left (h k) - LinSysOn.restrictL D inf_le_right (h l) =
+    change LinSysOn.restrictL D inf_le_left (h k) - LinSysOn.restrictL D inf_le_right (h l) =
       LinSysOn.restrictL D inf_le_right ((-h) l) - LinSysOn.restrictL D inf_le_left ((-h) k)
     rw [show (-h) l = -(h l) from rfl, show (-h) k = -(h k) from rfl, map_neg, map_neg]
     abel
   rw [resH1_mk, resH1_mk, ← sub_eq_zero, ← map_sub, H1Cover.mk_eq_zero_iff]
-  show (↑(resZ1 D τ hτ f) - ↑(resZ1 D τ' hτ' f) : C1 D 𝒱) ∈ B1 D 𝒱
+  change (↑(resZ1 D τ hτ f) - ↑(resZ1 D τ' hτ' f) : C1 D 𝒱) ∈ B1 D 𝒱
   rw [hdiff]
   exact ⟨-h, rfl⟩
 
@@ -228,7 +228,7 @@ theorem resZ1_id (h : IsRefIdx 𝒰 𝒰 id) : resZ1 D id h = LinearMap.id := by
   intro f
   apply Subtype.ext
   rw [resZ1_apply_coe]
-  show resC1 D id h (f : C1 D 𝒰) = (f : C1 D 𝒰)
+  change resC1 D id h (f : C1 D 𝒰) = (f : C1 D 𝒰)
   rw [resC1_id]
   rfl
 
@@ -247,7 +247,7 @@ theorem resC0_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   apply LinearMap.ext
   intro f
   funext k
-  show LinSysOn.restrictL D (hσ k) (resC0 D τ hτ f (σ k)) =
+  change LinSysOn.restrictL D (hσ k) (resC0 D τ hτ f (σ k)) =
     LinSysOn.restrictL D ((hσ k).trans (hτ (σ k))) (f (τ (σ k)))
   rw [resC0_apply]
   exact restrictL_restrictL D (hτ (σ k)) (hσ k) ((hσ k).trans (hτ (σ k))) (f (τ (σ k)))
@@ -260,7 +260,7 @@ theorem resC1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   intro f
   funext p
   obtain ⟨k, l⟩ := p
-  show LinSysOn.restrictL D (inf_le_inf (hσ k) (hσ l)) (resC1 D τ hτ f (σ k, σ l)) =
+  change LinSysOn.restrictL D (inf_le_inf (hσ k) (hσ l)) (resC1 D τ hτ f (σ k, σ l)) =
     LinSysOn.restrictL D (inf_le_inf ((hσ k).trans (hτ (σ k))) ((hσ l).trans (hτ (σ l))))
       (f (τ (σ k), τ (σ l)))
   rw [resC1_apply]
@@ -280,7 +280,7 @@ theorem resH1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   apply LinearMap.ext
   intro ξ
   obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 ξ
-  show resH1 D σ hσ (resH1 D τ hτ (H1Cover.mk D 𝒰 f)) = _
+  change resH1 D σ hσ (resH1 D τ hτ (H1Cover.mk D 𝒰 f)) = _
   simp only [resH1_mk]
   rw [resZ1_comp]
   exact (resH1_mk D _ _ f).symm

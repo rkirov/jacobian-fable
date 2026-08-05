@@ -25,7 +25,7 @@ Serre-duality export bank (`l_sub_eq_h1T`, `h1T_zero_eq_genus`, `h1T_zero_eq_l_K
   `genus-zero-headline` (#30) consumes.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 
 namespace RS
 
@@ -40,12 +40,14 @@ theorem chiT_zero : RS.TailDuality.chiT (0 : RS.Divisor X) = 1 - (genus X : ℤ)
   push_cast
   ring
 
+omit [DecidableEq X] in
 /-- **Riemann–Roch.** `l(D) − l(K − D) = deg D + 1 − g` for any canonical divisor `K` (seeded by a
 nonzero reference form `ω₀`). Proof: the tail ledger `chiT D = chiT 0 + deg D` combined with
 Serre duality `l(K − D) = h1T D` and `chiT 0 = 1 - g`; pure ℤ-arithmetic. -/
 theorem riemannRoch {ω₀ : RS.MForm X} (h₀ : ω₀ ≠ 0) (D : RS.Divisor X) :
     (RS.l D : ℤ) - (RS.l (RS.canonicalDivisorOf ω₀ - D) : ℤ) =
       D.degree + 1 - (genus X : ℤ) := by
+  classical
   have h1 : RS.l (RS.canonicalDivisorOf ω₀ - D) = RS.TailDuality.h1T D :=
     RS.TailDuality.l_sub_eq_h1T h₀ D
   have h2 := RS.TailDuality.chiT_eq_chiT_zero_add_degree D
@@ -54,24 +56,30 @@ theorem riemannRoch {ω₀ : RS.MForm X} (h₀ : ω₀ ≠ 0) (D : RS.Divisor X)
   unfold RS.TailDuality.chiT at h2 h3
   omega
 
+open scoped Classical in
+omit [DecidableEq X] in
 /-- `l(K) = g` (Riemann–Roch's own dictionary at `D = K`, packaged directly from the tail-duality
 export bank). -/
 theorem l_K_eq_genus {ω₀ : RS.MForm X} (h₀ : ω₀ ≠ 0) :
     RS.l (RS.canonicalDivisorOf ω₀) = genus X :=
   (RS.TailDuality.h1T_zero_eq_l_K h₀).symm.trans RS.TailDuality.h1T_zero_eq_genus
 
+omit [DecidableEq X] in
 /-- `deg K = 2g − 2` (Riemann–Roch applied at `D := K`, then `l K = g`/`l 0 = 1`). -/
 theorem deg_canonical {ω₀ : RS.MForm X} (h₀ : ω₀ ≠ 0) :
     (RS.canonicalDivisorOf ω₀).degree = 2 * (genus X : ℤ) - 2 := by
+  classical
   have hRR := riemannRoch h₀ (RS.canonicalDivisorOf ω₀)
   rw [sub_self, RS.l_zero, l_K_eq_genus h₀] at hRR
   omega
 
+omit [DecidableEq X] in
 /-- **The Riemann inequality**: `deg D + 1 − g ≤ l D`, unconditionally (no reference form needed
 — `chiT`'s ledger plus `h1T ≥ 0`). The forward-headline seed `genus-zero-headline` (#30) uses at
 `D := single P 1` in genus `0`. -/
 theorem riemann_inequality (D : RS.Divisor X) :
     (D.degree + 1 - (genus X : ℤ)) ≤ (RS.l D : ℤ) := by
+  classical
   have h2 := RS.TailDuality.chiT_eq_chiT_zero_add_degree D
   have h3 := chiT_zero (X := X)
   have hnn : (0 : ℤ) ≤ (RS.TailDuality.h1T D : ℤ) := Int.natCast_nonneg _

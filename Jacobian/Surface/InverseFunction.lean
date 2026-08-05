@@ -98,7 +98,7 @@ theorem exists_openPartialHomeomorph_of_deriv_ne_zero {f : X → Y} {x : X}
   have hxU : x ∈ U := by
     refine ⟨⟨mem_interior_iff_mem_nhds.2 hu_mem, mem_chart_source ℂ (f x)⟩,
       ⟨mem_chart_source ℂ x, hxR⟩, ?_⟩
-    show (R : ℂ → ℂ) ((chartAt ℂ x) x) ∈ V
+    change (R : ℂ → ℂ) ((chartAt ℂ x) x) ∈ V
     rw [hR_coe]
     exact hVx
   -- assemble the candidate partial homeomorphism

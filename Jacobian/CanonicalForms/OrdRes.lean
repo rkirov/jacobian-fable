@@ -28,7 +28,7 @@ order,
   `MeroGermOn.divisorOn`'s proof exactly.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold Filter Topology
 
 noncomputable section
@@ -77,7 +77,7 @@ theorem ord_eq_of_mem_source {θ : MFormData X} {x : X} {e : OpenPartialHomeomor
       (fun z => deriv (⇑(chartAt ℂ x) ∘ ⇑e.symm) z *
         (θ.coeffAt x ∘ (⇑(chartAt ℂ x) ∘ ⇑e.symm)) z) := rfl
   rw [hfun, hmulEq, meromorphicOrderAt_comp_of_deriv_ne_zero hτ hτ']
-  show θ.ord x = meromorphicOrderAt (θ.coeffAt x) ((⇑(chartAt ℂ x) ∘ ⇑e.symm) (e x))
+  change θ.ord x = meromorphicOrderAt (θ.coeffAt x) ((⇑(chartAt ℂ x) ∘ ⇑e.symm) (e x))
   rw [Function.comp_apply, hgx]
   rfl
 
@@ -213,11 +213,11 @@ theorem eventually_ord_eq_zero {θ : MFormData X} {x : X} (h : θ.ord x ≠ ⊤)
   have hval : θ.coeffAt y (chartAt ℂ y y) ≠ 0 := by
     have heq := Filter.Eventually.self_of_nhds hcross
     rw [heq]
-    show deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y y) *
+    change deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y y) *
       θ.coeffAt x (chartAt ℂ x ((chartAt ℂ y).symm (chartAt ℂ y y))) ≠ 0
     rw [hsymm]
     exact mul_ne_zero hτ' h4y
-  show meromorphicOrderAt (θ.coeffAt y) (chartAt ℂ y y) = 0
+  change meromorphicOrderAt (θ.coeffAt y) (chartAt ℂ y y) = 0
   rw [hprodAn.meromorphicOrderAt_eq, hprodAn.analyticOrderAt_eq_zero.mpr hval]
   rfl
 
@@ -263,7 +263,7 @@ noncomputable def degree [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormDat
   apply Function.locallyFinsuppWithin.ext
   intro y
   have h0 : (0 : MFormData X).ord y = ⊤ := by
-    show meromorphicOrderAt (0 : ℂ → ℂ) (chartAt ℂ y y) = ⊤
+    change meromorphicOrderAt (0 : ℂ → ℂ) (chartAt ℂ y y) = ⊤
     simp
   rw [divisor_apply, h0]
   simp

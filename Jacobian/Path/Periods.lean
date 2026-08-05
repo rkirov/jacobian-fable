@@ -50,7 +50,7 @@ theorem period_congr_homotopic {γ γ' : Path x x} (h : γ.Homotopic γ') (η : 
 /-- Conjugation invariance: periods are basepoint-independent along a connecting path. -/
 theorem period_conj (σ : Path x' x) (γ : Path x x) (η : Form1 X) :
     period ((σ.trans γ).trans σ.symm) η = period γ η := by
-  show pathIntegral ((σ.trans γ).trans σ.symm) η = pathIntegral γ η
+  change pathIntegral ((σ.trans γ).trans σ.symm) η = pathIntegral γ η
   rw [pathIntegral_trans, pathIntegral_trans, pathIntegral_symm]
   ring
 
@@ -61,19 +61,19 @@ noncomputable def periodVector {n : ℕ} (b : Basis (Fin n) ℂ (Form1 X)) (γ :
 theorem periodVector_trans {n : ℕ} (b : Basis (Fin n) ℂ (Form1 X)) (γ γ' : Path x x) :
     periodVector b (γ.trans γ') = periodVector b γ + periodVector b γ' := by
   funext i
-  show period (γ.trans γ') (b i) = period γ (b i) + period γ' (b i)
+  change period (γ.trans γ') (b i) = period γ (b i) + period γ' (b i)
   exact period_trans γ γ' (b i)
 
 theorem periodVector_symm {n : ℕ} (b : Basis (Fin n) ℂ (Form1 X)) (γ : Path x x) :
     periodVector b γ.symm = -periodVector b γ := by
   funext i
-  show period γ.symm (b i) = -period γ (b i)
+  change period γ.symm (b i) = -period γ (b i)
   exact period_symm γ (b i)
 
 @[simp] theorem periodVector_refl {n : ℕ} (b : Basis (Fin n) ℂ (Form1 X)) :
     periodVector b (Path.refl x) = 0 := by
   funext i
-  show period (Path.refl x) (b i) = 0
+  change period (Path.refl x) (b i) = 0
   exact period_refl (b i)
 
 end RS

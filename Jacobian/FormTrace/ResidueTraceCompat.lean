@@ -66,12 +66,12 @@ theorem resAtP1_eq_resAtX_id (R : OnePoint ℂ → ℂ) (y₀ : OnePoint ℂ) :
   have hmem : ∀ᶠ z in 𝓝 (chartAt ℂ y₀ y₀), z ∈ (chartAt ℂ y₀).target :=
     (chartAt ℂ y₀).open_target.mem_nhds ((chartAt ℂ y₀).map_source (mem_chart_source ℂ y₀))
   filter_upwards [hmem.filter_mono nhdsWithin_le_nhds] with z hz
-  show R ((chartAt ℂ y₀).symm z) =
+  change R ((chartAt ℂ y₀).symm z) =
     R ((chartAt ℂ y₀).symm z) * deriv (chartAt ℂ (id y₀) ∘ id ∘ (chartAt ℂ y₀).symm) z
   have hderiv1 : deriv (chartAt ℂ (id y₀) ∘ id ∘ (chartAt ℂ y₀).symm) z = 1 := by
     have heq : (chartAt ℂ (id y₀) ∘ id ∘ (chartAt ℂ y₀).symm) =ᶠ[𝓝 z] id := by
       filter_upwards [(chartAt ℂ y₀).open_target.mem_nhds hz] with z' hz'
-      show chartAt ℂ y₀ ((chartAt ℂ y₀).symm z') = z'
+      change chartAt ℂ y₀ ((chartAt ℂ y₀).symm z') = z'
       rw [(chartAt ℂ y₀).right_inv hz']
     rw [heq.deriv_eq, deriv_id]
   rw [hderiv1, mul_one]
@@ -132,7 +132,7 @@ private theorem resAtX_eq_resAt_adapted {F : X → OnePoint ℂ} {h : X → ℂ}
       hz
     rw [heq2.deriv_eq, deriv_sub_const]
   filter_upwards [hderiveq.filter_mono nhdsWithin_le_nhds] with z hz
-  show h ((chartAt ℂ x).symm z) * deriv (A.e' ∘ F ∘ (chartAt ℂ x).symm) z
+  change h ((chartAt ℂ x).symm z) * deriv (A.e' ∘ F ∘ (chartAt ℂ x).symm) z
     = h ((chartAt ℂ x).symm z) * deriv (chartAt ℂ (F x) ∘ F ∘ (chartAt ℂ x).symm) z
   rw [hz]
 
@@ -170,7 +170,7 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
           := by
     filter_upwards [hVmem] with z hz
     obtain ⟨hzt, hzV⟩ := hz
-    show RS.MTrace.trace F h ((chartAt ℂ y₀).symm z)
+    change RS.MTrace.trace F h ((chartAt ℂ y₀).symm z)
       = ∑ i, RS.MTrace.traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) (z - c₀)
     rw [RS.MTrace.trace_eq_stack_sum hF hne S hzV]
     apply Finset.sum_congr rfl
@@ -247,7 +247,7 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
         rw [← (S.A i).map_eq_zero]
         exact (S.A i).e.open_target.mem_nhds ((S.A i).e.map_source (S.mem_source_pt i))
       filter_upwards [hmem] with w hw
-      show (S.A i).e' (F ((S.A i).e.symm w)) = w ^ k
+      change (S.A i).e' (F ((S.A i).e.symm w)) = w ^ k
       rw [(S.A i).eqOn_pow _ ((S.A i).e.map_target hw), (S.A i).e.right_inv hw]
     have heqfun2 : ∀ᶠ w in 𝓝 (0 : ℂ), ∀ᶠ w' in 𝓝 w,
         ((S.A i).e' ∘ F ∘ (S.A i).e.symm) w' = w' ^ k := heqfun.eventually_nhds
@@ -260,7 +260,7 @@ theorem resAtP1_trace_eq_sum (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F)
   have hgieq : g_i =ᶠ[𝓝[≠] (0 : ℂ)]
       fun w => h ((S.A i).e.symm w) * deriv ((S.A i).e' ∘ F ∘ (S.A i).e.symm) w := by
     filter_upwards [hderivpow.filter_mono nhdsWithin_le_nhds] with w hw
-    show h ((S.A i).e.symm w) * (k : ℂ) * w ^ ((k : ℤ) - 1)
+    change h ((S.A i).e.symm w) * (k : ℂ) * w ^ ((k : ℤ) - 1)
       = h ((S.A i).e.symm w) * deriv ((S.A i).e' ∘ F ∘ (S.A i).e.symm) w
     rw [hw, mul_assoc]
   rw [resAt_congr hgieq]

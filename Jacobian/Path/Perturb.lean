@@ -100,7 +100,7 @@ theorem exists_homotopic_avoiding_of_ball {a b : X} (γ : Path a b)
     have h1 : (Hpq.eval 0) u = Hpq (0, u) := rfl
     rw [Hpq.eval_zero] at h1
     rw [← h1]
-    show e.symm (e (γ u)) = γ u
+    change e.symm (e (γ u)) = γ u
     exact e.left_inv (hγsrc (mem_range_self u))
   have hHone : ∀ u : ↥unitInterval, e.symm (Hpq (1, u)) = e.symm (q u) := fun u => by
     have h1 : (Hpq.eval 1) u = Hpq (1, u) := rfl
@@ -110,8 +110,8 @@ theorem exists_homotopic_avoiding_of_ball {a b : X} (γ : Path a b)
   set γ'' : Path a b :=
     ⟨⟨fun u => e.symm (q u),
         hqcontS.comp_continuous q.continuous (fun u => mem_range_self u)⟩,
-      by show e.symm (q 0) = a; rw [q.source]; exact haeq,
-      by show e.symm (q 1) = b; rw [q.target]; exact hbeq⟩ with hγ''_def
+      by change e.symm (q 0) = a; rw [q.source]; exact haeq,
+      by change e.symm (q 1) = b; rw [q.target]; exact hbeq⟩ with hγ''_def
   have hSdisjoint : ∀ z ∈ ball c r \ T, e.symm z ∉ S := by
     intro z hz hzS
     have hzTarget : z ∈ e.target := hballsub hz.1
@@ -124,11 +124,11 @@ theorem exists_homotopic_avoiding_of_ball {a b : X} (γ : Path a b)
                   prop' := fun t x hx => by
                     rcases hx with hx | hx
                     · rw [hx]
-                      show e.symm (Hpq (t, 0)) = γ 0
+                      change e.symm (Hpq (t, 0)) = γ 0
                       rw [γ.source]; exact hH0 t
                     · rw [Set.mem_singleton_iff] at hx
                       rw [hx]
-                      show e.symm (Hpq (t, 1)) = γ 1
+                      change e.symm (Hpq (t, 1)) = γ 1
                       rw [γ.target]; exact hH1 t }⟩, ?_⟩
   rw [Set.disjoint_left]
   rintro z ⟨t, ht⟩ hzS
@@ -169,12 +169,12 @@ private theorem homotopic_truncateOfLE_trans {Y : Type*} [TopologicalSpace Y] {x
       norm_num [min_eq_right hd1, max_eq_right h0d]
   have hρ0 : ρ 0 = 0 := by
     apply Subtype.ext
-    show (if ((0 : ℝ)) ≤ 1 / 2 then min (2 * (0 : ℝ)) d else max (2 * (0 : ℝ) - 1) d) = (0 : ℝ)
+    change (if ((0 : ℝ)) ≤ 1 / 2 then min (2 * (0 : ℝ)) d else max (2 * (0 : ℝ) - 1) d) = (0 : ℝ)
     rw [if_pos (by norm_num : (0 : ℝ) ≤ 1 / 2)]
     norm_num [min_eq_left h0d]
   have hρ1 : ρ 1 = 1 := by
     apply Subtype.ext
-    show (if ((1 : ℝ)) ≤ 1 / 2 then min (2 * (1 : ℝ)) d else max (2 * (1 : ℝ) - 1) d) = (1 : ℝ)
+    change (if ((1 : ℝ)) ≤ 1 / 2 then min (2 * (1 : ℝ)) d else max (2 * (1 : ℝ) - 1) d) = (1 : ℝ)
     rw [if_neg (by norm_num : ¬((1 : ℝ) ≤ 1 / 2))]
     norm_num [max_eq_left hd1]
   have hkey : (γ.truncateOfLE hcd).trans (γ.truncateOfLE hde) =
@@ -183,10 +183,10 @@ private theorem homotopic_truncateOfLE_trans {Y : Type*} [TopologicalSpace Y] {x
     rw [Path.trans_apply]
     simp only [Path.coe_reparam, Function.comp_apply]
     split_ifs with h
-    · show γ.extend (min (max (2 * (u : ℝ)) c) d) =
+    · change γ.extend (min (max (2 * (u : ℝ)) c) d) =
         γ.extend (min (max ((ρ u : ↥unitInterval) : ℝ) c) e)
       have hρu : ((ρ u : ↥unitInterval) : ℝ) = min (2 * (u : ℝ)) d := by
-        show (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
+        change (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
         rw [if_pos h]
       rw [hρu]
       rcases le_total (2 * (u : ℝ)) d with hv | hv
@@ -194,10 +194,10 @@ private theorem homotopic_truncateOfLE_trans {Y : Type*} [TopologicalSpace Y] {x
           min_eq_left ((max_le hv hcd).trans hde)]
       · rw [min_eq_right hv, max_eq_left hcd, min_eq_right (hv.trans (le_max_left _ _)),
           min_eq_left hde]
-    · show γ.extend (min (max (2 * (u : ℝ) - 1) d) e) =
+    · change γ.extend (min (max (2 * (u : ℝ) - 1) d) e) =
         γ.extend (min (max ((ρ u : ↥unitInterval) : ℝ) c) e)
       have hρu : ((ρ u : ↥unitInterval) : ℝ) = max (2 * (u : ℝ) - 1) d := by
-        show (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
+        change (if (u : ℝ) ≤ 1 / 2 then min (2 * (u : ℝ)) d else max (2 * (u : ℝ) - 1) d) = _
         rw [if_neg h]
       rw [hρu, max_eq_left (hcd.trans (le_max_right (2 * (u : ℝ) - 1) d))]
   rw [hkey]
@@ -303,9 +303,9 @@ private theorem exists_homotopic_avoiding_aux {a b : X} (γ : Path a b) {S : Set
       ((C.e (k + 1)).continuousOn_symm.mono hballtarget).comp_continuous sg.continuous hsg
     set arc : Path (γ.extend (C.t (k + 1))) ((C.e (k + 1)).symm z') :=
       ⟨⟨fun u => (C.e (k + 1)).symm (sg u), hsgcont⟩,
-        by show (C.e (k + 1)).symm (sg 0) = _
+        by change (C.e (k + 1)).symm (sg 0) = _
            rw [sg.source]; exact (C.e (k + 1)).left_inv hm1.1,
-        by show (C.e (k + 1)).symm (sg 1) = _
+        by change (C.e (k + 1)).symm (sg 1) = _
            rw [sg.target]⟩ with harc_def
     have hq'S : (C.e (k + 1)).symm z' ∉ S := by
       intro hq'S
@@ -380,7 +380,7 @@ theorem exists_homotopic_avoiding {a b : X} (γ : Path a b) {S : Set X} (hS : S.
       C.e 0 (p0 u) ∈ ball (C.c 0) (C.r 0) := by
     intro u
     have h1 : p0 u = γ.extend (C.t 0) := by
-      show a = γ.extend (C.t 0)
+      change a = γ.extend (C.t 0)
       exact hstart.symm
     rw [h1]
     exact C.maps 0 _ ⟨le_refl _, C.mono (Nat.zero_le 1)⟩
@@ -393,11 +393,11 @@ theorem exists_homotopic_avoiding {a b : X} (γ : Path a b) {S : Set X} (hS : S.
     have heq : (p0.trans (γ.truncateOfLE h01)).cast rfl γ.extend_one.symm =
         (Path.refl a).trans γ := by
       ext u
-      show (p0.trans (γ.truncateOfLE h01)) u = ((Path.refl a).trans γ) u
+      change (p0.trans (γ.truncateOfLE h01)) u = ((Path.refl a).trans γ) u
       rw [Path.trans_apply, Path.trans_apply]
       split_ifs with h
       · rfl
-      · show γ.extend (min (max (2 * (u : ℝ) - 1) (C.t 0)) 1) = _
+      · change γ.extend (min (max (2 * (u : ℝ) - 1) (C.t 0)) 1) = _
         have h0' : (0 : ℝ) ≤ 2 * (u : ℝ) - 1 := by
           have := not_le.mp h; linarith
         have h1' : 2 * (u : ℝ) - 1 ≤ 1 := by linarith [u.2.2]

@@ -159,7 +159,7 @@ theorem meromorphicOnX_const (c : ℂ) (U : Set X) : MeromorphicOnX (fun _ => c)
 /-! ### Classification of the order (no chart invariance needed) -/
 
 theorem ordAtX_eq_top_iff : ordAtX f x = ⊤ ↔ f =ᶠ[𝓝[≠] x] 0 := by
-  show meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = ⊤ ↔ _
+  change meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = ⊤ ↔ _
   rw [meromorphicOrderAt_eq_top_iff]
   have h2 : (f =ᶠ[𝓝[≠] x] (0 : X → ℂ)) ↔
       (f ∘ (chartAt ℂ x).symm) =ᶠ[𝓝[≠] (chartAt ℂ x x)] ((0 : X → ℂ) ∘ (chartAt ℂ x).symm) :=
@@ -168,7 +168,7 @@ theorem ordAtX_eq_top_iff : ordAtX f x = ⊤ ↔ f =ᶠ[𝓝[≠] x] 0 := by
 
 theorem ordAtX_ne_top_iff (hf : MeromorphicAtX f x) :
     ordAtX f x ≠ ⊤ ↔ ∀ᶠ z in 𝓝[≠] x, f z ≠ 0 := by
-  show meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) ≠ ⊤ ↔ _
+  change meromorphicOrderAt (f ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) ≠ ⊤ ↔ _
   rw [meromorphicOrderAt_ne_top_iff_eventually_ne_zero hf]
   exact (eventually_nhdsNE_iff_comp_chart (p := fun y => f y ≠ 0)).symm
 
@@ -223,7 +223,7 @@ theorem ordAtX_smul (hc : c ≠ 0) : ordAtX (c • f) x = ordAtX f x :=
 
 theorem ordAtX_const : ordAtX (fun _ : X => c) x = if c = 0 then ⊤ else 0 := by
   classical
-  show meromorphicOrderAt (fun _ : ℂ => c) (chartAt ℂ x x) = if c = 0 then ⊤ else 0
+  change meromorphicOrderAt (fun _ : ℂ => c) (chartAt ℂ x x) = if c = 0 then ⊤ else 0
   exact meromorphicOrderAt_const (chartAt ℂ x x) c
 
 theorem ordAtX_zero : ordAtX (0 : X → ℂ) x = ⊤ := by
@@ -270,7 +270,7 @@ theorem meromorphicAtX_iff_of_mem_source {e : OpenPartialHomeomorph X ℂ}
     filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
     simp only [Function.comp_apply]
     rw [c.left_inv hz]
-  show MeromorphicAt (f ∘ c.symm) (c x) ↔ MeromorphicAt (f ∘ e.symm) (e x)
+  change MeromorphicAt (f ∘ c.symm) (c x) ↔ MeromorphicAt (f ∘ e.symm) (e x)
   rw [MeromorphicAt.meromorphicAt_congr hev, meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ', hgx]
 
 /-- CC3 chart invariance: the order at `x` may be read in ANY maximal-atlas chart whose source
@@ -291,7 +291,7 @@ theorem ordAtX_eq_of_mem_source {e : OpenPartialHomeomorph X ℂ}
     filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
     simp only [Function.comp_apply]
     rw [c.left_inv hz]
-  show meromorphicOrderAt (f ∘ c.symm) (c x) = meromorphicOrderAt (f ∘ e.symm) (e x)
+  change meromorphicOrderAt (f ∘ c.symm) (c x) = meromorphicOrderAt (f ∘ e.symm) (e x)
   rw [meromorphicOrderAt_congr hev, meromorphicOrderAt_comp_of_deriv_ne_zero hτ hτ', hgx]
 
 theorem ContMDiffAt.meromorphicAtX (hf : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f x) : MeromorphicAtX f x :=

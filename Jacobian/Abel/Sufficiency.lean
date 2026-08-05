@@ -165,13 +165,14 @@ period, generalized from `Loops.lean`'s own two-point argument; a weak solution 
 product) are fully proved below; steps 5-7 are `WeakSolutionUpgradeFinset`, the `Finset`
 generalization of `Sufficiency.lean`'s own `WeakSolutionUpgrade` (same precisely-isolated
 remaining content, see that def's docstring). -/
-theorem exists_mero_of_periodVector_mem {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem exists_mero_of_periodVector_mem {ι : Type*} [Fintype ι]
     (hupgradeFinset : WeakSolutionUpgradeFinset X ι)
     (a x : ι → X) (ha : Function.Injective a) (hx : Function.Injective x)
     (hax : ∀ i j, a i ≠ x j) (γ : (i : ι) → Path (a i) (x i))
     (hmem : (fun k => ∑ i, RS.pathIntegral (γ i) (RS.basis X k)) ∈ RS.periodSubgroup X) :
     ∃ F : RS.Mero X, F ≠ 0 ∧ (∀ i, F.ord (x i) = 1) ∧ (∀ i, F.ord (a i) = -1) ∧
       ∀ z, (∀ i, z ≠ a i) → (∀ i, z ≠ x i) → F.ord z = 0 := by
+  classical
   rcases isEmpty_or_nonempty ι with hE | hN
   · -- Vacuous case (`ι` empty, no pairs at all): the constant `1` trivially works.
     refine ⟨1, one_ne_zero, fun i => (hE.false i).elim, fun i => (hE.false i).elim,

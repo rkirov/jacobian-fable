@@ -51,7 +51,7 @@ theorem IsPrimitiveAlongMap.pullback_comp {f : X → Y} (hf : ContMDiff 𝓘(ℂ
           (𝓝 ((⇑e' ∘ f ∘ ⇑e.symm) (e (K a)))) := (e'.continuousAt hmemF).comp hcont
       exact this
     have hφeq0 : φ (e (K a)) = e' (f (K a)) := by
-      show e' ((f ∘ ⇑e.symm) (e (K a))) = e' (f (K a))
+      change e' ((f ∘ ⇑e.symm) (e (K a))) = e' (f (K a))
       simp only [Function.comp_apply, hpt0Eq]
     have hg' : ∀ᶠ z in 𝓝 (e (K a)), HasDerivAt g (coeffIn e' η (φ z)) (φ z) := by
       have hg2 : ∀ᶠ w in 𝓝 (φ (e (K a))), HasDerivAt g (coeffIn e' η w) w := by
@@ -78,7 +78,7 @@ theorem IsPrimitiveAlongMap.pullback_comp {f : X → Y} (hf : ContMDiff 𝓘(ℂ
     rw [hb.2]
     show g (⇑e' ((f ∘ K) b)) = (g ∘ φ) (e (K b))
     congr 1
-    show e' (f (K b)) = e' (f (⇑e.symm (e (K b))))
+    change e' (f (K b)) = e' (f (⇑e.symm (e (K b))))
     rw [e.left_inv hKb]
 
 /-! ### Naturality of `pathIntegral` -/
@@ -91,7 +91,7 @@ theorem pathIntegral_pullback {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) 
   obtain ⟨F, hF, hF0⟩ := exists_isPrimitiveAlong (γ.map hf.continuous) η
   have hmapext : (γ.map hf.continuous).extend = f ∘ γ.extend := by
     funext t
-    show (γ.map hf.continuous) (Set.projIcc (0 : ℝ) 1 zero_le_one t) =
+    change (γ.map hf.continuous) (Set.projIcc (0 : ℝ) 1 zero_le_one t) =
       f (γ (Set.projIcc (0 : ℝ) 1 zero_le_one t))
     exact congrFun (Path.map_coe γ hf.continuous) (Set.projIcc (0 : ℝ) 1 zero_le_one t)
   have hF' : IsPrimitiveAlongMap (γ.map hf.continuous).extend η F Set.univ := hF

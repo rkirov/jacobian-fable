@@ -9,12 +9,14 @@ import Jacobian.PlanarStokes.CompactSupport
 import Jacobian.PlanarStokes.AnnulusResidue
 
 /-!
-# planar-stokes-atoms: compact-support planar Stokes for `dbar` and the smeared residue theorem (`RS`)
+# planar-stokes-atoms: compact-support planar Stokes for `dbar` and the smeared residue
+# theorem (`RS`)
 
 Purely planar (mathlib-only, plus `Jacobian.Dbar.Wirtinger`/`Jacobian.ResidueCalculus`; no
 manifold imports). API summary (see `docs/design/planar-stokes.md`):
 
-* **Compat**: `RS.wirtingerDbar_mul` (Leibniz rule for `dbar`, not in `Jacobian/Dbar/Wirtinger.lean`)
+* **Compat**: `RS.wirtingerDbar_mul` (Leibniz rule for `dbar`, not in
+  `Jacobian/Dbar/Wirtinger.lean`)
   and its holomorphic-factor/off-support specializations; `RS.ContDiffOn.contDiff_of_
   hasCompactSupport` (glue a `ContDiffOn` compactly-supported-in-`U` function to a global
   `ContDiff`); the `ℂ`-rectangle ↔ iterated-real-integral bridge

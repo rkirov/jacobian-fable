@@ -190,12 +190,12 @@ theorem degree_comp {Z : Type*} [TopologicalSpace Z] [T2Space Z] [ConnectedSpace
     · intro x hx
       obtain ⟨y, hy, hxy⟩ := Set.mem_iUnion₂.mp hx
       have hxy' : F x = y := hxy
-      show G (F x) = z₀
+      change G (F x) = z₀
       rw [hxy']
       exact hy
   have hdisj : (G ⁻¹' {z₀}).PairwiseDisjoint (fun y ↦ F ⁻¹' {y}) := by
     intro y₁ _ y₂ _ hy12
-    show Disjoint (F ⁻¹' {y₁}) (F ⁻¹' {y₂})
+    change Disjoint (F ⁻¹' {y₁}) (F ⁻¹' {y₂})
     rw [Set.disjoint_left]
     intro x hx1 hx2
     exact hy12 (hx1.symm.trans hx2)

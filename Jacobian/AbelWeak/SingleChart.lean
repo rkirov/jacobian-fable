@@ -26,7 +26,7 @@ beyond `Set.EqOn`-rewriting** on the transition annulus (the same shape the desi
 describes).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open IsManifold Metric Set Filter Topology
 
 noncomputable section
@@ -51,7 +51,7 @@ private theorem contDiffAt_planar_model {P Q : X} {e : OpenPartialHomeomorph X �
   set g : ℂ → ℂ := fun z =>
     if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else Complex.exp ((ψ (z - c) : ℝ) * L (z - c))
     with hg_def
-  show ∀ z : ℂ, z ≠ e Q → ContDiffAt ℝ ∞ g z
+  change ∀ z : ℂ, z ≠ e Q → ContDiffAt ℝ ∞ g z
   intro z hzQ
   by_cases hcase : ‖z - c‖ < ψ.rIn
   · have hzmem : z ∈ Metric.ball c ψ.rIn := by rw [Metric.mem_ball, dist_eq_norm]; exact hcase
@@ -69,7 +69,7 @@ private theorem contDiffAt_planar_model {P Q : X} {e : OpenPartialHomeomorph X �
       isOpen_lt continuous_const (continuous_norm.comp (continuous_id.sub continuous_const))
     have heq : g =ᶠ[𝓝 z] (fun w => Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) := by
       filter_upwards [hopen.mem_nhds hzρ] with w hw
-      show (if ‖w - c‖ ≤ ρ then (w - e P) / (w - e Q) else
+      change (if ‖w - c‖ ≤ ρ then (w - e P) / (w - e Q) else
         Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) = Complex.exp ((ψ (w - c) : ℝ) * L (w - c))
       exact if_neg (not_le.mpr hw)
     have hL_diffOn : DifferentiableOn ℂ L {w : ℂ | ρ < ‖w‖} :=
@@ -109,6 +109,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
       IsCompact (closure (e.symm '' Metric.ball c ψ.rOut)) ∧
       P ∈ e.symm '' Metric.ball c ψ.rOut ∧ Q ∈ e.symm '' Metric.ball c ψ.rOut ∧
       (∀ x ∉ e.symm '' Metric.ball c ψ.rOut, f x = 1) := by
+  classical
   -- `e P ≠ e Q` from `P ≠ Q` and injectivity of `e` on its source.
   have hePQ : e P ≠ e Q := fun h => hPQ (by rw [← e.left_inv hPs, h, e.left_inv hQs])
   set a' : ℂ := e Q - c with ha'_def
@@ -123,11 +124,11 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     intro z hz1 hz2
     have hψ1 : ψ (z - c) = 1 := ψ.one_of_mem_closedBall (by simpa [Metric.mem_closedBall] using hz2)
     have hzne : ¬ ‖z - c‖ ≤ ρ := not_le.mpr hz1
-    show (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
+    change (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
       Complex.exp ((ψ (z - c) : ℝ) * L (z - c))) = (z - e P) / (z - e Q)
     rw [if_neg hzne, hψ1]
     have := hLexp (z - c) hz1
-    show Complex.exp ((1 : ℝ) * L (z - c)) = (z - e P) / (z - e Q)
+    change Complex.exp ((1 : ℝ) * L (z - c)) = (z - e P) / (z - e Q)
     rw [show ((1 : ℝ) : ℂ) * L (z - c) = L (z - c) by push_cast; ring, this]
     show (z - c - b') / (z - c - a') = (z - e P) / (z - e Q)
     rw [ha'_def, hb'_def]
@@ -137,7 +138,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     intro z hz
     have hzρ : ρ < ‖z - c‖ := lt_of_lt_of_le (hρψ.trans ψ.rIn_lt_rOut) hz
     have hψ0 : ψ (z - c) = 0 := ψ.zero_of_le_dist (by rw [dist_zero_right]; exact hz)
-    show (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
+    change (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
       Complex.exp ((ψ (z - c) : ℝ) * L (z - c))) = 1
     rw [if_neg (not_le.mpr hzρ), hψ0]
     simp
@@ -146,7 +147,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     intro z hz
     rw [Metric.mem_ball, dist_eq_norm] at hz
     by_cases h : ‖z - c‖ ≤ ρ
-    · show (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
+    · change (if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else
         Complex.exp ((ψ (z - c) : ℝ) * L (z - c))) = (z - e P) / (z - e Q)
       rw [if_pos h]
     · exact hg_consistent z (not_le.mp h) hz.le
@@ -243,11 +244,11 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
       have hexP : e x ≠ e P := fun h => hxP (by rw [← e.left_inv hxe, h, e.left_inv hPs])
       have hexQ : e x ≠ e Q := fun h => hxQ (by rw [← e.left_inv hxe, h, e.left_inv hQs])
       by_cases hcase : ‖e x - c‖ ≤ ρ
-      · show (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
+      · change (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
           Complex.exp ((ψ (e x - c) : ℝ) * L (e x - c))) ≠ 0
         rw [if_pos hcase]
         exact div_ne_zero (sub_ne_zero.mpr hexP) (sub_ne_zero.mpr hexQ)
-      · show (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
+      · change (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
           Complex.exp ((ψ (e x - c) : ℝ) * L (e x - c))) ≠ 0
         rw [if_neg hcase]
         exact Complex.exp_ne_zero _
@@ -274,7 +275,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
       obtain ⟨hxe, hxρ⟩ := hx
       show f x = 1 / (e x - e Q) * (e x - e P) ^ (1 : ℤ)
       rw [hf_source x hxe]
-      show (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
+      change (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
         Complex.exp ((ψ (e x - c) : ℝ) * L (e x - c))) = 1 / (e x - e Q) * (e x - e P) ^ (1 : ℤ)
       rw [if_pos hxρ, zpow_one]
       ring
@@ -299,7 +300,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
       obtain ⟨hxe, hxρ⟩ := hx
       show f x = (e x - e P) * (e x - e Q) ^ (-1 : ℤ)
       rw [hf_source x hxe]
-      show (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
+      change (if ‖e x - c‖ ≤ ρ then (e x - e P) / (e x - e Q) else
         Complex.exp ((ψ (e x - c) : ℝ) * L (e x - c))) = (e x - e P) * (e x - e Q) ^ (-1 : ℤ)
       rw [if_pos hxρ, zpow_neg_one]
       ring

@@ -47,7 +47,7 @@ theorem exists_smooth_splitting {V : Set ℂ} (hV : IsOpen V) (hWo : ∀ i, IsOp
     exact contDiffOn_indicator_smul_of_eventually_zero (hWo i) (hWo k) (hWV i)
       (hψ_cd k) ((Set.inter_comm (W i) (W k)) ▸ hf k i) (fun z hz => hψ_van k z (hWV i hz))
   · intro i j z hz
-    show f i j z = ∑ k, (W k).indicator (fun z => ψ k z • f k j z) z -
+    change f i j z = ∑ k, (W k).indicator (fun z => ψ k z • f k j z) z -
         ∑ k, (W k).indicator (fun z => ψ k z • f k i z) z
     have hstep : ∀ k ∈ (Finset.univ : Finset (Fin n)),
         (W k).indicator (fun z => ψ k z • f k j z) z -
@@ -136,7 +136,7 @@ theorem exists_holo_splitting_ball {c : ℂ} {R : ℝ} (hR : 0 < R)
     intro z _
     rfl
   · intro i j z hz
-    show f i j z = (hsplit j z - u₀ z) - (hsplit i z - u₀ z)
+    change f i j z = (hsplit j z - u₀ z) - (hsplit i z - u₀ z)
     have := hsplit_diff i j z hz
     linear_combination this
 

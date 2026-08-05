@@ -116,7 +116,7 @@ theorem pushforwardT_pullbackT_apply (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
     (v : Fin (genus Y) → ℂ) :
     pushforwardT f hf (pullbackT f hf v) = (ContMDiff.degree f hf : ℂ) • v := by
   funext i
-  show periodCoordEquiv Y ((Form1.pullback f hf).dualMap
+  change periodCoordEquiv Y ((Form1.pullback f hf).dualMap
       ((periodCoordEquiv X).symm (periodCoordEquiv X ((Form1.trace f hf).dualMap
         ((periodCoordEquiv Y).symm v))))) i = _
   rw [(periodCoordEquiv X).symm_apply_apply, periodCoordEquiv_apply,
@@ -132,14 +132,14 @@ theorem pushforwardT_pullbackT_apply (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
 theorem Jacobian.pushforward_id_apply (P : Jacobian X) :
     Jacobian.pushforward id contMDiff_id P = P := by
   obtain ⟨v, rfl⟩ := Jacobian.exists_rep P
-  show Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)) = _
+  change Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)) = _
   rw [Jacobian.inducedHom_apply_up_mk, pushforwardT_id]
   rfl
 
 theorem Jacobian.pullback_id_apply (P : Jacobian X) :
     Jacobian.pullback id contMDiff_id P = P := by
   obtain ⟨v, rfl⟩ := Jacobian.exists_rep P
-  show Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)) = _
+  change Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)) = _
   rw [Jacobian.inducedHom_apply_up_mk, pullbackT_id]
   rfl
 
@@ -148,10 +148,10 @@ theorem Jacobian.pushforward_comp_apply (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 
     Jacobian.pushforward (g ∘ f) (hg.comp hf) P
       = Jacobian.pushforward g hg (Jacobian.pushforward f hf P) := by
   obtain ⟨v, rfl⟩ := Jacobian.exists_rep P
-  show Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v))
+  change Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v))
     = Jacobian.pushforward g hg (Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)))
   rw [Jacobian.inducedHom_apply_up_mk, Jacobian.inducedHom_apply_up_mk]
-  show _ = Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pushforwardT f hf v)))
+  change _ = Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pushforwardT f hf v)))
   rw [Jacobian.inducedHom_apply_up_mk, pushforwardT_comp f hf g hg]
   rfl
 
@@ -160,10 +160,10 @@ theorem Jacobian.pullback_comp_apply (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
     Jacobian.pullback (g.comp f) (hg.comp hf) P
       = Jacobian.pullback f hf (Jacobian.pullback g hg P) := by
   obtain ⟨v, rfl⟩ := Jacobian.exists_rep P
-  show Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v))
+  change Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v))
     = Jacobian.pullback f hf (Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)))
   rw [Jacobian.inducedHom_apply_up_mk, Jacobian.inducedHom_apply_up_mk]
-  show _ = Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pullbackT g hg v)))
+  change _ = Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pullbackT g hg v)))
   rw [Jacobian.inducedHom_apply_up_mk, pullbackT_comp f hf g hg]
   rfl
 
@@ -173,10 +173,10 @@ theorem Jacobian.pushforward_pullback (f : X → Y) (hf : ContMDiff 𝓘(ℂ) �
     (P : Jacobian Y) :
     Jacobian.pushforward f hf (Jacobian.pullback f hf P) = (ContMDiff.degree f hf) • P := by
   obtain ⟨v, rfl⟩ := Jacobian.exists_rep P
-  show Jacobian.pushforward f hf (Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)))
+  change Jacobian.pushforward f hf (Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk v)))
     = _
   rw [Jacobian.inducedHom_apply_up_mk]
-  show Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pullbackT f hf v))) = _
+  change Jacobian.inducedHom _ (ULift.up (QuotientAddGroup.mk (pullbackT f hf v))) = _
   rw [Jacobian.inducedHom_apply_up_mk, pushforwardT_pullbackT_apply f hf v,
     Nat.cast_smul_eq_nsmul]
   have h1 : QuotientAddGroup.mk (s := (RS.periodSubgroup Y).topologicalClosure)

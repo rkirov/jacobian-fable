@@ -31,7 +31,7 @@ meromorphic functions by codiscrete agreement (`Jacobian/Meromorphic/GermSpace.l
   `MForm.ord_ne_top`.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold Filter Topology
 
 noncomputable section
@@ -88,25 +88,25 @@ instance : Zero (MForm X) := ⟨mk 0⟩
 instance : Add (MForm X) :=
   ⟨Quotient.map₂ (· + ·) fun θ θ' hθ η η' hη x => by
     filter_upwards [hθ x, hη x] with z h₁ h₂
-    show θ.coeffAt x z + η.coeffAt x z = θ'.coeffAt x z + η'.coeffAt x z
+    change θ.coeffAt x z + η.coeffAt x z = θ'.coeffAt x z + η'.coeffAt x z
     rw [h₁, h₂]⟩
 
 instance : Neg (MForm X) :=
   ⟨Quotient.map (- ·) fun θ θ' hθ x => by
     filter_upwards [hθ x] with z h₁
-    show -θ.coeffAt x z = -θ'.coeffAt x z
+    change -θ.coeffAt x z = -θ'.coeffAt x z
     rw [h₁]⟩
 
 instance : Sub (MForm X) :=
   ⟨Quotient.map₂ (· - ·) fun θ θ' hθ η η' hη x => by
     filter_upwards [hθ x, hη x] with z h₁ h₂
-    show θ.coeffAt x z - η.coeffAt x z = θ'.coeffAt x z - η'.coeffAt x z
+    change θ.coeffAt x z - η.coeffAt x z = θ'.coeffAt x z - η'.coeffAt x z
     rw [h₁, h₂]⟩
 
 instance : SMul ℂ (MForm X) :=
   ⟨fun c => Quotient.map (c • ·) fun θ θ' hθ x => by
     filter_upwards [hθ x] with z h₁
-    show c * θ.coeffAt x z = c * θ'.coeffAt x z
+    change c * θ.coeffAt x z = c * θ'.coeffAt x z
     rw [h₁]⟩
 
 @[simp] theorem mk_zero : (mk (0 : MFormData X)) = (0 : MForm X) := rfl
@@ -172,7 +172,7 @@ theorem resAt_eq_laurentCoeffAt (Θ : MForm X) (x : X) :
   rfl
 
 @[simp] theorem ord_zero (x : X) : (0 : MForm X).ord x = ⊤ := by
-  show meromorphicOrderAt (0 : ℂ → ℂ) (chartAt ℂ x x) = ⊤
+  change meromorphicOrderAt (0 : ℂ → ℂ) (chartAt ℂ x x) = ⊤
   simp
 
 /-! ### Order propagation and the divisor (D6), lifted -/
@@ -192,7 +192,7 @@ theorem eventually_ord_eq_zero {Θ : MForm X} {x : X} (h : Θ.ord x ≠ ⊤) :
 noncomputable def divisor [T1Space X] (Θ : MForm X) : Divisor X :=
   Quotient.liftOn Θ MFormData.divisor fun θ η h =>
     Function.locallyFinsuppWithin.ext fun y => by
-      show (θ.ord y).untop₀ = (η.ord y).untop₀
+      change (θ.ord y).untop₀ = (η.ord y).untop₀
       have hord : θ.ord y = η.ord y := meromorphicOrderAt_congr (h y)
       rw [hord]
 
@@ -233,7 +233,7 @@ theorem eq_zero_or_forall_ord_ne_top [T1Space X] [ConnectedSpace X] (Θ : MForm 
     filter_upwards [h₁] with y hy
     rcases eq_or_ne y x with rfl | hyx
     · exact hx
-    · show Θ.ord y ≠ ⊤
+    · change Θ.ord y ≠ ⊤
       rw [hy (by simpa using hyx)]
       simp
   rcases isClopen_iff.1 ⟨isOpen_compl_iff.1 hScompl, hSopen⟩ with hSempty | hSuniv

@@ -43,7 +43,7 @@ noncomputable def Z1.repr {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Divi
 theorem Z1.repr_contMDiffOn {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Divisor X) 𝒰)
     (p : Fin 𝒰.n × Fin 𝒰.n) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (Z1.repr f p) (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X) := by
-  show ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
+  change ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω
       (RS.MeroGermOn.holoRepr ((f : C1 (0 : RS.Divisor X) 𝒰) p :
         RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X))) (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)
   apply RS.MeroGermOn.holoRepr_contMDiffOn (𝒰.U p.1 ⊓ 𝒰.U p.2).isOpen
@@ -106,7 +106,7 @@ theorem Z1.repr_cocycle {𝒰 : FinCover (⊤ : Opens X)} (f : Z1 (0 : RS.Diviso
     RS.MeroGermOn.evalAt_restrict hab (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c).isOpen (𝒰.U a ⊓ 𝒰.U b).isOpen hx,
     RS.MeroGermOn.evalAt_restrict hac (𝒰.U a ⊓ 𝒰.U b ⊓ 𝒰.U c).isOpen (𝒰.U a ⊓ 𝒰.U c).isOpen hx]
     at heval
-  show ((f : C1 (0 : RS.Divisor X) 𝒰) (b, c) :
+  change ((f : C1 (0 : RS.Divisor X) 𝒰) (b, c) :
       RS.MeroGermOn X (𝒰.U b ⊓ 𝒰.U c : Set X)).evalAt x -
     ((f : C1 (0 : RS.Divisor X) 𝒰) (a, c) :
       RS.MeroGermOn X (𝒰.U a ⊓ 𝒰.U c : Set X)).evalAt x +
@@ -130,7 +130,7 @@ theorem Z1.repr_add {𝒰 : FinCover (⊤ : Opens X)} (f f' : Z1 (0 : RS.Divisor
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)) =
       (f : C1 (0 : RS.Divisor X) 𝒰) p + (f' : C1 (0 : RS.Divisor X) 𝒰) p := by
     simp only [Submodule.coe_add]; rfl
-  show (((f + f' : Z1 (0 : RS.Divisor X) 𝒰) : C1 (0 : RS.Divisor X) 𝒰) p :
+  change (((f + f' : Z1 (0 : RS.Divisor X) 𝒰) : C1 (0 : RS.Divisor X) 𝒰) p :
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)).evalAt x =
     ((f : C1 (0 : RS.Divisor X) 𝒰) p :
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)).evalAt x +
@@ -150,7 +150,7 @@ theorem Z1.repr_smul {𝒰 : FinCover (⊤ : Opens X)} (c : ℂ) (f : Z1 (0 : RS
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)) =
       c • (f : C1 (0 : RS.Divisor X) 𝒰) p := by
     simp only [Submodule.coe_smul]; rfl
-  show (((c • f : Z1 (0 : RS.Divisor X) 𝒰) : C1 (0 : RS.Divisor X) 𝒰) p :
+  change (((c • f : Z1 (0 : RS.Divisor X) 𝒰) : C1 (0 : RS.Divisor X) 𝒰) p :
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)).evalAt x =
     c * ((f : C1 (0 : RS.Divisor X) 𝒰) p :
       RS.MeroGermOn X (𝒰.U p.1 ⊓ 𝒰.U p.2 : Set X)).evalAt x
@@ -186,7 +186,7 @@ theorem contMDiffOn_smul_of_tsupport_subset {ψ : X → ℝ} {F : X → ℂ} {W 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Finite sums of `ContMDiffOn` functions are `ContMDiffOn` (no generic lemma found at the
 pin for `ContMDiffOn`; proved by `Finset.induction`). -/
-private theorem contMDiffOn_finset_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) {F : ι → X → ℂ}
+private theorem contMDiffOn_finset_sum {ι : Type*} (s : Finset ι) {F : ι → X → ℂ}
     {U : Set X} (h : ∀ i ∈ s, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (F i) U) :
     ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun x => ∑ i ∈ s, F i x) U := by
   classical
@@ -229,7 +229,7 @@ theorem exists_smoothSplitting [T2Space X] [CompactSpace X] (𝒰 : FinCover (�
   · intro i j x hx
     have hxi : x ∈ (𝒰.U i : Set X) := hx.1
     have hxj : x ∈ (𝒰.U j : Set X) := hx.2
-    show Z1.repr f (i, j) x =
+    change Z1.repr f (i, j) x =
       (∑ k, p k x • Z1.repr f (k, j) x) - (∑ k, p k x • Z1.repr f (k, i) x)
     have hterm : ∀ k : Fin 𝒰.n, p k x • Z1.repr f (k, j) x - p k x • Z1.repr f (k, i) x =
         p k x • Z1.repr f (i, j) x := by
@@ -264,7 +264,7 @@ noncomputable def SmoothSplitting.glueData {𝒰 : FinCover (⊤ : Opens X)} (h�
   holoSub := fun i j => by
     have hcong : ∀ x ∈ (𝒰.U i ⊓ 𝒰.U j : Set X), (s.g i - s.g j) x = -(Z1.repr f (i, j) x) := by
       intro x hx
-      show s.g i x - s.g j x = -(Z1.repr f (i, j) x)
+      change s.g i x - s.g j x = -(Z1.repr f (i, j) x)
       have h := s.split i j x hx
       linear_combination h
     exact ((Z1.repr_contMDiffOn f (i, j)).neg).congr hcong
@@ -281,7 +281,7 @@ theorem IsDbarOn.add {u v : X → ℂ} {θ η : Form01 X} {s : Set X} (hs : IsOp
     (hu : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u s) (hv : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ v s)
     (h1 : IsDbarOn u θ s) (h2 : IsDbarOn v η s) : IsDbarOn (u + v) (θ + η) s := by
   intro x hx
-  show wirtingerDbar ((u + v) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+  change wirtingerDbar ((u + v) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
     (θ + η).coeffAt x (chartAt ℂ x x)
   have hequ : (u + v) ∘ ⇑(chartAt ℂ x).symm =
       (u ∘ ⇑(chartAt ℂ x).symm) + (v ∘ ⇑(chartAt ℂ x).symm) := by funext y; simp
@@ -308,7 +308,7 @@ theorem IsDbarOn.congr {u₁ u₂ : X → ℂ} {θ : Form01 X} {s : Set X} (hs :
     obtain ⟨q, ⟨hqs, hqx⟩, rfl⟩ := hw
     simp only [Function.comp_apply, (chartAt ℂ x).left_inv hqx]
     exact h hqs
-  show wirtingerDbar (u₂ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = θ.coeffAt x (chartAt ℂ x x)
+  change wirtingerDbar (u₂ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = θ.coeffAt x (chartAt ℂ x x)
   rw [← wirtingerDbar_congr_nhds _ _ (chartAt ℂ x x) heq]
   exact hu x hx
 
@@ -324,7 +324,7 @@ theorem sub_mem_range_dbar_of_splittings {𝒰 : FinCover (⊤ : Opens X)} (h�
   set w : X → ℂ := fun x => s.g (idx x) x - s'.g (idx x) x with hw_def
   have hagree : ∀ (i : Fin 𝒰.n) {x : X}, x ∈ (𝒰.U i : Set X) → w x = s.g i x - s'.g i x := by
     intro i x hxi
-    show s.g (idx x) x - s'.g (idx x) x = s.g i x - s'.g i x
+    change s.g (idx x) x - s'.g (idx x) x = s.g i x - s'.g i x
     have hxmem : x ∈ (𝒰.U i ⊓ 𝒰.U (idx x) : Opens X) := ⟨hxi, hidx x⟩
     have h1 := s.split i (idx x) x hxmem
     have h2 := s'.split i (idx x) x hxmem
@@ -347,7 +347,7 @@ theorem sub_mem_range_dbar_of_splittings {𝒰 : FinCover (⊤ : Opens X)} (h�
       IsDbarOn.add (𝒰.U i).isOpen (s'.smoothOn i) hCM.contMDiffOn
         ((s'.glueData h𝒰).isDbarOn_form i) (fun y _ => RS.isDbarOn_dbar ⟨w, hCM⟩ y trivial)
     have hcongr : Set.EqOn (s'.g i + w) (s.g i) (𝒰.U i : Set X) := fun y hy => by
-      show s'.g i y + w y = s.g i y
+      change s'.g i y + w y = s.g i y
       rw [hagree i hy]; ring
     exact IsDbarOn.congr (𝒰.U i).isOpen hcongr hIsDbarOnSum x hxi
   refine ⟨⟨w, hCM⟩, ?_⟩
@@ -403,7 +403,7 @@ theorem dolbForm_mem_range_of_mem_B1 [T2Space X] [CompactSpace X] {𝒰 : FinCov
         (𝒰.U i ⊓ 𝒰.U j).isOpen (𝒰.U i).isOpen hx,
       RS.MeroGermOn.evalAt_restrict (inf_le_right : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U j)
         (𝒰.U i ⊓ 𝒰.U j).isOpen (𝒰.U j).isOpen hx] at heval
-    show ((f : C1 (0 : RS.Divisor X) 𝒰) (i, j) :
+    change ((f : C1 (0 : RS.Divisor X) 𝒰) (i, j) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)).evalAt x =
       (c j : RS.MeroGermOn X (𝒰.U j : Set X)).evalAt x -
         (c i : RS.MeroGermOn X (𝒰.U i : Set X)).evalAt x
@@ -411,7 +411,7 @@ theorem dolbForm_mem_range_of_mem_B1 [T2Space X] [CompactSpace X] {𝒰 : FinCov
   set s0 : SmoothSplitting 𝒰 f := ⟨g, hsmoothOn, hsplit⟩ with hs0_def
   have hIsDbarZero : ∀ i, IsDbarOn (g i) 0 (𝒰.U i : Set X) := by
     intro i x hx
-    show wirtingerDbar (g i ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+    change wirtingerDbar (g i ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
       (0 : Form01 X).coeffAt x (chartAt ℂ x x)
     rw [Form01.coeffAt_zero]
     have hCMAt : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (g i) x :=
@@ -430,7 +430,7 @@ theorem dolbForm_mem_range_of_mem_B1 [T2Space X] [CompactSpace X] {𝒰 : FinCov
   have hsum : dolbForm h𝒰 f =
       (((exists_smoothSplitting 𝒰 f).some.glueData h𝒰).form - (s0.glueData h𝒰).form) +
         (s0.glueData h𝒰).form := by
-    show ((exists_smoothSplitting 𝒰 f).some.glueData h𝒰).form = _
+    change ((exists_smoothSplitting 𝒰 f).some.glueData h𝒰).form = _
     abel
   rw [hsum]
   exact Submodule.add_mem _ hdiff hmem0
@@ -447,7 +447,7 @@ theorem dolbForm_add_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ 
     { g := fun i => sf.g i + sf'.g i
       smoothOn := fun i => (sf.smoothOn i).add (sf'.smoothOn i)
       split := fun i j x hx => by
-        show Z1.repr (f + f') (i, j) x = (sf.g j x + sf'.g j x) - (sf.g i x + sf'.g i x)
+        change Z1.repr (f + f') (i, j) x = (sf.g j x + sf'.g j x) - (sf.g i x + sf'.g i x)
         rw [Z1.repr_add f f' (i, j) hx]
         have h1 := sf.split i j x hx
         have h2 := sf'.split i j x hx
@@ -461,7 +461,7 @@ theorem dolbForm_add_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ 
       LinearMap.range (RS.dbar (X := X)) := sub_mem_range_dbar_of_splittings h𝒰 ssum s2
   have hsum : dolbForm h𝒰 (f + f') - dolbForm h𝒰 f - dolbForm h𝒰 f' =
       (ssum.glueData h𝒰).form - (s2.glueData h𝒰).form := by
-    show (ssum.glueData h𝒰).form - (sf.glueData h𝒰).form - (sf'.glueData h𝒰).form = _
+    change (ssum.glueData h𝒰).form - (sf.glueData h𝒰).form - (sf'.glueData h𝒰).form = _
     rw [← hkey]; abel
   rw [hsum]; exact hdiff
 
@@ -482,7 +482,7 @@ theorem dolbForm_smul_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤
           funext x; simp [ContinuousLinearMap.mul_apply', smul_eq_mul]
         rwa [heq] at hL
       split := fun i j x hx => by
-        show Z1.repr (c • f) (i, j) x = c • sf.g j x - c • sf.g i x
+        change Z1.repr (c • f) (i, j) x = c • sf.g j x - c • sf.g i x
         rw [Z1.repr_smul c f (i, j) hx]
         have h1 := sf.split i j x hx
         simp only [smul_eq_mul]
@@ -490,7 +490,7 @@ theorem dolbForm_smul_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤
   have hkey : c • ((sf.glueData h𝒰).form) = (s2.glueData h𝒰).form := by
     apply DbarGlueData.form_unique
     intro i x hxi
-    show wirtingerDbar ((c • sf.g i) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+    change wirtingerDbar ((c • sf.g i) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
       (c • (sf.glueData h𝒰).form).coeffAt x (chartAt ℂ x x)
     have heq : (c • sf.g i) ∘ ⇑(chartAt ℂ x).symm =
         fun w => c * (sf.g i ∘ ⇑(chartAt ℂ x).symm) w := by
@@ -504,14 +504,14 @@ theorem dolbForm_smul_sub_mem [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤
         (sf.glueData h𝒰).form.coeffAt x (chartAt ℂ x x) :=
       (sf.glueData h𝒰).isDbarOn_form i x hxi
     rw [h1]
-    show c * (sf.glueData h𝒰).form.coeffAt x (chartAt ℂ x x) =
+    change c * (sf.glueData h𝒰).form.coeffAt x (chartAt ℂ x x) =
       (c • (sf.glueData h𝒰).form).coeffAt x (chartAt ℂ x x)
     rw [Form01.coeffAt_smul]
   have hdiff : (scsmul.glueData h𝒰).form - (s2.glueData h𝒰).form ∈
       LinearMap.range (RS.dbar (X := X)) := sub_mem_range_dbar_of_splittings h𝒰 scsmul s2
   have hsum : dolbForm h𝒰 (c • f) - c • dolbForm h𝒰 f =
       (scsmul.glueData h𝒰).form - (s2.glueData h𝒰).form := by
-    show (scsmul.glueData h𝒰).form - c • (sf.glueData h𝒰).form = _
+    change (scsmul.glueData h𝒰).form - c • (sf.glueData h𝒰).form = _
     rw [hkey]
   rw [hsum]; exact hdiff
 
@@ -531,7 +531,7 @@ theorem dolbForm_res_sub_mem [T2Space X] [CompactSpace X] {𝒰 𝒱 : FinCover 
         have hxkl : x ∈ (𝒰.U (τ k) ⊓ 𝒰.U (τ l) : Opens X) := ⟨hτ k hx.1, hτ l hx.2⟩
         have heq : Z1.repr (resZ1 (0 : RS.Divisor X) τ hτ f) (k, l) x =
             Z1.repr f (τ k, τ l) x := by
-          show ((resZ1 (0 : RS.Divisor X) τ hτ f : C1 (0 : RS.Divisor X) 𝒱) (k, l) :
+          change ((resZ1 (0 : RS.Divisor X) τ hτ f : C1 (0 : RS.Divisor X) 𝒱) (k, l) :
               RS.MeroGermOn X (𝒱.U k ⊓ 𝒱.U l : Set X)).evalAt x =
             ((f : C1 (0 : RS.Divisor X) 𝒰) (τ k, τ l) :
               RS.MeroGermOn X (𝒰.U (τ k) ⊓ 𝒰.U (τ l) : Set X)).evalAt x
@@ -549,7 +549,7 @@ theorem dolbForm_res_sub_mem [T2Space X] [CompactSpace X] {𝒰 𝒱 : FinCover 
       LinearMap.range (RS.dbar (X := X)) := sub_mem_range_dbar_of_splittings h𝒱 s𝒱arb s𝒱
   have hsum : dolbForm h𝒱 (resZ1 (0 : RS.Divisor X) τ hτ f) - dolbForm h𝒰 f =
       (s𝒱arb.glueData h𝒱).form - (s𝒱.glueData h𝒱).form := by
-    show (s𝒱arb.glueData h𝒱).form - (s𝒰.glueData h𝒰).form = _
+    change (s𝒱arb.glueData h𝒱).form - (s𝒰.glueData h𝒰).form = _
     rw [hkey]
   rw [hsum]; exact hdiff
 

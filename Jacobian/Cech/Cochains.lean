@@ -74,10 +74,10 @@ noncomputable def congrSet {U V : Set X} (h : U = V) :
   LinearEquiv.ofLinear (RS.MeroGermOn.restrict h.ge).toLinearMap
     (RS.MeroGermOn.restrict h.le).toLinearMap
     (LinearMap.ext fun φ => by
-      show RS.MeroGermOn.restrict h.ge (RS.MeroGermOn.restrict h.le φ) = φ
+      change RS.MeroGermOn.restrict h.ge (RS.MeroGermOn.restrict h.le φ) = φ
       rw [RS.MeroGermOn.restrict_restrict, RS.MeroGermOn.restrict_id])
     (LinearMap.ext fun φ => by
-      show RS.MeroGermOn.restrict h.le (RS.MeroGermOn.restrict h.ge φ) = φ
+      change RS.MeroGermOn.restrict h.le (RS.MeroGermOn.restrict h.ge φ) = φ
       rw [RS.MeroGermOn.restrict_restrict, RS.MeroGermOn.restrict_id])
 
 end MeroGermOn
@@ -218,7 +218,7 @@ noncomputable instance instModuleZ1 : Module ℂ (Z1 D 𝒰) := (Z1 D 𝒰).modu
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem B1_le_Z1 : B1 D 𝒰 ≤ Z1 D 𝒰 := by
   rintro y ⟨x, rfl⟩
-  show d1 D 𝒰 (d0 D 𝒰 x) = 0
+  change d1 D 𝒰 (d0 D 𝒰 x) = 0
   exact LinearMap.congr_fun (d1_comp_d0 D 𝒰) x
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in

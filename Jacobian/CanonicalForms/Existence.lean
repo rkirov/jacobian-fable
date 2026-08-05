@@ -51,7 +51,7 @@ plan flagged as "the ONLY file gated on finiteness-and-chi" can finally be writt
   instantiated at all; D9 supplies it).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold Filter Topology
 
 /-! ### Compat: `Function.locallyFinsuppWithin.degree_single` at an arbitrary value -/
@@ -83,6 +83,7 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 /-! ### `MForm.d_ne_zero`: moved here from `residue-theorem/Reduction.lean` (clean home, see the
 module docstring above for why the import direction forced the move). -/
 
+open scoped Classical in
 /-- The differential of a nonconstant meromorphic function is a nonzero meromorphic 1-form
 (identity-theorem dichotomy: were `d f = 0`, the chart derivative would vanish near some
 nonnegative-order point, forcing `f.holoRepr` to be locally — hence codiscretely — constant). -/
@@ -120,7 +121,7 @@ theorem MForm.d_ne_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] {f : ℳ
         eventually_nhdsWithin_of_eventually_nhds
           ((chartAt ℂ x₁).open_target.mem_nhds (mem_chart_target ℂ x₁))
       filter_upwards [htarget] with z hz
-      show (if z ∈ (chartAt ℂ x₁).target then
+      change (if z ∈ (chartAt ℂ x₁).target then
         deriv (f.holoRepr ∘ ⇑(chartAt ℂ x₁).symm) z else 0) = _
       rw [if_pos hz]
     rw [meromorphicOrderAt_congr h3] at h1
@@ -171,7 +172,7 @@ theorem MForm.d_ne_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] {f : ℳ
   have htop : ordAtX (fun p => f.holoRepr p - cval) x₁ = ⊤ := by
     rw [ordAtX_eq_top_iff]
     filter_upwards [hXconst.filter_mono nhdsWithin_le_nhds] with p hp
-    show f.holoRepr p - cval = 0
+    change f.holoRepr p - cval = 0
     rw [hp, sub_self]
   rcases hsubmero.eventuallyEq_zero_or_forall_ordAtX_ne_top with hzero | hnetop
   · apply hf cval
@@ -213,7 +214,7 @@ theorem exists_nonconstant_mero : ∃ f : ℳ X, ∀ c : ℂ, f ≠ algebraMap �
   have hle : LinSys (0 : Divisor X) ≤ LinSys D := linSys_mono hDnn
   have hne : LinSys (0 : Divisor X) ≠ LinSys D := fun heq => by
     have hleq : l (0 : Divisor X) = l D := by
-      show Module.finrank ℂ (LinSys (0 : Divisor X)) = Module.finrank ℂ (LinSys D)
+      change Module.finrank ℂ (LinSys (0 : Divisor X)) = Module.finrank ℂ (LinSys D)
       rw [heq]
     rw [hl0] at hleq
     omega

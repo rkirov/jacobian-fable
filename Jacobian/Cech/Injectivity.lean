@@ -133,7 +133,7 @@ theorem exists_injGlue {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) {g : C0 D 𝒱}
       (inf_le_left : 𝒰.U i ⊓ 𝒱.U k ≤ 𝒰.U i) (e Φ) =
       (injPatch D τ hτ f g i k : RS.MeroGermOn X (W k)) := by
     intro k
-    show RS.MeroGermOn.restrict inf_le_left (RS.MeroGermOn.restrict _ Φ) = _
+    change RS.MeroGermOn.restrict inf_le_left (RS.MeroGermOn.restrict _ Φ) = _
     rw [RS.MeroGermOn.restrict_restrict, hΦ]
   have hmem : e Φ ∈ RS.LinSysOn D (𝒰.U i : Set X) := by
     rw [RS.mem_linSysOn_iff_of_isOpen (𝒰.U i).isOpen]
@@ -168,7 +168,7 @@ theorem d0_injGlue_eq_neg {f : C1 D 𝒰} (hf : f ∈ Z1 D 𝒰) {g : C0 D 𝒱}
       RS.MeroGermOn.restrict (Set.subset_iUnion W' k) (e' Z) =
         RS.MeroGermOn.restrict (inf_le_left : A ⊓ 𝒱.U k ≤ A) Z := by
     intro Z k
-    show RS.MeroGermOn.restrict (Set.subset_iUnion W' k) (RS.MeroGermOn.restrict _ Z) = _
+    change RS.MeroGermOn.restrict (Set.subset_iUnion W' k) (RS.MeroGermOn.restrict _ Z) = _
     rw [RS.MeroGermOn.restrict_restrict]
   have hcore : ∀ k : Fin 𝒱.n,
       LinSysOn.restrictL D (inf_le_left : A ⊓ 𝒱.U k ≤ A) (d0 D 𝒰 ψ (i, j)) =

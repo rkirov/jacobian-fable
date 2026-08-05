@@ -173,7 +173,7 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     rw [MeroGermOn.evalAt_restrict hbc (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U j ⊓ 𝒱.U k).2 hp,
       MeroGermOn.evalAt_restrict hab (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U i ⊓ 𝒱.U j).2 hp,
       MeroGermOn.evalAt_restrict hac (𝒱.U i ⊓ 𝒱.U j ⊓ 𝒱.U k).2 (𝒱.U i ⊓ 𝒱.U k).2 hp] at heval
-    show F i k (e.symm (e p)) = F i j (e.symm (e p)) + F j k (e.symm (e p))
+    change F i k (e.symm (e p)) = F i j (e.symm (e p)) + F j k (e.symm (e p))
     rw [e.left_inv (hUisub i hp.1.1)]
     show F i k p = F i j p + F j k p
     have e1 : F i k p = (f (i, k) : MeroGermOn X ((𝒱.U i ⊓ 𝒱.U k : Opens X) : Set X)).evalAt p :=
@@ -195,7 +195,7 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     rw [show (⇑e '' (𝒱.U i : Set X)) = W i from rfl]
     apply AnalyticOnNhd.congr (hWo i) ((hu_diff i).analyticOnNhd (hWo i))
     rintro z ⟨q, hq, rfl⟩
-    show u i (e q) = v i (e.symm (e q))
+    change u i (e q) = v i (e.symm (e q))
     rw [e.left_inv (hUisub i hq)]
     rfl
   set h : C0 (0 : Divisor X) 𝒱 := fun i =>
@@ -208,9 +208,9 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     have hz : e p ∈ W i ∩ W j := ⟨⟨p, hpi, rfl⟩, ⟨p, hpj, rfl⟩⟩
     have hsplit := hu_split i j (e p) hz
     have hFip : φ i j (e p) = F i j p := by
-      show F i j (e.symm (e p)) = F i j p
+      change F i j (e.symm (e p)) = F i j p
       rw [e.left_inv (hUisub i hpi)]
-    show F i j p = v j p - v i p
+    change F i j p = v j p - v i p
     rw [← hFip, hsplit]
     show u j (e p) - u i (e p) = v j p - v i p
     rfl
@@ -219,11 +219,11 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     obtain ⟨i, j⟩ := p
     apply Subtype.ext
     rw [d0_apply]
-    show (MeroGermOn.restrict inf_le_right (h j : MeroGermOn X (𝒱.U (i, j).2 : Set X)) -
+    change (MeroGermOn.restrict inf_le_right (h j : MeroGermOn X (𝒱.U (i, j).2 : Set X)) -
         MeroGermOn.restrict inf_le_left (h i : MeroGermOn X (𝒱.U (i, j).1 : Set X)) :
         MeroGermOn X ((𝒱.U (i, j).1 ⊓ 𝒱.U (i, j).2 : Opens X) : Set X)) =
       (f (i, j) : MeroGermOn X ((𝒱.U (i, j).1 ⊓ 𝒱.U (i, j).2 : Opens X) : Set X))
-    show MeroGermOn.restrict inf_le_right (MeroGermOn.mk (v j)
+    change MeroGermOn.restrict inf_le_right (MeroGermOn.mk (v j)
         (meromorphicOnX_of_contMDiffOn_omega (𝒱.U j).2 (hv_cd j))) -
       MeroGermOn.restrict inf_le_left (MeroGermOn.mk (v i)
         (meromorphicOnX_of_contMDiffOn_omega (𝒱.U i).2 (hv_cd i))) =
@@ -237,7 +237,7 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     apply MeroGermOn.mk_eq_mk.2
     apply heqOn_to_evEq
     intro p hp
-    show v j p - v i p = F i j p
+    change v j p - v i p = F i j p
     exact (hpointwise i j p hp).symm
   rw [← hd0h]
   exact LinearMap.mem_range_self _ _
@@ -278,8 +278,10 @@ private theorem mul_restrict_mem_linSysOn {V : Opens X} {D : Divisor X} {𝒱 : 
       (RS.MeroGermOn.restrict (hWleV p) t).ord x +
         (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)).ord x :=
     RS.MeroGermOn.ord_mul ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2 hx _ _
-  rw [hordmul, RS.MeroGermOn.ord_restrict (hWleV p) ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2 V.2 hx, hord_t (hWleV p hx)]
-  have hfp : ((-(D x) : ℤ) : WithTop ℤ) ≤ (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)).ord x :=
+  rw [hordmul, RS.MeroGermOn.ord_restrict (hWleV p) ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2 V.2 hx,
+    hord_t (hWleV p hx)]
+  have hfp : ((-(D x) : ℤ) : WithTop ℤ) ≤
+      (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)).ord x :=
     (mem_linSysOn_iff_of_isOpen ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2).1 (f p).2 x hx
   have hz0 : ((-(0 : Divisor X) x : ℤ) : WithTop ℤ) = 0 := by simp
   have hcancel : ((D x : ℤ) : WithTop ℤ) + ((-(D x) : ℤ) : WithTop ℤ) = 0 := by
@@ -319,7 +321,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
       filter_upwards [e.open_target.eventually_mem (e.map_source (hVs hx))] with z hz
         using e.right_inv hz
     filter_upwards [h2] with z hz
-    show q (e (e.symm z)) = q z
+    change q (e (e.symm z)) = q z
     rw [hz]
   have hqe_mero : MeromorphicOnX (q ∘ e) (V : Set X) := by
     intro x hx
@@ -376,9 +378,9 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
     have hyne' : y ≠ x := hyne
     have hyS : y ∉ (S.erase x : Finset X) := fun hmem => hy.2 (Finset.mem_coe.mpr hmem)
     have hyS' : y ∉ S := fun hmem => hyS (Finset.mem_erase.mpr ⟨hyne', hmem⟩)
-    show (q ∘ e) y * ((q ∘ e) y)⁻¹ = 1
+    change (q ∘ e) y * ((q ∘ e) y)⁻¹ = 1
     apply mul_inv_cancel₀
-    show q (e y) ≠ 0
+    change q (e y) ≠ 0
     rw [hq_def]
     apply Finset.prod_ne_zero_iff.mpr
     intro a ha
@@ -412,7 +414,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
       have hcast := congrArg Subtype.val key
       simpa using hcast
     rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe] at hval
-    show (LinSysOn.restrictL (0 : Divisor X) hbc (g (j, k)) : RS.MeroGermOn X (Uijk : Set X)) -
+    change (LinSysOn.restrictL (0 : Divisor X) hbc (g (j, k)) : RS.MeroGermOn X (Uijk : Set X)) -
         (LinSysOn.restrictL (0 : Divisor X) hac (g (i, k)) : RS.MeroGermOn X (Uijk : Set X)) +
         (LinSysOn.restrictL (0 : Divisor X) hab (g (i, j)) : RS.MeroGermOn X (Uijk : Set X)) = 0
     rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe, hg_coe, hg_coe, hg_coe,
@@ -476,7 +478,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
         (g (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) := by
       have hcast := congrArg Subtype.val hcg0
       exact hcast
-    show (RS.MeroGermOn.restrict hij_r (h' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
+    change (RS.MeroGermOn.restrict hij_r (h' j : RS.MeroGermOn X (𝒱.U j : Set X)) -
         RS.MeroGermOn.restrict hij_l (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) :
         RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
       (f (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X))

@@ -98,7 +98,7 @@ theorem exists_localModel_of_isWeakSolutionAt {f : X → ℂ} {a : X} {k : ℤ}
     exact h2.comp (e a) h1
   have hSanalytic : AnalyticAt ℂ S w0 := (contMDiffAt_iff_contDiffAt.1 hSmdiff).analyticAt
   have hTanalytic : AnalyticAt ℂ T (e a) := (contMDiffAt_iff_contDiffAt.1 hTmdiff).analyticAt
-  have hSw0 : S w0 = e a := by show e (e'.symm w0) = e a; rw [heaa']
+  have hSw0 : S w0 = e a := by change e (e'.symm w0) = e a; rw [heaa']
   have he'symm_cont : ContinuousAt (⇑e'.symm) w0 :=
     (contMDiffAt_symm_of_mem_maximalAtlas he' (e'.map_source ha')).continuousAt
   have hTS : (fun w => T (S w)) =ᶠ[𝓝 w0] id := by
@@ -107,7 +107,7 @@ theorem exists_localModel_of_isWeakSolutionAt {f : X → ℂ} {a : X} {k : ℤ}
       exact h1'.eventually (e.open_source.mem_nhds ha)
     have h2 : ∀ᶠ w in 𝓝 w0, w ∈ e'.target := e'.open_target.eventually_mem (e'.map_source ha')
     filter_upwards [h1, h2] with w hw1 hw2
-    show e' (e.symm (e (e'.symm w))) = w
+    change e' (e.symm (e (e'.symm w))) = w
     rw [e.left_inv hw1, e'.right_inv hw2]
   have hderivS : DifferentiableAt ℂ S w0 := hSanalytic.differentiableAt
   have hderivT' : DifferentiableAt ℂ T (S w0) := by
@@ -133,7 +133,7 @@ theorem exists_localModel_of_isWeakSolutionAt {f : X → ℂ} {a : X} {k : ℤ}
   have hHne : ∀ᶠ w in 𝓝 w0, H w ≠ 0 := hHcont.eventually_ne hHw0_ne
   have hSeq : ∀ᶠ x in 𝓝 a, S (e' x) = e x := by
     filter_upwards [e'.open_source.mem_nhds ha'] with x hx2
-    show e (e'.symm (e' x)) = e x
+    change e (e'.symm (e' x)) = e x
     rw [e'.left_inv hx2]
   have htrans : ∀ᶠ x in 𝓝 a, e x - e a = (e' x - w0) * H (e' x) := by
     filter_upwards [hSeq] with x hex
@@ -189,7 +189,7 @@ theorem IsWeakSolutionAt.mul {f g : X → ℂ} {a : X} {k1 k2 : ℤ}
         exact hxa (by rw [← e.left_inv hx3, hc, e.left_inv ha])
       have hzpoweq : (e x - e a) ^ k1 * (e x - e a) ^ k2 = (e x - e a) ^ (k1 + k2) :=
         (zpow_add₀ hexne k1 k2).symm
-      show h x = ψ1 (e x) * ψ2 (e x) * (e x - e a) ^ (k1 + k2)
+      change h x = ψ1 (e x) * ψ2 (e x) * (e x - e a) ^ (k1 + k2)
       rw [hh_def, Function.update_of_ne hxa, hx1, hx2, ← hzpoweq]
       ring
   · intro x hxa

@@ -39,17 +39,17 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 noncomputable def ordGe (p : X) (m : ℤ) : Submodule ℂ (RS.MeroGermOn X ((chartAt ℂ p).source)) where
   carrier := {ψ | (m : WithTop ℤ) ≤ ψ.ord p}
   zero_mem' := by
-    show (m : WithTop ℤ) ≤ (0 : RS.MeroGermOn X _).ord p
+    change (m : WithTop ℤ) ≤ (0 : RS.MeroGermOn X _).ord p
     rw [RS.MeroGermOn.ord_zero, if_pos ⟨(chartAt ℂ p).open_source, mem_chart_source ℂ p⟩]
     exact le_top
   add_mem' := by
     intro ψ φ hψ hφ
-    show (m : WithTop ℤ) ≤ (ψ + φ).ord p
+    change (m : WithTop ℤ) ≤ (ψ + φ).ord p
     exact le_trans (le_min hψ hφ)
       (RS.MeroGermOn.ord_add (chartAt ℂ p).open_source (mem_chart_source ℂ p) ψ φ)
   smul_mem' := by
     intro a ψ hψ
-    show (m : WithTop ℤ) ≤ (a • ψ).ord p
+    change (m : WithTop ℤ) ≤ (a • ψ).ord p
     rcases eq_or_ne a 0 with rfl | ha
     · rw [zero_smul, RS.MeroGermOn.ord_zero, if_pos ⟨(chartAt ℂ p).open_source, mem_chart_source ℂ
         p⟩]
@@ -74,7 +74,7 @@ theorem meromorphicOnX_tailGerm (p : X) (m : ℤ) :
   have htarget_nhds : (chartAt ℂ p).target ∈ 𝓝 (chartAt ℂ p x) :=
     (chartAt ℂ p).open_target.mem_nhds ((chartAt ℂ p).map_source hx)
   filter_upwards [htarget_nhds] with z hz
-  show (z - chartAt ℂ p p) ^ m = (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m
+  change (z - chartAt ℂ p p) ^ m = (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m
   rw [(chartAt ℂ p).right_inv hz]
 
 /-- The local tail germ `(z − z_p)^m` (junk off the chart source). -/
@@ -89,7 +89,7 @@ theorem ord_tailGerm_self (p : X) (m : ℤ) : (tailGerm p m).ord p = (m : WithTo
     have htarget_nhds : (chartAt ℂ p).target ∈ 𝓝 (chartAt ℂ p p) :=
       (chartAt ℂ p).open_target.mem_nhds ((chartAt ℂ p).map_source (mem_chart_source ℂ p))
     filter_upwards [htarget_nhds] with z hz
-    show (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m = (z - chartAt ℂ p p) ^ m
+    change (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m = (z - chartAt ℂ p p) ^ m
     rw [(chartAt ℂ p).right_inv hz]
   rw [meromorphicOrderAt_congr (heq.filter_mono nhdsWithin_le_nhds)]
   exact meromorphicOrderAt_zpow_id_sub_const
@@ -113,7 +113,7 @@ noncomputable def leadCoeff (p : X) (m : ℤ) : ordGe p m →ₗ[ℂ] ℂ where
       rw [mem_ordGe_iff] at hψ'm
       have : (-m + m : WithTop ℤ) ≤ (-m : WithTop ℤ) + ψ'.1.ord p := add_le_add le_rfl hψ'm
       simpa using this
-    show ((tailGerm p (-m)) * ((ψ : RS.MeroGermOn X ((chartAt ℂ p).source)) +
+    change ((tailGerm p (-m)) * ((ψ : RS.MeroGermOn X ((chartAt ℂ p).source)) +
       (ψ' : RS.MeroGermOn X ((chartAt ℂ p).source)))).evalAt p = _
     rw [mul_add,
       RS.MeroGermOn.evalAt_add (chartAt ℂ p).open_source (mem_chart_source ℂ p) h1 h2]
@@ -125,7 +125,7 @@ noncomputable def leadCoeff (p : X) (m : ℤ) : ordGe p m →ₗ[ℂ] ℂ where
       rw [mem_ordGe_iff] at hψm
       have : (-m + m : WithTop ℤ) ≤ (-m : WithTop ℤ) + ψ.1.ord p := add_le_add le_rfl hψm
       simpa using this
-    show ((tailGerm p (-m)) * (a • (ψ : RS.MeroGermOn X _))).evalAt p = a * _
+    change ((tailGerm p (-m)) * (a • (ψ : RS.MeroGermOn X _))).evalAt p = a * _
     rw [mul_smul_comm,
       RS.MeroGermOn.evalAt_smul (chartAt ℂ p).open_source (mem_chart_source ℂ p) h1]
 
@@ -174,7 +174,7 @@ noncomputable def restrictToChart (D' : RS.Divisor X) (q : X) :
     ((RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source)).toLinearMap.comp
       (RS.LinSys D').subtype)
     (fun φ => by
-      show ((-(D' q) : ℤ) : WithTop ℤ) ≤
+      change ((-(D' q) : ℤ) : WithTop ℤ) ≤
         (RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source)
           (φ : RS.MeroGermOn X (Set.univ : Set X))).ord q
       rw [RS.MeroGermOn.ord_restrict (Set.subset_univ (chartAt ℂ q).source) (chartAt ℂ

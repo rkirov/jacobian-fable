@@ -292,7 +292,7 @@ private theorem differentiableAt_comp_polarLog {u : ℂ → ℂ} {c : ℂ} {r R 
   set A : Set ℂ := Metric.closedBall c R \ Metric.ball c r with hA_def
   set RecOpen : Set ℂ := Complex.reProdIm (Set.Ioo a b) (Set.Ioo (0 : ℝ) (2 * π)) with
     hRecOpen_def
-  show ∀ ζ ∈ RecOpen, DifferentiableAt ℝ u (τ ζ)
+  change ∀ ζ ∈ RecOpen, DifferentiableAt ℝ u (τ ζ)
   intro ζ hζ
   rw [hRecOpen_def, Complex.mem_reProdIm] at hζ
   have hτζ_int : τ ζ ∈ Metric.ball c R \ Metric.closedBall c r := by
@@ -324,7 +324,7 @@ private theorem polarLog_integrand_periodic {u : ℂ → ℂ} {c : ℂ} :
       (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ) ((x : ℂ) + (2 * π : ℝ) * I) := by
   set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
   set F : ℂ → ℂ := fun ζ => u (τ ζ) * Complex.exp ζ with hF_def
-  show ∀ x : ℝ, F ((x : ℂ) + (0 : ℝ) * I) = F ((x : ℂ) + (2 * π : ℝ) * I)
+  change ∀ x : ℝ, F ((x : ℂ) + (0 : ℝ) * I) = F ((x : ℂ) + (2 * π : ℝ) * I)
   intro x
   have hx0 : (x : ℂ) + (0 : ℝ) * I = (x : ℂ) := by push_cast; ring
   have hx2pi : (x : ℂ) + (2 * π : ℝ) * I = (x : ℂ) + 2 * π * I := by push_cast; ring
@@ -367,7 +367,7 @@ private theorem hasFDerivAt_polarLog_integrand {u : ℂ → ℂ} {c : ℂ} {r R 
     intro ζ hζ
     rw [Complex.mem_reProdIm] at hζ ⊢
     exact ⟨⟨hζ.1.1.le, hζ.1.2.le⟩, ⟨hζ.2.1.le, hζ.2.2.le⟩⟩
-  show ∀ ζ ∈ RecOpen, HasFDerivAt F (f' ζ) ζ
+  change ∀ ζ ∈ RecOpen, HasFDerivAt F (f' ζ) ζ
   intro ζ hζ
   have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
   have hτd : DifferentiableAt ℝ τ ζ := hτ_diffR ζ
@@ -413,7 +413,7 @@ private theorem stokes_integrand_eq {u : ℂ → ℂ} {c : ℂ} {r R : ℝ}
     intro ζ hζ
     rw [Complex.mem_reProdIm] at hζ ⊢
     exact ⟨⟨hζ.1.1.le, hζ.1.2.le⟩, ⟨hζ.2.1.le, hζ.2.2.le⟩⟩
-  show ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
+  change ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
     = 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ))
   intro ζ hζ
   have hFderiv_eq : f' ζ = fderiv ℝ F ζ := by
@@ -451,11 +451,11 @@ private theorem smul_intervalIntegral_eq_circleIntegral {u : ℂ → ℂ} {c : �
     have hexp_split : Complex.exp ((x0 : ℂ) + y * I) = ρ0 * Complex.exp (y * I) := by
       rw [Complex.exp_add, ← Complex.ofReal_exp, hx0]
     rw [hexp_split]
-  show I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((t : ℂ) + y * I)) = ∮ w in C(c, ρ), u w
+  change I • (∫ y : ℝ in (0 : ℝ)..(2 * π), F ((t : ℂ) + y * I)) = ∮ w in C(c, ρ), u w
   rw [← intervalIntegral.integral_smul]
   apply intervalIntegral.integral_congr
   intro y _
-  show I • F ((t : ℂ) + y * I) = deriv (circleMap c ρ) y • u (circleMap c ρ y)
+  change I • F ((t : ℂ) + y * I) = deriv (circleMap c ρ) y • u (circleMap c ρ y)
   rw [hFexp t ρ y heρ, deriv_circleMap, circleMap, circleMap]
   simp only [zero_add, smul_eq_mul]
   ring
@@ -468,9 +468,9 @@ private theorem reProdIm_Ioo_nonempty {a b : ℝ} (hab : a < b) :
   refine ⟨⟨(a + b) / 2, π⟩, ?_⟩
   rw [Complex.mem_reProdIm]
   refine ⟨?_, ?_⟩
-  · show (a + b) / 2 ∈ Set.Ioo a b
+  · change (a + b) / 2 ∈ Set.Ioo a b
     constructor <;> linarith
-  · show π ∈ Set.Ioo (0 : ℝ) (2 * π)
+  · change π ∈ Set.Ioo (0 : ℝ) (2 * π)
     constructor <;> linarith [Real.pi_pos]
 
 /-- The iterated interval integral over the rectangle is the set integral over it. Split out of
@@ -693,7 +693,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       rw [hjac]
       apply MeasureTheory.setIntegral_congr_fun hs_meas
       intro ζ _
-      show (Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)
+      change (Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)
           = |(fderiv ℝ τ ζ).det| • wirtingerDbar u (τ ζ)
       congr 1
       rw [det_fderiv_of_differentiableAt (hτ_diffC ζ), hderivτ,
@@ -758,7 +758,7 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
     · have hg0 : g =ᶠ[nhds w] (fun _ => (0 : ℂ)) := notMem_tsupport_iff_eventuallyEq.mp hwt
       have hv0 : v =ᶠ[nhds w] (fun _ => (0 : ℂ)) := by
         filter_upwards [hg0] with x hx
-        show g x * f x = 0
+        change g x * f x = 0
         rw [hx]; ring
       exact contDiffAt_const.congr_of_eventuallyEq hv0
   have hv_ContDiffOn : ContDiffOn ℝ 1 v (Metric.closedBall p R \ Metric.ball p ε) :=
@@ -777,7 +777,7 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
   have hoq : (∮ w in C(p, R), v w) = 0 := by
     have heq0 : Set.EqOn v (fun _ => (0 : ℂ)) (Metric.sphere p R) := by
       intro w hw
-      show g w * f w = 0
+      change g w * f w = 0
       rw [hgouter0 w hw, zero_mul]
     rw [circleIntegral.integral_congr hRpos.le heq0]
     simp [circleIntegral]
@@ -788,7 +788,7 @@ theorem integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt {g f : ℂ → ℂ} {U : 
     exact hδ w (by rw [Metric.mem_ball, hw]; exact hεδ)
   have hvε : Set.EqOn v (fun w => g p * f w) (Metric.sphere p ε) := by
     intro w hw
-    show g w * f w = g p * f w
+    change g w * f w = g p * f w
     rw [hgε hw]
     rfl
   have hcircleε : (∮ w in C(p, ε), v w) = g p * (2 * π * I * resAt f p) := by

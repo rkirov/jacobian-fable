@@ -51,10 +51,45 @@ for root, _, files in os.walk("Jacobian"):
             open(dst, "w", encoding="utf-8").write(rewrite(fh.read()))
         count += 1
 
+# The pool's entry module has a fixed shape (`python/lean_pool/quality.py::_write_project_card`):
+# the four-line header, then the imports, then the generated project card — and the card has to
+# match `projects.yml` exactly or their card check rejects the PR. Everything else in this repo's
+# `Jacobian.lean` (the prose comments) is dropped, since it would sit between the header and the
+# imports and push the card out of that shape.
 with open("Jacobian.lean", encoding="utf-8") as fh:
-    open(os.path.join(dst_root, "LeanPool", f"{PROJECT}.lean"), "w", encoding="utf-8").write(
-        rewrite(fh.read())
-    )
+    root_src = rewrite(fh.read()).split("\n")
+header = "\n".join(root_src[: root_src.index("-/") + 1])
+imports = "\n".join(line for line in root_src if line.startswith("import "))
+
+# Rendered exactly as `_project_card` renders it, from the same values as the YAML card below.
+TITLE = "The Jacobian of a Compact Riemann Surface"
+SOURCE_URL = "https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9"
+AUTHORS = ["Rado Kirov"]
+STATUS = "verified"
+# One headline declaration, not all three: the card is a Lean file, so a `Main declarations:` line
+# listing three `JacobianChallenge.…` names would be 157 columns and the pool's build — which runs
+# mathlib's `style.longLine` linter and fails on any warning — would reject it. The other two stay
+# in `main_results`, which is prose and wraps.
+MAIN_DECLARATIONS = ["JacobianChallenge.genus_eq_zero_iff_homeo"]
+TAGS = ["riemann-surfaces", "complex-geometry", "abel-jacobi", "riemann-roch", "serre-duality"]
+MSC = ["14H40", "30F30", "32G20"]
+
+LEAN_CARD = "\n".join([
+    "/-!",
+    f"# {TITLE}",
+    "",
+    f"Source: url:{SOURCE_URL}",
+    f"Authors: {', '.join(AUTHORS)}",
+    f"Status: {STATUS}",
+    "Main declarations: " + ", ".join(f"`{name}`" for name in MAIN_DECLARATIONS),
+    f"Tags: {', '.join(TAGS)}",
+    f"MSC: {', '.join(MSC)}",
+    "-/",
+])
+
+open(os.path.join(dst_root, "LeanPool", f"{PROJECT}.lean"), "w", encoding="utf-8").write(
+    f"{header}\n\n{imports}\n\n{LEAN_CARD}\n"
+)
 
 CARD = """  - slug: jacobian-diffgeo
     title: The Jacobian of a Compact Riemann Surface
@@ -86,8 +121,6 @@ CARD = """  - slug: jacobian-diffgeo
     provenance: AI
     main_declarations:
       - JacobianChallenge.genus_eq_zero_iff_homeo
-      - JacobianChallenge.Jacobian.ofCurve_inj
-      - JacobianChallenge.Jacobian.pushforward_pullback
     main_results:
       - declaration: JacobianChallenge.genus_eq_zero_iff_homeo
         informal: >-
@@ -113,6 +146,12 @@ CARD = """  - slug: jacobian-diffgeo
       - "30F30"
       - "32G20"
 """
+# The Lean card and the YAML card are two renderings of one project; a drift between them is
+# exactly what the pool's card check rejects, so assert they agree before writing either.
+for _value in [TITLE, SOURCE_URL, STATUS, *AUTHORS, *MAIN_DECLARATIONS, *TAGS, *MSC]:
+    assert _value in CARD, f"card field not in projects.yml fragment: {_value}"
+assert CARD.count("      - JacobianChallenge.") == len(MAIN_DECLARATIONS)
+
 open(os.path.join(dst_root, "projects.yml.fragment"), "w", encoding="utf-8").write(CARD)
 
 if CHECK:

@@ -50,7 +50,7 @@ private theorem isOpen_genericVanishing (η : Form1 X) : IsOpen (genericVanishin
   have hcomb : ∀ᶠ w in 𝓝 x,
       coeffIn (chartAt ℂ x) η (chartAt ℂ x w) = 0 ∧ w ∈ (chartAt ℂ x).source := hx'.and hsrc
   filter_upwards [hcomb.eventually_nhds] with y hy
-  show ∀ᶠ z in 𝓝 (chartAt ℂ y y), coeffIn (chartAt ℂ y) η z = 0
+  change ∀ᶠ z in 𝓝 (chartAt ℂ y y), coeffIn (chartAt ℂ y) η z = 0
   rw [← (chartAt ℂ y).map_nhds_eq (mem_chart_source ℂ y), Filter.eventually_map]
   have hysrc : ∀ᶠ w in 𝓝 y, w ∈ (chartAt ℂ y).source :=
     (chartAt ℂ y).open_source.mem_nhds (mem_chart_source ℂ y)
@@ -99,7 +99,7 @@ private theorem isClosed_genericVanishing (η : Form1 X) : IsClosed (genericVani
   have hpre : IsPreconnected (ball (e x) r) := (convex_ball (e x) r).isPreconnected
   have heqon : Set.EqOn (coeffIn e η) 0 (ball (e x) r) :=
     hanalytic.eqOn_zero_of_preconnected_of_eventuallyEq_zero hpre hx'ball hzero
-  show x ∈ genericVanishing η
+  change x ∈ genericVanishing η
   rw [mem_genericVanishing]
   filter_upwards [Metric.ball_mem_nhds (e x) hr] with z hz using heqon hz
 

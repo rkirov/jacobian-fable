@@ -84,12 +84,12 @@ theorem mlClass_add (g g' : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D) (hg' : (d0
       (C1.retype (d0 D' 𝒰 g) hg : C1 D 𝒰) + C1.retype (d0 D' 𝒰 g') hg' := by
     funext p
     apply Subtype.ext
-    show (C1.retype (d0 D' 𝒰 (g + g')) hgg' p :
+    change (C1.retype (d0 D' 𝒰 (g + g')) hgg' p :
         RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) =
       (C1.retype (d0 D' 𝒰 g) hg p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) +
         (C1.retype (d0 D' 𝒰 g') hg' p :
           RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
-    show RS.MeroGermOn.restrict inf_le_right
+    change RS.MeroGermOn.restrict inf_le_right
           ((g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) + (g' p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set
               X))) -
         RS.MeroGermOn.restrict inf_le_left
@@ -112,10 +112,10 @@ theorem mlClass_smul (a : ℂ) (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
   have hval : C1.retype (d0 D' 𝒰 (a • g)) hag = a • (C1.retype (d0 D' 𝒰 g) hg : C1 D 𝒰) := by
     funext p
     apply Subtype.ext
-    show (C1.retype (d0 D' 𝒰 (a • g)) hag p :
+    change (C1.retype (d0 D' 𝒰 (a • g)) hag p :
         RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) =
       a • (C1.retype (d0 D' 𝒰 g) hg p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
-    show RS.MeroGermOn.restrict inf_le_right (a • (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X))) -
+    change RS.MeroGermOn.restrict inf_le_right (a • (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X))) -
         RS.MeroGermOn.restrict inf_le_left (a • (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X))) =
       a • (RS.MeroGermOn.restrict inf_le_right (g p.2 : RS.MeroGermOn X (𝒰.U p.2 : Set X)) -
         RS.MeroGermOn.restrict inf_le_left (g p.1 : RS.MeroGermOn X (𝒰.U p.1 : Set X)))
@@ -134,7 +134,7 @@ theorem H1Incl_mlClass (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemL
     rw [LinearMap.coe_restrict_apply]
     funext p
     apply Subtype.ext
-    show (Submodule.inclusion (RS.Cech.linSysOn_mono h)
+    change (Submodule.inclusion (RS.Cech.linSysOn_mono h)
         (C1.retype (d0 D' 𝒰 g) hg p) : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X)) =
       (d0 D' 𝒰 g p : RS.MeroGermOn X ((𝒰.U p.1 ⊓ 𝒰.U p.2 : Opens X) : Set X))
     rfl
@@ -160,7 +160,7 @@ theorem mlClass_eq_zero_of_exists (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
     funext p
     apply Subtype.ext
     obtain ⟨i, j⟩ := p
-    show RS.MeroGermOn.restrict inf_le_right (g j : RS.MeroGermOn X _) -
+    change RS.MeroGermOn.restrict inf_le_right (g j : RS.MeroGermOn X _) -
         RS.MeroGermOn.restrict inf_le_left (g i : RS.MeroGermOn X _) =
       RS.MeroGermOn.restrict inf_le_right
           ((g j : RS.MeroGermOn X _) -
@@ -225,7 +225,7 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
         (Submodule.inclusion (RS.Cech.linSysOn_mono h) (LinSysOn.restrictL D inf_le_right (hc j)) -
           Submodule.inclusion (RS.Cech.linSysOn_mono h)
               (LinSysOn.restrictL D inf_le_left (hc i))) := by
-      show LinSysOn.restrictL D' inf_le_right
+      change LinSysOn.restrictL D' inf_le_right
             (g j - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc j)) -
           LinSysOn.restrictL D' inf_le_left
             (g i - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i)) = _
@@ -251,10 +251,10 @@ theorem mlClass_eq_zero_iff (h : D ≤ D') (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g)
       (g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
         (Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.MeroGermOn X (𝒰.U i : Set X)) :=
             by
-    show ((g i - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.LinSysOn D' _) :
+    change ((g i - Submodule.inclusion (RS.Cech.linSysOn_mono h) (hc i) : RS.LinSysOn D' _) :
       RS.MeroGermOn X (𝒰.U i : Set X)) = _
     rw [Submodule.coe_sub]
-  show (-(D x : ℤ) : WithTop ℤ) ≤
+  change (-(D x : ℤ) : WithTop ℤ) ≤
       ((g i : RS.MeroGermOn X (𝒰.U i : Set X)) -
         RS.MeroGermOn.restrict (𝒰.le_base i) (ψ : RS.MeroGermOn X (Set.univ : Set X))).ord x
   rw [← restrictL_apply_coe, hψi i, hrel, sub_sub_cancel, Submodule.coe_inclusion]

@@ -124,8 +124,8 @@ theorem coeffInFun_pullbackSection {f : X → Y} (hf : ContMDiff 𝓘(ℂ) 𝓘(
   have hstep1 : coeffInFun e (pullbackSection f η) z =
       tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x' (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ))) *
         coeffAt (f x') η := by
-    show (pullbackSection f η x') (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ)) = _
-    show (η (f x')) (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x' (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ))) = _
+    change (pullbackSection f η x') (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ)) = _
+    change (η (f x')) (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x' (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ))) = _
     exact Form1.apply_eq_smul_coeffAt η (f x') _
   have hstep2 : tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) f x' (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e.symm) z (1 : ℂ))) =
       deriv (⇑(chartAt ℂ (f x')) ∘ f ∘ ⇑e.symm) z :=

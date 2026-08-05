@@ -49,7 +49,7 @@ duplicate the ~90-line proof or require importing residue-theorem back into cano
 (`import Jacobian.CanonicalForms.Existence`, above) — the call site below is unchanged.
 -/
 
-open scoped ContDiff Manifold OnePoint Classical
+open scoped ContDiff Manifold OnePoint
 open Set Filter Topology OnePoint Function
 
 noncomputable section
@@ -61,6 +61,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [Connecte
 
 /-! ### Reading `(h • d φ).resAt` in the chart -/
 
+open scoped Classical in
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- The residue of `h • d φ` at `x`, unfolded to the planar residue of the honest integrand
 `h'·(f'∘chart⁻¹)'` (the `if`-guard of `MFormData.d`'s coefficient is discharged on the germ). -/
@@ -69,13 +70,13 @@ private theorem resAt_smul_d (h φ : ℳ X) (x : X) :
       deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) z) (chartAt ℂ x x) := by
   have hd : MForm.d φ = MForm.mk (MFormData.d φ) := rfl
   rw [hd, MForm.mero_smul_mk, MForm.resAt_mk]
-  show RS.resAt ((MFormData.smul h (MFormData.d φ)).coeffAt x) (chartAt ℂ x x) = _
+  change RS.resAt ((MFormData.smul h (MFormData.d φ)).coeffAt x) (chartAt ℂ x x) = _
   apply RS.resAt_congr
   have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), z ∈ (chartAt ℂ x).target :=
     eventually_nhdsWithin_of_eventually_nhds
       ((chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x))
   filter_upwards [htarget] with z hz
-  show h.holoRepr ((chartAt ℂ x).symm z) *
+  change h.holoRepr ((chartAt ℂ x).symm z) *
       (if z ∈ (chartAt ℂ x).target then deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) z else 0) = _
   rw [if_pos hz]
 
@@ -130,7 +131,7 @@ theorem resAtX_toP1_eq_of_ord_nonneg (φ h : ℳ X) {x : X}
           = ((φ.holoRepr ((chartAt ℂ x).symm w) : ℂ) : OnePoint ℂ) :=
       h1.eventually (h2 ▸ hFev)
     filter_upwards [hpull] with w hw
-    show chartAt ℂ (MTrace.toP1 φ.holoRepr x)
+    change chartAt ℂ (MTrace.toP1 φ.holoRepr x)
       (MTrace.toP1 φ.holoRepr ((chartAt ℂ x).symm w)) = φ.holoRepr ((chartAt ℂ x).symm w)
     rw [hw, hFx, P1.chartAt_coe, P1.coeChart_apply_coe]
   have hDer := hEq.deriv
@@ -190,7 +191,7 @@ theorem resAtX_toP1_eq_of_ord_neg (φ h : ℳ X) {x : X}
       ⇑(chartAt ℂ x).symm) =ᶠ[𝓝 w]
       fun v => ((φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) v)⁻¹ := by
     filter_upwards [hUopen'.mem_nhds hwU] with v hv
-    show chartAt ℂ (MTrace.toP1 φ.holoRepr x)
+    change chartAt ℂ (MTrace.toP1 φ.holoRepr x)
       (MTrace.toP1 φ.holoRepr ((chartAt ℂ x).symm v)) = _
     rw [hFx, P1.chartAt_infty]
     exact hUsub hv
@@ -201,7 +202,7 @@ theorem resAtX_toP1_eq_of_ord_neg (φ h : ℳ X) {x : X}
       = -deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) w /
           ((φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) w) ^ 2 :=
     deriv_fun_inv'' hwan.differentiableAt hwne
-  show (fun p => -(φ.holoRepr p ^ 2) * h.holoRepr p) ((chartAt ℂ x).symm w) *
+  change (fun p => -(φ.holoRepr p ^ 2) * h.holoRepr p) ((chartAt ℂ x).symm w) *
       deriv (⇑(chartAt ℂ (MTrace.toP1 φ.holoRepr x)) ∘ MTrace.toP1 φ.holoRepr ∘
         ⇑(chartAt ℂ x).symm) w
     = h.holoRepr ((chartAt ℂ x).symm w) * deriv (φ.holoRepr ∘ ⇑(chartAt ℂ x).symm) w
@@ -240,6 +241,7 @@ private theorem meromorphicOn_invChart_reading {R_T G : ℂ → ℂ}
       (meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ').2 (hRT w₀⁻¹ (Set.mem_univ _))
     exact h1.mul h2
 
+open scoped Classical in
 /-- **THE residue theorem** (Forster 10.21 / Miranda VI eq. 3.2, blueprint headline
 `∑_p Res_p(θ) = 0`): on a compact connected Riemann surface admitting a nonconstant meromorphic
 function (the exact shape of canonical-forms D9's `exists_nonconstant_mero`), the residues of
@@ -310,7 +312,7 @@ theorem residue_sum_eq_zero_of_exists_nonconstant
         rw [hFp] at h2
         exact OnePoint.coe_ne_infty v h2
       have hcoe : F p = ((φ.holoRepr p : ℂ) : OnePoint ℂ) := toP1_holoRepr_point φ hord
-      show Hinf p = hg (F p) * h.holoRepr p
+      change Hinf p = hg (F p) * h.holoRepr p
       rw [hHinf_def, hg_def]
       simp only
       rw [hcoe, P1.coeChart_apply_coe]
@@ -324,7 +326,7 @@ theorem residue_sum_eq_zero_of_exists_nonconstant
       MTrace.trace F Hinf ∘ ⇑P1.invChart.symm := by
     filter_upwards [self_mem_nhdsWithin] with w hw
     have hw0 : w ≠ 0 := hw
-    show -(w ^ 2)⁻¹ * R_T w⁻¹ = MTrace.trace F Hinf (P1.invChart.symm w)
+    change -(w ^ 2)⁻¹ * R_T w⁻¹ = MTrace.trace F Hinf (P1.invChart.symm w)
     rw [P1.invChart_symm_apply, P1.inversion_coe hw0, htr w⁻¹, inv_pow]
   have hInfMeroT : MeromorphicAt (MTrace.trace F Hinf ∘ ⇑P1.invChart.symm) 0 := by
     have h1 : MeromorphicAtX (MTrace.trace F Hinf) (∞ : OnePoint ℂ) :=
@@ -352,7 +354,7 @@ theorem residue_sum_eq_zero_of_exists_nonconstant
         rw [← S.range_pt, finsum_mem_range S.pt_injective, finsum_eq_sum_of_fintype]
       have hL : (MForm.mk θT).resAt (∞ : OnePoint ℂ)
           = RS.resAt (fun w => -(w ^ 2)⁻¹ * R_T w⁻¹) 0 := by
-        show RS.resAt (θT.coeffAt (∞ : OnePoint ℂ))
+        change RS.resAt (θT.coeffAt (∞ : OnePoint ℂ))
           (chartAt ℂ (∞ : OnePoint ℂ) (∞ : OnePoint ℂ)) = _
         rw [P1.chartAt_infty, P1.invChart_apply_infty]
         rfl
@@ -375,7 +377,7 @@ theorem residue_sum_eq_zero_of_exists_nonconstant
           = ∑ i, (h • MForm.d φ).resAt (S.pt i) := by
         rw [← S.range_pt, finsum_mem_range S.pt_injective, finsum_eq_sum_of_fintype]
       have hL : (MForm.mk θT).resAt ((a : ℂ) : OnePoint ℂ) = RS.resAt R_T a := by
-        show RS.resAt (θT.coeffAt (((a : ℂ) : OnePoint ℂ)))
+        change RS.resAt (θT.coeffAt (((a : ℂ) : OnePoint ℂ)))
           (chartAt ℂ (((a : ℂ) : OnePoint ℂ)) (((a : ℂ) : OnePoint ℂ))) = _
         rw [P1.chartAt_coe, P1.coeChart_apply_coe]
         rfl

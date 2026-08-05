@@ -197,7 +197,7 @@ theorem wirtingerDbar_comp_differentiableAt {τ : ℂ → ℂ} (hF : Differentia
   have h2 := fderiv_comp_apply_eq f z hF hτ Complex.I
   simp only [mul_one] at h1
   simp only [map_mul, Complex.conj_I] at h2
-  show (fderiv ℝ (f ∘ τ) z 1 + Complex.I * fderiv ℝ (f ∘ τ) z Complex.I) / 2 = _
+  change (fderiv ℝ (f ∘ τ) z 1 + Complex.I * fderiv ℝ (f ∘ τ) z Complex.I) / 2 = _
   rw [h1, h2]
   have hI2 : Complex.I * Complex.I = -1 := Complex.I_mul_I
   linear_combination
@@ -212,7 +212,7 @@ theorem wirtingerD_comp_differentiableAt {τ : ℂ → ℂ} (hF : Differentiable
   have h2 := fderiv_comp_apply_eq f z hF hτ Complex.I
   simp only [mul_one] at h1
   simp only [map_mul, Complex.conj_I] at h2
-  show (fderiv ℝ (f ∘ τ) z 1 - Complex.I * fderiv ℝ (f ∘ τ) z Complex.I) / 2 = _
+  change (fderiv ℝ (f ∘ τ) z 1 - Complex.I * fderiv ℝ (f ∘ τ) z Complex.I) / 2 = _
   rw [h1, h2]
   have hI2 : Complex.I * Complex.I = -1 := Complex.I_mul_I
   linear_combination

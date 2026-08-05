@@ -61,7 +61,7 @@ private theorem bijOn_e {y : Y} (hy : y ∈ S.V) (i : Fin S.n) :
   · -- MapsTo
     rintro x ⟨hx1, hx2⟩
     have hxy : F x = y := hx1
-    show A.e x ^ k = A.e' y
+    change A.e x ^ k = A.e' y
     rw [← A.eqOn_pow x hx2, hxy]
   · -- InjOn
     exact A.e.injOn.mono Set.inter_subset_right

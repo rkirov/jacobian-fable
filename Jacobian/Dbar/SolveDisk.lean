@@ -185,7 +185,7 @@ private theorem differentiable_partialSum (p : FormalMultilinearSeries ℂ ℂ �
     have hstep : (fun x => p.partialSum (k + 1) x) =
         fun x => p.partialSum k x + x ^ k * p.coeff k := by
       funext x
-      show ∑ j ∈ Finset.range (k + 1), p j (fun _ : Fin j => x) = _
+      change ∑ j ∈ Finset.range (k + 1), p j (fun _ : Fin j => x) = _
       rw [Finset.sum_range_succ]
       congr 1
       rw [p.apply_eq_pow_smul_coeff, smul_eq_mul]
@@ -404,7 +404,7 @@ theorem exists_dbar_solution_ball (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball 
       exact tendsto_nhds_unique h1 h2
     have hu_eqOn : Set.EqOn u (fun w => Fseq N w + TN w) BN := by
       intro w hw
-      show u w = Fseq N w + TN w
+      change u w = Fseq N w + TN w
       rw [hTN_eq w hw]
       ring
     have hTN_cdOn : ContDiffOn ℝ ∞ TN BN := by

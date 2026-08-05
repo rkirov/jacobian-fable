@@ -66,7 +66,7 @@ theorem contMDiff_and_mdifferential_eq_of_isPrimitiveAlongMap_id
     have hev := htendsto.eventually hFeq
     filter_upwards [hev, (chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x)] with z hz hzt
     simp only [id_eq] at hz
-    show F ((chartAt ℂ x).symm z) = g' z
+    change F ((chartAt ℂ x).symm z) = g' z
     rw [hz.2, (chartAt ℂ x).right_inv hzt]
   -- Step 1–2 of the design: `F` composed with the chart inverse is analytic (via the local
   -- primitive `g'`'s analyticity, transported through the eventual equality).
@@ -100,12 +100,12 @@ theorem exists_isPrimitiveAlongMap_id [SimplyConnectedSpace X] (x₀ : X) (η : 
   -- Path-independence (simple connectivity) transported through concatenation.
   have hstep : ∀ {p q : X} (γ : Path p q), F q = F p + RS.pathIntegral γ η := by
     intro p q γ
-    show RS.pathIntegral (PathConnectedSpace.somePath x₀ q) η
+    change RS.pathIntegral (PathConnectedSpace.somePath x₀ q) η
         = RS.pathIntegral (PathConnectedSpace.somePath x₀ p) η + RS.pathIntegral γ η
     rw [← RS.pathIntegral_trans]
     exact RS.pathIntegral_eq_of_simplyConnected _ _ η
   have hF0 : F x₀ = 0 := by
-    show RS.pathIntegral (PathConnectedSpace.somePath x₀ x₀) η = 0
+    change RS.pathIntegral (PathConnectedSpace.somePath x₀ x₀) η = 0
     rw [RS.pathIntegral_eq_of_simplyConnected (PathConnectedSpace.somePath x₀ x₀)
       (Path.refl x₀) η]
     exact RS.pathIntegral_refl x₀ η
@@ -161,7 +161,7 @@ theorem exists_isPrimitiveAlongMap_id [SimplyConnectedSpace X] (x₀ : X) (η : 
     have hpi : RS.pathIntegral δ η = g (e b) - F a := by
       rw [hδ_def, RS.pathIntegral_cast]
       exact hpi0
-    show F b = g (e b)
+    change F b = g (e b)
     rw [hstep δ, hpi]
     ring
 

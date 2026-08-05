@@ -178,12 +178,12 @@ theorem exists_homotopy_range_subset_of_convex {a b : ℂ} {s : Set ℂ} (hs : C
             prop' := fun t x hx => ?_ }, fun z => hmem z⟩
   rcases hx with hx | hx
   · rw [hx]
-    show (1 - ((t : ℝ))) • p 0 + (t : ℝ) • q 0 = p 0
+    change (1 - ((t : ℝ))) • p 0 + (t : ℝ) • q 0 = p 0
     rw [p.source, q.source]
     module
   · rw [Set.mem_singleton_iff] at hx
     rw [hx]
-    show (1 - ((t : ℝ))) • p 1 + (t : ℝ) • q 1 = p 1
+    change (1 - ((t : ℝ))) • p 1 + (t : ℝ) • q 1 = p 1
     rw [p.target, q.target]
     module
 

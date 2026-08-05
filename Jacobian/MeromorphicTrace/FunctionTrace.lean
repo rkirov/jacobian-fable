@@ -52,13 +52,13 @@ open Filter Set Function Topology
 
 namespace RS.MTrace
 
-open scoped Classical
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 variable {Y : Type*} [TopologicalSpace Y] [T2Space Y] [ChartedSpace ℂ Y] [IsManifold 𝓘(ℂ) ω Y]
 variable {F : X → Y} {h : X → ℂ} {y₀ : Y}
 
+open scoped Classical in
 /-- The fibre trace of `h` along `F`, evaluated via an arbitrary chosen `FiberStack` at `y₀`.
 Total: `0` if no stack can be witnessed at `y₀` (the only case this can happen for holomorphic
 `F` is at the single value of a *constant* map, `trace_of_forall_eq`). -/
@@ -68,12 +68,14 @@ noncomputable def trace (F : X → Y) (h : X → ℂ) (y₀ : Y) : ℂ :=
     ∑ i, traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i)) ((S.A i).e' y₀)
   else 0
 
+open scoped Classical in
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y]
     [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem trace_def (F : X → Y) (h : X → ℂ) (y₀ : Y) (hS : Nonempty (RS.FiberStack F y₀)) :
     trace F h y₀ = ∑ i, traceZk (h ∘ (hS.some.A i).e.symm) (RS.multiplicity F (hS.some.pt i))
       ((hS.some.A i).e' y₀) := dif_pos hS
 
+open scoped Classical in
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y]
     [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 theorem trace_of_not_nonempty (hns : ¬ Nonempty (RS.FiberStack F y₀)) : trace F h y₀ = 0 :=
@@ -149,7 +151,7 @@ private theorem bijOn_stack_e {y₀ : Y} (S : RS.FiberStack F y₀) {y : Y} (hy 
   refine ⟨?_, ?_, ?_⟩
   · rintro x ⟨hx1, hx2⟩
     have hxy : F x = y := hx1
-    show A.e x ^ k = A.e' y
+    change A.e x ^ k = A.e' y
     rw [← A.eqOn_pow x hx2, hxy]
   · exact A.e.injOn.mono Set.inter_subset_right
   · intro ζ hζ
@@ -285,7 +287,7 @@ theorem meromorphicAtX_trace (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F) (hne : ¬
   -- the finite sum is meromorphic at `y₀`, and agrees with `trace F h` near `y₀`
   have hsum : MeromorphicAtX (fun y => ∑ i, traceZk (h ∘ (S.A i).e.symm)
       (RS.multiplicity F (S.pt i)) ((S.A i).e' y)) y₀ := by
-    show MeromorphicAt _ _
+    change MeromorphicAt _ _
     exact MeromorphicAt.fun_sum fun i _ => hsummand i
   have hev : (fun y => ∑ i, traceZk (h ∘ (S.A i).e.symm) (RS.multiplicity F (S.pt i))
       ((S.A i).e' y)) =ᶠ[𝓝[≠] y₀] trace F h := by

@@ -75,7 +75,7 @@ noncomputable def invChart : OpenPartialHomeomorph (OnePoint ℂ) ℂ where
   left_inv' p hp := by
     have hp' : inversion p ≠ (∞ : OnePoint ℂ) := fun h => hp (inversion_eq_infty_iff.mp h)
     obtain ⟨z, hz⟩ := ne_infty_iff_exists.mp hp'
-    show inversion ((coeChart (inversion p) : ℂ) : OnePoint ℂ) = p
+    change inversion ((coeChart (inversion p) : ℂ) : OnePoint ℂ) = p
     rw [← hz]
     simp only [coeChart_apply_coe]
     rw [hz, inversion_involutive]
@@ -88,20 +88,20 @@ noncomputable def invChart : OpenPartialHomeomorph (OnePoint ℂ) ℂ where
   continuousOn_toFun := by
     have hmaps : MapsTo inversion {((0 : ℂ) : OnePoint ℂ)}ᶜ coeChart.source := by
       intro p hp
-      show inversion p ≠ (∞ : OnePoint ℂ)
+      change inversion p ≠ (∞ : OnePoint ℂ)
       exact fun h => hp (inversion_eq_infty_iff.mp h)
     exact coeChart.continuousOn.comp continuous_inversion.continuousOn hmaps
   continuousOn_invFun :=
     (continuous_inversion.comp continuous_coe).continuousOn
 
 @[simp] theorem invChart_apply_coe (z : ℂ) : invChart (z : OnePoint ℂ) = z⁻¹ := by
-  show coeChart (inversion (z : OnePoint ℂ)) = z⁻¹
+  change coeChart (inversion (z : OnePoint ℂ)) = z⁻¹
   by_cases hz : z = 0
   · subst hz; simp
   · rw [inversion_coe hz, coeChart_apply_coe]
 
 @[simp] theorem invChart_apply_infty : invChart (∞ : OnePoint ℂ) = 0 := by
-  show coeChart (inversion ∞) = 0
+  change coeChart (inversion ∞) = 0
   simp
 
 @[simp] theorem invChart_symm_apply (w : ℂ) : invChart.symm w = inversion (w : OnePoint ℂ) := rfl
@@ -172,14 +172,14 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- false, false : id
     have hfun : (⇑((chartFamily false).symm ≫ₕ chartFamily false) : ℂ → ℂ) = id := by
       funext z
-      show coeChart (coeChart.symm z) = z
+      change coeChart (coeChart.symm z) = z
       exact coeChart.right_inv (Set.mem_univ z)
     rw [hfun]
     exact fun z _ => analyticAt_id
   · -- false, true : Inv.inv
     have hfun : (⇑((chartFamily false).symm ≫ₕ chartFamily true) : ℂ → ℂ) = Inv.inv := by
       funext z
-      show invChart (coeChart.symm z) = z⁻¹
+      change invChart (coeChart.symm z) = z⁻¹
       rw [coeChart_symm_apply, invChart_apply_coe]
     have hsub : ((chartFamily false).symm ≫ₕ chartFamily true).source ⊆ {z : ℂ | z ≠ 0} := by
       intro z hz
@@ -193,7 +193,7 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- true, false : Inv.inv
     have hfun : (⇑((chartFamily true).symm ≫ₕ chartFamily false) : ℂ → ℂ) = Inv.inv := by
       funext z
-      show coeChart (invChart.symm z) = z⁻¹
+      change coeChart (invChart.symm z) = z⁻¹
       rw [invChart_symm_apply]
       by_cases hz : z = 0
       · subst hz; simp
@@ -211,7 +211,7 @@ private theorem htrans : ∀ i j : Bool, AnalyticOnNhd ℂ ((chartFamily i).symm
   · -- true, true : id
     have hfun : (⇑((chartFamily true).symm ≫ₕ chartFamily true) : ℂ → ℂ) = id := by
       funext z
-      show invChart (invChart.symm z) = z
+      change invChart (invChart.symm z) = z
       exact invChart.right_inv (Set.mem_univ z)
     rw [hfun]
     exact fun z _ => analyticAt_id

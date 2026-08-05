@@ -32,7 +32,7 @@ Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D11–D13, §4.5, pr
   `Realizes.resAt_eq`: a thin `X`-level wrapper around residue-calculus's `PrincipalPartData`.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold Filter Topology
 
 noncomputable section
@@ -47,14 +47,14 @@ namespace MFormData
 
 theorem ord_add (θ η : MFormData X) (x : X) : min (θ.ord x) (η.ord x) ≤ (θ + η).ord x := by
   have hf : (θ + η).coeffAt x = θ.coeffAt x + η.coeffAt x := funext fun z => coeffAt_add θ η x z
-  show min (θ.ord x) (η.ord x) ≤ meromorphicOrderAt ((θ + η).coeffAt x) (chartAt ℂ x x)
+  change min (θ.ord x) (η.ord x) ≤ meromorphicOrderAt ((θ + η).coeffAt x) (chartAt ℂ x x)
   rw [hf]
   exact meromorphicOrderAt_add (θ.meromorphicAt_coeffAt x) (η.meromorphicAt_coeffAt x)
 
 theorem ord_smul {c : ℂ} (hc : c ≠ 0) (θ : MFormData X) (x : X) : (c • θ).ord x = θ.ord x := by
   have hf : (c • θ).coeffAt x = c • θ.coeffAt x := funext fun z => by
     rw [coeffAt_smul]; rfl
-  show meromorphicOrderAt ((c • θ).coeffAt x) (chartAt ℂ x x) = θ.ord x
+  change meromorphicOrderAt ((c • θ).coeffAt x) (chartAt ℂ x x) = θ.ord x
   rw [hf]
   exact meromorphicOrderAt_smul_of_ne_zero analyticAt_const hc
 
@@ -154,6 +154,7 @@ noncomputable def form1ToOmega : Form1 X →ₗ[ℂ] MForm.OmegaSpace (0 : Divis
   map_add' η η' := Subtype.ext (congrArg MForm.mk (MFormData.ofForm1_add η η'))
   map_smul' c η := Subtype.ext (congrArg MForm.mk (MFormData.ofForm1_smul c η))
 
+open scoped Classical in
 /-- D12 surjectivity: any class of `0 ≤ ord` everywhere is `ofForm1` of a genuine `Form1` — the
 representative is REPAIRED chart-by-chart through the mero unit's canonical `holoRepr`. -/
 theorem form1ToOmega_surjective :
@@ -177,7 +178,7 @@ theorem form1ToOmega_surjective :
       have hev : ∀ᶠ z in 𝓝 (chartAt ℂ x p), z ∈ (chartAt ℂ x).target :=
         (chartAt ℂ x).open_target.mem_nhds hzt
       filter_upwards [hev.filter_mono nhdsWithin_le_nhds] with z hz
-      show θ.coeffAt x z = θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z))
+      change θ.coeffAt x z = θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z))
       rw [(chartAt ℂ x).right_inv hz]
     exact (θ.meromorphicOn_coeffAt x _ hzt).congr heq
   -- cross-point order bridge: `ordAtX (g x) p = θ.ord p` for `p` in the chart source
@@ -191,7 +192,7 @@ theorem form1ToOmega_surjective :
     rw [h1, meromorphicOrderAt_comp_of_deriv_ne_zero hσ hσ',
       θ.ord_eq_meromorphicOrderAt_of_mem_source hp]
     congr 1
-    show chartAt ℂ x ((chartAt ℂ p).symm (chartAt ℂ p p)) = chartAt ℂ x p
+    change chartAt ℂ x ((chartAt ℂ p).symm (chartAt ℂ p p)) = chartAt ℂ x p
     rw [(chartAt ℂ p).left_inv (mem_chart_source ℂ p)]
   -- the germ class per chart, and its repaired representative
   set φ : ∀ x : X, MeroGermOn X (chartAt ℂ x).source :=
@@ -245,7 +246,7 @@ theorem form1ToOmega_surjective :
     -- rewrite both sides to `evalAt p`
     have hliy : (chartAt ℂ y).symm (chartAt ℂ y p) = p := (chartAt ℂ y).left_inv hp.2
     have hlix : (chartAt ℂ x).symm (chartAt ℂ x p) = p := (chartAt ℂ x).left_inv hp.1
-    show (φ y).holoRepr ((chartAt ℂ y).symm (chartAt ℂ y p)) =
+    change (φ y).holoRepr ((chartAt ℂ y).symm (chartAt ℂ y p)) =
       deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y p) *
         (φ x).holoRepr ((chartAt ℂ x).symm (chartAt ℂ x p))
     rw [hliy, hlix]
@@ -259,7 +260,7 @@ theorem form1ToOmega_surjective :
       analyticOnNhd := hanalytic
       compat := hcompat } with hD_def
   refine ⟨Form1.ofCoeffs Dcoeff, Subtype.ext ?_⟩
-  show MForm.ofForm1 (Form1.ofCoeffs Dcoeff) = Θ
+  change MForm.ofForm1 (Form1.ofCoeffs Dcoeff) = Θ
   rw [← hθ]
   refine MForm.sound fun x => ?_
   have htarget : ∀ᶠ z in 𝓝[≠] (chartAt ℂ x x), z ∈ (chartAt ℂ x).target :=
@@ -271,12 +272,12 @@ theorem form1ToOmega_surjective :
       (MeroGermOn.holoRepr_eventuallyEq_nhdsNE (chartAt ℂ x).open_source
         (mem_chart_source ℂ x) (φ x) rfl)
   filter_upwards [htarget, hhol] with z hz hzh
-  show (if z ∈ (chartAt ℂ x).target then coeffIn (chartAt ℂ x) (Form1.ofCoeffs Dcoeff) z else 0)
+  change (if z ∈ (chartAt ℂ x).target then coeffIn (chartAt ℂ x) (Form1.ofCoeffs Dcoeff) z else 0)
       = θ.coeffAt x z
   rw [if_pos hz, Form1.coeffIn_ofCoeffs Dcoeff x hz]
-  show ((φ x).holoRepr ∘ ⇑(chartAt ℂ x).symm) z = θ.coeffAt x z
+  change ((φ x).holoRepr ∘ ⇑(chartAt ℂ x).symm) z = θ.coeffAt x z
   rw [hzh]
-  show θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) = θ.coeffAt x z
+  change θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) = θ.coeffAt x z
   rw [(chartAt ℂ x).right_inv hz]
 
 /-- **D12**: holomorphic 1-forms ARE the meromorphic 1-forms of nonnegative divisor. (No

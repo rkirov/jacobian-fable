@@ -152,7 +152,7 @@ theorem schwartz_finite_cospan (u v : E →L[ℂ] F) (hu : Surjective u) (hv : I
     | zero => simp [hfk_def]
     | succ m IH =>
       rw [Finset.sum_range_succ, IH, hfk_succ]
-      show (f₀ - fk m) + ((u (e (fk m)) - v (e (fk m))) + s (fk m)) =
+      change (f₀ - fk m) + ((u (e (fk m)) - v (e (fk m))) + s (fk m)) =
         f₀ - (fk m - ((u (e (fk m)) - v (e (fk m))) + s (fk m)))
       abel
   have hL1 : Filter.Tendsto

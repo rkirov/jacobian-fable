@@ -57,11 +57,11 @@ noncomputable def linSysMulEquiv [ConnectedSpace X] {φ : ℳ X} (hφ : φ ≠ 0
       map_smul' := fun c χ => Subtype.ext (mul_smul_comm c φ⁻¹ χ.1) } ?_ ?_
   · apply LinearMap.ext; intro χ
     apply Subtype.ext
-    show φ * (φ⁻¹ * χ.1) = χ.1
+    change φ * (φ⁻¹ * χ.1) = χ.1
     rw [← mul_assoc, hφφinv, one_mul]
   · apply LinearMap.ext; intro ψ
     apply Subtype.ext
-    show φ⁻¹ * (φ * ψ.1) = ψ.1
+    change φ⁻¹ * (φ * ψ.1) = ψ.1
     rw [← mul_assoc, hφinvφ, one_mul]
 
 end RS

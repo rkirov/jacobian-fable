@@ -79,19 +79,19 @@ theorem exists_zeroPeriod_path {Q P : X} (δ : Path Q P)
   have hbasis : ∀ k, RS.pathIntegral (β.symm.trans δ) (RS.basis X k) = 0 := by
     intro k
     rw [RS.pathIntegral_trans, RS.pathIntegral_symm]
-    show -(RS.period β (RS.basis X k)) + RS.pathIntegral δ (RS.basis X k) = 0
+    change -(RS.period β (RS.basis X k)) + RS.pathIntegral δ (RS.basis X k) = 0
     rw [hβ_period k]
-    show -(RS.periodVector (RS.basis X) α k) + RS.pathIntegral δ (RS.basis X k) = 0
+    change -(RS.periodVector (RS.basis X) α k) + RS.pathIntegral δ (RS.basis X k) = 0
     rw [hα]
-    show -(RS.pathIntegral δ (RS.basis X k)) + RS.pathIntegral δ (RS.basis X k) = 0
+    change -(RS.pathIntegral δ (RS.basis X k)) + RS.pathIntegral δ (RS.basis X k) = 0
     ring
   intro η
   have hlin : RS.pathIntegralₗ (β.symm.trans δ) = 0 := by
     apply (RS.basis X).ext
     intro k
-    show RS.pathIntegral (β.symm.trans δ) (RS.basis X k) = 0
+    change RS.pathIntegral (β.symm.trans δ) (RS.basis X k) = 0
     exact hbasis k
-  show RS.pathIntegralₗ (β.symm.trans δ) η = 0
+  change RS.pathIntegralₗ (β.symm.trans δ) η = 0
   rw [hlin]
   rfl
 

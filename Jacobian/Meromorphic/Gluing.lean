@@ -37,13 +37,13 @@ theorem exists_glue {ι : Type*} {W : ι → Set X} (hW : ∀ i, IsOpen (W i))
     have hIJ : IsOpen (W i ∩ W j) := (hW i).inter (hW j)
     have e1 := evalAt_restrict (Set.inter_subset_left (s := W i) (t := W j)) hIJ (hW i) hx (φ i)
     have e2 := evalAt_restrict (Set.inter_subset_right (s := W i) (t := W j)) hIJ (hW j) hx (φ j)
-    show (φ i).evalAt x = (φ j).evalAt x
+    change (φ i).evalAt x = (φ j).evalAt x
     rw [← e1, ← e2, hcompat i j]
   set F : X → ℂ := fun x => if h : ∃ k, x ∈ W k then (φ h.choose).holoRepr x else 0 with hF_def
   have hFeq : ∀ i x, x ∈ W i → F x = (φ i).holoRepr x := by
     intro i x hx
     have hex : ∃ k, x ∈ W k := ⟨i, hx⟩
-    show (if h : ∃ k, x ∈ W k then (φ h.choose).holoRepr x else 0) = (φ i).holoRepr x
+    change (if h : ∃ k, x ∈ W k then (φ h.choose).holoRepr x else 0) = (φ i).holoRepr x
     rw [dif_pos hex]
     exact hagree hex.choose i x ⟨hex.choose_spec, hx⟩
   have hmerF : MeromorphicOnX F (⋃ i, W i) := by

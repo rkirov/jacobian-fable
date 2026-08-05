@@ -33,7 +33,7 @@ three named maps; the Banach files (`Chain.lean`, `CompactRestrict.lean`) never 
 `MeroGermOn` internals directly, and the germ files never touch `→ᵇ` internals.
 -/
 
-open scoped ContDiff Manifold BoundedContinuousFunction Classical
+open scoped ContDiff Manifold BoundedContinuousFunction
 open Set Filter Topology TopologicalSpace Metric
 
 namespace RS.Finiteness
@@ -95,6 +95,7 @@ theorem mem_bddHoloOn_iff {S : Opens X} {f : ↥(S : Set X) →ᵇ ℂ} :
 + `TendstoLocallyUniformlyOn.differentiableOn`): `BddHoloOn S` is closed. -/
 theorem isClosed_bddHoloOn (S : Opens X) :
     IsClosed ((BddHoloOn S : Submodule ℂ (↥(S : Set X) →ᵇ ℂ)) : Set (↥(S : Set X) →ᵇ ℂ)) := by
+  classical
   apply isClosed_of_closure_subset
   intro f hf
   obtain ⟨Fb, hFbmem, hFbtend⟩ := mem_closure_iff_seq_limit.1 hf
@@ -119,7 +120,7 @@ theorem isClosed_bddHoloOn (S : Opens X) :
     rintro w ⟨y, hyV, rfl⟩
     have hys : y ∈ (S : Set X) := hyV.1
     have hey : e.symm (e y) = y := e.left_inv hyV.2
-    show dist (gLim (e.symm (e y))) ((g n) (e.symm (e y))) < ε
+    change dist (gLim (e.symm (e y))) ((g n) (e.symm (e y))) < ε
     rw [hey]
     have h1 : gLim y = f ⟨y, hys⟩ := by rw [hgLim_def]; exact dif_pos hys
     have h2 : g n y = Fb n ⟨y, hys⟩ := (hgeq n ⟨y, hys⟩).symm
@@ -162,7 +163,7 @@ theorem restrictFun_add {S' S : Opens X} (h : S' ≤ S) (f₁ f₂ : BddHoloOn S
     restrictFun h (f₁ + f₂) = restrictFun h f₁ + restrictFun h f₂ := by
   apply BoundedContinuousFunction.ext
   intro z
-  show (f₁ + f₂ : BddHoloOn S).val (Set.inclusion h z)
+  change (f₁ + f₂ : BddHoloOn S).val (Set.inclusion h z)
     = (f₁ : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z) + (f₂ : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z)
   rfl
 
@@ -170,7 +171,7 @@ theorem restrictFun_smul {S' S : Opens X} (h : S' ≤ S) (c : ℂ) (f : BddHoloO
     restrictFun h (c • f) = c • restrictFun h f := by
   apply BoundedContinuousFunction.ext
   intro z
-  show (c • f : BddHoloOn S).val (Set.inclusion h z) = c • (f : ↥(S : Set X) →ᵇ ℂ)
+  change (c • f : BddHoloOn S).val (Set.inclusion h z) = c • (f : ↥(S : Set X) →ᵇ ℂ)
       (Set.inclusion h z)
   rfl
 
@@ -182,7 +183,7 @@ noncomputable def restrictCLM {S' S : Opens X} (h : S' ≤ S) : BddHoloOn S →L
       map_smul' := fun c f => Subtype.ext (restrictFun_smul h c f) }
     1 (fun f => by
       rw [one_mul]
-      show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
+      change ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
       exact BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ (norm_nonneg _) _)
 
 theorem restrictCLM_apply_coe {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S)
@@ -200,7 +201,7 @@ theorem restrictCLM_restrictCLM {S'' S' S : Opens X} (h1 : S' ≤ S) (h2 : S'' �
 
 theorem norm_restrictCLM_apply_le {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     ‖restrictCLM h f‖ ≤ ‖f‖ := by
-  show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
+  change ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
   exact BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ (norm_nonneg _) _
 
 /-! ### `toGerm`: germification (D5) -/
@@ -226,7 +227,7 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
     -- `mk_add` right-to-left as a term: neither `rw` nor `simp` matches the sum here
     refine Eq.trans (mk_eq_mk_of_eqOn S.2 _ _ ?_) MeroGermOn.mk_add.symm
     intro x hx
-    show (f₁ + f₂ : BddHoloOn S).2.choose x = f₁.2.choose x + f₂.2.choose x
+    change (f₁ + f₂ : BddHoloOn S).2.choose x = f₁.2.choose x + f₂.2.choose x
     have e12 := (f₁ + f₂ : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
     have e1 := f₁.2.choose_spec.2 ⟨x, hx⟩
     have e2 := f₂.2.choose_spec.2 ⟨x, hx⟩
@@ -236,11 +237,11 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
   map_smul' c f := by
     refine Eq.trans (mk_eq_mk_of_eqOn S.2 _ _ ?_) (MeroGermOn.mk_smul c).symm
     intro x hx
-    show (c • f : BddHoloOn S).2.choose x = (c • f.2.choose) x
+    change (c • f : BddHoloOn S).2.choose x = (c • f.2.choose) x
     have ecf := (c • f : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
     have ef := f.2.choose_spec.2 ⟨x, hx⟩
     have hval : (c • f : BddHoloOn S).val ⟨x, hx⟩ = c • (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
-    show (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
+    change (c • f : BddHoloOn S).2.choose x = c • f.2.choose x
     rw [← ecf, hval, ef]
 
 omit [T1Space X] in
@@ -358,7 +359,7 @@ theorem restrictGerm_toGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S :
   apply Subtype.ext
   apply BoundedContinuousFunction.ext
   intro z
-  show (toGerm S f).evalAt z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
+  change (toGerm S f).evalAt z.1 = (f : ↥(S : Set X) →ᵇ ℂ) ⟨z.1, le_of_closure hc z.2⟩
   rw [evalAt_toGerm f (le_of_closure hc z.2)]
 
 end RS.Finiteness

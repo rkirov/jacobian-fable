@@ -26,7 +26,7 @@ reserved token in the ambient `ContDiff` scope's regularity level and cannot be 
 ordinary identifier.)
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold
 
 noncomputable section
@@ -162,6 +162,7 @@ def idx (x : X) : ι := (Data.exists_mem x).choose
 theorem mem_source_idx (x : X) : x ∈ (Data.chart (Data.idx x)).source :=
   (Data.exists_mem x).choose_spec
 
+open scoped Classical in
 /-- The coefficient of the assembled `(0,1)`-form in the preferred chart at `x`, junk-`0` off the
 chart target. -/
 noncomputable def rawCoeffAt (x : X) (z : ℂ) : ℂ :=

@@ -20,7 +20,7 @@ Unit: serre-duality-tails (`docs/design/serre-duality-tails.md` §3 D1/D3, §5.1
   plus the `μ_{1/f}` inversion identity `nuL_mulInto_inv` the surjectivity endgame needs.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 open RS RS.LaurentTail
 
@@ -89,7 +89,7 @@ theorem truncT_alpha [CompactSpace X] [ConnectedSpace X] {D₁ D₂ : RS.Divisor
   apply DFinsupp.ext
   intro p
   rw [truncT_apply]
-  show truncAt p h (alpha D₁ f p) = alpha D₂ f p
+  change truncAt p h (alpha D₁ f p) = alpha D₂ f p
   rw [alpha_apply, truncAt_mk, alpha_apply]
 
 /-! ### `singleT` (the test-vector tails) -/
@@ -229,7 +229,7 @@ theorem mulInto_alpha [CompactSpace X] [ConnectedSpace X] (f : RS.Mero X)
   apply DFinsupp.ext
   intro p
   rw [mulInto_apply]
-  show mulIntoAt f p (hf p) (alpha D g p) = alpha E (f * g) p
+  change mulIntoAt f p (hf p) (alpha D g p) = alpha E (f * g) p
   rw [alpha_apply, mulIntoAt_mk, ← map_mul, alpha_apply]
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in

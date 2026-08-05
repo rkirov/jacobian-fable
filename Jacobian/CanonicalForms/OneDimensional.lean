@@ -33,7 +33,7 @@ Hypothesis note: D8 needs only `[T1Space X] [ConnectedSpace X]` (the design list
 `[T2Space X]`, which is not required — the dichotomy and `Mero.ord_ne_top` are `T1`-level).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold Filter Topology
 
 noncomputable section
@@ -92,7 +92,7 @@ theorem exists_smul_eq {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (Θ : MForm X) :
       have hev : ∀ᶠ z in 𝓝 (chartAt ℂ x p), z ∈ (chartAt ℂ x).target :=
         (chartAt ℂ x).open_target.mem_nhds hzt
       filter_upwards [hev.filter_mono nhdsWithin_le_nhds] with z hz
-      show θ.coeffAt x z / θ₀.coeffAt x z =
+      change θ.coeffAt x z / θ₀.coeffAt x z =
         θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) /
           θ₀.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z))
       rw [(chartAt ℂ x).right_inv hz]
@@ -122,7 +122,7 @@ theorem exists_smul_eq {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (Θ : MForm X) :
     have hcθ := θ.compat x y (chartAt ℂ y w) ⟨w, hw2, rfl⟩
     have hcθ₀ := θ₀.compat x y (chartAt ℂ y w) ⟨w, hw2, rfl⟩
     rw [hli] at hcθ hcθ₀
-    show θ.coeffAt x (chartAt ℂ x w) / θ₀.coeffAt x (chartAt ℂ x w) =
+    change θ.coeffAt x (chartAt ℂ x w) / θ₀.coeffAt x (chartAt ℂ x w) =
       θ.coeffAt y (chartAt ℂ y w) / θ₀.coeffAt y (chartAt ℂ y w)
     rw [hcθ, hcθ₀, mul_div_mul_left _ _ hw1]
   have hcompat : ∀ x y : X,
@@ -176,10 +176,10 @@ theorem exists_smul_eq {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (Θ : MForm X) :
       ((chartAt ℂ x).open_target.mem_nhds (mem_chart_target ℂ x))
   filter_upwards [hnz, hq, htarget] with z h1 h2 h3
   simp only [Function.comp_apply] at h2
-  show θ.coeffAt x z = h.holoRepr ((chartAt ℂ x).symm z) * θ₀.coeffAt x z
+  change θ.coeffAt x z = h.holoRepr ((chartAt ℂ x).symm z) * θ₀.coeffAt x z
   rw [h2]
   have hqz : q x ((chartAt ℂ x).symm z) = θ.coeffAt x z / θ₀.coeffAt x z := by
-    show θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) /
+    change θ.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) /
       θ₀.coeffAt x (chartAt ℂ x ((chartAt ℂ x).symm z)) = _
     rw [(chartAt ℂ x).right_inv h3]
   rw [hqz, div_mul_cancel₀ _ h1]
@@ -190,7 +190,7 @@ theorem exists_unique_smul_of_ne_zero {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (Θ
     ∃! h : ℳ X, Θ = h • Θ₀ := by
   obtain ⟨h, hh⟩ := exists_smul_eq h₀ Θ
   refine ⟨h, hh, fun h' hh' => smul_left_injective h₀ ?_⟩
-  show h' • Θ₀ = h • Θ₀
+  change h' • Θ₀ = h • Θ₀
   rw [← hh', ← hh]
 
 end Existence
@@ -226,7 +226,7 @@ theorem canonicalDivisorOf_linearEquiv [T1Space X] [T2Space X]
     rw [zero_smul] at hh
     exact h₀' hh
   refine ⟨h, hne, ?_⟩
-  show Θ₀'.divisor = Θ₀.divisor + divisor h
+  change Θ₀'.divisor = Θ₀.divisor + divisor h
   rw [hh, MForm.divisor_smul_mero hne h₀, add_comm]
 
 end RS

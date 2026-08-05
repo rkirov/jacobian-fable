@@ -16,7 +16,8 @@ import Jacobian.Dbar.Wirtinger
 Unit: dbar-solvability (`docs/design/dbar-solvability.md` §4.2, §5). Mathlib-only planar file.
 
 `cauchyKernel w := (π w)⁻¹`; `cauchyTransform g := cauchyKernel ⋆[mul ℝ ℂ] g`. The pointwise
-identity `dbar(cauchyKernel ⋆ g) = g` for compactly supported `C¹` `g` (`cauchyPompeiu`) is proved by
+identity `dbar(cauchyKernel ⋆ g) = g` for compactly supported `C¹` `g` (`cauchyPompeiu`) is
+proved by
 polar coordinates + 1-D FTC in the radial and angular directions (design §5): the convolution
 derivative package handles "differentiate under the integral", and the polar substitution makes
 the kernel singularity cancel exactly.
@@ -201,7 +202,7 @@ private theorem eqOn_polar_integrand {g : ℂ → ℂ} (hgdiff : Differentiable 
     (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)) with hGθ_def
   set T' : Set (ℝ × ℝ) := Set.Ioc (0 : ℝ) R' ×ˢ Set.Ioo (-Real.pi) Real.pi with hT'_def
   set F : ℂ → ℂ := fun w => cauchyKernel w * h (z - w) with hF_def
-  show Set.EqOn (fun p : ℝ × ℝ => p.1 • F (Complex.polarCoord.symm p))
+  change Set.EqOn (fun p : ℝ × ℝ => p.1 • F (Complex.polarCoord.symm p))
     (fun p => (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)) T'
   intro p hp
   have hp1 : 0 < p.1 := hp.1.1
@@ -222,7 +223,7 @@ private theorem eqOn_polar_integrand {g : ℂ → ℂ} (hgdiff : Differentiable 
         h (z - circleMap 0 p.1 p.2) := by
     simp only [hF_def, polarCoord_symm_eq_circleMap, cauchyKernel, circleMap, zero_add,
       mul_assoc]
-  show p.1 • F (Complex.polarCoord.symm p) =
+  change p.1 • F (Complex.polarCoord.symm p) =
       (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)
   rw [hFval, Complex.real_smul]
   simp only [hGr_def, hGθ_def]
@@ -242,7 +243,7 @@ private theorem norm_angular_ratio_le {g : ℂ → ℂ} {M : ℝ} (hM : ∀ w, �
         (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)))‖ ≤ M := by
   set Gθ : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
     (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)) with hGθ_def
-  show ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ * Gθ p‖ ≤ M
+  change ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ * Gθ p‖ ≤ M
   intro p hp1
   have hnorm_Ir : ‖Complex.I * (p.1 : ℂ)‖ = p.1 := by
     rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_of_nonneg hp1.le]
@@ -268,7 +269,7 @@ private theorem hasDerivAt_radial {g : ℂ → ℂ} (hgdiff : Differentiable ℝ
       (-(fderiv ℝ g (z - circleMap 0 p.1 p.2)) (Complex.exp (p.2 * Complex.I))) p.1 := by
   set Gr : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
     (Complex.exp (p.2 * Complex.I)) with hGr_def
-  show ∀ p : ℝ × ℝ, HasDerivAt (fun r => g (z - circleMap 0 r p.2)) (Gr p) p.1
+  change ∀ p : ℝ × ℝ, HasDerivAt (fun r => g (z - circleMap 0 r p.2)) (Gr p) p.1
   intro p
   have h1 : HasDerivAt (fun r : ℝ => z - circleMap 0 r p.2)
       (-(Complex.exp (p.2 * Complex.I))) p.1 :=
@@ -399,7 +400,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
         push Not at hle
         exact hpT ⟨⟨hr, hle⟩, hθ⟩
       have hzero : h (z - circleMap 0 r θ) = 0 := hvanish_h r θ hrR'.le
-      show r • F (Complex.polarCoord.symm (r, θ)) = 0
+      change r • F (Complex.polarCoord.symm (r, θ)) = 0
       rw [polarCoord_symm_eq_circleMap, hF_def]
       simp [hzero]
   have step3 : ∫ w, F w = ∫ p in T', p.1 • F (Complex.polarCoord.symm p) :=

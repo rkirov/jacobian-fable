@@ -161,10 +161,11 @@ theorem IsWeakSolutionAt.mul_of_contMDiffAt {f h : X → ℂ} {a : X} {k : ℤ}
 /-- **Forster's Lemma 20.1, `k`-point/`Finset`-indexed form** (the `abel-theorem` scope
 addition): the pointwise product of `k` pairwise-disjoint two-point weak solutions is a weak
 solution of the whole `k`-point configuration. -/
-theorem isWeakSolutionOfFinset_prod {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem isWeakSolutionOfFinset_prod {ι : Type*} [Fintype ι]
     {f : ι → X → ℂ} {a x : ι → X} (ha : Function.Injective a) (hx : Function.Injective x)
     (hax : ∀ i j, a i ≠ x j) (hf : ∀ i, IsWeakSolutionOfPair (f i) (x i) (a i)) :
     IsWeakSolutionOfFinset (fun z => ∏ i, f i z) a x := by
+  classical
   have hcof_smooth : ∀ (p : X) (S : Finset ι), (∀ j ∈ S, p ≠ a j) →
       ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (fun z => ∏ j ∈ S, f j z) p := by
     intro p S hnej

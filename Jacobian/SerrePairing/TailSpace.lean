@@ -28,7 +28,7 @@ sibling unit laurent-tails independently discovered that a plain `def` wrapping 
 every `Finsupp` instance transport for free), so no manual instances are needed at all.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 
 namespace RS.SerrePairing
 
@@ -85,6 +85,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] [ChartedSpace ℂ X] in
 noncomputable def Tail.single (p : X) (n : ℤ) (c : ℂ) : Tail X :=
   Finsupp.single p (Finsupp.single n c)
 
+open scoped Classical in
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] [ChartedSpace ℂ X] [TopologicalSpace X] in
 theorem Tail.single_apply (p : X) (n : ℤ) (c : ℂ) (x : X) :
     Tail.single p n c x = if x = p then Finsupp.single n c else 0 := by

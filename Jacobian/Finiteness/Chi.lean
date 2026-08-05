@@ -26,7 +26,7 @@ Unit: finiteness-and-chi (`docs/design/finiteness-and-chi.md` §8).
 * `l_mono`/`l_le_l_add_degree`/`h1_le_of_le`/`h1_le_h1_add_degree`: monotonicity corollaries.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set Filter Topology TopologicalSpace RS.Cech
 
 namespace RS.Finiteness
@@ -85,7 +85,7 @@ private theorem sixterm_rank1 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D �
     rw [RS.l]
     exact (LinearEquiv.ofInjective _ (inclusion_injective h)).finrank_eq.symm
   rw [hrange_eq] at hrn
-  show RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (windowMap h))
+  change RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (windowMap h))
   unfold RS.l at hrn ⊢
   omega
 
@@ -111,10 +111,10 @@ private theorem sixterm_rank3 {D D' : RS.Divisor X} (h : D ≤ D') :
     LinearMap.range_eq_top.2 (H1Incl_surjective h)
   have hrange_eq : Module.finrank ℂ (LinearMap.range (H1Incl D h)) = h1 D' := by
     rw [hsurj]
-    show Module.finrank ℂ (⊤ : Submodule ℂ (H1 D')) = Module.finrank ℂ (H1 D')
+    change Module.finrank ℂ (⊤ : Submodule ℂ (H1 D')) = Module.finrank ℂ (H1 D')
     exact finrank_top ℂ (H1 D')
   rw [hrange_eq] at hrn
-  show h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D'
+  change h1 D = Module.finrank ℂ (LinearMap.range (windowConnect h)) + h1 D'
   unfold RS.Finiteness.h1 at hrn ⊢
   omega
 
@@ -164,6 +164,7 @@ theorem chi_of_le [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
 
 /-! ### `Divisor.single` bookkeeping (Compat: `degree_single` not upstreamed) -/
 
+open scoped Classical in
 omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] in
 theorem degree_single (P : X) :
     (Function.locallyFinsuppWithin.single P (1 : ℤ) : RS.Divisor X).degree = 1 := by
@@ -176,6 +177,7 @@ theorem degree_single (P : X) :
       exact hx (by rw [Function.locallyFinsuppWithin.single_apply, if_neg hxP]))]
   simp
 
+open scoped Classical in
 omit [T1Space X] in
 theorem chi_single_add [ConnectedSpace X] (D : RS.Divisor X) (P : X) :
     chi (D + Function.locallyFinsuppWithin.single P (1 : ℤ)) = chi D + 1 := by

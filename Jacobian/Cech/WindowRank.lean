@@ -89,7 +89,7 @@ theorem leadCoeff_eq_zero_iff (p : X) (m : ℤ) (ψ : ordGe p m) :
       have : (-m + m : ℤ) = 0 := by ring
       exact_mod_cast this
     rwa [hz] at hstep
-  show (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).evalAt p = 0 ↔ _
+  change (tailGerm p (-m) * (ψ : RS.MeroGermOn X ((chartAt ℂ p).source))).evalAt p = 0 ↔ _
   rw [RS.Cech.MeroGermOn.evalAt_eq_zero_iff (chartAt ℂ p).open_source (mem_chart_source ℂ p) _ h0,
     hmul_ord, withTop_lt_neg_add_iff]
 
@@ -141,7 +141,7 @@ private theorem mem_ordGe_succ_rawCorr (d' : ℤ) (ψ : ordGe p (-d')) :
   have hcongr : (⟨rawCorr p d' ψ, hmem0⟩ : ordGe p (-d')) =
       ψ - (c * lam⁻¹) • tailGermElt p d' := by
     apply Subtype.ext
-    show rawCorr p d' ψ = (ψ : RS.MeroGermOn X _) - (c * lam⁻¹) • tailGerm p (-d')
+    change rawCorr p d' ψ = (ψ : RS.MeroGermOn X _) - (c * lam⁻¹) • tailGerm p (-d')
     rw [rawCorr_apply, smul_smul]
   have hleadzero : leadCoeff p (-d') (⟨rawCorr p d' ψ, hmem0⟩ : ordGe p (-d')) = 0 := by
     rw [hcongr, map_sub, map_smul, ← hlam_def, smul_eq_mul, ← hc_def]
@@ -212,7 +212,7 @@ private theorem bigMap_surjective (d d' : ℤ) : Function.Surjective (bigMap p d
     rw [hψ_def, map_add, map_smul, ← hlam_def]
     have hleadξ' : leadCoeff p (-d') ξ' = 0 := by
       rw [leadCoeff_eq_zero_iff]
-      show _ ≤ (ξ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p
+      change _ ≤ (ξ : RS.MeroGermOn X ((chartAt ℂ p).source)).ord p
       have h2 : ((-d' + 1 : ℤ) : WithTop ℤ) = ((-(d' - 1) : ℤ) : WithTop ℤ) := by
         congr 1; omega
       rw [h2]
@@ -221,7 +221,7 @@ private theorem bigMap_surjective (d d' : ℤ) : Function.Surjective (bigMap p d
   have hcorrψ : corrMap p d' ψ = ξ := by
     apply Subtype.ext
     rw [corrMap_apply_coe, rawCorr_apply, hleadψ, ← hlam_def]
-    show (ξ' : RS.MeroGermOn X ((chartAt ℂ p).source)) +
+    change (ξ' : RS.MeroGermOn X ((chartAt ℂ p).source)) +
         (c * lam⁻¹) • tailGerm p (-d') - c • (lam⁻¹ • tailGerm p (-d')) = _
     rw [smul_smul, add_sub_cancel_right, hξ'_def]
   rw [bigMap_apply, hleadψ, hcorrψ, hξχ]

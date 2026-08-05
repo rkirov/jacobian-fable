@@ -192,7 +192,7 @@ theorem pathIntegral_traceForm_segment {y₀ : Y} (hy₀ : RS.IsRegularValue f y
         exact e'_mem_e_target_of_regular (hm i) (hextV u))
     apply hof.congr
     intro u _
-    show g i ((S.A i).e ((L i).extend u)) = F i u
+    change g i ((S.A i).e ((L i).extend u)) = F i u
     rw [hLext i u, e_sectionAt (hm i) (hextV u)]
   -- the summed primitive is a primitive of the trace
   have hGprim : IsPrimitiveAlong p (traceForm hf hne η) (fun u => ∑ i, F i u) := by
@@ -233,7 +233,7 @@ theorem pathIntegral_traceForm_segment {y₀ : Y} (hy₀ : RS.IsRegularValue f y
       refine ⟨hextsrc' u, ?_⟩
       apply Finset.sum_congr rfl
       intro i _
-      show g i ((S.A i).e' (p.extend u))
+      change g i ((S.A i).e' (p.extend u))
         = g i ((S.A i).e' ((chartAt ℂ y₀).symm ((chartAt ℂ y₀) (p.extend u))))
       rw [(chartAt ℂ y₀).left_inv (hextsrc u)]
   -- assemble
@@ -283,7 +283,7 @@ theorem pathIntegral_segMap {a b : Y} {δ : Path a b} {η₂ : Form1 Y} {F : ℝ
   have hcomp := hF.comp (φ := ψ) (t := Set.univ) hψcont.continuousOn (mapsTo_univ _ _)
   have hKeq : Set.EqOn (δ.extend ∘ ψ) (Path.segMap δ t₀ t₁).extend Set.univ := by
     intro u _
-    show δ.extend (ψ u) = (Path.segMap δ t₀ t₁).extend u
+    change δ.extend (ψ u) = (Path.segMap δ t₀ t₁).extend u
     unfold Path.extend IccExtend
     rfl
   have hprim : IsPrimitiveAlong (Path.segMap δ t₀ t₁) η₂ (F ∘ ψ) := hcomp.congr_map hKeq
@@ -291,14 +291,14 @@ theorem pathIntegral_segMap {a b : Y} {δ : Path a b} {η₂ : Form1 Y} {F : ℝ
   have hψ1 : ψ 1 = t₁ := by
     have hp : Set.projIcc (0 : ℝ) 1 zero_le_one 1 = 1 := by
       simp [Set.projIcc]
-    show (1 - ((Set.projIcc (0 : ℝ) 1 zero_le_one 1 : I) : ℝ)) * t₀
+    change (1 - ((Set.projIcc (0 : ℝ) 1 zero_le_one 1 : I) : ℝ)) * t₀
         + ((Set.projIcc (0 : ℝ) 1 zero_le_one 1 : I) : ℝ) * t₁ = t₁
     rw [hp]
     norm_num
   have hψ0 : ψ 0 = t₀ := by
     have hp : Set.projIcc (0 : ℝ) 1 zero_le_one 0 = 0 := by
       simp [Set.projIcc]
-    show (1 - ((Set.projIcc (0 : ℝ) 1 zero_le_one 0 : I) : ℝ)) * t₀
+    change (1 - ((Set.projIcc (0 : ℝ) 1 zero_le_one 0 : I) : ℝ)) * t₀
         + ((Set.projIcc (0 : ℝ) 1 zero_le_one 0 : I) : ℝ) * t₁ = t₀
     rw [hp]
     norm_num
@@ -332,7 +332,7 @@ theorem exists_traceChain {a b : Y} (δ : Path a b)
       δ τ, hδ τ, fun u hu => hu⟩
     · exact ((δ.continuous_extend.comp continuous_subtype_val).isOpen_preimage _
         (traceChart hf hne (δ τ)).open_source)
-    · show δ.extend (τ : ℝ) ∈ (traceChart hf hne (δ τ)).source
+    · change δ.extend (τ : ℝ) ∈ (traceChart hf hne (δ τ)).source
       rw [δ.extend_apply τ.2]
       exact mem_traceChart_source_self hf hne (δ τ)
   choose V hVopen hτV y hyreg hmaps using hnhds
@@ -374,7 +374,7 @@ theorem TraceChain.t_le_one (C : TraceChain hf hne δ) (k : ℕ) : C.t k ≤ 1 :
 
 theorem TraceChain.segMap_mem_source (C : TraceChain hf hne δ) (k : ℕ) (s : I) :
     (Path.segMap δ (C.t k) (C.t (k + 1))) s ∈ (traceChart hf hne (C.c k)).source := by
-  show δ.extend _ ∈ _
+  change δ.extend _ ∈ _
   exact C.maps k _ (Path.segMap_mem_Icc δ (C.t_le k) s)
 
 theorem TraceChain.segMap_mem_V (C : TraceChain hf hne δ) (k : ℕ) (s : I) :
@@ -478,7 +478,7 @@ theorem pathIntegral_traceForm_eq_sum_loops {y₀ : Y} {δ : Path y₀ y₀}
     rw [Finset.sum_range_sub (f := fun k => F (C.t k)), C.ht1 C.n le_rfl, C.ht0]
     exact hF.pathIntegral_eq
   have hAeq : A C.n = A 0 := by
-    show (∑ᶠ x ∈ f ⁻¹' {δ.extend (C.t C.n)}, _) = ∑ᶠ x ∈ f ⁻¹' {δ.extend (C.t 0)}, _
+    change (∑ᶠ x ∈ f ⁻¹' {δ.extend (C.t C.n)}, _) = ∑ᶠ x ∈ f ⁻¹' {δ.extend (C.t 0)}, _
     rw [C.ht1 C.n le_rfl, C.ht0, Path.extend_one, Path.extend_zero]
   rw [htail, Finset.sum_congr rfl fun k _ => hpiece k, Finset.sum_add_distrib,
     Finset.sum_range_sub (f := A), hAeq]

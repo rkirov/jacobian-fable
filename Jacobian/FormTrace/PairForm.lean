@@ -110,7 +110,7 @@ theorem resAt_pairForm_source_change {F : X → Y} {h : X → ℂ} {x : X}
   set τ : ℂ → ℂ := e1 ∘ e2.symm with hτ_def
   obtain ⟨hτ, hτ'⟩ := analyticAt_transition he2 he1 hx2 hx1
   have hτ0 : τ (e2 x) = e1 x := by
-    show e1 (e2.symm (e2 x)) = e1 x
+    change e1 (e2.symm (e2 x)) = e1 x
     rw [e2.left_inv hx2]
   set f : ℂ → ℂ := fun z => h (e1.symm z) * deriv (e' ∘ F ∘ e1.symm) z with hf_def
   have hg1 : AnalyticAt ℂ (e' ∘ F ∘ e1.symm) (e1 x) :=
@@ -138,14 +138,14 @@ theorem resAt_pairForm_source_change {F : X → Y} {h : X → ℂ} {x : X}
     (hmem1.and (hτdiff.and (hg1diff.and heqnear))).filter_mono nhdsWithin_le_nhds
   filter_upwards [hcombined] with w hw
   obtain ⟨hw1, hw2, hw3, hw4⟩ := hw
-  show h (e1.symm (τ w)) * deriv (e' ∘ F ∘ e1.symm) (τ w) * deriv τ w
+  change h (e1.symm (τ w)) * deriv (e' ∘ F ∘ e1.symm) (τ w) * deriv τ w
     = h (e2.symm w) * deriv (e' ∘ F ∘ e2.symm) w
   have hval : e1.symm (τ w) = e2.symm w := by
-    show e1.symm (e1 (e2.symm w)) = e2.symm w
+    change e1.symm (e1 (e2.symm w)) = e2.symm w
     rw [e1.left_inv hw1]
   have heqfun : (fun w' => (e' ∘ F ∘ e1.symm) (τ w')) =ᶠ[𝓝 w] (e' ∘ F ∘ e2.symm) := by
     filter_upwards [hw4] with w' hw1'
-    show (e' ∘ F ∘ e1.symm) (e1 (e2.symm w')) = (e' ∘ F ∘ e2.symm) w'
+    change (e' ∘ F ∘ e1.symm) (e1 (e2.symm w')) = (e' ∘ F ∘ e2.symm) w'
     simp only [Function.comp_apply]
     rw [e1.left_inv hw1']
   have hderiv1 : HasDerivAt τ (deriv τ w) w := hw2.differentiableAt.hasDerivAt

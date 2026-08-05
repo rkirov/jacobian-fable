@@ -89,15 +89,16 @@ theorem Form1.trace_id : Form1.trace (id : X → X) contMDiff_id = LinearMap.id 
         ⟨Set.univ, Filter.univ_mem, fun a _ b _ h => h⟩
     have h2 : 2 ≤ RS.multiplicity (id : X → X) x := hram
     omega
-  show coeffAt yhat (traceForm contMDiff_id hne η) = coeffAt yhat η
+  change coeffAt yhat (traceForm contMDiff_id hne η) = coeffAt yhat η
   rw [coeffAt_traceForm_of_isRegularValue contMDiff_id hne η hreg]
   have hfib : (id : X → X) ⁻¹' {yhat} = {yhat} := by
     ext u
     simp
   rw [hfib, finsum_mem_singleton]
-  show (deriv (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm) (chartAt ℂ yhat yhat))⁻¹
+  change (deriv (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm) (chartAt ℂ yhat yhat))⁻¹
       * coeffAt yhat η = coeffAt yhat η
-  have hid : (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm) =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
+  have hid : (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm)
+      =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
     filter_upwards [(chartAt ℂ yhat).open_target.mem_nhds (mem_chart_target ℂ yhat)] with z hz
     simp only [Function.comp_apply, id_eq]
     exact (chartAt ℂ yhat).right_inv hz
@@ -150,7 +151,7 @@ theorem qCoeff_comp (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hg : ContMDiff �
     have hz' : f ((chartAt ℂ x).symm z) ∈ (chartAt ℂ (f x)).source := hz
     simp only [Function.comp_apply, (chartAt ℂ (f x)).left_inv hz']
   have hD := deriv_eq_of_eventuallyEq_comp' houter hinner heq
-  show (deriv (⇑e₂ ∘ (g ∘ f) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
+  change (deriv (⇑e₂ ∘ (g ∘ f) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
     = (deriv (⇑e₂ ∘ g ∘ ⇑(chartAt ℂ (f x)).symm) (chartAt ℂ (f x) (f x)))⁻¹
       * ((deriv (⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹
           * coeffAt x η)
@@ -196,7 +197,7 @@ theorem Form1.trace_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
       have hreg_g : RS.IsRegularValue g z₀ :=
         (RS.isRegularValue_iff_notMem_branchLocus _ _).mpr fun h => hz₀ (Or.inr (Or.inl h))
       have hnimg : z₀ ∉ g '' branchLocus f := fun h => hz₀ (Or.inr (Or.inr h))
-      show coeffAt z₀ (traceForm (hg.comp hf) hgfne η)
+      change coeffAt z₀ (traceForm (hg.comp hf) hgfne η)
         = coeffAt z₀ (traceForm hg hgc (traceForm hf hfc η))
       rw [coeffAt_traceForm_of_isRegularValue (hg.comp hf) hgfne η hreg_gf,
         coeffAt_traceForm_of_isRegularValue hg hgc (traceForm hf hfc η) hreg_g]
@@ -208,7 +209,7 @@ theorem Form1.trace_comp (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f)
           rw [RS.isRegularValue_iff_notMem_branchLocus]
           intro hyB
           exact hnimg ⟨y, hyB, hgy⟩
-        show (deriv (⇑(chartAt ℂ z₀) ∘ g ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y y))⁻¹
+        change (deriv (⇑(chartAt ℂ z₀) ∘ g ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y y))⁻¹
             * coeffAt y (traceForm hf hfc η)
           = ∑ᶠ x ∈ f ⁻¹' {y}, qCoeff (g ∘ f) η (chartAt ℂ z₀) x
         rw [coeffAt_traceForm_of_isRegularValue hf hfc η hyreg, mul_finsum_mem]
@@ -262,7 +263,7 @@ theorem qCoeff_pullback {yhat : Y} (hyhat : RS.IsRegularValue f yhat) {x : X} (h
     (Filter.univ_mem)
   have hDne : deriv (⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ≠ 0 :=
     deriv_chartRead_ne_zero A hmult (chart_mem_maximalAtlas (f x)) (mem_chart_source ℂ (f x))
-  show (deriv (⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹
+  change (deriv (⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹
       * coeffAt x (Form1.pullback f hf η) = coeffAt (f x) η
   rw [coeffAt_pullback, ← mul_assoc, inv_mul_cancel₀ hDne, one_mul]
 
@@ -272,7 +273,8 @@ theorem traceForm_pullback (η : Form1 Y) :
     traceForm hf hne (Form1.pullback f hf η) = (RS.degree f : ℂ) • η := by
   apply Form1.eq_of_eqOn_dense (RS.dense_setOf_isRegularValue hf hne)
   intro yhat hyhat
-  show coeffAt yhat (traceForm hf hne (Form1.pullback f hf η)) = coeffAt yhat ((RS.degree f : ℂ) • η)
+  change coeffAt yhat (traceForm hf hne (Form1.pullback f hf η))
+    = coeffAt yhat ((RS.degree f : ℂ) • η)
   rw [coeffAt_traceForm_of_isRegularValue hf hne _ hyhat, coeffAt_smul]
   have hterm : ∀ x ∈ f ⁻¹' {yhat},
       qCoeff f (Form1.pullback f hf η) (chartAt ℂ yhat) x = coeffAt yhat η := fun x hx =>

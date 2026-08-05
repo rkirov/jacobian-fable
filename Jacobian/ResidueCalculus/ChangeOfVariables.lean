@@ -57,7 +57,7 @@ theorem resAt_comp_mul_deriv {φ : ℂ → ℂ} (hφ : AnalyticAt ℂ φ w₀) (
         + h (φ w) * deriv φ w := by
     filter_upwards [hpullback] with w hw
     rw [hw]
-    show (∑ k ∈ Finset.Icc a (-1), laurentCoeffAt f z₀ k * (φ w - z₀) ^ k + h (φ w))
+    change (∑ k ∈ Finset.Icc a (-1), laurentCoeffAt f z₀ k * (φ w - z₀) ^ k + h (φ w))
         * deriv φ w = _
     rw [add_mul, Finset.sum_mul]
     congr 1

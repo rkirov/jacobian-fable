@@ -122,7 +122,7 @@ theorem analyticAt_traceCoeff_zero (hh : AnalyticAt ℂ h 0) (hk : k ≠ 0) :
 theorem analyticAt_traceZkForm_of_ne_zero {ρ : ℝ} (hρ : 0 < ρ) (hk : k ≠ 0)
     (hh : AnalyticOnNhd ℂ h (Metric.ball 0 ρ)) (hw : w ≠ 0) (hwρ : ‖w‖ < ρ ^ k) :
     AnalyticAt ℂ (traceZkForm h k) w := by
-  show AnalyticAt ℂ
+  change AnalyticAt ℂ
     (RS.MTrace.traceZk (fun v => h v * ((k : ℂ) * v ^ ((k : ℤ) - 1))⁻¹) k) w
   apply RS.MTrace.analyticAt_traceZk hk hρ ?_ hw hwρ
   rintro v ⟨hv1, hv2⟩

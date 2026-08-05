@@ -40,7 +40,7 @@ variable {x y : X}
 theorem pathIntegral_eq_intervalIntegral {γ : Path x y} {η : Form1 X}
     {e : OpenPartialHomeomorph X ℂ} (he : e ∈ maximalAtlas 𝓘(ℂ) ω X)
     (hγ : range ⇑γ ⊆ e.source) {u' : ℝ → ℂ}
-    (hu : ∀ t ∈ Icc (0:ℝ) 1, HasDerivWithinAt (fun s => e (γ.extend s)) (u' t) (Icc 0 1) t)
+    (hu : ∀ t ∈ Icc (0 : ℝ) 1, HasDerivWithinAt (fun s => e (γ.extend s)) (u' t) (Icc 0 1) t)
     (hu' : ContinuousOn u' (Icc 0 1)) :
     pathIntegral γ η = ∫ t in (0:ℝ)..1, coeffIn e η (e (γ.extend t)) * u' t := by
   obtain ⟨F, hF, hF0⟩ := exists_isPrimitiveAlong γ η
@@ -105,10 +105,10 @@ theorem pathIntegral_mdifferential {f : X → ℂ} (hf : ContMDiff 𝓘(ℂ) �
           (e.open_source.mem_nhds (mem_chart_source ℂ _))
       filter_upwards [hev] with b hb
       refine ⟨hb, ?_⟩
-      show f (γ.extend b) = (f ∘ ⇑e.symm) (e (γ.extend b))
+      change f (γ.extend b) = (f ∘ ⇑e.symm) (e (γ.extend b))
       rw [Function.comp_apply, e.left_inv hb]
   rw [hFP.pathIntegral_eq]
-  show f (γ.extend 1) - f (γ.extend 0) = f y - f x
+  change f (γ.extend 1) - f (γ.extend 0) = f y - f x
   rw [γ.extend_one, γ.extend_zero]
 
 end RS

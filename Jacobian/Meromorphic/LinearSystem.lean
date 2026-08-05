@@ -121,7 +121,7 @@ theorem one_mem_linSys_iff : (1 : ℳ X) ∈ LinSys D ↔ 0 ≤ D := by
     have hthis := h x
     rw [MeroGermOn.ord_one isOpen_univ (mem_univ x)] at hthis
     have hle : (-(D x) : ℤ) ≤ 0 := by exact_mod_cast hthis
-    show (0 : ℤ) ≤ D x
+    change (0 : ℤ) ≤ D x
     omega
   · intro h x
     have hDx : (0 : ℤ) ≤ D x := Function.locallyFinsuppWithin.le_def.1 h x

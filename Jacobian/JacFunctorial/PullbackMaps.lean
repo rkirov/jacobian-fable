@@ -56,7 +56,7 @@ theorem pullbackT_periodVector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ)
     rw [periodCoordEquiv_apply]
     rfl
   funext i
-  show periodCoordEquiv X ((Form1.trace f hf).dualMap
+  change periodCoordEquiv X ((Form1.trace f hf).dualMap
       ((periodCoordEquiv Y).symm (periodVector (basis Y) γ))) i = _
   rw [hsymm, periodCoordEquiv_apply, LinearMap.dualMap_apply]
   rfl
@@ -68,14 +68,14 @@ theorem periodSubgroup_le_comap_pullbackT (f : X → Y) (hf : ContMDiff 𝓘(ℂ
       (pullbackT f hf).toAddMonoidHom := by
   rw [periodSubgroup, AddSubgroup.closure_le]
   rintro v ⟨γ, rfl⟩
-  show pullbackT f hf (periodVector (basis Y) γ) ∈ (periodSubgroup X).topologicalClosure
+  change pullbackT f hf (periodVector (basis Y) γ) ∈ (periodSubgroup X).topologicalClosure
   rw [pullbackT_periodVector]
   by_cases hc : ∃ c, ∀ x, f x = c
   · have h0 : (fun i => pathIntegral γ (Form1.trace f hf (basis X i)))
         = (0 : Fin (genus X) → ℂ) := by
       funext i
       rw [Form1.trace_of_forall_eq hf hc]
-      show pathIntegral γ ((0 : Form1 X →ₗ[ℂ] Form1 Y) (basis X i)) = 0
+      change pathIntegral γ ((0 : Form1 X →ₗ[ℂ] Form1 Y) (basis X i)) = 0
       rw [LinearMap.zero_apply, pathIntegral_zero_form]
     rw [h0]
     exact zero_mem _

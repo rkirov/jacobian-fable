@@ -96,7 +96,7 @@ theorem eventuallyConst_inChartAt {F : X → Y} {x : X} (h : EventuallyConst F (
   have hmap : Filter.map (chartAt ℂ x).symm (𝓝 (chartAt ℂ x x)) = 𝓝 x :=
     (chartAt ℂ x).symm_map_nhds_eq (mem_chart_source ℂ x)
   have h1 : EventuallyConst (F ∘ ⇑(chartAt ℂ x).symm) (𝓝 (chartAt ℂ x x)) := by
-    show (Filter.map (F ∘ ⇑(chartAt ℂ x).symm) (𝓝 (chartAt ℂ x x))).Subsingleton
+    change (Filter.map (F ∘ ⇑(chartAt ℂ x).symm) (𝓝 (chartAt ℂ x x))).Subsingleton
     rw [← Filter.map_map, hmap]
     exact h
   exact h1.comp (fun y ↦ chartAt ℂ (F x) y - chartAt ℂ (F x) (F x))

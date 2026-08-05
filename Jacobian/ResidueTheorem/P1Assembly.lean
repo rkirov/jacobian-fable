@@ -36,7 +36,7 @@ key honesty input making the `∞`-chart congruences legitimate for a RAW repres
 forces `R` to be honestly analytic near `∞`.
 -/
 
-open scoped ContDiff Manifold OnePoint Classical
+open scoped ContDiff Manifold OnePoint
 open Set Filter Topology OnePoint Real Complex MeasureTheory
 
 noncomputable section
@@ -88,7 +88,7 @@ theorem coeffAt_infty_eq (θ : RS.MFormData (OnePoint ℂ)) {z : ℂ} (hz : z �
   rw [chartAt_infty, chartAt_coe] at hc
   have hcomp : (⇑coeChart ∘ ⇑invChart.symm : ℂ → ℂ) = Inv.inv := by
     funext w
-    show coeChart (invChart.symm w) = w⁻¹
+    change coeChart (invChart.symm w) = w⁻¹
     rw [invChart_symm_apply, coeChart_inversion_coe]
   have hval : coeChart (invChart.symm z) = z⁻¹ := by
     rw [invChart_symm_apply, coeChart_inversion_coe]
@@ -107,14 +107,14 @@ private theorem meromorphicOrderAt_sub_tail_nonneg {R : ℂ → ℂ} (hR : Merom
     ∀ v : ℂ, 0 ≤ meromorphicOrderAt (fun v => R v - ∑ a ∈ P, RS.principalPartAt R a v) v := by
   set tail : ℂ → ℂ := fun v => ∑ a ∈ P, RS.principalPartAt R a v with htail_def
   set Rmid : ℂ → ℂ := fun v => R v - tail v with hRmid_def
-  show ∀ v : ℂ, 0 ≤ meromorphicOrderAt Rmid v
+  change ∀ v : ℂ, 0 ≤ meromorphicOrderAt Rmid v
   intro v
   by_cases hvP : v ∈ P
   · set f₁ : ℂ → ℂ := fun u => R u - RS.principalPartAt R v u with hf₁_def
     set f₂ : ℂ → ℂ := fun u => -(∑ a ∈ P.erase v, RS.principalPartAt R a u) with hf₂_def
     have hsplit : Rmid = f₁ + f₂ := by
       funext u
-      show R u - tail u = f₁ u + f₂ u
+      change R u - tail u = f₁ u + f₂ u
       rw [hf₁_def, hf₂_def, htail_def]
       simp only
       rw [← Finset.add_sum_erase P (fun a => RS.principalPartAt R a u) hvP]
@@ -138,7 +138,7 @@ private theorem meromorphicOrderAt_sub_tail_nonneg {R : ℂ → ℂ} (hR : Merom
     have h2anal : AnalyticAt ℂ (fun u => -(tail u)) v := (htail_anal v hvne).neg
     have hsplit : Rmid = R + fun u => -(tail u) := by
       funext u
-      show R u - tail u = R u + -(tail u)
+      change R u - tail u = R u + -(tail u)
       ring
     rw [hsplit]
     exact le_trans (le_min h1 h2anal.meromorphicOrderAt_nonneg)
@@ -196,6 +196,7 @@ private theorem finite_setOf_meromorphicOrderAt_neg {θ : RS.MFormData (OnePoint
   exact Set.Finite.subset
     (hfin.preimage (Set.injOn_of_injective OnePoint.coe_injective)) hsub
 
+open scoped Classical in
 /-- **The residue theorem on `ℙ¹`** (the genus-0 base case of the residue theorem, task item 2):
 the residues of any meromorphic 1-form on the projective line sum to zero. -/
 theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y = 0 := by
@@ -217,13 +218,13 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
   have hord_coe : ∀ v : ℂ,
       (RS.MForm.mk θ).ord ((v : ℂ) : OnePoint ℂ) = meromorphicOrderAt R v := by
     intro v
-    show meromorphicOrderAt (θ.coeffAt (((v : ℂ) : OnePoint ℂ)))
+    change meromorphicOrderAt (θ.coeffAt (((v : ℂ) : OnePoint ℂ)))
       (chartAt ℂ (((v : ℂ) : OnePoint ℂ)) (((v : ℂ) : OnePoint ℂ))) = _
     rw [coeffAt_coe_eq_coeffAt_coe θ v 0, chartAt_coe, coeChart_apply_coe, ← hR_def]
   have hres_coe : ∀ v : ℂ,
       (RS.MForm.mk θ).resAt ((v : ℂ) : OnePoint ℂ) = RS.resAt R v := by
     intro v
-    show RS.resAt (θ.coeffAt (((v : ℂ) : OnePoint ℂ)))
+    change RS.resAt (θ.coeffAt (((v : ℂ) : OnePoint ℂ)))
       (chartAt ℂ (((v : ℂ) : OnePoint ℂ)) (((v : ℂ) : OnePoint ℂ))) = _
     rw [coeffAt_coe_eq_coeffAt_coe θ v 0, chartAt_coe, coeChart_apply_coe, ← hR_def]
   -- the finite pole set
@@ -272,7 +273,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
   set Gtail : ℂ → ℂ := fun w => -(w ^ 2)⁻¹ * tail w⁻¹ with hGtail_def
   have hGsplit : ∀ w : ℂ, G w = Gmid w + Gtail w := by
     intro w
-    show -(w ^ 2)⁻¹ * R w⁻¹ = -(w ^ 2)⁻¹ * (R w⁻¹ - tail w⁻¹) + -(w ^ 2)⁻¹ * tail w⁻¹
+    change -(w ^ 2)⁻¹ * R w⁻¹ = -(w ^ 2)⁻¹ * (R w⁻¹ - tail w⁻¹) + -(w ^ 2)⁻¹ * tail w⁻¹
     ring
   have hG_mero : MeromorphicAt G 0 := by
     apply hInfMero.congr
@@ -282,7 +283,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
       ∑ k ∈ Finset.Icc (meromorphicOrderAt R a).untop₀ (-1 : ℤ),
         RS.laurentCoeffAt R a k * (-(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k) := by
     funext w
-    show -(w ^ 2)⁻¹ * tail w⁻¹ = _
+    change -(w ^ 2)⁻¹ * tail w⁻¹ = _
     rw [htail_def]
     simp only [RS.principalPartAt]
     rw [Finset.mul_sum]
@@ -320,7 +321,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
       have hfar : C < ‖w⁻¹‖ := by
         rw [norm_inv]
         exact (lt_inv_comm₀ (norm_pos_iff.2 hw0) hC0).1 hwlt
-      show -(w ^ 2)⁻¹ * Rmid w⁻¹ = -(w ^ 2)⁻¹ * Rf w⁻¹
+      change -(w ^ 2)⁻¹ * Rmid w⁻¹ = -(w ^ 2)⁻¹ * Rf w⁻¹
       rw [(hRfval _ (hmid_far _ hfar)).symm]
     rw [RS.resAt_congr hgerm]
     exact resAt_neg_sq_inv_mul_comp_inv_eq_zero hRfdiff (hGmid_mero.congr hgerm)
@@ -363,7 +364,7 @@ theorem sum_resAt_eq_zero (Θ : RS.MForm (OnePoint ℂ)) : ∑ᶠ y, Θ.resAt y 
   have hres_infty : (RS.MForm.mk θ).resAt (∞ : OnePoint ℂ) = -∑ a ∈ P, RS.resAt R a := by
     have h0 : (RS.MForm.mk θ).resAt (∞ : OnePoint ℂ)
         = RS.resAt (θ.coeffAt (∞ : OnePoint ℂ)) 0 := by
-      show RS.resAt (θ.coeffAt (∞ : OnePoint ℂ))
+      change RS.resAt (θ.coeffAt (∞ : OnePoint ℂ))
         (chartAt ℂ (∞ : OnePoint ℂ) (∞ : OnePoint ℂ)) = _
       rw [chartAt_infty, invChart_apply_infty]
     have h1 : RS.resAt (θ.coeffAt (∞ : OnePoint ℂ)) 0 = RS.resAt G 0 := by

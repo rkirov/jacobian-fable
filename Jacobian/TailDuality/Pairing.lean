@@ -31,7 +31,7 @@ functional needs). All PUBLIC lemmas are stated at the `MForm`/`laurentCoeffAt` 
 * `resMap`/`resMap_injective`: the induced map `Ω(-D) →ₗ Dual(H1Tail D)`.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace Filter Topology
 open RS RS.LaurentTail
 
@@ -54,7 +54,7 @@ noncomputable def readAt (p : X) :
     | h f hf =>
       induction ψ' using RS.MeroGermOn.ind with
       | h g hg =>
-        show ((f + g) ∘ (chartAt ℂ p).symm : Filter.Germ (𝓝[≠] (chartAt ℂ p p)) ℂ)
+        change ((f + g) ∘ (chartAt ℂ p).symm : Filter.Germ (𝓝[≠] (chartAt ℂ p p)) ℂ)
             = (f ∘ (chartAt ℂ p).symm : Filter.Germ (𝓝[≠] (chartAt ℂ p p)) ℂ)
               + (g ∘ (chartAt ℂ p).symm : Filter.Germ (𝓝[≠] (chartAt ℂ p p)) ℂ)
         rw [show (f + g) ∘ (chartAt ℂ p).symm
@@ -96,7 +96,7 @@ theorem readAt_tailGerm (p : X) (m : ℤ) :
     (chartAt ℂ p).open_target.mem_nhds ((chartAt ℂ p).map_source (mem_chart_source ℂ p))
   have h1 : ∀ᶠ z in 𝓝 (chartAt ℂ p p), z ∈ (chartAt ℂ p).target := htarget_nhds
   filter_upwards [h1.filter_mono nhdsWithin_le_nhds] with z hz
-  show (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m = (z - chartAt ℂ p p) ^ m
+  change (chartAt ℂ p ((chartAt ℂ p).symm z) - chartAt ℂ p p) ^ m = (z - chartAt ℂ p p) ^ m
   rw [(chartAt ℂ p).right_inv hz]
 
 /-! ### `pairAtData`/`pairAt`: the per-point residue pairing -/
@@ -121,7 +121,7 @@ noncomputable def pairAtData (θ : MFormData X) (p : X) :
     | h f hf =>
       induction ψ' using RS.MeroGermOn.ind with
       | h g hg =>
-        show RS.resAt (fun z => (f + g) ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
+        change RS.resAt (fun z => (f + g) ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
           = RS.resAt (fun z => f ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
             + RS.resAt (fun z => g ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
         rw [show (fun z => (f + g) ((chartAt ℂ p).symm z) * θ.coeffAt p z)
@@ -139,7 +139,7 @@ noncomputable def pairAtData (θ : MFormData X) (p : X) :
   map_smul' c ψ := by
     induction ψ using RS.MeroGermOn.ind with
     | h f hf =>
-      show RS.resAt (fun z => (c • f) ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
+      change RS.resAt (fun z => (c • f) ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
         = c * RS.resAt (fun z => f ((chartAt ℂ p).symm z) * θ.coeffAt p z) (chartAt ℂ p p)
       rw [show (fun z => (c • f) ((chartAt ℂ p).symm z) * θ.coeffAt p z)
         = (fun z => c * (f ((chartAt ℂ p).symm z) * θ.coeffAt p z)) from by
@@ -298,7 +298,7 @@ omit [T2Space X] in
 @[simp] theorem pairT_singleT (θ : MForm X) {D : RS.Divisor X} (hθ : θ ∈ MForm.OmegaSpace (-D))
     (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     pairT θ hθ (singleT p D ψ) = pairAt θ p ψ := by
-  show DFinsupp.lsum ℕ (pairTailAt θ hθ) (DFinsupp.single p (TailAt.mk p D ψ)) = _
+  change DFinsupp.lsum ℕ (pairTailAt θ hθ) (DFinsupp.single p (TailAt.mk p D ψ)) = _
   rw [DFinsupp.lsum_single ℕ (pairTailAt θ hθ) p (TailAt.mk p D ψ), pairTailAt_mk]
 
 omit [T2Space X] in
@@ -306,7 +306,7 @@ theorem pairT_zero (D : RS.Divisor X) : pairT (0 : MForm X) (zero_mem _) = (0 : 
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
-  show pairT (0 : MForm X) (zero_mem _) (singleT p D ψ) = (0 : T D →ₗ[ℂ] ℂ) (singleT p D ψ)
+  change pairT (0 : MForm X) (zero_mem _) (singleT p D ψ) = (0 : T D →ₗ[ℂ] ℂ) (singleT p D ψ)
   rw [pairT_singleT, LinearMap.zero_apply,
     show (0 : MForm X) = MForm.mk (0 : MFormData X) from MForm.mk_zero.symm, pairAt_apply_mk]
   obtain ⟨f, hf, rfl⟩ := RS.MeroGermOn.exists_rep ψ
@@ -350,7 +350,7 @@ theorem pairT_trunc {D₁ D₂ : RS.Divisor X} (h : D₁ ≤ D₂) (θ : MForm X
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D₁ x
-  show ((pairT θ hθ₂) ∘ₗ truncT h) (singleT p D₁ ψ)
+  change ((pairT θ hθ₂) ∘ₗ truncT h) (singleT p D₁ ψ)
       = pairT θ (omegaSpace_anti h hθ₂) (singleT p D₁ ψ)
   rw [LinearMap.comp_apply, truncT_singleT, pairT_singleT, pairT_singleT]
 
@@ -362,7 +362,7 @@ theorem mulInto_singleT (f : RS.Mero X) {D E : RS.Divisor X}
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     mulInto f hf (singleT p D ψ) =
       singleT p E (RS.MeroGermOn.restrict (Set.subset_univ _) f * ψ) := by
-  show DFinsupp.mapRange (fun p => mulIntoAt f p (hf p)) (fun _ => map_zero _)
+  change DFinsupp.mapRange (fun p => mulIntoAt f p (hf p)) (fun _ => map_zero _)
     (DFinsupp.single p (TailAt.mk p D ψ)) = _
   rw [DFinsupp.mapRange_single, mulIntoAt_mk]
   rfl
@@ -386,7 +386,7 @@ theorem pairAt_mulInto (f : RS.Mero X) (p : X) (θ : MForm X)
     MForm.mero_smul_mk, pairAt_apply_mk, pairAtData_mk]
   apply RS.resAt_congr
   filter_upwards with z
-  show f.holoRepr ((chartAt ℂ p).symm z) * g ((chartAt ℂ p).symm z) * θdata.coeffAt p z
+  change f.holoRepr ((chartAt ℂ p).symm z) * g ((chartAt ℂ p).symm z) * θdata.coeffAt p z
     = g ((chartAt ℂ p).symm z) * (f • θdata).coeffAt p z
   rw [MFormData.coeffAt_smul_mero]
   ring
@@ -399,7 +399,7 @@ theorem pairT_mulInto {D E : RS.Divisor X} (f : RS.Mero X)
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
-  show ((pairT θ hθ) ∘ₗ mulInto f hf) (singleT p D ψ) = pairT (f • θ) hfθ (singleT p D ψ)
+  change ((pairT θ hθ) ∘ₗ mulInto f hf) (singleT p D ψ) = pairT (f • θ) hfθ (singleT p D ψ)
   rw [LinearMap.comp_apply, mulInto_singleT, pairT_singleT, pairT_singleT, pairAt_mulInto]
 
 /-! ### `pairT_alpha`: the residue theorem's ONLY citation -/
@@ -447,7 +447,7 @@ theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaS
     (f : RS.Mero X) : pairT θ hθ (alphaL D f) = 0 := by
   have hsum : pairT θ hθ (alphaL D f)
       = ∑ p ∈ alphaFinset D f, (f • θ).resAt p := by
-    show pairT θ hθ (alpha D f) = _
+    change pairT θ hθ (alpha D f) = _
     rw [alpha_eq_sum_singleT, map_sum]
     apply Finset.sum_congr rfl
     intro p _
@@ -474,7 +474,7 @@ theorem pairT_alpha {D : RS.Divisor X} (θ : MForm X) (hθ : θ ∈ MForm.OmegaS
   obtain ⟨χdata, hχ⟩ := MForm.exists_rep (f • θ)
   rw [← hχ, MForm.resAt_mk]
   apply RS.resAt_of_order_nonneg
-  show (0 : WithTop ℤ) ≤ χdata.ord p
+  change (0 : WithTop ℤ) ≤ χdata.ord p
   rw [show χdata.ord p = (f • θ).ord p from by rw [← hχ, MForm.ord_mk]]
   exact hordnn
 
@@ -487,7 +487,7 @@ theorem pairT_add {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
-  show pairT (θ₁ + θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ + pairT θ₂ hθ₂) (singleT p D ψ)
+  change pairT (θ₁ + θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ + pairT θ₂ hθ₂) (singleT p D ψ)
   rw [LinearMap.add_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_add,
     LinearMap.add_apply]
 
@@ -498,7 +498,7 @@ theorem pairT_sub {D : RS.Divisor X} (θ₁ θ₂ : MForm X) (hθ₁ : θ₁ ∈
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
-  show pairT (θ₁ - θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ - pairT θ₂ hθ₂) (singleT p D ψ)
+  change pairT (θ₁ - θ₂) hθ12 (singleT p D ψ) = (pairT θ₁ hθ₁ - pairT θ₂ hθ₂) (singleT p D ψ)
   rw [LinearMap.sub_apply, pairT_singleT, pairT_singleT, pairT_singleT, pairAt_sub,
     LinearMap.sub_apply]
 
@@ -509,7 +509,7 @@ theorem pairT_smul {D : RS.Divisor X} (c : ℂ) (θ : MForm X) (hθ : θ ∈ MFo
   apply DFinsupp.lhom_ext
   intro p x
   obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p D x
-  show pairT (c • θ) hcθ (singleT p D ψ) = (c • pairT θ hθ) (singleT p D ψ)
+  change pairT (c • θ) hcθ (singleT p D ψ) = (c • pairT θ hθ) (singleT p D ψ)
   rw [LinearMap.smul_apply, pairT_singleT, pairT_singleT, pairAt_smul, LinearMap.smul_apply]
 
 omit [CompactSpace X] [ConnectedSpace X] [T2Space X] in
@@ -534,13 +534,13 @@ noncomputable def resMap (D : RS.Divisor X) :
     apply LinearMap.ext
     intro x
     obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective D x
-    show pairT (θ₁ + θ₂).1 (θ₁ + θ₂).2 τ = pairT θ₁.1 θ₁.2 τ + pairT θ₂.1 θ₂.2 τ
+    change pairT (θ₁ + θ₂).1 (θ₁ + θ₂).2 τ = pairT θ₁.1 θ₁.2 τ + pairT θ₂.1 θ₂.2 τ
     exact DFunLike.congr_fun (pairT_add θ₁.1 θ₂.1 θ₁.2 θ₂.2 (θ₁ + θ₂).2) τ
   map_smul' c θ := by
     apply LinearMap.ext
     intro x
     obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective D x
-    show pairT (c • θ).1 (c • θ).2 τ = (RingHom.id ℂ) c • pairT θ.1 θ.2 τ
+    change pairT (c • θ).1 (c • θ).2 τ = (RingHom.id ℂ) c • pairT θ.1 θ.2 τ
     rw [RingHom.id_apply]
     exact DFunLike.congr_fun (pairT_smul c θ.1 θ.2 (c • θ).2) τ
 
@@ -559,7 +559,7 @@ theorem resMap_injective [ConnectedSpace X] (D : RS.Divisor X) :
   apply pairT_ne_zero hsub0 hmem
   apply LinearMap.ext
   intro τ
-  show pairT (θ₁.1 - θ₂.1) hmem τ = (0 : T D →ₗ[ℂ] ℂ) τ
+  change pairT (θ₁.1 - θ₂.1) hmem τ = (0 : T D →ₗ[ℂ] ℂ) τ
   rw [LinearMap.zero_apply, pairT_sub θ₁.1 θ₂.1 θ₁.2 θ₂.2 hmem, LinearMap.sub_apply]
   have h1 := resMap_mk D θ₁ τ
   have h2 := resMap_mk D θ₂ τ

@@ -46,7 +46,7 @@ out of scope, per `Comparison.lean`/the root docstring) — it is not used here 
 * **`chiT_eq_chiT_zero_add_degree (D) : chiT D = chiT 0 + D.degree`** — the primary deliverable.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 open RS RS.LaurentTail
 
@@ -92,7 +92,7 @@ omit [ConnectedSpace X] [T1Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowToT_apply_of_not_mem {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.Cech.Window D D')
     {p : X} (hp : p ∉ RS.Cech.diffSupp D D') :
     RS.LaurentTail.windowToT D D' h w p = 0 := by
-  show RS.LaurentTail.T.mk D (RS.Cech.diffSupp D D')
+  change RS.LaurentTail.T.mk D (RS.Cech.diffSupp D D')
       (fun q => RS.LaurentTail.windowAtToTailAt (q : X) D (D' q) (w q)) p = 0
   exact RS.LaurentTail.T.mk_apply_not_mem hp
 
@@ -202,7 +202,7 @@ theorem windowConnectT_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.
       (RS.Cech.restrictToChart D' (q : X) ⟨f, hmemD'⟩) -
       RS.Cech.WindowAt.mk (q : X) (D q) (D' q) (ξ q) = 0 := by
     rw [← map_sub, RS.Cech.WindowAt.mk_eq_zero_iff]
-    show ((-(D (q : X)) : ℤ) : WithTop ℤ) ≤
+    change ((-(D (q : X)) : ℤ) : WithTop ℤ) ≤
         ((RS.Cech.restrictToChart D' (q : X) ⟨f, hmemD'⟩ :
             RS.MeroGermOn X (chartAt ℂ (q : X)).source) -
           (ξ q : RS.MeroGermOn X (chartAt ℂ (q : X)).source)).ord (q : X)
@@ -275,7 +275,7 @@ theorem H1TailIncl_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (z : H1Tail 
     intro p
     by_cases hp : p ∈ RS.Cech.diffSupp D D'
     · rw [RS.LaurentTail.windowToT_apply D D' h w ⟨p, hp⟩]
-      show RS.LaurentTail.windowAtToTailAt p D (D' p)
+      change RS.LaurentTail.windowAtToTailAt p D (D' p)
           (RS.Cech.WindowAt.mk p (D p) (D' p) ⟨ψ ⟨p, hp⟩, hψmem ⟨p, hp⟩⟩) = τ' p
       rw [RS.LaurentTail.windowAtToTailAt_mk]
       exact hψspec ⟨p, hp⟩
@@ -316,7 +316,7 @@ private theorem sixterm_rankT1 {D D' : RS.Divisor X} (h : D ≤ D') :
     rw [RS.l]
     exact (LinearEquiv.ofInjective _ (RS.Cech.inclusion_injective h)).finrank_eq.symm
   rw [hrange_eq] at hrn
-  show RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (RS.Cech.windowMap h))
+  change RS.l D' = RS.l D + Module.finrank ℂ (LinearMap.range (RS.Cech.windowMap h))
   unfold RS.l at hrn ⊢
   omega
 
@@ -342,10 +342,10 @@ private theorem sixterm_rankT3 {D D' : RS.Divisor X} (h : D ≤ D') :
     LinearMap.range_eq_top.2 (H1TailIncl_surjective h)
   have hrange_eq : Module.finrank ℂ (LinearMap.range (H1TailIncl h)) = h1T D' := by
     rw [hsurj]
-    show Module.finrank ℂ (⊤ : Submodule ℂ (H1Tail D')) = Module.finrank ℂ (H1Tail D')
+    change Module.finrank ℂ (⊤ : Submodule ℂ (H1Tail D')) = Module.finrank ℂ (H1Tail D')
     exact finrank_top ℂ (H1Tail D')
   rw [hrange_eq] at hrn
-  show h1T D = Module.finrank ℂ (LinearMap.range (windowConnectT h)) + h1T D'
+  change h1T D = Module.finrank ℂ (LinearMap.range (windowConnectT h)) + h1T D'
   unfold h1T at hrn ⊢
   omega
 

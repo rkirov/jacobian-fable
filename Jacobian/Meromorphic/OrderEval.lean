@@ -22,7 +22,7 @@ Unit: meromorphic-and-divisors (`docs/design/meromorphic-and-divisors.md` §4.4,
   it recovers `φ` as a class. This is the rigidified normal form the blueprint needs for Čech.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set Filter Topology
 
 namespace RS
@@ -41,17 +41,19 @@ namespace MeroGermOn
 
 /-! ### `ord` -/
 
+open scoped Classical in
 /-- Order of a germ class at a point; junk `0` unless `IsOpen U ∧ x ∈ U` (D3). -/
 noncomputable def ord (φ : MeroGermOn X U) (x : X) : WithTop ℤ :=
   φ.1.liftOn (fun f => if IsOpen U ∧ x ∈ U then ordAtX f x else 0)
     (fun f g hfg => by
-      show (if IsOpen U ∧ x ∈ U then ordAtX f x else 0) =
+      change (if IsOpen U ∧ x ∈ U then ordAtX f x else 0) =
         (if IsOpen U ∧ x ∈ U then ordAtX g x else 0)
       by_cases hgate : IsOpen U ∧ x ∈ U
       · rw [if_pos hgate, if_pos hgate]
         exact ordAtX_congr (((eventuallyEq_codiscreteWithin_iff_of_isOpen hgate.1).1 hfg) x hgate.2)
       · rw [if_neg hgate, if_neg hgate])
 
+open scoped Classical in
 theorem ord_apply_mk (f : X → ℂ) (hf : MeromorphicOnX f U) (x : X) :
     (mk f hf).ord x = if IsOpen U ∧ x ∈ U then ordAtX f x else 0 := rfl
 
@@ -67,6 +69,7 @@ theorem ord_restrict (h : V ⊆ U) (hV : IsOpen V) (hU : IsOpen U) {x : X} (hx :
   -- not syntactically the lemma's, so rewriting cannot see the match
   exact ord_mk hV hx
 
+open scoped Classical in
 theorem ord_zero : (0 : MeroGermOn X U).ord x = if IsOpen U ∧ x ∈ U then ⊤ else 0 := by
   rw [← mk_zero, ord_apply_mk]
   by_cases hgate : IsOpen U ∧ x ∈ U
@@ -118,12 +121,13 @@ theorem ord_algebraMap (hU : IsOpen U) (hx : x ∈ U) (hc : c ≠ 0) :
 
 /-! ### `evalAt` (D5) -/
 
+open scoped Classical in
 /-- Canonical value (D5): the limit along `𝓝[≠] x` when `0 ≤ ord`, junk `0` else. -/
 noncomputable def evalAt (φ : MeroGermOn X U) (x : X) : ℂ :=
   φ.1.liftOn
     (fun f => if (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX f x then Filter.limUnder (𝓝[≠] x) f else 0)
     (fun f g hfg => by
-      show (if (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX f x then Filter.limUnder (𝓝[≠] x) f else 0) =
+      change (if (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX f x then Filter.limUnder (𝓝[≠] x) f else 0) =
         (if (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX g x then Filter.limUnder (𝓝[≠] x) g else 0)
       by_cases hgate : (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX f x
       · have hxU := hgate.1
@@ -139,6 +143,7 @@ noncomputable def evalAt (φ : MeroGermOn X U) (x : X) : ℂ :=
             ((eventuallyEq_codiscreteWithin_iff_of_isOpen hxU.1).1 hfg x hxU.2)).symm ▸ hg0⟩
         rw [if_neg hgate, if_neg hgate2])
 
+open scoped Classical in
 theorem evalAt_apply_mk (f : X → ℂ) (hf : MeromorphicOnX f U) (x : X) :
     (mk f hf).evalAt x =
       if (IsOpen U ∧ x ∈ U) ∧ 0 ≤ ordAtX f x then Filter.limUnder (𝓝[≠] x) f else 0 := rfl
@@ -256,7 +261,7 @@ theorem holoRepr_eventuallyEq_nhdsNE (hU : IsOpen U) (hx : x ∈ U) (φ : MeroGe
   filter_upwards [h2, h3, h4] with y h2y h3y h4y
   have hcy : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω f y :=
     (contMDiffAt_iff_analyticAt_of_mem_source (chart_mem_atlas ℂ x) h3y).2 h2y
-  show (mk f hf).evalAt y = f y
+  change (mk f hf).evalAt y = f y
   exact evalAt_mk_of_contMDiffAt hU h4y hcy
 
 theorem holoRepr_contMDiffAt (hU : IsOpen U) (hx : x ∈ U) {φ : MeroGermOn X U}
@@ -281,7 +286,7 @@ theorem holoRepr_contMDiffAt (hU : IsOpen U) (hx : x ∈ U) {φ : MeroGermOn X U
     exact heq2.trans heqNF
   have hcsymm : c.symm z₀ = x := c.left_inv (mem_chart_source ℂ x)
   have hatz0 : ((fun y => (mk f hf).evalAt y) ∘ c.symm) z₀ = h' z₀ := by
-    show (mk f hf).evalAt (c.symm z₀) = h' z₀
+    change (mk f hf).evalAt (c.symm z₀) = h' z₀
     rw [hcsymm]
     have htend : Tendsto f (𝓝[≠] x) (𝓝 ((mk f hf).evalAt x)) := tendsto_evalAt hU hx (mk f hf) h rfl
     have htend2 : Tendsto (f ∘ c.symm) (𝓝[≠] z₀) (𝓝 ((mk f hf).evalAt x)) :=
@@ -297,7 +302,7 @@ theorem holoRepr_contMDiffAt (hU : IsOpen U) (hx : x ∈ U) {φ : MeroGermOn X U
     rcases eq_or_ne w z₀ with rfl | hwz
     · exact hatz0
     · exact hw hwz
-  show ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (fun y => (mk f hf).evalAt y) x
+  change ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (fun y => (mk f hf).evalAt y) x
   rw [RS.contMDiffAt_iff_analyticAt_comp_chartAt]
   exact hAnalytic.congr key.symm
 

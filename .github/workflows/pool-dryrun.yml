@@ -56,6 +56,20 @@ jobs:
           build-args: LeanPool.JacobianDiffgeo
           use-mathlib-cache: true
 
+      # The pool's own CI fails on *any* build warning, and its lakefile turns on mathlib's
+      # standard linter set (`style.longLine`, `style.show`, `openClassical`, …) — none of which
+      # our own lakefile options would surface. Replaying the build prints the cached messages,
+      # so this scan sees exactly what the pool's `Build project` step would.
+      - name: Build log must be warning-free
+        run: |
+          set -euo pipefail
+          cd pool
+          lake build LeanPool.JacobianDiffgeo 2>&1 | tee lean-build.log
+          if grep -nE '(^|: )warning:' lean-build.log; then
+            echo "::error::Lean build emitted warnings; the pool's CI rejects those."
+            exit 1
+          fi
+
       - name: Index is regenerable
         run: cd pool && lake exe mk_all
 

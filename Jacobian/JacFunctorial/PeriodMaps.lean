@@ -73,10 +73,10 @@ theorem pushforwardT_periodVector (f : X → Y) (hf : ContMDiff 𝓘(ℂ) 𝓘(�
     rw [periodCoordEquiv_apply]
     rfl
   funext i
-  show periodCoordEquiv Y ((Form1.pullback f hf).dualMap
+  change periodCoordEquiv Y ((Form1.pullback f hf).dualMap
       ((periodCoordEquiv X).symm (periodVector (basis X) γ))) i = _
   rw [hsymm, periodCoordEquiv_apply, LinearMap.dualMap_apply]
-  show pathIntegral γ (Form1.pullback f hf (basis Y i)) = periodVector (basis Y)
+  change pathIntegral γ (Form1.pullback f hf (basis Y i)) = periodVector (basis Y)
       (γ.map hf.continuous) i
   rw [pathIntegral_pullback hf γ (basis Y i)]
   rfl
@@ -87,7 +87,7 @@ theorem periodSubgroup_le_comap_pushforwardT (f : X → Y) (hf : ContMDiff 𝓘(
       (pushforwardT f hf).toAddMonoidHom := by
   rw [periodSubgroup, AddSubgroup.closure_le]
   rintro v ⟨γ, rfl⟩
-  show pushforwardT f hf (periodVector (basis X) γ) ∈ (periodSubgroup Y).topologicalClosure
+  change pushforwardT f hf (periodVector (basis X) γ) ∈ (periodSubgroup Y).topologicalClosure
   rw [pushforwardT_periodVector]
   exact AddSubgroup.le_topologicalClosure (periodSubgroup Y)
     (periodVector_mem_periodSubgroup (γ.map hf.continuous))

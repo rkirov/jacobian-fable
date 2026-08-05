@@ -34,7 +34,7 @@ is now instance-free and `Module.finrank` needs no topology, so both theorems he
 `CONVENTIONS.md`'s "drop hypotheses lemmas don't need, when free to do so".
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 
 noncomputable section
 
@@ -138,7 +138,7 @@ def resDual (toH : ↥(TailSpace D) →ₗ[ℂ] H)
         = toH (Function.surjInv hsurj h1 + Function.surjInv hsurj h2) := by
       rw [Function.surjInv_eq hsurj, map_add, Function.surjInv_eq hsurj, Function.surjInv_eq hsurj]
     have hcong := pair_congr_of_toH_eq toH hwd Θ.2 hc
-    show pair Θ.1 ((Function.surjInv hsurj (h1 + h2) : ↥(TailSpace D)) : Tail X)
+    change pair Θ.1 ((Function.surjInv hsurj (h1 + h2) : ↥(TailSpace D)) : Tail X)
         = pair Θ.1 ((Function.surjInv hsurj h1 : ↥(TailSpace D)) : Tail X)
           + pair Θ.1 ((Function.surjInv hsurj h2 : ↥(TailSpace D)) : Tail X)
     rw [hcong, Submodule.coe_add]
@@ -147,7 +147,7 @@ def resDual (toH : ↥(TailSpace D) →ₗ[ℂ] H)
     have hc : toH (Function.surjInv hsurj (c • h)) = toH (c • Function.surjInv hsurj h) := by
       rw [Function.surjInv_eq hsurj, map_smul, Function.surjInv_eq hsurj]
     have hcong := pair_congr_of_toH_eq toH hwd Θ.2 hc
-    show pair Θ.1 ((Function.surjInv hsurj (c • h) : ↥(TailSpace D)) : Tail X)
+    change pair Θ.1 ((Function.surjInv hsurj (c • h) : ↥(TailSpace D)) : Tail X)
         = (RingHom.id ℂ) c • pair Θ.1 ((Function.surjInv hsurj h : ↥(TailSpace D)) : Tail X)
     rw [hcong, Submodule.coe_smul, RingHom.id_apply, smul_eq_mul]
     exact pair_smul_right Θ.1 c _
@@ -196,7 +196,7 @@ theorem finrank_omegaSpace_le (toH : ↥(TailSpace D) →ₗ[ℂ] H) (hsurj : Fu
       LinearMap.ext_iff.1 heq (toH ⟨τ0, hτ0mem⟩)
     rw [resDual_apply_toH, resDual_apply_toH] at hΦ
     have hlin : pair (Θ1.1 - Θ2.1) τ0 = pair Θ1.1 τ0 - pair Θ2.1 τ0 := by
-      show pairL (Θ1.1 - Θ2.1) τ0 = pairL Θ1.1 τ0 - pairL Θ2.1 τ0
+      change pairL (Θ1.1 - Θ2.1) τ0 = pairL Θ1.1 τ0 - pairL Θ2.1 τ0
       rw [map_sub, LinearMap.sub_apply]
     rw [hlin, hΦ, sub_self]
   rw [show Module.finrank ℂ (MForm.OmegaSpace (-D)) = Module.finrank ℂ ↥(MForm.OmegaSpace (-D))

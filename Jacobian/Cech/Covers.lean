@@ -128,13 +128,13 @@ theorem exists_chartDisk_basis {x : X} {W : Set X} (hW : W ∈ 𝓝 x) :
   have hV0mem : x ∈ V0 := ⟨e x, Metric.mem_ball_self hr, e.left_inv hxs⟩
   refine ⟨⟨V0, hV0open⟩, ⟨x, r, hr, ?_, ?_, ?_⟩, hV0mem, ?_⟩
   · exact hV0mem
-  · show V0 ⊆ e.source
+  · change V0 ⊆ e.source
     rw [hV0_def, e.symm_image_eq_source_inter_preimage htarget]
     exact inter_subset_left
-  · show e '' V0 = Metric.ball (e x) r
+  · change e '' V0 = Metric.ball (e x) r
     rw [hV0_def]
     exact e.image_symm_image_of_subset_target htarget
-  · show V0 ⊆ W
+  · change V0 ⊆ W
     intro y hy
     obtain ⟨z, hz, rfl⟩ := hy
     obtain ⟨w, hw, rfl⟩ := hsub hz
@@ -181,13 +181,13 @@ theorem exists_chartDisk_closure_basis [T2Space X] {x : X} {W : Set X} (hW : W �
   refine ⟨⟨V0, hV0open⟩, ⟨x, r / 2, hr2, ?_, ?_, ?_⟩, hV0mem, ?_,
     hKcompact.of_isClosed_subset isClosed_closure hclosureV0⟩
   · exact hV0mem
-  · show V0 ⊆ e.source
+  · change V0 ⊆ e.source
     rw [hV0_def, e.symm_image_eq_source_inter_preimage htarget']
     exact inter_subset_left
-  · show e '' V0 = Metric.ball (e x) (r / 2)
+  · change e '' V0 = Metric.ball (e x) (r / 2)
     rw [hV0_def]
     exact e.image_symm_image_of_subset_target htarget'
-  · show closure V0 ⊆ W
+  · change closure V0 ⊆ W
     exact hclosureV0.trans hKsubW
 
 /-- Chart-disk covers are cofinal (§6.3): every cover of `X` admits a good refinement. -/
@@ -245,7 +245,7 @@ def compOpens [T1Space X] (T : Finset X) : Opens X := ⟨(T : Set X)ᶜ, T.isClo
 omit [ChartedSpace ℂ X] in
 theorem mem_compOpens [T1Space X] {T : Finset X} {x : X} :
     x ∈ compOpens T ↔ x ∉ T := by
-  show x ∈ ((T : Set X)ᶜ) ↔ x ∉ T
+  change x ∈ ((T : Set X)ᶜ) ↔ x ∉ T
   rw [Set.mem_compl_iff, Finset.mem_coe]
 
 omit [ChartedSpace ℂ X] in
@@ -276,12 +276,12 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
   have hmemA : ∀ (q : ↥(S : Finset X)) (x : X), x ∈ A q ↔
       x ∈ O (q : X) ∧ x ∈ 𝒰.U (i (q : X) q.2) ∧ x ∉ S.erase (q : X) := by
     intro q x
-    show (x ∈ O (q:X) ∧ x ∈ 𝒰.U (i (q:X) q.2)) ∧ x ∈ compOpens (S.erase (q:X)) ↔ _
+    change (x ∈ O (q:X) ∧ x ∈ 𝒰.U (i (q:X) q.2)) ∧ x ∈ compOpens (S.erase (q:X)) ↔ _
     rw [mem_compOpens]
     tauto
   have hmemB : ∀ (j : Fin 𝒰.n) (x : X), x ∈ B j ↔ x ∈ 𝒰.U j ∧ x ∉ S := by
     intro j x
-    show x ∈ 𝒰.U j ∧ x ∈ compOpens S ↔ _
+    change x ∈ 𝒰.U j ∧ x ∈ compOpens S ↔ _
     rw [mem_compOpens]
   refine ⟨⟨𝒰.n + S.card, Ucov, ?_, ?_⟩, ⟨τfun, ?_⟩, ?_, ?_⟩
   · -- le_base
@@ -295,16 +295,16 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
     intro x hx
     by_cases hxS : x ∈ S
     · refine ⟨idxEquiv (Sum.inr ⟨x, hxS⟩), ?_⟩
-      show x ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inr ⟨x, hxS⟩)))
+      change x ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inr ⟨x, hxS⟩)))
       rw [Equiv.symm_apply_apply]
-      show x ∈ A ⟨x, hxS⟩
+      change x ∈ A ⟨x, hxS⟩
       rw [hmemA]
       exact ⟨hO x hxS, hi x hxS, Finset.notMem_erase x S⟩
     · obtain ⟨j, hj⟩ := 𝒰.covers x hx
       refine ⟨idxEquiv (Sum.inl j), ?_⟩
-      show x ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inl j)))
+      change x ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inl j)))
       rw [Equiv.symm_apply_apply]
-      show x ∈ B j
+      change x ∈ B j
       rw [hmemB]
       exact ⟨hj, hxS⟩
   · -- IsRefIdx 𝒰 𝒱
@@ -317,9 +317,9 @@ theorem exists_adapted_refinement [T1Space X] (𝒰 : FinCover Ω) (S : Finset X
   · -- IsAdapted
     intro p hp
     refine ⟨idxEquiv (Sum.inr ⟨p, hp⟩), ?_, ?_⟩
-    · show p ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inr ⟨p, hp⟩)))
+    · change p ∈ Sum.elim B A (idxEquiv.symm (idxEquiv (Sum.inr ⟨p, hp⟩)))
       rw [Equiv.symm_apply_apply]
-      show p ∈ A ⟨p, hp⟩
+      change p ∈ A ⟨p, hp⟩
       rw [hmemA]
       exact ⟨hO p hp, hi p hp, Finset.notMem_erase p S⟩
     · intro k hk

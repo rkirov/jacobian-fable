@@ -316,7 +316,7 @@ theorem contMDiff_add_torus :
     contDiffWithinAt_univ]
   have hpt : extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂) (q₁, q₂) = (x₁, x₂) := by
     rw [extChartAt_prod]
-    show (extChartAt 𝓘(ℂ, V) q₁ q₁, extChartAt 𝓘(ℂ, V) q₂ q₂) = (x₁, x₂)
+    change (extChartAt 𝓘(ℂ, V) q₁ q₁, extChartAt 𝓘(ℂ, V) q₂ q₂) = (x₁, x₂)
     rw [extChartAt_self_eq L q₁, extChartAt_self_eq L q₂]
   rw [hpt]
   have hexact : ∀ p : V × V, extChartAt 𝓘(ℂ, V) (q₁ + q₂)
@@ -328,11 +328,11 @@ theorem contMDiff_add_torus :
     have hsymm : (extChartAt (𝓘(ℂ, V).prod 𝓘(ℂ, V)) (q₁, q₂)).symm p
         = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2) := by
       rw [extChartAt_prod, PartialEquiv.prod_symm, PartialEquiv.prod_coe]
-      show ((extChartAt 𝓘(ℂ, V) q₁).symm p.1, (extChartAt 𝓘(ℂ, V) q₂).symm p.2)
+      change ((extChartAt 𝓘(ℂ, V) q₁).symm p.1, (extChartAt 𝓘(ℂ, V) q₂).symm p.2)
         = (QuotientAddGroup.mk p.1, QuotientAddGroup.mk p.2)
       rw [extChartAt_symm_apply_eq, extChartAt_symm_apply_eq]
     rw [hsymm]
-    show chartAt' L x₃ (QuotientAddGroup.mk p.1 + QuotientAddGroup.mk p.2)
+    change chartAt' L x₃ (QuotientAddGroup.mk p.1 + QuotientAddGroup.mk p.2)
       = chartAt' L x₃ (QuotientAddGroup.mk (p.1 + p.2))
     rw [QuotientAddGroup.mk_add]
   have hAnalytic : AnalyticAt ℂ (fun p : V × V => p.1 + p.2 + ℓ) (x₁, x₂) :=
@@ -434,7 +434,7 @@ def inducedHom (L : AddSubgroup V) (L' : AddSubgroup V') (T : V →ₗ[ℂ] V')
     (hT : L ≤ L'.comap T.toAddMonoidHom) : (V ⧸ L) →ₜ+ (V' ⧸ L') :=
   { QuotientAddGroup.map L L' T.toAddMonoidHom hT with
     continuous_toFun := by
-      show Continuous (⇑(QuotientAddGroup.map L L' T.toAddMonoidHom hT))
+      change Continuous (⇑(QuotientAddGroup.map L L' T.toAddMonoidHom hT))
       rw [(QuotientAddGroup.isQuotientMap_mk (N := L)).continuous_iff]
       have heq : (⇑(QuotientAddGroup.map L L' T.toAddMonoidHom hT)) ∘ QuotientAddGroup.mk =
           QuotientAddGroup.mk ∘ T :=
@@ -511,7 +511,7 @@ theorem inducedHom_id [FiniteDimensional ℂ V] (L : AddSubgroup V)
     inducedHom L L LinearMap.id hT = ContinuousAddMonoidHom.id (V ⧸ L) := by
   ext q
   refine QuotientAddGroup.induction_on q fun v => ?_
-  show inducedHom L L LinearMap.id hT (QuotientAddGroup.mk v) = QuotientAddGroup.mk v
+  change inducedHom L L LinearMap.id hT (QuotientAddGroup.mk v) = QuotientAddGroup.mk v
   rw [inducedHom_apply_mk]
   rfl
 
@@ -527,7 +527,7 @@ theorem inducedHom_comp {V'' : Type*} [NormedAddCommGroup V''] [NormedSpace ℂ 
       = inducedHom L L'' (T'.comp T) hTT' := by
   ext q
   refine QuotientAddGroup.induction_on q fun v => ?_
-  show inducedHom L' L'' T' hT' (inducedHom L L' T hT (QuotientAddGroup.mk v))
+  change inducedHom L' L'' T' hT' (inducedHom L L' T hT (QuotientAddGroup.mk v))
     = inducedHom L L'' (T'.comp T) hTT' (QuotientAddGroup.mk v)
   rw [inducedHom_apply_mk, inducedHom_apply_mk, inducedHom_apply_mk]
   rfl

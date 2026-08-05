@@ -82,7 +82,7 @@ theorem resAt_of_order_nonneg (h : 0 ≤ meromorphicOrderAt f z₀) : resAt f z�
 
 @[simp] theorem resAt_zpow_monomial (m : ℤ) :
     resAt (fun z => (z - z₀) ^ m) z₀ = if m = -1 then 1 else 0 := by
-  show laurentCoeffAt (fun z => (z - z₀) ^ m) z₀ (-1) = _
+  change laurentCoeffAt (fun z => (z - z₀) ^ m) z₀ (-1) = _
   rw [laurentCoeffAt_zpow_monomial]
   split_ifs <;> first | rfl | omega
 
@@ -118,7 +118,7 @@ theorem MeromorphicAt.resAt_deriv (hf : MeromorphicAt f z₀) : resAt (deriv f) 
         = ∑ k ∈ Finset.Icc (meromorphicOrderAt f z₀).untop₀ (-1),
             laurentCoeffAt f z₀ k * ((k : ℂ) * (z - z₀) ^ (k - 1)) := by
     intro z hz
-    show deriv (fun z => ∑ k ∈ Finset.Icc (meromorphicOrderAt f z₀).untop₀ (-1),
+    change deriv (fun z => ∑ k ∈ Finset.Icc (meromorphicOrderAt f z₀).untop₀ (-1),
         laurentCoeffAt f z₀ k * (z - z₀) ^ k) z = _
     rw [deriv_fun_sum (fun k _ => by
       have hzne : z - z₀ ≠ 0 := sub_ne_zero.2 hz
@@ -246,7 +246,7 @@ theorem resAt_analyticAt_mul (hh : AnalyticAt ℂ h z₀) (hf : MeromorphicAt f 
   have hexpand : (fun z => h z * principalPartAt f z₀ z)
       = fun z => ∑ k ∈ Finset.Icc m (-1), laurentCoeffAt f z₀ k * (h z * (z - z₀) ^ k) := by
     funext z
-    show h z * (∑ k ∈ Finset.Icc m (-1), laurentCoeffAt f z₀ k * (z - z₀) ^ k) = _
+    change h z * (∑ k ∈ Finset.Icc m (-1), laurentCoeffAt f z₀ k * (z - z₀) ^ k) = _
     rw [Finset.mul_sum]
     exact Finset.sum_congr rfl fun k _ => by ring
   rw [hexpand, resAt_fun_sum (fun k _ => by fun_prop)]

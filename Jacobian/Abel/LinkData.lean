@@ -261,7 +261,7 @@ private theorem exists_linkOrd_factor [DecidableEq X] {A B : X} (hAB : A ≠ B)
       have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
         (chartAt ℂ x).left_inv hq.1
       rw [hord]
-      show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.β)⁻¹ *
+      change P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.β)⁻¹ *
           ((τ (chartAt ℂ x q) - τ z₀) * (chartAt ℂ x q - z₀)⁻¹)
         = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
           (chartAt ℂ x q - z₀) ^ (-(1 : ℤ))
@@ -311,7 +311,7 @@ private theorem exists_linkOrd_factor [DecidableEq X] {A B : X} (hAB : A ≠ B)
         have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
           (chartAt ℂ x).left_inv hq.1
         rw [hord]
-        show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.α) *
+        change P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.α) *
             ((chartAt ℂ x q - z₀) * (τ (chartAt ℂ x q) - τ z₀)⁻¹)
           = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
             (chartAt ℂ x q - z₀) ^ (-(-1 : ℤ))
@@ -342,7 +342,7 @@ private theorem exists_linkOrd_factor [DecidableEq X] {A B : X} (hAB : A ≠ B)
         have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
           (chartAt ℂ x).left_inv hq.1
         rw [hord]
-        show P.g (τ (chartAt ℂ x q))
+        change P.g (τ (chartAt ℂ x q))
           = f ((chartAt ℂ x).symm (chartAt ℂ x q)) * (chartAt ℂ x q - z₀) ^ (-(0 : ℤ))
         rw [neg_zero, zpow_zero, mul_one, hq1, hf_source q hq.2, hτ_def]
         simp only [Function.comp_apply, hq1]
@@ -418,10 +418,10 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
     set χ : ContDiffBump (0 : ℂ) := ⟨δm + ε / 2, δm + 3 * ε / 4, by linarith, by linarith⟩
       with hχ_def
     have hρχin : ρ < χ.rIn := by
-      show δm + ε / 4 < δm + ε / 2
+      change δm + ε / 4 < δm + ε / 2
       linarith
     have hχout_lt : χ.rOut < r := by
-      show δm + 3 * ε / 4 < r
+      change δm + 3 * ε / 4 < r
       rw [hε_def]
       linarith
     have hAρ : e A - c ∈ ball (0 : ℂ) ρ := by

@@ -118,11 +118,11 @@ theorem form1_eq_zero (η : RS.Form1 (OnePoint ℂ)) : η = 0 := by
     intro x
     induction x using OnePoint.rec with
     | infty =>
-      show RS.coeffIn (chartAt ℂ (∞ : OnePoint ℂ)) η (chartAt ℂ (∞ : OnePoint ℂ) ∞) = 0
+      change RS.coeffIn (chartAt ℂ (∞ : OnePoint ℂ)) η (chartAt ℂ (∞ : OnePoint ℂ) ∞) = 0
       rw [chartAt_infty, invChart_apply_infty]
       exact congrFun hg_zero 0
     | coe z =>
-      show RS.coeffIn (chartAt ℂ ((z : ℂ) : OnePoint ℂ)) η
+      change RS.coeffIn (chartAt ℂ ((z : ℂ) : OnePoint ℂ)) η
           (chartAt ℂ ((z : ℂ) : OnePoint ℂ) (z : OnePoint ℂ)) = 0
       rw [chartAt_coe, coeChart_apply_coe]
       exact congrFun hf_zero z

@@ -92,13 +92,13 @@ theorem span_real_periodSubgroup :
       (period γ eta0).re = 0 := by
     intro γ
     have heq : period γ eta0 = ∑ i, c i * period γ (basis X i) := by
-      show pathIntegral γ (∑ i, c i • basis X i) = ∑ i, c i * pathIntegral γ (basis X i)
+      change pathIntegral γ (∑ i, c i • basis X i) = ∑ i, c i * pathIntegral γ (basis X i)
       induction (Finset.univ : Finset (Fin (genus X))) using Finset.induction with
       | empty => simp
       | insert j s hj ih =>
         rw [Finset.sum_insert hj, Finset.sum_insert hj, pathIntegral_add, pathIntegral_smul, ih]
     rw [heq]
-    show (∑ i, c i * periodVector (basis X) γ i).re = 0
+    change (∑ i, c i * periodVector (basis X) γ i).re = 0
     rw [hkey (periodVector (basis X) γ)]
     have hmemPV : periodVector (basis X) γ ∈ periodSubgroup X :=
       AddSubgroup.subset_closure ⟨γ, rfl⟩

@@ -23,7 +23,7 @@ Main declarations: `RS.isOpen_coeffAt_ne_zero`, `RS.exists_coeffAt_ne_zero_notMe
 `RS.exists_genericPoints`, `RS.det_genericMatrix_ne_zero`.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set Filter Topology IsManifold
 
 noncomputable section
@@ -64,7 +64,7 @@ theorem isOpen_coeffAt_ne_zero (η : Form1 X) : IsOpen {x : X | coeffAt x η ≠
         coeffIn e η (e ((chartAt ℂ x).symm (chartAt ℂ x x))) :=
     coeffIn_trans he (chart_mem_maximalAtlas x) η hz
   rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)] at heq
-  show (coeffIn (chartAt ℂ x) η (chartAt ℂ x x) : ℂ) ≠ 0
+  change (coeffIn (chartAt ℂ x) η (chartAt ℂ x x) : ℂ) ≠ 0
   rw [heq]
   exact mul_ne_zero
     (analyticAt_transition (chart_mem_maximalAtlas x) he (mem_chart_source ℂ x) hxsrc).2 hx
@@ -108,6 +108,7 @@ theorem genericKernel_empty : genericKernel X (∅ : Finset X) = ⊤ := by
 least) `k`, saturating at `⊥` once `k ≥ genus X`. -/
 theorem exists_finset_card_finrank_le (k : ℕ) :
     ∃ s : Finset X, s.card = k ∧ Module.finrank ℂ (genericKernel X s) ≤ genus X - k := by
+  classical
   induction k with
   | zero =>
     refine ⟨∅, rfl, ?_⟩

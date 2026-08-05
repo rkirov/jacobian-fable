@@ -193,7 +193,7 @@ noncomputable def coeffData : Form01CoeffData X (Fin d.n) where
     apply contDiffOn_wirtingerDbar _ (d.chart i).open_target
     intro z hz
     have hx : (d.chart i).symm z ∈ d.V i := by
-      show (d.chart i).symm z ∈ (d.V i : Set X)
+      change (d.chart i).symm z ∈ (d.V i : Set X)
       rw [← d.chart_source i]; exact (d.chart i).map_target hz
     have h := d.contDiffAt_u_comp_chart_symm i hx
     rw [(d.chart i).right_inv hz] at h
@@ -238,7 +238,7 @@ noncomputable def form : Form01 X := Form01.ofCoeffs d.coeffData
 theorem isDbarOn_form (i : Fin d.n) : IsDbarOn (d.u i) d.form (d.V i) := by
   intro x hx
   have hxi_src : x ∈ (d.chart i).source := d.mem_chart_source_of_mem_V hx
-  show wirtingerDbar (d.u i ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+  change wirtingerDbar (d.u i ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
     (Form01.ofCoeffs d.coeffData).coeffAt x (chartAt ℂ x x)
   rw [Form01.coeffAt_ofCoeffs d.coeffData hxi_src]
   exact d.wirtingerDbar_u_transport i hx (chartAt ℂ x) (IsManifold.chart_mem_maximalAtlas x)

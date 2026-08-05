@@ -1,9 +1,15 @@
 name = "jacobian"
 defaultTargets = ["Jacobian"]
 
+# These mirror `Vilin97/lean-pool`'s own lakefile, so that a build here sees exactly the
+# warnings the pool's build of this project would see — `mathlibStandardSet` in particular
+# turns on mathlib's syntax linters (`style.longLine`, `style.cdot`, `flexible`, …).
 [leanOptions]
 pp.unicode.fun = true
 autoImplicit = false
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
 
 [[require]]
 name = "mathlib"

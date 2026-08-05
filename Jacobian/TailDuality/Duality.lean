@@ -30,7 +30,7 @@ facts proved elementarily (no Čech `H1`/cochain machinery: `H1Tail D` being a l
 own docstring for the full account. riemann-roch (#28) now consumes `chiT`'s own ledger directly.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 open RS RS.LaurentTail
 
@@ -103,7 +103,7 @@ theorem exists_pairT_eq (D : RS.Divisor X) (φ : T D →ₗ[ℂ] ℂ)
     rw [Divisor.neg_apply, neg_neg]
     show ((K p : ℤ) : WithTop ℤ) ≤ ω₀.ord p
     rw [hK_def]
-    show ((ω₀.divisor p : ℤ) : WithTop ℤ) ≤ ω₀.ord p
+    change ((ω₀.divisor p : ℤ) : WithTop ℤ) ≤ ω₀.ord p
     rw [MForm.divisor_apply]
     exact le_of_eq (WithTop.coe_untop₀_of_ne_top (MForm.ord_ne_top hω₀ p))
   have hω₀A : ω₀ ∈ MForm.OmegaSpace (-A) := omegaSpace_anti hAK hωK
@@ -164,7 +164,7 @@ theorem exists_pairT_eq (D : RS.Divisor X) (φ : T D →ₗ[ℂ] ℂ)
     rw [hordmul]
     have hωord : ω₀.ord p = ((K p : ℤ) : WithTop ℤ) := by
       rw [hK_def]
-      show ω₀.ord p = ((ω₀.divisor p : ℤ) : WithTop ℤ)
+      change ω₀.ord p = ((ω₀.divisor p : ℤ) : WithTop ℤ)
       rw [MForm.divisor_apply]
       exact (WithTop.coe_untop₀_of_ne_top (MForm.ord_ne_top hω₀ p)).symm
     rw [hωord, ← WithTop.coe_add]
@@ -185,10 +185,10 @@ theorem exists_pairT_eq (D : RS.Divisor X) (φ : T D →ₗ[ℂ] ℂ)
     apply DFinsupp.lhom_ext
     intro p x
     obtain ⟨ψ, rfl⟩ := TailAt.mk_surjective p E₁ x
-    show pairT η hηE₁ (singleT p E₁ ψ) = (φA ∘ₗ truncT hE₁A) (singleT p E₁ ψ)
+    change pairT η hηE₁ (singleT p E₁ ψ) = (φA ∘ₗ truncT hE₁A) (singleT p E₁ ψ)
     rw [pairT_singleT]
     set τ' : T E₁ := singleT p E₁ ψ with hτ'_def
-    show pairAt η p ψ = (φA ∘ₗ truncT hE₁A) τ'
+    change pairAt η p ψ = (φA ∘ₗ truncT hE₁A) τ'
     have e1 : pairAt η p ψ = pairT η hηE₁ τ' := (pairT_singleT η hηE₁ p ψ).symm
     have e2 : pairT η hηE₁ τ' = pairT ((f₁ : RS.Mero X)⁻¹ • ((f₂ : RS.Mero X) • ω₀)) hηE₁' τ' := by
       rw [pairT_eq_of_eq hcollapse.symm hηE₁ hηE₁']
@@ -258,7 +258,7 @@ noncomputable def resEquiv (D : RS.Divisor X) :
 /-- **THE frozen obligation, re-based** (serre-duality-cech D6's exact shape, at the TAIL `h¹`;
 `RS.MForm.i` is the exact name for the design's `RS.i` — see the file-end note). -/
 theorem i_neg_eq_h1T (D : RS.Divisor X) : MForm.i (-D) = h1T D := by
-  show Module.finrank ℂ (MForm.OmegaSpace (-D)) = Module.finrank ℂ (H1Tail D)
+  change Module.finrank ℂ (MForm.OmegaSpace (-D)) = Module.finrank ℂ (H1Tail D)
   rw [LinearEquiv.finrank_eq (resEquiv D), Subspace.dual_finrank_eq]
 
 /-- Serre duality in the `l(K-D)` shape riemann-roch consumes. -/

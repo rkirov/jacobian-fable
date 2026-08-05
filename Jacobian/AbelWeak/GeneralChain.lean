@@ -35,7 +35,7 @@ THREE points (`M 0`, `M m`, `M (m+1)`, with the possible coincidences `M 0 = M m
 off-`U` value if `P ∉ U`).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open IsManifold Metric Set Filter Topology
 
 noncomputable section
@@ -282,6 +282,7 @@ private theorem merge_two' {f₀ h₁ h₂ : X → ℂ} {y₁ y₂ y₃ : X} {k�
   · intro x hx1 hx2 hx3
     rw [Function.update_of_ne hx3, hh1_eq x hx1 hx2]
 
+open scoped Classical in
 /-- The chain induction behind `exists_weakSolutionOfPair`: a weak solution along the first `m`
 steps of the chart chain, with the endpoint orders prescribed. Split out to keep that proof under
 the 200-line size we hold ourselves to; the `M`/`ordAt` abbreviations are rebuilt here so the
@@ -304,7 +305,7 @@ private theorem exists_weakSolution_chain_step {P Q : X} {δ : Path Q P} (C : Ch
   set ordAt : ℕ → X → ℤ :=
     fun m x => (if x = M 0 then (-1 : ℤ) else 0) + (if x = M m then (1 : ℤ) else 0)
     with hordAt_def
-  show ∀ m ≤ C.n, ∃ (f : X → ℂ) (U : Set X), IsOpen U ∧ IsCompact (closure U) ∧
+  change ∀ m ≤ C.n, ∃ (f : X → ℂ) (U : Set X), IsOpen U ∧ IsCompact (closure U) ∧
     M 0 ∈ U ∧
     (∀ x ∉ U, x ≠ M 0 → f x = 1) ∧
     ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {M 0}ᶜ ∧
@@ -544,9 +545,9 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
   · rw [← hM0]; exact hcm
   · intro x hxP hxQ
     apply hne x
-    · show x ≠ M 0
+    · change x ≠ M 0
       rw [hM0]; exact hxQ
-    · show x ≠ M C.n
+    · change x ≠ M C.n
       rw [hMn]; exact hxP
   · intro x hx
     exact hoff x hx (fun hxeq => hx (hxeq ▸ hM0U))

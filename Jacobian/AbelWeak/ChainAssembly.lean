@@ -52,7 +52,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 already living inside a common chart `e i` (matching the shape `abel-theorem`'s own disjoint-chart
 21.4(a) construction produces), there is a weak solution of the whole `k`-point configuration,
 equal to `1` outside a compact neighbourhood of the union of the per-pair chart balls. -/
-theorem exists_weakSolutionOfFinset {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem exists_weakSolutionOfFinset {ι : Type*} [Finite ι]
     (a x : ι → X) (ha : Function.Injective a) (hx : Function.Injective x)
     (hax : ∀ i j, a i ≠ x j)
     {e : ι → OpenPartialHomeomorph X ℂ} (he : ∀ i, e i ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X)
@@ -65,6 +65,8 @@ theorem exists_weakSolutionOfFinset {ι : Type*} [Fintype ι] [DecidableEq ι]
     ∃ (f : X → ℂ) (U : Set X), IsWeakSolutionOfFinset f a x ∧
       IsOpen U ∧ IsCompact (closure U) ∧ (∀ i, x i ∈ U) ∧ (∀ i, a i ∈ U) ∧
       (∀ z ∉ U, f z = 1) := by
+  classical
+  have : Fintype ι := Fintype.ofFinite ι
   choose f hf hUopen hUcompact hxU haU hf1 using
     fun i => exists_weakSolutionOfPair_chart (hax i i).symm (he i) (hxs i) (has i)
       (hρ i) (haQ i) (haP i) (ψ i) (hρψ i) (hballsub i)
@@ -113,7 +115,7 @@ theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartCh
     have hmem1 : C.t (k + 1) ∈ Set.Icc (C.t k) (C.t (k + 1)) := ⟨C.mono (Nat.le_succ k), le_rfl⟩
     have hsub := hFprim.sub_eq_sub (isPreconnected_Icc) γ.continuous_extend.continuousOn
       hGprim hmem0 hmem1
-    show F (C.t (k + 1)) - F (C.t k) = Gk (C.t (k + 1)) - Gk (C.t k)
+    change F (C.t (k + 1)) - F (C.t k) = Gk (C.t (k + 1)) - Gk (C.t k)
     linear_combination hsub
   -- Telescope `F 1 - F 0` over the chain.
   have htelescope_gen : ∀ n : ℕ,

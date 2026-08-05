@@ -112,9 +112,10 @@ theorem isCompactOperator_restrictCLM {S' S : Opens X} {x₀ : X}
     intro f
     apply BoundedContinuousFunction.ext
     intro z
-    show E (Φ f) (G z) = (restrictCLM (le_of_closure hc) f : ↥(S' : Set X) →ᵇ ℂ) z
+    change E (Φ f) (G z) = (restrictCLM (le_of_closure hc) f : ↥(S' : Set X) →ᵇ ℂ) z
     rw [hEapp, hΦapp]
-    show f.2.choose (e.symm (e z.1)) = (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion (le_of_closure hc) z)
+    change f.2.choose (e.symm (e z.1)) =
+      (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion (le_of_closure hc) z)
     rw [e.left_inv (hsrc (le_of_closure hc z.2))]
     exact (f.2.choose_spec.2 ⟨z.1, le_of_closure hc z.2⟩).symm
   have hΨC1compact : IsCompact (Ψ '' closure (Φ '' Metric.closedBall (0 : BddHoloOn S) 1)) :=

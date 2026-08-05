@@ -42,7 +42,7 @@ noncomputable instance instAlgebraGerm {α : Type*} {l : Filter α} : Algebra �
 
 @[simp] theorem Filter.Germ.algebraMap_apply {α : Type*} {l : Filter α} (c : ℂ) :
     algebraMap ℂ (Filter.Germ l ℂ) c = ((fun _ => c : α → ℂ) : Filter.Germ l ℂ) := by
-  show c • (1 : Filter.Germ l ℂ) = _
+  change c • (1 : Filter.Germ l ℂ) = _
   rw [← Filter.Germ.coe_one, ← Filter.Germ.coe_smul]
   congr 1
   funext a
@@ -139,13 +139,13 @@ because a rewrite chain through those cannot instantiate the proof-valued argume
 @[simp] theorem mk_zero :
     (mk (fun _ : X => (0 : ℂ)) (meromorphicOnX_const 0 U) : MeroGermOn X U) = 0 := by
   apply Subtype.ext
-  show ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 0
+  change ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 0
   exact Filter.Germ.coe_zero
 
 @[simp] theorem mk_one :
     (mk (fun _ : X => (1 : ℂ)) (meromorphicOnX_const 1 U) : MeroGermOn X U) = 1 := by
   apply Subtype.ext
-  show ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 1
+  change ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = 1
   exact Filter.Germ.coe_one
 
 theorem algebraMap_mk (c : ℂ) :
@@ -184,14 +184,14 @@ theorem restrictGerm_mul (h : V ⊆ U) (γ₁ γ₂ : Filter.Germ (codiscreteWit
 omit [ChartedSpace ℂ X] in
 theorem restrictGerm_one (h : V ⊆ U) :
     restrictGerm h (1 : Filter.Germ (codiscreteWithin U) ℂ) = 1 := by
-  show restrictGerm h ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
+  change restrictGerm h ((fun _ : X => (1 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
   rw [restrictGerm_coe]
   exact Filter.Germ.coe_one
 
 omit [ChartedSpace ℂ X] in
 theorem restrictGerm_zero (h : V ⊆ U) :
     restrictGerm h (0 : Filter.Germ (codiscreteWithin U) ℂ) = 0 := by
-  show restrictGerm h ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
+  change restrictGerm h ((fun _ : X => (0 : ℂ)) : Filter.Germ (codiscreteWithin U) ℂ) = _
   rw [restrictGerm_coe]
   exact Filter.Germ.coe_zero
 
@@ -211,7 +211,7 @@ noncomputable def restrict (h : V ⊆ U) : MeroGermOn X U →ₐ[ℂ] MeroGermOn
   map_add' φ ψ := Subtype.ext (restrictGerm_add h φ.1 ψ.1)
   commutes' c := by
     apply Subtype.ext
-    show restrictGerm h (algebraMap ℂ (MeroGermOn X U) c).1 = (algebraMap ℂ (MeroGermOn X V) c).1
+    change restrictGerm h (algebraMap ℂ (MeroGermOn X U) c).1 = (algebraMap ℂ (MeroGermOn X V) c).1
     rw [MeroGermOn.algebraMap_mk, MeroGermOn.algebraMap_mk]
     exact restrictGerm_coe h (fun _ => c)
 

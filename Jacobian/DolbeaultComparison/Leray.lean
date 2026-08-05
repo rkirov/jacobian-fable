@@ -105,7 +105,7 @@ theorem indCocycle_mem_Z1 (i : Fin 𝒰.n) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱
     exact hcast
   apply Subtype.ext
   rw [d1_apply]
-  show (RS.MeroGermOn.restrict hβγ𝒱ᵢ
+  change (RS.MeroGermOn.restrict hβγ𝒱ᵢ
         (indCocycle D i f (β, γ) : RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U β ⊓
           (𝒱.induced (𝒰.U i)).U γ : Set X)) -
       RS.MeroGermOn.restrict hαγ𝒱ᵢ
@@ -116,7 +116,7 @@ theorem indCocycle_mem_Z1 (i : Fin 𝒰.n) {f : C1 D 𝒱} (hf : f ∈ Z1 D 𝒱
           (𝒱.induced (𝒰.U i)).U β : Set X)) :
       RS.MeroGermOn X ((𝒱.induced (𝒰.U i)).U α ⊓ (𝒱.induced (𝒰.U i)).U β ⊓
         (𝒱.induced (𝒰.U i)).U γ : Set X)) = 0
-  show (RS.MeroGermOn.restrict hβγ𝒱ᵢ
+  change (RS.MeroGermOn.restrict hβγ𝒱ᵢ
         (RS.MeroGermOn.restrict (inf_inf_inf_le (𝒰.U i) (𝒱.U β) (𝒱.U γ))
           (f (β, γ) : RS.MeroGermOn X (𝒱.U β ⊓ 𝒱.U γ : Set X))) -
       RS.MeroGermOn.restrict hαγ𝒱ᵢ
@@ -358,7 +358,7 @@ theorem exists_crossGlue {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
       RS.MeroGermOn.restrict
         (Set.subset_iUnion (fun α => ((𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α : Opens X) : Set X)) α) Ψ :=
     RS.MeroGermOn.restrict_restrict hunion.ge inf_le_left Ψ
-  show RS.MeroGermOn.restrict (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ 𝒰.U i ⊓ 𝒰.U j)
+  change RS.MeroGermOn.restrict (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α ≤ 𝒰.U i ⊓ 𝒰.U j)
       (MeroGermOn.congrSet hunion Ψ) =
       (patch D gFam i j α : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒱.U α : Set X))
   exact hstep.trans (hΨ α)
@@ -448,7 +448,7 @@ theorem crossGlueFam_mem_Z1 {F : C1 D 𝒰} {gFam : ∀ i : Fin 𝒰.n, C0 D (�
       RS.MeroGermOn.restrict (Set.subset_iUnion W α) (e Z) =
         RS.MeroGermOn.restrict (inf_le_left : A ⊓ 𝒱.U α ≤ A) Z := by
     intro Z α
-    show RS.MeroGermOn.restrict (Set.subset_iUnion W α) (RS.MeroGermOn.restrict _ Z) = _
+    change RS.MeroGermOn.restrict (Set.subset_iUnion W α) (RS.MeroGermOn.restrict _ Z) = _
     rw [RS.MeroGermOn.restrict_restrict]
   have hi : A ≤ 𝒰.U i := inf_le_left.trans inf_le_left
   have hj : A ≤ 𝒰.U j := inf_le_left.trans inf_le_right
@@ -514,7 +514,7 @@ theorem crossGlueFam_mem_Z1 {F : C1 D 𝒰} {gFam : ∀ i : Fin 𝒰.n, C0 D (�
       rw [hF'] at e1
       rw [← e1, patch_restrict D gFam i j α hWjα hWiα hWijα]
     rw [d1_apply]
-    show RS.MeroGermOn.restrict hWA
+    change RS.MeroGermOn.restrict hWA
         ((RS.MeroGermOn.restrict
             (le_inf (inf_le_left.trans inf_le_right) inf_le_right : A ≤ 𝒰.U j ⊓ 𝒰.U k)
             (F (j, k) : RS.MeroGermOn X (𝒰.U j ⊓ 𝒰.U k : Set X)) -
@@ -616,7 +616,7 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
     have hα := RS.MeroGermOn.restrict_restrict
       (le_inf (hτ α) le_rfl : 𝒱.U α ≤ 𝒰.U (τ α) ⊓ 𝒱.U α) hWα
       (gFam (τ α) α : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ α))).U α : Set X))
-    show RS.MeroGermOn.restrict hWβ
+    change RS.MeroGermOn.restrict hWβ
         (RS.MeroGermOn.restrict (le_inf (hτ β) le_rfl : 𝒱.U β ≤ 𝒰.U (τ β) ⊓ 𝒱.U β)
           (gFam (τ β) β : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ β))).U β : Set X))) -
       RS.MeroGermOn.restrict hWα
@@ -628,7 +628,7 @@ theorem resC1_crossGlueFam_add_eq {f : C1 D 𝒱} (_hf : f ∈ Z1 D 𝒱)
           (gFam (τ α) α : RS.MeroGermOn X ((𝒱.induced (𝒰.U (τ α))).U α : Set X))
     rw [hβ, hα]
     rfl
-  show RS.MeroGermOn.restrict (inf_le_inf (hτ α) (hτ β))
+  change RS.MeroGermOn.restrict (inf_le_inf (hτ α) (hτ β))
       (F (τ α, τ β) : RS.MeroGermOn X (𝒰.U (τ α) ⊓ 𝒰.U (τ β) : Set X)) +
         (f (α, β) : RS.MeroGermOn X (𝒱.U α ⊓ 𝒱.U β : Set X)) =
       RS.MeroGermOn.restrict hWβ
@@ -656,7 +656,7 @@ theorem exists_trade (h𝒰 : 𝒰.IsGood) (τ : Fin 𝒱.n → Fin 𝒰.n) (hτ
   refine ⟨-(⟨F₀, hF₀mem⟩ : Z1 D 𝒰), -(tradeH0 D τ hτ gFam), ?_⟩
   have hcoe : (resZ1 D τ hτ (-(⟨F₀, hF₀mem⟩ : Z1 D 𝒰)) : C1 D 𝒱) = -(resC1 D τ hτ F₀) := by
     rw [resZ1_apply_coe]
-    show resC1 D τ hτ (-F₀) = -(resC1 D τ hτ F₀)
+    change resC1 D τ hτ (-F₀) = -(resC1 D τ hτ F₀)
     rw [map_neg]
   rw [hcoe, map_neg]
   have heq : resC1 D τ hτ F₀ = d0 D 𝒱 (tradeH0 D τ hτ gFam) - (f : C1 D 𝒱) := by
@@ -673,7 +673,7 @@ theorem resH1_surjective_of_isGood (h𝒰 : 𝒰.IsGood) (τ : Fin 𝒱.n → Fi
   obtain ⟨F, g, hFg⟩ := exists_trade D h𝒰 τ hτ f
   refine ⟨H1Cover.mk D 𝒰 F, ?_⟩
   rw [resH1_mk, ← sub_eq_zero, ← map_sub, H1Cover.mk_eq_zero_iff]
-  show (↑(resZ1 D τ hτ F) - ↑f : C1 D 𝒱) ∈ B1 D 𝒱
+  change (↑(resZ1 D τ hτ F) - ↑f : C1 D 𝒱) ∈ B1 D 𝒱
   rw [hFg]
   simp only [add_sub_cancel_left]
   exact ⟨g, rfl⟩

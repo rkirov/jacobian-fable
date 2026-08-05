@@ -145,7 +145,7 @@ theorem extChartAt_ulift_self_eq (q : ULift.{u} (V ⧸ L)) :
   set x := Function.surjInv QuotientAddGroup.mk_surjective q.down
   show uliftChartAt L x q = x
   rw [uliftChartAt, OpenPartialHomeomorph.trans_apply]
-  show chartAt' L x q.down = x
+  change chartAt' L x q.down = x
   have hxq : (QuotientAddGroup.mk x : V ⧸ L) = q.down := Function.surjInv_eq _ q.down
   rw [← hxq]
   exact chartAt'_apply_mk L (Metric.mem_ball_self (injRadius_pos L))

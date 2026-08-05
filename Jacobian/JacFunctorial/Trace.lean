@@ -260,7 +260,7 @@ theorem deriv_chartRead_eq_of_adapted {x₀ : X} {k : ℕ} (A : AdaptedChartsAt 
   have heq : (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) =ᶠ[𝓝 (chartAt ℂ x x)]
       (⇑e₀ ∘ ⇑A.e'.symm) ∘ ((fun v : ℂ => v ^ k) ∘ (⇑A.e ∘ ⇑(chartAt ℂ x).symm)) := by
     filter_upwards [hev] with z hz
-    show e₀ (f ((chartAt ℂ x).symm z)) = e₀ (A.e'.symm ((A.e ((chartAt ℂ x).symm z)) ^ k))
+    change e₀ (f ((chartAt ℂ x).symm z)) = e₀ (A.e'.symm ((A.e ((chartAt ℂ x).symm z)) ^ k))
     rw [← A.eqOn_symm _ hz]
   have hD := (hcomp2.congr_of_eventuallyEq heq).deriv
   rw [hD]
@@ -299,7 +299,7 @@ theorem qCoeff_eq_branch_term {y : Y} (S : RS.FiberStack f y) (i : Fin S.n)
     rw [h0, mul_zero] at hprod
     exact zero_ne_one hprod
   have hT'inv : T' = T⁻¹ := eq_inv_of_mul_eq_one_left hprod
-  show (deriv (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
+  change (deriv (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
     = T' * (coeffIn (S.A i).e η ((S.A i).e x) * J⁻¹)
   rw [hD, hB, hT'inv]
   rcases eq_or_ne J 0 with hJ0 | hJ0
@@ -325,7 +325,7 @@ theorem traceCoeffFun_eq_qSum (η : Form1 X) {y yhat : Y}
     intro i
     have hk0 : multiplicity f ((stackAt hf hne y).pt i) ≠ 0 := (stackAt hf hne y).mult_ne_zero i
     have hval : branchTrans hf hne y i (chartAt ℂ y yhat) = ((stackAt hf hne y).A i).e' yhat := by
-      show ((stackAt hf hne y).A i).e' ((chartAt ℂ y).symm (chartAt ℂ y yhat)) = _
+      change ((stackAt hf hne y).A i).e' ((chartAt ℂ y).symm (chartAt ℂ y yhat)) = _
       rw [(chartAt ℂ y).left_inv hyhatsrc]
     have hy0 : ((stackAt hf hne y).A i).e' y = 0 := by
       have h := ((stackAt hf hne y).A i).map_eq_zero'
@@ -370,7 +370,7 @@ theorem traceCoeffFun_eq_qSum (η : Form1 X) {y yhat : Y}
       rw [hfx]; exact hyhatsrc
     have hq := qCoeff_eq_branch_term (stackAt hf hne y) i (chart_mem_maximalAtlas y) hxs
       hfxsrc η
-    show deriv (branchTrans hf hne y i) (chartAt ℂ y yhat)
+    change deriv (branchTrans hf hne y i) (chartAt ℂ y yhat)
         * (coeffIn ((stackAt hf hne y).A i).e η v
             * ((multiplicity f ((stackAt hf hne y).pt i) : ℂ)
                 * v ^ ((multiplicity f ((stackAt hf hne y).pt i) : ℤ) - 1))⁻¹)
@@ -422,7 +422,7 @@ theorem qSum_trans (η : Form1 X) {yhat : Y} {e₀ e₁ : OpenPartialHomeomorph 
     have hz' : f ((chartAt ℂ x).symm z) ∈ e₀.source := hz
     simp only [Function.comp_apply, e₀.left_inv hz']
   have hD := deriv_eq_of_eventuallyEq_comp' houter hinner heq
-  show (deriv (⇑e₁ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
+  change (deriv (⇑e₁ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
     = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ yhat)
       * ((deriv (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η)
   rw [hD, hptr, hfx, mul_inv]
@@ -466,7 +466,7 @@ theorem traceCoeffFun_compat (η : Form1 X) (y y' p : Y)
       exact hq1.1
     · show τ (chartAt ℂ y' q) ∈ (traceChart hf hne y).target
       have : τ (chartAt ℂ y' q) = chartAt ℂ y q := by
-        show chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' q)) = chartAt ℂ y q
+        change chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' q)) = chartAt ℂ y q
         rw [hql]
       rw [this]
       exact (traceChart hf hne y).map_source hq1
@@ -494,9 +494,9 @@ theorem traceCoeffFun_compat (η : Form1 X) (y y' p : Y)
       rintro rfl
       exact hznot (by simp)
     have hτq : τ (chartAt ℂ y' q) = chartAt ℂ y q := by
-      show chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' q)) = chartAt ℂ y q
+      change chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' q)) = chartAt ℂ y q
       rw [hql]
-    show traceCoeffFun hf hne η y' (chartAt ℂ y' q)
+    change traceCoeffFun hf hne η y' (chartAt ℂ y' q)
       = deriv τ (chartAt ℂ y' q) * traceCoeffFun hf hne η y (τ (chartAt ℂ y' q))
     rw [hτq, traceCoeffFun_eq_qSum hf hne η hq.2 hqy', traceCoeffFun_eq_qSum hf hne η hq.1 hqy]
     exact qSum_trans hf η (chart_mem_maximalAtlas y) (chart_mem_maximalAtlas y')
@@ -508,7 +508,7 @@ theorem traceCoeffFun_compat (η : Form1 X) (y y' p : Y)
   have hkey := hEqU (⟨p, hp, rfl⟩ : (chartAt ℂ y' : Y → ℂ) p ∈ U)
   have hpsrc : p ∈ (chartAt ℂ y').source := hsub' hp
   have hτp : τ (chartAt ℂ y' p) = chartAt ℂ y p := by
-    show chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' p)) = chartAt ℂ y p
+    change chartAt ℂ y ((chartAt ℂ y').symm (chartAt ℂ y' p)) = chartAt ℂ y p
     rw [(chartAt ℂ y').left_inv hpsrc]
   have hkey' : traceCoeffFun hf hne η y' (chartAt ℂ y' p)
       = deriv τ (chartAt ℂ y' p) * traceCoeffFun hf hne η y (τ (chartAt ℂ y' p)) := hkey
@@ -543,9 +543,10 @@ theorem coeffAt_traceForm (η : Form1 X) (yhat : Y) :
         * traceCoeffFun hf hne η yhat (traceChart hf hne yhat yhat) :=
     Form1.coeffAt_ofCoeffs (traceData hf hne η) (mem_traceChart_source_self hf hne yhat)
   unfold traceForm
-  have hid : (⇑(traceChart hf hne yhat) ∘ ⇑(chartAt ℂ yhat).symm) =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
+  have hid : (⇑(traceChart hf hne yhat) ∘ ⇑(chartAt ℂ yhat).symm)
+      =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
     filter_upwards [(chartAt ℂ yhat).open_target.mem_nhds (mem_chart_target ℂ yhat)] with z hz
-    show chartAt ℂ yhat ((chartAt ℂ yhat).symm z) = z
+    change chartAt ℂ yhat ((chartAt ℂ yhat).symm z) = z
     exact (chartAt ℂ yhat).right_inv hz
   rw [h, hid.deriv_eq, deriv_id, one_mul]
   rfl
@@ -642,7 +643,7 @@ theorem coeffAt_traceForm_of_isRegularValue (η : Form1 X) {yhat : Y}
     have hm1 : multiplicity f ((stackAt hf hne yhat).pt i) = 1 :=
       multiplicity_eq_one_of_isRegularValue hf hne hyhat ((stackAt hf hne yhat).maps_pt_eq i)
     have hval : branchTrans hf hne yhat i (chartAt ℂ yhat yhat) = 0 := by
-      show ((stackAt hf hne yhat).A i).e' ((chartAt ℂ yhat).symm (chartAt ℂ yhat yhat)) = 0
+      change ((stackAt hf hne yhat).A i).e' ((chartAt ℂ yhat).symm (chartAt ℂ yhat yhat)) = 0
       rw [(chartAt ℂ yhat).left_inv (mem_chart_source ℂ yhat)]
       have h := ((stackAt hf hne yhat).A i).map_eq_zero'
       rwa [(stackAt hf hne yhat).maps_pt_eq i] at h

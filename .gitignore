@@ -3,3 +3,4 @@
 *.pdf
 scratch_*.lean
 build/
+.pool-quality.py

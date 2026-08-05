@@ -77,7 +77,7 @@ now-known-insufficient `Differentiable ℂ R_mid` hypothesis and would need re-t
 whichever fix is chosen.
 -/
 
-open scoped ContDiff Manifold OnePoint Classical
+open scoped ContDiff Manifold OnePoint
 open Set Filter Topology OnePoint Real Complex MeasureTheory
 
 noncomputable section
@@ -135,7 +135,7 @@ def formOfCoeFn (R : ℂ → ℂ) (hR : MeromorphicOn R Set.univ)
           rw [coeChart_symm_apply, invChart_apply_coe]]
         have hcomp : (⇑invChart ∘ ⇑coeChart.symm : ℂ → ℂ) = Inv.inv := by
           funext w
-          show invChart (coeChart.symm w) = w⁻¹
+          change invChart (coeChart.symm w) = w⁻¹
           rw [coeChart_symm_apply, invChart_apply_coe]
         rw [hcomp, deriv_inv, inv_inv]
         have h1 : ((z⁻¹) ^ 2)⁻¹ = z ^ 2 := by field_simp
@@ -161,7 +161,7 @@ def formOfCoeFn (R : ℂ → ℂ) (hR : MeromorphicOn R Set.univ)
           rw [invChart_symm_apply, coeChart_inversion_coe]]
         have hcomp : (⇑coeChart ∘ ⇑invChart.symm : ℂ → ℂ) = Inv.inv := by
           funext w
-          show coeChart (invChart.symm w) = w⁻¹
+          change coeChart (invChart.symm w) = w⁻¹
           rw [invChart_symm_apply]
           by_cases hw : w = 0
           · subst hw; simp
@@ -216,7 +216,7 @@ theorem circleIntegral_inv_eq_neg (R_mid : ℂ → ℂ) {ρ : ℝ} (hρ : 0 < ρ
       simp only [deriv_circleMap]
       rw [periodic_circleMap 0 ρ⁻¹ θ]
     simpa using hper.intervalIntegral_add_eq (-(2 * π)) 0
-  show (∫ θ : ℝ in (0:ℝ)..2 * π,
+  change (∫ θ : ℝ in (0:ℝ)..2 * π,
       deriv (circleMap 0 ρ) θ • (-(circleMap 0 ρ θ ^ 2)⁻¹ * R_mid (circleMap 0 ρ θ)⁻¹))
     = -(∫ θ : ℝ in (0:ℝ)..2 * π, deriv (circleMap 0 ρ⁻¹) θ • R_mid (circleMap 0 ρ⁻¹ θ))
   rw [← hshift]
@@ -262,10 +262,8 @@ theorem resAt_neg_sq_inv_mul_comp_inv_eq_zero {R_mid : ℂ → ℂ} (hdiff : Dif
     ring
   rw [hzero] at hkey
   have h2pi : (2 * (π : ℂ) * I) ≠ 0 := by
-    apply mul_ne_zero
-    apply mul_ne_zero two_ne_zero
-    · exact_mod_cast Real.pi_ne_zero
-    · exact Complex.I_ne_zero
+    refine mul_ne_zero (mul_ne_zero two_ne_zero ?_) Complex.I_ne_zero
+    exact_mod_cast Real.pi_ne_zero
   exact (mul_eq_zero.mp hkey.symm).resolve_left h2pi
 
 /-! ### The finite-pole/`z⁻¹` compatibility of `principalPartAt`'s monomials -/
@@ -286,7 +284,7 @@ theorem meromorphicAt_neg_sq_inv_mul_sub_inv_zpow (a : ℂ) (k : ℤ) :
     filter_upwards [self_mem_nhdsWithin] with w hw
     have hwne : w ≠ 0 := hw
     have hz1 : (w⁻¹ - a) = (1 - a * w) * w⁻¹ := by field_simp
-    show (-((1 - a * w) ^ k * w ^ (-k - 2)) : ℂ) = -(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k
+    change (-((1 - a * w) ^ k * w ^ (-k - 2)) : ℂ) = -(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k
     rw [hz1, mul_zpow]
     have h1 : (w ^ 2)⁻¹ = w ^ (-2 : ℤ) := by rw [zpow_neg]; norm_num; try rfl
     have h2 : (w⁻¹ : ℂ) ^ k = w ^ (-k) := by rw [← zpow_neg_one, ← zpow_mul, neg_one_mul]
@@ -308,7 +306,7 @@ theorem resAt_neg_sq_inv_mul_sub_inv_zpow (a : ℂ) {k : ℤ} (hk : k < 0) :
     filter_upwards [self_mem_nhdsWithin] with w hw
     have hwne : w ≠ 0 := hw
     have hz1 : (w⁻¹ - a) = (1 - a * w) * w⁻¹ := by field_simp
-    show (-(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k : ℂ) = -((1 - a * w) ^ k * w ^ (-k - 2))
+    change (-(w ^ 2)⁻¹ * (w⁻¹ - a) ^ k : ℂ) = -((1 - a * w) ^ k * w ^ (-k - 2))
     rw [hz1, mul_zpow]
     have h1 : (w ^ 2)⁻¹ = w ^ (-2 : ℤ) := by rw [zpow_neg]; norm_num; try rfl
     have h2 : (w⁻¹ : ℂ) ^ k = w ^ (-k) := by rw [← zpow_neg_one, ← zpow_mul, neg_one_mul]

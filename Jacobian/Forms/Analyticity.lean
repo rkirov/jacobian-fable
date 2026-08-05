@@ -121,7 +121,7 @@ theorem analyticAt_clm_iff_apply_one {F : ℂ → ℂ →L[ℂ] ℂ} {z : ℂ} :
       AnalyticAt.fun_comp (g := ⇑L.toContinuousLinearEquiv.symm) (f := fun w => F w 1)
         ((L.toContinuousLinearEquiv.symm : ℂ →L[ℂ] (ℂ →L[ℂ] ℂ)).analyticAt (F z 1)) h
     refine h1.congr (Filter.Eventually.of_forall fun w => ?_)
-    show L.toContinuousLinearEquiv.symm (L.toContinuousLinearEquiv (F w)) = F w
+    change L.toContinuousLinearEquiv.symm (L.toContinuousLinearEquiv (F w)) = F w
     exact L.toContinuousLinearEquiv.symm_apply_apply (F w)
 
 /-- Defeq bridge: the hom-bundle trivialization representative of a covector section, evaluated

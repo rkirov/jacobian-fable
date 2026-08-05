@@ -65,7 +65,7 @@ theorem H01.mk_surjective : Function.Surjective (H01.mk (X := X)) := Submodule.m
 theorem H01.mk_eq_zero_iff {η : Form01 X} :
     H01.mk η = 0 ↔ ∃ u : SmoothC X, RS.dbar u = η := by
   rw [← LinearMap.mem_ker]
-  show η ∈ LinearMap.ker (Submodule.mkQ (LinearMap.range (RS.dbar (X := X)))) ↔ _
+  change η ∈ LinearMap.ker (Submodule.mkQ (LinearMap.range (RS.dbar (X := X)))) ↔ _
   rw [Submodule.ker_mkQ]
   exact LinearMap.mem_range
 
@@ -101,14 +101,14 @@ noncomputable def toDolb {𝒰 : FinCover (⊤ : Opens X)} [T2Space X] [CompactS
   Submodule.liftQ _ (toDolbRaw h𝒰) (by
     intro f hf
     rw [Submodule.mem_comap] at hf
-    show H01.mk (RS.Dolb.dolbForm h𝒰 f) = 0
+    change H01.mk (RS.Dolb.dolbForm h𝒰 f) = 0
     exact H01.mk_eq_zero_iff.2
       (LinearMap.mem_range.mp (RS.Dolb.dolbForm_mem_range_of_mem_B1 h𝒰 hf)))
 
 @[simp] theorem toDolb_mk {𝒰 : FinCover (⊤ : Opens X)} [T2Space X] [CompactSpace X]
     (h𝒰 : 𝒰.IsGood) (f : Z1 (0 : RS.Divisor X) 𝒰) :
     toDolb h𝒰 (H1Cover.mk (0 : RS.Divisor X) 𝒰 f) = H01.mk (RS.Dolb.dolbForm h𝒰 f) := by
-  show Submodule.liftQ _ (toDolbRaw h𝒰) _ (Submodule.Quotient.mk f) = _
+  change Submodule.liftQ _ (toDolbRaw h𝒰) _ (Submodule.Quotient.mk f) = _
   rw [Submodule.liftQ_apply]
   rfl
 
@@ -118,7 +118,7 @@ theorem toDolb_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} [T2Space X] [CompactSp
   apply LinearMap.ext
   intro ξ
   obtain ⟨f, rfl⟩ := H1Cover.mk_surjective (0 : RS.Divisor X) 𝒰 ξ
-  show toDolb h𝒱 (resH1 (0 : RS.Divisor X) τ hτ (H1Cover.mk (0 : RS.Divisor X) 𝒰 f)) =
+  change toDolb h𝒱 (resH1 (0 : RS.Divisor X) τ hτ (H1Cover.mk (0 : RS.Divisor X) 𝒰 f)) =
     toDolb h𝒰 (H1Cover.mk (0 : RS.Divisor X) 𝒰 f)
   rw [resH1_mk, toDolb_mk, toDolb_mk]
   have hmem := RS.Dolb.dolbForm_res_sub_mem h𝒰 h𝒱 τ hτ f
@@ -182,7 +182,7 @@ private theorem toDolbAll_eq_toDolb [T2Space X] [CompactSpace X]
   obtain ⟨σ, hσ⟩ : ∃ σ, IsRefIdx (goodRef 𝒴) 𝒲 σ := ⟨chosenRefIdx hg, chosenRefIdx_spec hg⟩
   have hidx : IsRefIdx 𝒴 𝒲 (τ ∘ σ) := fun k => (hσ k).trans (hτ (σ k))
   have h1 : toDolbAll 𝒴 η = toDolb h𝒲good (resH1 (0 : RS.Divisor X) (τ ∘ σ) hidx η) := by
-    show toDolb (goodRef_isGood 𝒴) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒴) η) = _
+    change toDolb (goodRef_isGood 𝒴) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒴) η) = _
     rw [resH1'_eq_resH1 (0 : RS.Divisor X) (goodRef_le 𝒴) τ hτ]
     have hc1 : resH1 (0 : RS.Divisor X) σ hσ (resH1 (0 : RS.Divisor X) τ hτ η) =
         resH1 (0 : RS.Divisor X) (τ ∘ σ) hidx η :=
@@ -226,7 +226,7 @@ theorem cechToH01_toH1 [T2Space X] [CompactSpace X] {𝒰 : FinCover (⊤ : Open
     (h𝒰 : 𝒰.IsGood) (c : H1Cover (0 : RS.Divisor X) 𝒰) :
     cechToH01 (toH1 (0 : RS.Divisor X) 𝒰 c) = toDolb h𝒰 c := by
   rw [cechToH01_toH1_all]
-  show toDolb (goodRef_isGood 𝒰) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒰) c) = toDolb h𝒰 c
+  change toDolb (goodRef_isGood 𝒰) (resH1' (0 : RS.Divisor X) (goodRef_le 𝒰) c) = toDolb h𝒰 c
   rw [resH1'_eq_resH1 (0 : RS.Divisor X) (goodRef_le 𝒰) (chosenRefIdx (goodRef_le 𝒰))
     (chosenRefIdx_spec (goodRef_le 𝒰))]
   exact LinearMap.congr_fun (toDolb_res h𝒰 (goodRef_isGood 𝒰) (chosenRefIdx (goodRef_le 𝒰))
@@ -267,13 +267,13 @@ theorem cechToH01_injective [T2Space X] [CompactSpace X] :
     -- the application ill-typed at `implicit` transparency, which blocks every later rewrite
     have hj : (↑(𝒰.U i ⊓ 𝒰.U j) : Set X) ⊆ ↑(𝒰.U j) := fun _ hx => hx.2
     have hi : (↑(𝒰.U i ⊓ 𝒰.U j) : Set X) ⊆ ↑(𝒰.U i) := fun _ hx => hx.1
-    show (RS.MeroGermOn.restrict hj
+    change (RS.MeroGermOn.restrict hj
           (b j : RS.MeroGermOn X (𝒰.U j : Set X)) -
         RS.MeroGermOn.restrict hi
           (b i : RS.MeroGermOn X (𝒰.U i : Set X)) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) =
       ((F : C1 (0 : RS.Divisor X) 𝒰) (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X))
-    show (RS.MeroGermOn.restrict hj
+    change (RS.MeroGermOn.restrict hj
           (RS.MeroGermOn.mk (s.g j - ⇑u) (hmero j)) -
         RS.MeroGermOn.restrict hi
           (RS.MeroGermOn.mk (s.g i - ⇑u) (hmero i)) :
@@ -286,7 +286,7 @@ theorem cechToH01_injective [T2Space X] [CompactSpace X] :
     apply RS.MeroGermOn.mk_eq_mk.2
     refine Filter.mem_of_superset (Filter.self_mem_codiscreteWithin _) ?_
     intro y hy
-    show (s.g j y - u y) - (s.g i y - u y) =
+    change (s.g j y - u y) - (s.g i y - u y) =
       RS.Dolb.Z1.repr F (i, j) y
     rw [s.split i j y hy]
     ring
@@ -329,14 +329,14 @@ theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
     have hik : (↑(𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k) : Set X) ⊆ ↑(𝒰.U i ⊓ 𝒰.U k) :=
       fun _ hx => ⟨hx.1.1, hx.2⟩
     have hij : (↑(𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k) : Set X) ⊆ ↑(𝒰.U i ⊓ 𝒰.U j) := fun _ hx => hx.1
-    show (RS.MeroGermOn.restrict hjk
+    change (RS.MeroGermOn.restrict hjk
           (F (j, k) : RS.MeroGermOn X (𝒰.U j ⊓ 𝒰.U k : Set X)) -
         RS.MeroGermOn.restrict hik
           (F (i, k) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U k : Set X)) +
         RS.MeroGermOn.restrict hij
           (F (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k : Set X)) = 0
-    show (RS.MeroGermOn.restrict hjk
+    change (RS.MeroGermOn.restrict hjk
           (RS.MeroGermOn.mk (h k - h j) (hmero j k)) -
         RS.MeroGermOn.restrict hik
           (RS.MeroGermOn.mk (h k - h i) (hmero i k)) +
@@ -350,15 +350,15 @@ theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
     apply RS.MeroGermOn.mk_eq_mk.2
     refine Filter.mem_of_superset (Filter.self_mem_codiscreteWithin _) ?_
     intro y _
-    show (h k y - h j y) - (h k y - h i y) + (h j y - h i y) = 0
+    change (h k y - h j y) - (h k y - h i y) + (h j y - h i y) = 0
     ring
   set FZ1 : Z1 (0 : RS.Divisor X) 𝒰 := ⟨F, hFZ1⟩ with hFZ1_def
   have hsplit : ∀ i j, ∀ x ∈ (𝒰.U i ⊓ 𝒰.U j : Opens X),
       RS.Dolb.Z1.repr FZ1 (i, j) x = h j x - h i x := by
     intro i j x hx
-    show ((FZ1 : C1 (0 : RS.Divisor X) 𝒰) (i, j) :
+    change ((FZ1 : C1 (0 : RS.Divisor X) 𝒰) (i, j) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)).evalAt x = h j x - h i x
-    show (RS.MeroGermOn.mk (h j - h i) (hmero i j) :
+    change (RS.MeroGermOn.mk (h j - h i) (hmero i j) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)).evalAt x = h j x - h i x
     have hCMAt : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω (h j - h i) x :=
       (hholoDiff i j).contMDiffAt ((𝒰.U i ⊓ 𝒰.U j).isOpen.mem_nhds hx)

@@ -17,7 +17,8 @@ Unit: abel-theorem. Namespace `RS.Abel`. Two deliverables:
 
 * `wirtingerDbar_exp_neg_mul_eq_zero` — the `dbarF = 0` computation underlying the meromorphic
   promotion: if `u`'s Wirtinger `dbar`-derivative matches `f`'s own logarithmic `dbar`-derivative
-  (`dbaru = dbarf / f`) at a point where `f ≠ 0`, then `F := exp(-u) * f` has `dbarF = 0` there — a direct
+  (`dbaru = dbarf / f`) at a point where `f ≠ 0`, then `F := exp(-u) * f` has `dbarF = 0`
+  there — a direct
   Leibniz/chain-rule computation (`wirtingerDbar_mul` + the holomorphic-outer chain rule for
   `Complex.exp`, via mathlib's `HasDerivAt.comp_hasFDerivAt`).
 * `genus_eq_zero_of_exists_simple_pole_zero` — Forster's necessity shortcut (§2.2): a meromorphic
@@ -37,7 +38,8 @@ namespace RS.Abel
 /-! ## D2: the `dbar`-product-rule identity (mathlib-only, pure `ℂ → ℂ`) -/
 
 /-- The holomorphic-outer chain rule for `wirtingerDbar`: `Complex.exp` composed with an
-arbitrary (only `ℝ`-differentiable) inner function `v` satisfies `dbar(exp ∘ v) = exp(v z) * dbarv`. -/
+arbitrary (only `ℝ`-differentiable) inner function `v` satisfies
+`dbar(exp ∘ v) = exp(v z) * dbarv`. -/
 private theorem wirtingerDbar_cexp_comp {v : ℂ → ℂ} {z : ℂ} (hv : DifferentiableAt ℝ v z) :
     wirtingerDbar (fun w => Complex.exp (v w)) z = Complex.exp (v z) * wirtingerDbar v z := by
   have hFD : HasFDerivAt v (fderiv ℝ v z) z := hv.hasFDerivAt
@@ -45,14 +47,14 @@ private theorem wirtingerDbar_cexp_comp {v : ℂ → ℂ} {z : ℂ} (hv : Differ
     (Complex.hasDerivAt_exp (v z)).comp_hasFDerivAt z hFD
   have hfderiv_eq : fderiv ℝ (fun w => Complex.exp (v w)) z
       = Complex.exp (v z) • fderiv ℝ v z := hexpD.fderiv
-  show (fderiv ℝ (fun w => Complex.exp (v w)) z 1
+  change (fderiv ℝ (fun w => Complex.exp (v w)) z 1
     + Complex.I * fderiv ℝ (fun w => Complex.exp (v w)) z Complex.I) / 2 = _
   rw [hfderiv_eq]
   simp only [smul_apply, smul_eq_mul]
   show (Complex.exp (v z) * fderiv ℝ v z 1
       + Complex.I * (Complex.exp (v z) * fderiv ℝ v z Complex.I)) / 2
     = Complex.exp (v z) * wirtingerDbar v z
-  show _ = Complex.exp (v z) * ((fderiv ℝ v z 1 + Complex.I * fderiv ℝ v z Complex.I) / 2)
+  change _ = Complex.exp (v z) * ((fderiv ℝ v z 1 + Complex.I * fderiv ℝ v z Complex.I) / 2)
   ring
 
 /-- **D2, the `dbarF = 0` computation** (§2.1 step 7): the exponential-corrected function

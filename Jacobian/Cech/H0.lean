@@ -37,7 +37,7 @@ theorem toC0_mem_ker (φ : RS.LinSysOn D (Ω : Set X)) :
     toC0 D 𝒰 φ ∈ LinearMap.ker (d0 D 𝒰) := by
   rw [LinearMap.mem_ker]
   funext p
-  show LinSysOn.restrictL D inf_le_right (LinSysOn.restrictL D (𝒰.le_base p.2) φ) -
+  change LinSysOn.restrictL D inf_le_right (LinSysOn.restrictL D (𝒰.le_base p.2) φ) -
       LinSysOn.restrictL D inf_le_left (LinSysOn.restrictL D (𝒰.le_base p.1) φ) = 0
   rw [restrictL_restrictL D (𝒰.le_base p.2) inf_le_right (inf_le_right.trans (𝒰.le_base p.2)),
     restrictL_restrictL D (𝒰.le_base p.1) inf_le_left (inf_le_left.trans (𝒰.le_base p.1))]
@@ -71,12 +71,12 @@ theorem toC0'_injective : Function.Injective (toC0' D 𝒰) := by
     have h1 : RS.MeroGermOn.restrict (Set.subset_iUnion (fun i => (𝒰.U i : Set X)) i)
         (e (φ1 : RS.MeroGermOn X (Ω : Set X))) =
         RS.MeroGermOn.restrict (𝒰.le_base i) (φ1 : RS.MeroGermOn X (Ω : Set X)) := by
-      show RS.MeroGermOn.restrict _ (RS.MeroGermOn.restrict _ _) = _
+      change RS.MeroGermOn.restrict _ (RS.MeroGermOn.restrict _ _) = _
       rw [RS.MeroGermOn.restrict_restrict]
     have h2 : RS.MeroGermOn.restrict (Set.subset_iUnion (fun i => (𝒰.U i : Set X)) i)
         (e (φ2 : RS.MeroGermOn X (Ω : Set X))) =
         RS.MeroGermOn.restrict (𝒰.le_base i) (φ2 : RS.MeroGermOn X (Ω : Set X)) := by
-      show RS.MeroGermOn.restrict _ (RS.MeroGermOn.restrict _ _) = _
+      change RS.MeroGermOn.restrict _ (RS.MeroGermOn.restrict _ _) = _
       rw [RS.MeroGermOn.restrict_restrict]
     rw [h1, h2]
     exact congrArg Subtype.val (hcomp i)
@@ -102,7 +102,7 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
     intro x hx
     obtain ⟨i, hi⟩ := 𝒰.covers x hx
     have hrestr : RS.MeroGermOn.restrict (𝒰.le_base i) (e Φ) = g i := by
-      show RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
+      change RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
       exact (RS.MeroGermOn.restrict_restrict _ _ Φ).trans (hΦ i)
     have hord := RS.MeroGermOn.ord_restrict (𝒰.le_base i) (𝒰.U i).2 Ω.2 hi (e Φ)
     rw [hrestr] at hord
@@ -111,10 +111,10 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
   refine ⟨⟨e Φ, hΦmem⟩, ?_⟩
   apply Subtype.ext
   funext i
-  show LinSysOn.restrictL D (𝒰.le_base i) ⟨e Φ, hΦmem⟩ = f.1 i
+  change LinSysOn.restrictL D (𝒰.le_base i) ⟨e Φ, hΦmem⟩ = f.1 i
   apply Subtype.ext
-  show RS.MeroGermOn.restrict (𝒰.le_base i) (e Φ) = g i
-  show RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
+  change RS.MeroGermOn.restrict (𝒰.le_base i) (e Φ) = g i
+  change RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
   exact (RS.MeroGermOn.restrict_restrict _ _ Φ).trans (hΦ i)
 
 theorem toC0'_bijective : Function.Bijective (toC0' D 𝒰) :=
@@ -126,7 +126,7 @@ noncomputable def h0EquivLinSysOn : LinearMap.ker (d0 D 𝒰) ≃ₗ[ℂ] RS.Lin
 
 @[simp] theorem h0EquivLinSysOn_symm_apply (φ : RS.LinSysOn D (Ω : Set X)) (i : Fin 𝒰.n) :
     ((h0EquivLinSysOn D 𝒰).symm φ : C0 D 𝒰) i = LinSysOn.restrictL D (𝒰.le_base i) φ := by
-  show ((toC0' D 𝒰) φ : C0 D 𝒰) i = _
+  change ((toC0' D 𝒰) φ : C0 D 𝒰) i = _
   rfl
 
 theorem h0EquivLinSysOn_symm_apply_ord (φ : RS.LinSysOn D (Ω : Set X)) (i : Fin 𝒰.n) {x : X}

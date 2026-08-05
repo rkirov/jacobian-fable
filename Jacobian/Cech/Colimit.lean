@@ -49,7 +49,7 @@ theorem resH1'_eq_resH1 {𝒰 𝒱 : FinCover (⊤ : Opens X)} (h : 𝒰 ≤ �
 instance directedSystemH1Cover :
     DirectedSystem (fun 𝒰 : FinCover (⊤ : Opens X) => H1Cover D 𝒰) (fun _ _ h => resH1' D h) where
   map_self 𝒰 x := by
-    show resH1' D (le_refl 𝒰) x = x
+    change resH1' D (le_refl 𝒰) x = x
     rw [resH1'_eq_resH1 D (le_refl 𝒰) id (fun _ => le_rfl)]
     exact LinearMap.congr_fun (resH1_id D (fun _ => le_rfl)) x
   map_map {𝒰c 𝒰b 𝒰a} hab hbc x := by
@@ -219,7 +219,7 @@ noncomputable def h1CoverIncl {Ω : Opens X} (𝒰 : FinCover Ω) (h : D ≤ D')
       obtain ⟨g, hg⟩ := hz
       have hg' : d0 D 𝒰 g = (z : C1 D 𝒰) := hg
       refine ⟨inclC0 D 𝒰 h g, ?_⟩
-      show d0 D' 𝒰 (inclC0 D 𝒰 h g) =
+      change d0 D' 𝒰 (inclC0 D 𝒰 h g) =
         (↑(LinearMap.restrict (inclC1 D 𝒰 h) (fun _ hf => inclC1_mem_Z1 D h hf) z) : C1 D' 𝒰)
       rw [LinearMap.coe_restrict_apply, ← hg']
       funext p
@@ -238,7 +238,7 @@ theorem inclC1_comp_resC1 {Ω : Opens X} {𝒰 𝒱 : FinCover Ω} (h : D ≤ D'
     (hτ : IsRefIdx 𝒰 𝒱 τ) (f : C1 D 𝒰) :
     inclC1 D 𝒱 h (resC1 D τ hτ f) = resC1 D' τ hτ (inclC1 D 𝒰 h f) := by
   funext p
-  show Submodule.inclusion (RS.Cech.linSysOn_mono h) (resC1 D τ hτ f p) =
+  change Submodule.inclusion (RS.Cech.linSysOn_mono h) (resC1 D τ hτ f p) =
     resC1 D' τ hτ (inclC1 D 𝒰 h f) p
   rw [resC1_apply, resC1_apply, inclC1_apply]
   exact inclusion_restrictL_comm D (inf_le_inf (hτ p.1) (hτ p.2)) h (f (τ p.1, τ p.2))
@@ -256,7 +256,7 @@ noncomputable def H1Incl (h : D ≤ D') : H1 D →ₗ[ℂ] H1 D' :=
   Module.DirectLimit.map (fun 𝒰 : FinCover (⊤ : Opens X) => h1CoverIncl D 𝒰 h) (fun 𝒰 𝒱 h𝒰𝒱 => by
     apply LinearMap.ext
     intro ξ
-    show h1CoverIncl D 𝒱 h (resH1' D h𝒰𝒱 ξ) = resH1' D' h𝒰𝒱 (h1CoverIncl D 𝒰 h ξ)
+    change h1CoverIncl D 𝒱 h (resH1' D h𝒰𝒱 ξ) = resH1' D' h𝒰𝒱 (h1CoverIncl D 𝒰 h ξ)
     rw [resH1'_eq_resH1 D h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱),
       resH1'_eq_resH1 D' h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱)]
     exact h1CoverIncl_resH1 D h (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱) ξ)

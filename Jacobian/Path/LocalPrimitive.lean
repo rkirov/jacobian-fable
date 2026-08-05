@@ -94,7 +94,7 @@ theorem IsPrimitiveAlongMap.continuousOn (h : IsPrimitiveAlongMap K η F s)
   have heq : F =ᶠ[𝓝[s] a] (g ∘ (e ∘ K)) := by
     filter_upwards [hF] with b hb using hb.2
   have hFa : F a = g (e (K a)) := (hF.self_of_nhdsWithin ha).2
-  show Tendsto F (𝓝[s] a) (𝓝 (F a))
+  change Tendsto F (𝓝[s] a) (𝓝 (F a))
   rw [hFa]
   exact Tendsto.congr' heq.symm hcomp
 
@@ -127,7 +127,7 @@ theorem IsPrimitiveAlongMap.rechart (h : IsPrimitiveAlongMap K η F s) (ha : a �
       obtain ⟨q, hq, rfl⟩ := hz
       exact analyticAt_trans he he' (e'.map_source hq.2) (by rw [e'.left_inv hq.2]; exact hq.1)
     have hτz0 : τ (e' (K a)) = e (K a) := by
-      show e (e'.symm (e' (K a))) = e (K a)
+      change e (e'.symm (e' (K a))) = e (K a)
       rw [e'.left_inv hKa]
     have hτcont : ContinuousAt τ (e' (K a)) :=
       hτan.self_of_nhds.differentiableAt.continuousAt
@@ -150,9 +150,9 @@ theorem IsPrimitiveAlongMap.rechart (h : IsPrimitiveAlongMap K η F s) (ha : a �
     filter_upwards [hF, hK.tendsto.eventually (hWopen.mem_nhds hmem)] with b hb hbmem
     refine ⟨hbmem.2, ?_⟩
     rw [hb.2]
-    show g (e (K b)) = g (τ (e' (K b)))
+    change g (e (K b)) = g (τ (e' (K b)))
     congr 1
-    show e (K b) = e (e'.symm (e' (K b)))
+    change e (K b) = e (e'.symm (e' (K b)))
     rw [e'.left_inv hbmem.2]
 
 /-- **Uniqueness up to a constant.** Chart overlaps need not be connected; primitives are only
@@ -181,7 +181,7 @@ theorem IsPrimitiveAlongMap.sub_eq_sub (hs : IsPreconnected s) (hK : ContinuousO
         _ = g₂'' (e₁ (K b)) - g₂' (e₁ (K b)) := by rw [hb3]
         _ = g₁ z₀ - g₂' z₀ := by simp [hg₂''_def]
         _ = F₁ c - F₂ c := by rw [hFc1, hFc2]
-    show ∀ᶠ y : s in 𝓝 (⟨c, hc⟩ : s), F₁ (y : α) - F₂ (y : α) = F₁ c - F₂ c
+    change ∀ᶠ y : s in 𝓝 (⟨c, hc⟩ : s), F₁ (y : α) - F₂ (y : α) = F₁ c - F₂ c
     rw [nhds_subtype_eq_comap_nhdsWithin s ⟨c, hc⟩, Filter.eventually_comap]
     filter_upwards [heqb] with b hb y hy
     rw [hy]

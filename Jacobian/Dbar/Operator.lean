@@ -197,7 +197,7 @@ noncomputable def dbar : SmoothC X →ₗ[ℂ] Form01 X where
   map_add' f g := by
     apply Form01.ext
     intro x z hz
-    show dbarCoeffAt (f + g) x z = dbarCoeffAt f x z + dbarCoeffAt g x z
+    change dbarCoeffAt (f + g) x z = dbarCoeffAt f x z + dbarCoeffAt g x z
     rw [dbarCoeffAt_of_mem (f + g) x hz, dbarCoeffAt_of_mem f x hz, dbarCoeffAt_of_mem g x hz]
     have heq : (⇑(f + g) : X → ℂ) ∘ ⇑(chartAt ℂ x).symm =
         (⇑f ∘ ⇑(chartAt ℂ x).symm) + (⇑g ∘ ⇑(chartAt ℂ x).symm) := by
@@ -209,7 +209,7 @@ noncomputable def dbar : SmoothC X →ₗ[ℂ] Form01 X where
   map_smul' c f := by
     apply Form01.ext
     intro x z hz
-    show dbarCoeffAt (c • f) x z = c * dbarCoeffAt f x z
+    change dbarCoeffAt (c • f) x z = c * dbarCoeffAt f x z
     rw [dbarCoeffAt_of_mem (c • f) x hz, dbarCoeffAt_of_mem f x hz]
     have heq : (⇑(c • f) : X → ℂ) ∘ ⇑(chartAt ℂ x).symm =
         fun w => c * (⇑f ∘ ⇑(chartAt ℂ x).symm) w := by
@@ -232,7 +232,7 @@ def IsDbarOn (u : X → ℂ) (η : Form01 X) (s : Set X) : Prop := ∀ x ∈ s, 
 
 theorem isDbarOn_dbar (f : SmoothC X) : IsDbarOn (⇑f) (dbar f) Set.univ := by
   intro x _
-  show wirtingerDbar (⇑f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
+  change wirtingerDbar (⇑f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) =
     (dbar f).coeffAt x (chartAt ℂ x x)
   rw [coeffAt_dbar f x (mem_chart_target ℂ x)]
 
@@ -357,7 +357,7 @@ theorem contMDiffOn_omega_sub_of_isDbarOn {u v : X → ℂ} {η : Form01 X} {s :
     have hvd : DifferentiableAt ℝ (v ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
       (contMDiffAt_real_iff_contDiffAt.1
         ((hv x hx).contMDiffAt (hs.mem_nhds hx))).differentiableAt (by norm_num)
-    show wirtingerDbar ((u - v) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = 0
+    change wirtingerDbar ((u - v) ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = 0
     rw [hequ, wirtingerDbar_sub _ _ (chartAt ℂ x x) hud hvd, h1 x hx, h2 x hx, sub_self]
   have hcd : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (u - v) s := fun x hx => (hu x hx).sub (hv x hx)
   exact contMDiffOn_omega_of_isDbarOn_zero hs hcd hzero
@@ -410,7 +410,7 @@ theorem exists_dbar_solution_chart_ball {x₀ : X} {r : ℝ} (hr : 0 < r) {V : S
     exact h4.comp x h1
   · intro x hx
     set u : X → ℂ := fun x => if _ : x ∈ V then U (chartAt ℂ x₀ x) else 0 with hu_def
-    show wirtingerDbar (u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = η.coeffAt x (chartAt ℂ x x)
+    change wirtingerDbar (u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = η.coeffAt x (chartAt ℂ x x)
     have hxx₀ : x ∈ (chartAt ℂ x₀).source := hVs hx
     set τ : ℂ → ℂ := ⇑(chartAt ℂ x₀) ∘ ⇑(chartAt ℂ x).symm with hτ_def
     have hzs : (chartAt ℂ x).symm (chartAt ℂ x x) ∈ (chartAt ℂ x₀).source := by

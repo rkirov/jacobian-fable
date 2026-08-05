@@ -23,7 +23,7 @@ quotient API live in a clearly-marked NEW file rather than editing `Jacobian/Can
 Request filed in `docs/requests/canonical-forms.md`-spirit: these belong upstream eventually.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set Filter Topology
 
 noncomputable section

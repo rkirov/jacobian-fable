@@ -21,7 +21,7 @@ Unit: laurent-tails (`docs/design/laurent-tails.md`).
   `Cech.H1 D` is `Comparison.lean`'s job).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 
 namespace RS.LaurentTail
@@ -31,6 +31,7 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsMa
 
 /-! ### `alphaFinset`, `alpha`, `alphaL` -/
 
+open scoped Classical in
 /-- A `Finset` witness for `α_D f`'s (possibly) nonzero locus: `D`'s own (finite, compactness)
 support, together with `f`'s pole set (finite, compactness + connectedness) when `f ≠ 0`. -/
 noncomputable def alphaFinset (D : RS.Divisor X) (f : RS.Mero X) : Finset X :=
@@ -129,7 +130,7 @@ theorem H1Tail.mk_surjective (D : RS.Divisor X) : Function.Surjective (H1Tail.mk
 
 theorem H1Tail.mk_eq_zero_iff (D : RS.Divisor X) (τ : T D) :
     H1Tail.mk D τ = 0 ↔ τ ∈ LinearMap.range (alphaL D) := by
-  show Submodule.Quotient.mk τ = (0 : T D ⧸ LinearMap.range (alphaL D)) ↔ _
+  change Submodule.Quotient.mk τ = (0 : T D ⧸ LinearMap.range (alphaL D)) ↔ _
   rw [Submodule.Quotient.mk_eq_zero]
 
 end RS.LaurentTail

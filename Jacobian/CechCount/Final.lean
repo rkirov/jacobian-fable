@@ -64,7 +64,7 @@ theorem weakSolutionUpgrade_final : RS.Abel.WeakSolutionUpgrade X := by
   exact RS.Abel.weakSolutionUpgrade_of_surjective tailToH1_zero_surjective
 
 /-- **The Finset weak-solution upgrade, ungated** (the `k`-point Abel sufficiency input). -/
-theorem weakSolutionUpgradeFinset_final {ι : Type*} [Fintype ι] [DecidableEq ι] :
+theorem weakSolutionUpgradeFinset_final {ι : Type*} [Fintype ι] :
     RS.Abel.WeakSolutionUpgradeFinset X ι := by
   classical
   exact RS.Abel.weakSolutionUpgradeFinset_of_surjective tailToH1_zero_surjective

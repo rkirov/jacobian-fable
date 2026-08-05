@@ -121,7 +121,7 @@ theorem isCompact_closure_montelFamily {Ω K : Set ℂ} (hΩ : IsOpen Ω) (hK : 
       have hstep : dist (g (x : ℂ)) (g (x₀ : ℂ)) ≤ L * dist x x₀ := by
         rw [dist_eq_norm, Subtype.dist_eq, dist_eq_norm]
         exact hlip
-      show dist ((E f₀) x₀) ((E f₀) x) < ε
+      change dist ((E f₀) x₀) ((E f₀) x) < ε
       rw [hEapp, hEapp, hfg x, hfg x₀, dist_comm]
       calc dist (g (x : ℂ)) (g (x₀ : ℂ))
           ≤ L * dist x x₀ := hstep

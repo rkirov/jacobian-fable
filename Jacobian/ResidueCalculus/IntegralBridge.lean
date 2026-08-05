@@ -135,7 +135,7 @@ theorem circleIntegral_eq_two_pi_I_mul_resAt {R : ℝ} (hR : 0 < R) (hf : Meromo
       (fun k _ hkne => by rw [if_neg hkne, mul_zero])
       (fun hnmem => absurd (Finset.mem_Icc.mpr ⟨ha, le_refl _⟩) hnmem)]
     rw [if_pos rfl]
-    show laurentCoeffAt f z₀ (-1) * (2 * π * I) = 2 * π * I * resAt f z₀
+    change laurentCoeffAt f z₀ (-1) * (2 * π * I) = 2 * π * I * resAt f z₀
     rw [resAt]; ring
   · push Not at ha
     have hempty : Finset.Icc a (-1) = ∅ := Finset.Icc_eq_empty (by omega)

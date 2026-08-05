@@ -38,7 +38,7 @@ Main declarations:
   in `Differential.lean`), offered for future covering-family constructions (e.g. laurent-tails).
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set IsManifold
 
 noncomputable section
@@ -188,7 +188,7 @@ theorem rawCoeffAt_eq {e' : OpenPartialHomeomorph X ℂ}
   have hpj : e'.symm z ∈ (D.chart j).source := D.mem_source_idx _
   have hcompat := D.compat i j (e'.symm z) ⟨hp, hpj⟩
   have hdt := deriv_trans_comp (D.mem_maximalAtlas i) (D.mem_maximalAtlas j) he' hz hp hpj
-  show deriv (⇑(D.chart j) ∘ ⇑e'.symm) z * D.coeff j (D.chart j (e'.symm z)) = _
+  change deriv (⇑(D.chart j) ∘ ⇑e'.symm) z * D.coeff j (D.chart j (e'.symm z)) = _
   rw [hcompat, hdt]
   ring
 
@@ -221,8 +221,9 @@ end MFormCoeffData
 
 namespace MFormData
 
-/-- Assemble an `MFormData` from compatible chart-coefficient data (D3, mirrors `Form1.ofCoeffs`).
-    -/
+open scoped Classical in
+/-- Assemble an `MFormData` from compatible chart-coefficient data (D3, mirrors
+`Form1.ofCoeffs`). -/
 noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X where
   coeffAt x z := if z ∈ (chartAt ℂ x).target then D.rawCoeffAt (chartAt ℂ x) z else 0
   coeffAt_zero_off x z hz := if_neg hz
@@ -236,7 +237,7 @@ noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X 
     have hxt : chartAt ℂ x p ∈ (chartAt ℂ x).target := (chartAt ℂ x).map_source hp.1
     have hsy : (chartAt ℂ y).symm (chartAt ℂ y p) = p := (chartAt ℂ y).left_inv hp.2
     have hsx : (chartAt ℂ x).symm (chartAt ℂ x p) = p := (chartAt ℂ x).left_inv hp.1
-    show
+    change
       (if chartAt ℂ y p ∈ (chartAt ℂ y).target then D.rawCoeffAt (chartAt ℂ y) (chartAt ℂ y p)
         else 0) =
       deriv (⇑(chartAt ℂ x) ∘ ⇑(chartAt ℂ y).symm) (chartAt ℂ y p) *
@@ -259,6 +260,7 @@ noncomputable def ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) : MFormData X 
     rw [h1, h3, h2]
     ring
 
+open scoped Classical in
 /-- The coefficient of `MFormData.ofCoeffs D` in the `i`-th chart of the data, read at a point of
     the
 preferred chart at `x`, is the given coefficient transported by the transition derivative
@@ -273,7 +275,7 @@ theorem coeffAt_ofCoeffs {ι : Type*} (D : MFormCoeffData X ι) {x : X} {i : ι}
   have hxt : chartAt ℂ x p ∈ (chartAt ℂ x).target := (chartAt ℂ x).map_source hp.2
   have hp' : (chartAt ℂ x).symm (chartAt ℂ x p) ∈ (D.chart i).source := by
     rw [(chartAt ℂ x).left_inv hp.2]; exact hp.1
-  show (if chartAt ℂ x p ∈ (chartAt ℂ x).target then D.rawCoeffAt (chartAt ℂ x) (chartAt ℂ x p)
+  change (if chartAt ℂ x p ∈ (chartAt ℂ x).target then D.rawCoeffAt (chartAt ℂ x) (chartAt ℂ x p)
     else 0) = _
   rw [if_pos hxt]
   exact D.rawCoeffAt_eq (chart_mem_maximalAtlas x) i hxt hp'

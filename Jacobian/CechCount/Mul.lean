@@ -247,7 +247,7 @@ noncomputable def mulH1 (f : ℳ X) {D E : RS.Divisor X} (hf : MulBound f D E) :
     (fun 𝒰 𝒱 h𝒰𝒱 => by
       apply LinearMap.ext
       intro ξ
-      show mulH1Cover f hf 𝒱 (resH1' D h𝒰𝒱 ξ) = resH1' E h𝒰𝒱 (mulH1Cover f hf 𝒰 ξ)
+      change mulH1Cover f hf 𝒱 (resH1' D h𝒰𝒱 ξ) = resH1' E h𝒰𝒱 (mulH1Cover f hf 𝒰 ξ)
       rw [resH1'_eq_resH1 D h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱),
         resH1'_eq_resH1 E h𝒰𝒱 (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱)]
       exact mulH1Cover_resH1 f hf (chosenRefIdx h𝒰𝒱) (chosenRefIdx_spec h𝒰𝒱) ξ)

@@ -100,7 +100,7 @@ theorem traceZk_const_mul (c : ℂ) (k : ℕ) :
     traceZk (fun z => c * h z) k = fun w => c * traceZk h k w := by
   funext w
   set s : Set ℂ := {z : ℂ | z ^ k = w} with hs_def
-  show ∑ᶠ z ∈ s, c * h z = c * ∑ᶠ z ∈ s, h z
+  change ∑ᶠ z ∈ s, c * h z = c * ∑ᶠ z ∈ s, h z
   rw [finsum_mem_def, finsum_mem_def]
   have hind : s.indicator (fun z => c * h z) = fun z => c * s.indicator h z := by
     funext z
@@ -142,14 +142,14 @@ theorem analyticAt_traceZk (hk : k ≠ 0) {ρ : ℝ} (hρ : 0 < ρ)
   have hψpow : ∀ i, ∀ᶠ w in 𝓝 w₀, ψ i w ^ k = w := by
     intro i
     filter_upwards [hψ₁pow] with w hw
-    show (ζ ^ i * ψ₁ w) ^ k = w
+    change (ζ ^ i * ψ₁ w) ^ k = w
     rw [mul_pow, ← pow_mul, mul_comm i k, pow_mul, hζ.pow_eq_one, one_pow, one_mul, hw, id_eq]
   have hψ₁w₀pow : ψ₁ w₀ ^ k = w₀ := by
     have := hψ₁pow.self_of_nhds; rwa [id_eq] at this
   have hψ₁w₀norm : ‖ψ₁ w₀‖ < ρ := RS.norm_lt_of_pow_eq hk hρ.le hψ₁w₀pow hw₀ρ
   have hψnorm0 : ∀ i, ‖ψ i w₀‖ < ρ := by
     intro i
-    show ‖ζ ^ i * ψ₁ w₀‖ < ρ
+    change ‖ζ ^ i * ψ₁ w₀‖ < ρ
     rw [norm_mul, norm_pow, hζnorm, one_pow, one_mul]
     exact hψ₁w₀norm
   have hψne0 : ∀ i, ψ i w₀ ≠ 0 := fun i => mul_ne_zero (pow_ne_zero i (hζ.ne_zero hk)) hψ₁ne
@@ -230,7 +230,7 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
       filter_upwards [mem_nhdsWithin_of_mem_nhds hballmem, self_mem_nhdsWithin]
         with w hwball hwne
       have hw0 : w ≠ 0 := hwne
-      show traceZk h k w = 0
+      change traceZk h k w = 0
       rw [traceZk_apply_of_ne_zero hk hw0]
       apply Finset.sum_eq_zero
       intro z hz
@@ -259,7 +259,7 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
     have hstep3 : traceZk h k =ᶠ[𝓝[≠] (0 : ℂ)] fun w => w ^ q * V w := by
       filter_upwards [self_mem_nhdsWithin] with w hw
       have hw0 : w ≠ 0 := hw
-      show traceZk h k w = w ^ q * (w ^ (-q) * traceZk h k w)
+      change traceZk h k w = w ^ q * (w ^ (-q) * traceZk h k w)
       rw [← mul_assoc, ← zpow_add₀ hw0, add_neg_cancel, zpow_zero, one_mul]
     -- A single radius `ρ` on which `h` is analytic, presented, and `u` is bounded.
     have hcomb : ∀ᶠ z in 𝓝[≠] (0 : ℂ), AnalyticAt ℂ h z ∧ h z = z ^ n₀ * u z :=
@@ -331,7 +331,7 @@ theorem meromorphicAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) :
             hw0]
       rw [hcard] at hsum
       have hwnorm0 : ‖w‖ ≠ 0 := norm_ne_zero_iff.mpr hw0
-      show ‖w ^ (-q) * traceZk h k w‖ ≤ (k : ℝ) * Cu
+      change ‖w ^ (-q) * traceZk h k w‖ ≤ (k : ℝ) * Cu
       rw [norm_mul, norm_zpow]
       have hzp : (0 : ℝ) ≤ ‖w‖ ^ (-q) := zpow_nonneg (norm_nonneg w) (-q)
       have hcancel : ‖w‖ ^ (-q) * (‖w‖ ^ q * Cu) = Cu := by
@@ -503,7 +503,7 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
       filter_upwards [mem_nhdsWithin_of_mem_nhds hballmem, self_mem_nhdsWithin]
         with w hwball hwne
       have hw0 : w ≠ 0 := hwne
-      show traceZk h k w = 0
+      change traceZk h k w = 0
       rw [traceZk_apply_of_ne_zero hk hw0]
       apply Finset.sum_eq_zero
       intro z hz
@@ -608,7 +608,7 @@ theorem laurentCoeffAt_traceZk (hh : MeromorphicAt h 0) (hk : k ≠ 0) (m : ℤ)
           exact Finset.sum_congr rfl fun d _ => by
             rw [traceZk_apply_of_ne_zero hk hw0, Finset.mul_sum]
         · rw [← Finset.mul_sum, traceZk_apply_of_ne_zero hk hw0]
-      show traceZk h k w = (∑ d ∈ Finset.range M, T d w) + w ^ s' * G w
+      change traceZk h k w = (∑ d ∈ Finset.range M, T d w) + w ^ s' * G w
       rw [hsum, ← hGw]
       congr 1
       refine Finset.sum_congr rfl fun d _ => ?_

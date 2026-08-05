@@ -256,7 +256,7 @@ theorem form_coeffAt_center {x : X} (hx : x ∈ D.e.source) :
         D.h (D.e x) := by
   have hmem : chartAt ℂ x x ∈ ⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ D.e.source) :=
     ⟨x, ⟨mem_chart_source ℂ x, hx⟩, rfl⟩
-  show D.coeff x (chartAt ℂ x x) = _
+  change D.coeff x (chartAt ℂ x x) = _
   rw [coeff, Set.indicator_of_mem hmem, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
 
 /-- The coefficient at an inactive chart center. -/
@@ -267,7 +267,7 @@ theorem form_coeffAt_center_of_notMem {x : X} (hx : x ∉ D.e.source) :
     exact hx (by
       have := (D.mem_coeffSet_iff x (mem_chart_target ℂ x)).mpr h1
       rwa [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)] at this)
-  show D.coeff x (chartAt ℂ x x) = 0
+  change D.coeff x (chartAt ℂ x x) = 0
   rw [coeff, Set.indicator_of_notMem hmem]
 
 end ChartSupportedData
@@ -332,7 +332,7 @@ theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 
       by_cases hzT : z ∈ (PU.chart i).target
       · rw [Set.indicator_of_mem hzT]
         have hcoeff : D.form.coeffAt (PU.pt i) z = 0 := by
-          show D.coeff (PU.pt i) z = 0
+          change D.coeff (PU.pt i) z = 0
           rw [ChartSupportedData.coeff, Set.indicator_of_notMem]
           intro hmem
           exact hz hmem
@@ -361,7 +361,7 @@ theorem pairing_form (PU : SurfPoU X) (D : ChartSupportedData X) (θ : RS.Form1 
       have hcoeff : D.form.coeffAt (PU.pt i) (τ (D.e q))
           = (starRingEnd ℂ) (deriv (⇑D.e ∘ ⇑(PU.chart i).symm) (τ (D.e q))) *
             D.h (D.e q) := by
-        show D.coeff (PU.pt i) (τ (D.e q)) = _
+        change D.coeff (PU.pt i) (τ (D.e q)) = _
         have hmem : τ (D.e q) ∈
             ⇑(chartAt ℂ (PU.pt i)) '' ((chartAt ℂ (PU.pt i)).source ∩ D.e.source) := by
           rw [hτw]; exact ⟨q, ⟨hq.1, hq.2⟩, rfl⟩

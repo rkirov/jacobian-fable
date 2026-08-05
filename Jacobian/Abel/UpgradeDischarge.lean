@@ -85,7 +85,7 @@ theorem contMDiffAt_mul_real' {f g : X → ℂ} {x : X}
 /-- The exp-corrected product has vanishing `∂̄` off the divisor set. Split out of
 `exists_mero_of_sum_pathIntegral_eq_zero` for the 200-line proof size we hold ourselves to; the
 `ηT`/`fT`/`F₀` abbreviations are rebuilt here so the body reads as it did inline. -/
-private theorem isDbarOn_exp_neg_mul_prod {Λ : Type*} [Fintype Λ] [DecidableEq Λ]
+private theorem isDbarOn_exp_neg_mul_prod {Λ : Type*} [Fintype Λ]
     {f : Λ → X → ℂ} {η : Λ → RS.Form01 X} {lA lB : Λ → X} {S : Set X}
     (hsmooth : ∀ l, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (f l) {lA l}ᶜ)
     (hne : ∀ l, ∀ x, x ≠ lA l → x ≠ lB l → f l x ≠ 0)
@@ -95,10 +95,11 @@ private theorem isDbarOn_exp_neg_mul_prod {Λ : Type*} [Fintype Λ] [DecidableEq
     (u : RS.SmoothC X) (hu : RS.dbar u = ∑ l : Λ, η l)
     (hmemSc : ∀ x ∈ Sᶜ, ∀ l : Λ, x ≠ lA l ∧ x ≠ lB l) :
     RS.IsDbarOn (fun x => Complex.exp (-(u x)) * ∏ l : Λ, f l x) 0 Sᶜ := by
+  classical
   set ηT : RS.Form01 X := ∑ l : Λ, η l with hηT_def
   set fT : X → ℂ := fun x => ∏ l : Λ, f l x with hfT_def
   set F₀ : X → ℂ := fun x => Complex.exp (-(u x)) * fT x with hF₀_def
-  show RS.IsDbarOn F₀ 0 Sᶜ
+  change RS.IsDbarOn F₀ 0 Sᶜ
   intro x hx
   -- chart representatives
   have hdiffs : ∀ l : Λ, DifferentiableAt ℝ (f l ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
@@ -150,7 +151,7 @@ private theorem isDbarOn_exp_neg_mul_prod {Λ : Type*} [Fintype Λ] [DecidableEq
     have h1 : RS.IsDbarOn (⇑u) ηT Set.univ := RS.dbar_eq_iff.mp hu
     exact h1 x (Set.mem_univ x)
   -- combine
-  show RS.wirtingerDbar (F₀ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
+  change RS.wirtingerDbar (F₀ ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
     = (0 : RS.Form01 X).coeffAt x (chartAt ℂ x x)
   rw [RS.Form01.coeffAt_zero]
   have hkey : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
@@ -335,12 +336,12 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
       have hzpow : (z - z₀) ^ (-(∑ l : Λ, linkOrd (lA l) (lB l) x))
           = ∏ l : Λ, (z - z₀) ^ (-(linkOrd (lA l) (lB l) x)) := by
         rw [← zpow_finset_sum hzz, ← Finset.sum_neg_distrib]
-      show Complex.exp (-(u ((chartAt ℂ x).symm z))) *
+      change Complex.exp (-(u ((chartAt ℂ x).symm z))) *
           ∏ l : Λ, (f l ((chartAt ℂ x).symm z) * (z - z₀) ^ (-(linkOrd (lA l) (lB l) x)))
         = (F₀ ∘ ⇑(chartAt ℂ x).symm) z *
           (z - z₀) ^ (-(∑ l : Λ, linkOrd (lA l) (lB l) x))
       rw [hzpow, Finset.prod_mul_distrib]
-      show Complex.exp (-(u ((chartAt ℂ x).symm z))) *
+      change Complex.exp (-(u ((chartAt ℂ x).symm z))) *
           ((∏ l : Λ, f l ((chartAt ℂ x).symm z)) *
             ∏ l : Λ, (z - z₀) ^ (-(linkOrd (lA l) (lB l) x)))
         = Complex.exp (-(u ((chartAt ℂ x).symm z))) * fT ((chartAt ℂ x).symm z) *
@@ -422,9 +423,10 @@ theorem weakSolutionUpgrade_of_surjective
 
 /-- **The `k`-point discharge** (design §4.1, the shape `period-lattice-rank`'s Thm 21.4(b)
 consumes), same single gate. -/
-theorem weakSolutionUpgradeFinset_of_surjective {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem weakSolutionUpgradeFinset_of_surjective {ι : Type*} [Fintype ι]
     (hsurj : Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))) :
     WeakSolutionUpgradeFinset X ι := by
+  classical
   intro f a x ha hx hax γ hf hper
   obtain ⟨F, hF0, hord⟩ := exists_mero_of_sum_pathIntegral_eq_zero (ι := ι) hsurj
     (A := a) (B := x) γ hper

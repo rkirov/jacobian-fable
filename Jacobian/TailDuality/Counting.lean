@@ -24,7 +24,7 @@ Unit: serre-duality-tails (`docs/design/serre-duality-tails.md` §6 P5, addendum
 * `exists_mul_functional_eq`: **MIRANDA LEMMA 3.4**.
 -/
 
-open scoped ContDiff Manifold Classical
+open scoped ContDiff Manifold
 open Set TopologicalSpace
 open RS RS.LaurentTail
 
@@ -59,13 +59,13 @@ noncomputable def nuPairDual (A C : RS.Divisor X) (φ₁ φ₂ : T A →ₗ[ℂ]
     (φ₁.comp (nuL A C fg.1) - φ₂.comp (nuL A C fg.2))
     (by
       rintro τ ⟨g, rfl⟩
-      show φ₁ (nuL A C fg.1 (alphaL (A - C) g)) - φ₂ (nuL A C fg.2 (alphaL (A - C) g)) = 0
+      change φ₁ (nuL A C fg.1 (alphaL (A - C) g)) - φ₂ (nuL A C fg.2 (alphaL (A - C) g)) = 0
       rw [nuL_alpha, nuL_alpha, hα₁, hα₂, sub_zero])
   map_add' fg fg' := by
     apply LinearMap.ext
     intro x
     obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective (A - C) x
-    show (φ₁.comp (nuL A C (fg.1 + fg'.1)) - φ₂.comp (nuL A C (fg.2 + fg'.2))) τ
+    change (φ₁.comp (nuL A C (fg.1 + fg'.1)) - φ₂.comp (nuL A C (fg.2 + fg'.2))) τ
         = (φ₁.comp (nuL A C fg.1) - φ₂.comp (nuL A C fg.2)) τ
           + (φ₁.comp (nuL A C fg'.1) - φ₂.comp (nuL A C fg'.2)) τ
     simp only [LinearMap.sub_apply, LinearMap.comp_apply, LinearMap.add_apply, map_add]
@@ -74,7 +74,7 @@ noncomputable def nuPairDual (A C : RS.Divisor X) (φ₁ φ₂ : T A →ₗ[ℂ]
     apply LinearMap.ext
     intro x
     obtain ⟨τ, rfl⟩ := H1Tail.mk_surjective (A - C) x
-    show (φ₁.comp (nuL A C (c • fg.1)) - φ₂.comp (nuL A C (c • fg.2))) τ
+    change (φ₁.comp (nuL A C (c • fg.1)) - φ₂.comp (nuL A C (c • fg.2))) τ
         = (RingHom.id ℂ) c • (φ₁.comp (nuL A C fg.1) - φ₂.comp (nuL A C fg.2)) τ
     simp only [LinearMap.sub_apply, LinearMap.comp_apply, LinearMap.smul_apply, map_smul,
       RingHom.id_apply, smul_eq_mul]
@@ -126,7 +126,7 @@ theorem exists_mul_functional_eq (A : RS.Divisor X) (φ₁ φ₂ : T A →ₗ[�
       intro τ
       have hτ := DFunLike.congr_fun hmem (H1Tail.mk (A - C) τ)
       rw [LinearMap.zero_apply, nuPairDual_apply] at hτ
-      show φ₁ (nuL A C f₁ τ) = φ₂ (nuL A C f₂ τ)
+      change φ₁ (nuL A C f₁ τ) = φ₂ (nuL A C f₂ τ)
       rwa [sub_eq_zero] at hτ
     have hf1 : (f₁ : RS.Mero X) ≠ 0 := by
       intro hf1z

@@ -32,7 +32,7 @@ Main declarations:
 * `instance : FiniteDimensional ℂ (Form1 X)` (compact T2 `X`).
 -/
 
-open scoped ContDiff Manifold Bundle Topology Classical
+open scoped ContDiff Manifold Bundle Topology
 open Set Filter IsManifold
 
 -- Several lemmas about `G.P`/`gext` below are stated in a section carrying
@@ -338,6 +338,7 @@ theorem J_mem_montelFamily [CompactSpace X] {C : ℝ}
 
 /-! ### Closedness of the unit ball of the image -/
 
+open scoped Classical in
 /-- The (junk-extended) limit coefficient function on `K i` of a convergent tuple. -/
 def gext (f : G.P) (i : Fin G.n) : ℂ → ℂ :=
   fun z => if h : z ∈ G.K i then f i ⟨z, h⟩ else 0
@@ -438,7 +439,7 @@ theorem isClosed_ball_inter_range [CompactSpace X] :
   -- the reassembled form has coefficient tuple `f`
   funext i
   ext z
-  show coeffIn (G.e i) (Form1.ofCoeffs D) ↑z = f i z
+  change coeffIn (G.e i) (Form1.ofCoeffs D) ↑z = f i z
   have heqO : Set.EqOn (coeffIn (G.e i) (Form1.ofCoeffs D)) (G.gext f i) (G.O i) := by
     intro w hw
     have hw' : w ∈ (D.chart i).target := by

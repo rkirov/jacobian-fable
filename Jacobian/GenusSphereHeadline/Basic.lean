@@ -64,7 +64,7 @@ theorem exists_simple_pole_of_genus_eq_zero (hg : genus X = 0) :
   have hle : RS.LinSys (0 : RS.Divisor X) ≤ RS.LinSys D := RS.linSys_mono hDnn
   have hne : RS.LinSys (0 : RS.Divisor X) ≠ RS.LinSys D := fun heq => by
     have hleq : RS.l (0 : RS.Divisor X) = RS.l D := by
-      show Module.finrank ℂ (RS.LinSys (0 : RS.Divisor X)) = Module.finrank ℂ (RS.LinSys D)
+      change Module.finrank ℂ (RS.LinSys (0 : RS.Divisor X)) = Module.finrank ℂ (RS.LinSys D)
       rw [heq]
     rw [hl0] at hleq
     omega

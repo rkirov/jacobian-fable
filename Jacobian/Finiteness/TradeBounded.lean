@@ -74,7 +74,7 @@ private theorem inf_pair_subset_chart_source (i j : Fin T.n) :
 
 omit [T1Space X] [T2Space X] in
 theorem isCompactOperator_resNC1_U_V : IsCompactOperator (resNC1 T T.U T.V T.V_le_U) := by
-  show IsCompactOperator (ContinuousLinearMap.pi (fun p : Fin T.n × Fin T.n =>
+  change IsCompactOperator (ContinuousLinearMap.pi (fun p : Fin T.n × Fin T.n =>
     (restrictCLM (inf_le_inf (T.V_le_U p.1) (T.V_le_U p.2))).comp (ContinuousLinearMap.proj p)))
   apply isCompactOperator_pi
   intro p
@@ -585,7 +585,7 @@ theorem resZ_boundZ1 {P P' : Fin T.n → Opens X}
   apply BoundedContinuousFunction.ext
   intro z
   rw [resZ_apply_coe, resNC1_apply]
-  show (boundZ1 T h F (i, j) : ↥((P i ⊓ P j : Opens X) : Set X) →ᵇ ℂ)
+  change (boundZ1 T h F (i, j) : ↥((P i ⊓ P j : Opens X) : Set X) →ᵇ ℂ)
       (Set.inclusion (inf_le_inf (h' i) (h' j)) z) =
     (boundZ1 T h2 F (i, j) : ↥((P' i ⊓ P' j : Opens X) : Set X) →ᵇ ℂ) z
   rw [boundZ1_apply_eq_evalAt, boundZ1_apply_eq_evalAt]
@@ -612,10 +612,10 @@ theorem toGermZ1W_boundZ1 (h : ∀ i, closure (T.W i : Set X) ⊆ (T.Ustar i : S
   rw [toGermZ1W_apply_coe]
   funext p
   obtain ⟨i, j⟩ := p
-  show toGermSub (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) = _
+  change toGermSub (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) = _
   apply Subtype.ext
   rw [toGermSub_apply_coe]
-  show toGerm (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) =
+  change toGerm (T.W i ⊓ T.W j) (boundZ1 T h F (i, j)) =
     wPairGerm T (resZ1 (𝒰 := T.coverStar) (𝒱 := T.coverW) (0 : RS.Divisor X) id T.ref_star_W F) i j
   rw [wPairGerm, wPairMem, boundZ1, toGerm_restrictGerm, resZ1_apply_coe, resC1_apply,
     restrictL_apply_coe]

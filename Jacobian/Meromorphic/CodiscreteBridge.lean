@@ -64,7 +64,7 @@ theorem eventually_codiscreteWithin_iff_of_isOpen {p : X → Prop} (hU : IsOpen 
 omit [ChartedSpace ℂ X] in
 theorem eventuallyEq_codiscrete_iff {α : Type*} {f g : X → α} :
     f =ᶠ[codiscrete X] g ↔ ∀ x, f =ᶠ[𝓝[≠] x] g := by
-  show f =ᶠ[codiscreteWithin univ] g ↔ _
+  change f =ᶠ[codiscreteWithin univ] g ↔ _
   rw [eventuallyEq_codiscreteWithin_iff_of_isOpen isOpen_univ]
   simp
 
