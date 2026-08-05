@@ -316,6 +316,26 @@ private theorem differentiableAt_comp_polarLog {u : ℂ → ℂ} {c : ℂ} {r R 
     exact Filter.mem_of_superset (hopenset.mem_nhds hτζ_int) hsub2
   exact (hu.contDiffAt hAmem).differentiableAt (by norm_num)
 
+/-- The integrand is `2π`-periodic in the imaginary direction. Split out of
+`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the 200-line proof
+size we hold ourselves to. -/
+private theorem polarLog_integrand_periodic {u : ℂ → ℂ} {c : ℂ} :
+    ∀ x : ℝ, (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ) ((x : ℂ) + (0 : ℝ) * I) =
+      (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ) ((x : ℂ) + (2 * π : ℝ) * I) := by
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set F : ℂ → ℂ := fun ζ => u (τ ζ) * Complex.exp ζ with hF_def
+  show ∀ x : ℝ, F ((x : ℂ) + (0 : ℝ) * I) = F ((x : ℂ) + (2 * π : ℝ) * I)
+  intro x
+  have hx0 : (x : ℂ) + (0 : ℝ) * I = (x : ℂ) := by push_cast; ring
+  have hx2pi : (x : ℂ) + (2 * π : ℝ) * I = (x : ℂ) + 2 * π * I := by push_cast; ring
+  have hexp_eq : Complex.exp ((x : ℂ) + 2 * π * I) = Complex.exp (x : ℂ) :=
+    Complex.exp_periodic x
+  have hτ_eq : τ ((x : ℂ) + 2 * π * I) = τ (x : ℂ) := by
+    rw [hτ_def]; simp only; rw [hexp_eq]
+  rw [hF_def, hx0, hx2pi]
+  simp only
+  rw [hτ_eq, hexp_eq]
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -461,17 +481,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       hHc' hHd' hHi'
     rw [hz0re, hw0re, hz0im, hw0im] at hrect
     -- The `y`-boundary cancels by periodicity of `exp`.
-    have hperiod : ∀ x : ℝ, F ((x : ℂ) + (0 : ℝ) * I) = F ((x : ℂ) + (2 * π : ℝ) * I) := by
-      intro x
-      have hx0 : (x : ℂ) + (0 : ℝ) * I = (x : ℂ) := by push_cast; ring
-      have hx2pi : (x : ℂ) + (2 * π : ℝ) * I = (x : ℂ) + 2 * π * I := by push_cast; ring
-      have hexp_eq : Complex.exp ((x : ℂ) + 2 * π * I) = Complex.exp (x : ℂ) :=
-        Complex.exp_periodic x
-      have hτ_eq : τ ((x : ℂ) + 2 * π * I) = τ (x : ℂ) := by
-        rw [hτ_def]; simp only; rw [hexp_eq]
-      rw [hF_def, hx0, hx2pi]
-      simp only
-      rw [hτ_eq, hexp_eq]
+    have hperiod := polarLog_integrand_periodic (u := u) (c := c)
     have hLHS_yb : (∫ x : ℝ in a..b, F ((x : ℂ) + (0 : ℝ) * I))
         - (∫ x : ℝ in a..b, F ((x : ℂ) + (2 * π : ℝ) * I)) = 0 :=
       sub_eq_zero.mpr (intervalIntegral.integral_congr (fun x _ => hperiod x))
