@@ -40,6 +40,7 @@ variable {X Y : Type*}
   [TopologicalSpace Y] [ChartedSpace ℂ Y]
   [IsManifold 𝓘(ℂ) ω X] [IsManifold 𝓘(ℂ) ω Y]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Near the chart image of `x`, points stay in the chart target, pull back into `U`, and their
 `F`-images stay in the target chart's source. Split out of `exists_adaptedChartsAt_translated`
 to keep that proof under the 200-line size we hold ourselves to. -/

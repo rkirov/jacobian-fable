@@ -164,7 +164,7 @@ omit [TopologicalSpace X] [T2Space X] [CompactSpace X] [ChartedSpace ℂ X] [IsM
 theorem linkOrd_self_eq_zero [DecidableEq X] (A x : X) : linkOrd A A x = 0 := by
   rw [linkOrd, sub_self]
 
-omit [CompactSpace X] in
+omit [CompactSpace X] [T2Space X] in
 /-- Every point has a nonzero limit for `f` divided out by its `linkOrd` factor: the local
 factorization behind `exists_link`'s fourth component. Split out to keep that proof under the
 200-line size we hold ourselves to. -/
@@ -360,6 +360,7 @@ private theorem exists_linkOrd_factor [DecidableEq X] {A B : X} (hAB : A ≠ B)
     rw [neg_zero, zpow_zero, mul_one]
     exact hz.symm
 
+omit [CompactSpace X] in
 /-- **The link construction** (design §4.1 step 5, one chain link): the piece function `f`,
 its packaged `(0,1)`-form `η`, and the five assembly facts. Degenerate links (`A = B`) yield
 the constant `1` and the zero form. -/

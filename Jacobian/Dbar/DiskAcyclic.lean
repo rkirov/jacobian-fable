@@ -257,6 +257,7 @@ section Twist
 
 variable [T2Space X] [CompactSpace X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T1Space X] [T2Space X] [CompactSpace X] in
 /-- A cocycle member multiplied by the restriction of a germ of divisor order exactly `D` lands in
 the trivial linear system. Split out of `subsingleton_h1Cover_of_isChartDisk` to keep that proof
 under the 200-line size we hold ourselves to. -/

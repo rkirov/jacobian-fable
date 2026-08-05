@@ -35,7 +35,7 @@ namespace RS.AbelWeak
 
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space X] [ChartedSpace ℂ X] in
 /-- The planar model is real-smooth away from the two marked points. Split out of
 `exists_weakSolutionOfPair_chart` to keep that proof under the 200-line size we hold ourselves
 to; `g` is rebuilt here so the argument reads exactly as it did inline. -/
