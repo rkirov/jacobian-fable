@@ -336,6 +336,51 @@ private theorem polarLog_integrand_periodic {u : ℂ → ℂ} {c : ℂ} :
   simp only
   rw [hτ_eq, hexp_eq]
 
+/-- On the open rectangle the integrand has the within-derivative as an honest Fréchet derivative.
+Split out of `circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the
+200-line proof size we hold ourselves to. -/
+private theorem hasFDerivAt_polarLog_integrand {u : ℂ → ℂ} {c : ℂ} {r R : ℝ}
+    (hInterior_diff : ∀ ζ ∈ Complex.reProdIm (Set.Ioo (Real.log r) (Real.log R))
+        (Set.Ioo (0 : ℝ) (2 * π)), DifferentiableAt ℝ u (c + Complex.exp ζ)) :
+    ∀ ζ ∈ Complex.reProdIm (Set.Ioo (Real.log r) (Real.log R)) (Set.Ioo (0 : ℝ) (2 * π)),
+      HasFDerivAt (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ)
+        (fderivWithin ℝ (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ)
+          (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R))
+            (Set.Icc (0 : ℝ) (2 * π))) ζ) ζ := by
+  set a : ℝ := Real.log r with ha_def
+  set b : ℝ := Real.log R with hb_def
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set Rec : Set ℂ := Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π)) with hRec_def
+  set F : ℂ → ℂ := fun ζ => u (τ ζ) * Complex.exp ζ with hF_def
+  set RecOpen : Set ℂ := Complex.reProdIm (Set.Ioo a b) (Set.Ioo (0 : ℝ) (2 * π)) with
+    hRecOpen_def
+  set f' : ℂ → (ℂ →L[ℝ] ℂ) := fderivWithin ℝ F Rec with hf'_def
+  have hτ_diffC : ∀ ζ, DifferentiableAt ℂ τ ζ := fun ζ =>
+    (Complex.differentiableAt_exp).const_add c
+  have hτ_diffR : ∀ ζ, DifferentiableAt ℝ τ ζ := fun ζ => (hτ_diffC ζ).restrictScalars ℝ
+  have hRecOpen_isOpen : IsOpen RecOpen := by
+    rw [hRecOpen_def, Complex.reProdIm]
+    exact (isOpen_Ioo.preimage Complex.continuous_re).inter
+      (isOpen_Ioo.preimage Complex.continuous_im)
+  have hRecOpen_sub : RecOpen ⊆ Rec := by
+    rw [hRecOpen_def, hRec_def]
+    intro ζ hζ
+    rw [Complex.mem_reProdIm] at hζ ⊢
+    exact ⟨⟨hζ.1.1.le, hζ.1.2.le⟩, ⟨hζ.2.1.le, hζ.2.2.le⟩⟩
+  show ∀ ζ ∈ RecOpen, HasFDerivAt F (f' ζ) ζ
+  intro ζ hζ
+  have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
+  have hτd : DifferentiableAt ℝ τ ζ := hτ_diffR ζ
+  have hexpd : DifferentiableAt ℝ Complex.exp ζ := Complex.differentiableAt_exp (𝕜 := ℝ)
+  have hFd : DifferentiableAt ℝ F ζ := by
+    have h1 : DifferentiableAt ℝ (u ∘ τ) ζ := hud.comp ζ hτd
+    have h2 : DifferentiableAt ℝ (fun ζ => (u ∘ τ) ζ * Complex.exp ζ) ζ := h1.mul hexpd
+    simpa [hF_def, Function.comp] using h2
+  have hnhds : Rec ∈ nhds ζ :=
+    Filter.mem_of_superset (hRecOpen_isOpen.mem_nhds hζ) hRecOpen_sub
+  rw [hf'_def, fderivWithin_of_mem_nhds hnhds]
+  exact hFd.hasFDerivAt
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -444,19 +489,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       exact hcont.integrableOn_compact hcompact
     -- Interior points of `Rec` (in the `ζ`-rectangle) map to interior points of `A`.
     have hInterior_diff := differentiableAt_comp_polarLog h0 hRpos hu
-    have hHd : ∀ ζ ∈ RecOpen, HasFDerivAt F (f' ζ) ζ := by
-      intro ζ hζ
-      have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
-      have hτd : DifferentiableAt ℝ τ ζ := hτ_diffR ζ
-      have hexpd : DifferentiableAt ℝ Complex.exp ζ := Complex.differentiableAt_exp (𝕜 := ℝ)
-      have hFd : DifferentiableAt ℝ F ζ := by
-        have h1 : DifferentiableAt ℝ (u ∘ τ) ζ := hud.comp ζ hτd
-        have h2 : DifferentiableAt ℝ (fun ζ => (u ∘ τ) ζ * Complex.exp ζ) ζ := h1.mul hexpd
-        simpa [hF_def, Function.comp] using h2
-      have hnhds : Rec ∈ nhds ζ :=
-        Filter.mem_of_superset (hRecOpen_isOpen.mem_nhds hζ) hRecOpen_sub
-      rw [hf'_def, fderivWithin_of_mem_nhds hnhds]
-      exact hFd.hasFDerivAt
+    have hHd := hasFDerivAt_polarLog_integrand hInterior_diff
     -- Apply the rectangle Stokes lemma with corners `z0 = a`, `w0 = b + 2πi`.
     set z0 : ℂ := (⟨a, 0⟩ : ℂ) with hz0_def
     set w0 : ℂ := (⟨b, 2 * π⟩ : ℂ) with hw0_def
