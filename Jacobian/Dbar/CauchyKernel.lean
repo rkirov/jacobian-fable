@@ -182,6 +182,103 @@ private theorem setIntegral_prod_symm {f : ℝ × ℝ → ℂ} {s t : Set ℝ}
     rw [Measure.prod_restrict]; exact hf
   exact integral_integral_swap hf'
 
+/-- The polar-coordinate integrand of the Cauchy-Pompeiu reduction, rewritten through the radial
+and angular derivative fields. Split out of `cauchyPompeiu` to keep that proof under the 200-line
+size we hold ourselves to; the abbreviations are rebuilt here so the body reads as it did. -/
+private theorem eqOn_polar_integrand {g : ℂ → ℂ} (hgdiff : Differentiable ℝ g) (z : ℂ) (R' : ℝ) :
+    Set.EqOn
+      (fun p : ℝ × ℝ => p.1 • ((fun w => cauchyKernel w * wirtingerDbar g (z - w))
+        (Complex.polarCoord.symm p)))
+      (fun p : ℝ × ℝ => (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ *
+          (-(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+            (Complex.I * p.1 * Complex.exp (p.2 * Complex.I))) -
+          (-(fderiv ℝ g (z - circleMap 0 p.1 p.2)) (Complex.exp (p.2 * Complex.I)))) / 2))
+      (Set.Ioc (0 : ℝ) R' ×ˢ Set.Ioo (-Real.pi) Real.pi) := by
+  set h : ℂ → ℂ := wirtingerDbar g with hh_def
+  set Gr : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+    (Complex.exp (p.2 * Complex.I)) with hGr_def
+  set Gθ : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+    (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)) with hGθ_def
+  set T' : Set (ℝ × ℝ) := Set.Ioc (0 : ℝ) R' ×ˢ Set.Ioo (-Real.pi) Real.pi with hT'_def
+  set F : ℂ → ℂ := fun w => cauchyKernel w * h (z - w) with hF_def
+  show Set.EqOn (fun p : ℝ × ℝ => p.1 • F (Complex.polarCoord.symm p))
+    (fun p => (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)) T'
+  intro p hp
+  have hp1 : 0 < p.1 := hp.1.1
+  have hne : (p.1 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hp1.ne'
+  have hexpne : Complex.exp ((p.2 : ℂ) * Complex.I) ≠ 0 := Complex.exp_ne_zero _
+  have hdec : DifferentiableAt ℝ g (z - circleMap 0 p.1 p.2) := hgdiff _
+  have hv1 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
+      (Complex.exp ((p.2 : ℂ) * Complex.I))
+  have hv2 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
+      (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))
+  rw [conj_exp_real_mul_I] at hv1
+  have hconj2 : (starRingEnd ℂ) (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) =
+      -Complex.I * (p.1 : ℂ) * Complex.exp (-(p.2 : ℂ) * Complex.I) := by
+    rw [map_mul, map_mul, Complex.conj_I, Complex.conj_ofReal, conj_exp_real_mul_I]
+  rw [hconj2] at hv2
+  have hFval : F (Complex.polarCoord.symm p) =
+      (Real.pi * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))⁻¹ *
+        h (z - circleMap 0 p.1 p.2) := by
+    simp only [hF_def, polarCoord_symm_eq_circleMap, cauchyKernel, circleMap, zero_add,
+      mul_assoc]
+  show p.1 • F (Complex.polarCoord.symm p) =
+      (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)
+  rw [hFval, Complex.real_smul]
+  simp only [hGr_def, hGθ_def]
+  rw [hv1, hv2, ← hh_def]
+  have hexp_prod : Complex.exp ((p.2 : ℂ) * Complex.I) *
+      Complex.exp (-((p.2 : ℂ) * Complex.I)) = 1 := by
+    rw [← Complex.exp_add]; simp
+  have hpi_ne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
+  field_simp
+  linear_combination (-(2 * h (z - circleMap 0 p.1 p.2))) * hexp_prod
+
+/-- The angular field, divided by `i r`, is bounded by the derivative bound. Split out of
+`cauchyPompeiu` for the 200-line proof size we hold ourselves to. -/
+private theorem norm_angular_ratio_le {g : ℂ → ℂ} {M : ℝ} (hM : ∀ w, ‖fderiv ℝ g w‖ ≤ M) (z : ℂ) :
+    ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ *
+      (-(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+        (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)))‖ ≤ M := by
+  set Gθ : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+    (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)) with hGθ_def
+  show ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ * Gθ p‖ ≤ M
+  intro p hp1
+  have hnorm_Ir : ‖Complex.I * (p.1 : ℂ)‖ = p.1 := by
+    rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_of_nonneg hp1.le]
+  have hbound2 : ‖Gθ p‖ ≤ M * p.1 := by
+    rw [hGθ_def, norm_neg]
+    calc ‖(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+            (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))‖
+        ≤ ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ *
+            ‖Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)‖ :=
+          (fderiv ℝ g (z - circleMap 0 p.1 p.2)).le_opNorm _
+      _ = ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ * p.1 := by
+          rw [norm_mul, hnorm_Ir, Complex.norm_exp_ofReal_mul_I, mul_one]
+      _ ≤ M * p.1 := mul_le_mul_of_nonneg_right (hM _) hp1.le
+  rw [norm_mul, norm_inv, hnorm_Ir]
+  calc p.1⁻¹ * ‖Gθ p‖ ≤ p.1⁻¹ * (M * p.1) :=
+        mul_le_mul_of_nonneg_left hbound2 (inv_nonneg.mpr hp1.le)
+    _ = M := by field_simp
+
+/-- The radial derivative of the shifted argument. Split out of `cauchyPompeiu` for the 200-line
+proof size we hold ourselves to. -/
+private theorem hasDerivAt_radial {g : ℂ → ℂ} (hgdiff : Differentiable ℝ g) (z : ℂ) :
+    ∀ p : ℝ × ℝ, HasDerivAt (fun r => g (z - circleMap 0 r p.2))
+      (-(fderiv ℝ g (z - circleMap 0 p.1 p.2)) (Complex.exp (p.2 * Complex.I))) p.1 := by
+  set Gr : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
+    (Complex.exp (p.2 * Complex.I)) with hGr_def
+  show ∀ p : ℝ × ℝ, HasDerivAt (fun r => g (z - circleMap 0 r p.2)) (Gr p) p.1
+  intro p
+  have h1 : HasDerivAt (fun r : ℝ => z - circleMap 0 r p.2)
+      (-(Complex.exp (p.2 * Complex.I))) p.1 :=
+    (hasDerivAt_circleMap_r 0 p.2 p.1).const_sub z
+  have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
+    (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
+  have h4 := HasFDerivAt.comp_hasDerivAt_of_eq p.1 h3 h1 rfl
+  simp only [map_neg] at h4
+  exact h4
+
 /-- Forster 13.1 / Cauchy–Pompeiu, proved by the polar-FTC computation of design §5. -/
 theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : ℂ) :
     ∫ w : ℂ, cauchyKernel w * wirtingerDbar g (z - w) = g z := by
@@ -228,16 +325,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
     (Complex.exp (p.2 * Complex.I)) with hGr_def
   set Gθ : ℝ × ℝ → ℂ := fun p => -(fderiv ℝ g (z - circleMap 0 p.1 p.2))
     (Complex.I * p.1 * Complex.exp (p.2 * Complex.I)) with hGθ_def
-  have hGr_deriv : ∀ p : ℝ × ℝ, HasDerivAt (fun r => g (z - circleMap 0 r p.2)) (Gr p) p.1 := by
-    intro p
-    have h1 : HasDerivAt (fun r : ℝ => z - circleMap 0 r p.2)
-        (-(Complex.exp (p.2 * Complex.I))) p.1 :=
-      (hasDerivAt_circleMap_r 0 p.2 p.1).const_sub z
-    have h3 : HasFDerivAt g (fderiv ℝ g (z - circleMap 0 p.1 p.2)) (z - circleMap 0 p.1 p.2) :=
-      (hgdiff (z - circleMap 0 p.1 p.2)).hasFDerivAt
-    have h4 := HasFDerivAt.comp_hasDerivAt_of_eq p.1 h3 h1 rfl
-    simp only [map_neg] at h4
-    exact h4
+  have hGr_deriv := hasDerivAt_radial hgdiff z
   have hGθ_deriv : ∀ p : ℝ × ℝ, HasDerivAt (fun θ => g (z - circleMap 0 p.1 θ)) (Gθ p) p.2 := by
     intro p
     have h1 : HasDerivAt (fun θ : ℝ => z - circleMap 0 p.1 θ)
@@ -280,24 +368,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
       _ = ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ := by
           rw [Complex.norm_exp_ofReal_mul_I, mul_one]
       _ ≤ M := hM _
-  have hGθ_ratio_bound : ∀ p : ℝ × ℝ, 0 < p.1 → ‖(Complex.I * (p.1 : ℂ))⁻¹ * Gθ p‖ ≤ M := by
-    intro p hp1
-    have hnorm_Ir : ‖Complex.I * (p.1 : ℂ)‖ = p.1 := by
-      rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_of_nonneg hp1.le]
-    have hbound2 : ‖Gθ p‖ ≤ M * p.1 := by
-      rw [hGθ_def, norm_neg]
-      calc ‖(fderiv ℝ g (z - circleMap 0 p.1 p.2))
-              (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))‖
-          ≤ ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ *
-              ‖Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)‖ :=
-            (fderiv ℝ g (z - circleMap 0 p.1 p.2)).le_opNorm _
-        _ = ‖fderiv ℝ g (z - circleMap 0 p.1 p.2)‖ * p.1 := by
-            rw [norm_mul, hnorm_Ir, Complex.norm_exp_ofReal_mul_I, mul_one]
-        _ ≤ M * p.1 := mul_le_mul_of_nonneg_right (hM _) hp1.le
-    rw [norm_mul, norm_inv, hnorm_Ir]
-    calc p.1⁻¹ * ‖Gθ p‖ ≤ p.1⁻¹ * (M * p.1) :=
-          mul_le_mul_of_nonneg_left hbound2 (inv_nonneg.mpr hp1.le)
-      _ = M := by field_simp
+  have hGθ_ratio_bound := norm_angular_ratio_le hM z
   -- the bounded box `T'`
   set T' : Set (ℝ × ℝ) := Set.Ioc (0 : ℝ) R' ×ˢ Set.Ioo (-Real.pi) Real.pi with hT'_def
   have hT'sub : T' ⊆ Complex.polarCoord.target := by
@@ -334,38 +405,7 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
   have step3 : ∫ w, F w = ∫ p in T', p.1 • F (Complex.polarCoord.symm p) :=
     (Complex.integral_comp_polarCoord_symm F).symm.trans hreduce
   -- Steps 3+4 combined: the pointwise Wirtinger-split identity on `T'`
-  have hstep34 : Set.EqOn (fun p : ℝ × ℝ => p.1 • F (Complex.polarCoord.symm p))
-      (fun p => (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)) T' := by
-    intro p hp
-    have hp1 : 0 < p.1 := hp.1.1
-    have hne : (p.1 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hp1.ne'
-    have hexpne : Complex.exp ((p.2 : ℂ) * Complex.I) ≠ 0 := Complex.exp_ne_zero _
-    have hdec : DifferentiableAt ℝ g (z - circleMap 0 p.1 p.2) := hgdiff _
-    have hv1 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
-        (Complex.exp ((p.2 : ℂ) * Complex.I))
-    have hv2 := fderiv_apply_eq_wirtinger g (z - circleMap 0 p.1 p.2) hdec
-        (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))
-    rw [conj_exp_real_mul_I] at hv1
-    have hconj2 : (starRingEnd ℂ) (Complex.I * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I)) =
-        -Complex.I * (p.1 : ℂ) * Complex.exp (-(p.2 : ℂ) * Complex.I) := by
-      rw [map_mul, map_mul, Complex.conj_I, Complex.conj_ofReal, conj_exp_real_mul_I]
-    rw [hconj2] at hv2
-    have hFval : F (Complex.polarCoord.symm p) =
-        (Real.pi * (p.1 : ℂ) * Complex.exp ((p.2 : ℂ) * Complex.I))⁻¹ *
-          h (z - circleMap 0 p.1 p.2) := by
-      simp only [hF_def, polarCoord_symm_eq_circleMap, cauchyKernel, circleMap, zero_add,
-        mul_assoc]
-    show p.1 • F (Complex.polarCoord.symm p) =
-        (Real.pi : ℂ)⁻¹ * (((Complex.I * (p.1 : ℂ))⁻¹ * Gθ p - Gr p) / 2)
-    rw [hFval, Complex.real_smul]
-    simp only [hGr_def, hGθ_def]
-    rw [hv1, hv2, ← hh_def]
-    have hexp_prod : Complex.exp ((p.2 : ℂ) * Complex.I) *
-        Complex.exp (-((p.2 : ℂ) * Complex.I)) = 1 := by
-      rw [← Complex.exp_add]; simp
-    have hpi_ne : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    field_simp
-    linear_combination (-(2 * h (z - circleMap 0 p.1 p.2))) * hexp_prod
+  have hstep34 := eqOn_polar_integrand hgdiff z R'
   -- integrability of `Gr` and the ratio on `T'`
   have hGr_intOn : IntegrableOn Gr T' := by
     apply Integrable.mono' (integrableOn_const (C := M) hT'_finite)
