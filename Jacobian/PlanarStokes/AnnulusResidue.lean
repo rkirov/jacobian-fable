@@ -381,6 +381,58 @@ private theorem hasFDerivAt_polarLog_integrand {u : ℂ → ℂ} {c : ℂ} {r R 
   rw [hf'_def, fderivWithin_of_mem_nhds hnhds]
   exact hFd.hasFDerivAt
 
+/-- Pointwise, the Stokes integrand equals `2i` times the Jacobian-weighted Wirtinger derivative.
+Split out of `circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the
+200-line proof size we hold ourselves to. -/
+private theorem stokes_integrand_eq {u : ℂ → ℂ} {c : ℂ} {r R : ℝ}
+    (hInterior_diff : ∀ ζ ∈ Complex.reProdIm (Set.Ioo (Real.log r) (Real.log R))
+        (Set.Ioo (0 : ℝ) (2 * π)), DifferentiableAt ℝ u (c + Complex.exp ζ)) :
+    ∀ ζ ∈ Complex.reProdIm (Set.Ioo (Real.log r) (Real.log R)) (Set.Ioo (0 : ℝ) (2 * π)),
+      I • (fderivWithin ℝ (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ)
+            (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R))
+              (Set.Icc (0 : ℝ) (2 * π))) ζ) 1 -
+          (fderivWithin ℝ (fun ζ : ℂ => u (c + Complex.exp ζ) * Complex.exp ζ)
+            (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R))
+              (Set.Icc (0 : ℝ) (2 * π))) ζ) I
+        = 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) •
+            wirtingerDbar u (c + Complex.exp ζ)) := by
+  set a : ℝ := Real.log r with ha_def
+  set b : ℝ := Real.log R with hb_def
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set Rec : Set ℂ := Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π)) with hRec_def
+  set F : ℂ → ℂ := fun ζ => u (τ ζ) * Complex.exp ζ with hF_def
+  set RecOpen : Set ℂ := Complex.reProdIm (Set.Ioo a b) (Set.Ioo (0 : ℝ) (2 * π)) with
+    hRecOpen_def
+  set f' : ℂ → (ℂ →L[ℝ] ℂ) := fderivWithin ℝ F Rec with hf'_def
+  have hRecOpen_isOpen : IsOpen RecOpen := by
+    rw [hRecOpen_def, Complex.reProdIm]
+    exact (isOpen_Ioo.preimage Complex.continuous_re).inter
+      (isOpen_Ioo.preimage Complex.continuous_im)
+  have hRecOpen_sub : RecOpen ⊆ Rec := by
+    rw [hRecOpen_def, hRec_def]
+    intro ζ hζ
+    rw [Complex.mem_reProdIm] at hζ ⊢
+    exact ⟨⟨hζ.1.1.le, hζ.1.2.le⟩, ⟨hζ.2.1.le, hζ.2.2.le⟩⟩
+  show ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
+    = 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ))
+  intro ζ hζ
+  have hFderiv_eq : f' ζ = fderiv ℝ F ζ := by
+    rw [hf'_def]
+    exact fderivWithin_of_mem_nhds
+      (Filter.mem_of_superset (hRecOpen_isOpen.mem_nhds hζ) hRecOpen_sub)
+  rw [hFderiv_eq]
+  have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
+  have hFeq : F = fun w => u (c + Complex.exp w) * Complex.exp w := by rw [hF_def, hτ_def]
+  have hwF : wirtingerDbar F ζ
+      = Complex.exp ζ * (starRingEnd ℂ) (Complex.exp ζ) * wirtingerDbar u (τ ζ) := by
+    rw [hFeq]
+    exact wirtingerDbar_expSubst_eq (u := u) (c := c) (ζ := ζ) (by rwa [hτ_def] at hud)
+  have h2i : I • fderiv ℝ F ζ 1 - fderiv ℝ F ζ I = 2 * I * wirtingerDbar F ζ := by
+    simp only [wirtingerDbar, smul_eq_mul]
+    have hI2 : I * I = -1 := Complex.I_mul_I
+    linear_combination (-(fderiv ℝ F ζ I)) * hI2
+  rw [h2i, hwF, Complex.mul_conj, Complex.real_smul]
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -560,25 +612,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       exact hkey
     rw [hiter_to_set] at hrect
     -- Pointwise, on `RecOpen`, the integrand matches `2i·normSq(exp ζ)·wirtingerDbar u (τ ζ)`.
-    have hpt : ∀ ζ ∈ RecOpen, I • f' ζ 1 - f' ζ I
-        = 2 * I * ((Complex.normSq (Complex.exp ζ) : ℝ) • wirtingerDbar u (τ ζ)) := by
-      intro ζ hζ
-      have hFderiv_eq : f' ζ = fderiv ℝ F ζ := by
-        rw [hf'_def]
-        exact fderivWithin_of_mem_nhds
-          (Filter.mem_of_superset (hRecOpen_isOpen.mem_nhds hζ) hRecOpen_sub)
-      rw [hFderiv_eq]
-      have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
-      have hFeq : F = fun w => u (c + Complex.exp w) * Complex.exp w := by rw [hF_def, hτ_def]
-      have hwF : wirtingerDbar F ζ
-          = Complex.exp ζ * (starRingEnd ℂ) (Complex.exp ζ) * wirtingerDbar u (τ ζ) := by
-        rw [hFeq]
-        exact wirtingerDbar_expSubst_eq (u := u) (c := c) (ζ := ζ) (by rwa [hτ_def] at hud)
-      have h2i : I • fderiv ℝ F ζ 1 - fderiv ℝ F ζ I = 2 * I * wirtingerDbar F ζ := by
-        simp only [wirtingerDbar, smul_eq_mul]
-        have hI2 : I * I = -1 := Complex.I_mul_I
-        linear_combination (-(fderiv ℝ F ζ I)) * hI2
-      rw [h2i, hwF, Complex.mul_conj, Complex.real_smul]
+    have hpt := stokes_integrand_eq hInterior_diff
     have hRecOpen_null_diff : volume (Rec \ RecOpen) = 0 := by
       rw [hRec_def, hRecOpen_def]
       exact measure_frame_null a b 0 (2 * π) hab.le Real.two_pi_pos.le
