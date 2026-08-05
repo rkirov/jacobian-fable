@@ -155,6 +155,34 @@ private theorem resAt_twisted_eq {a x : Fin (genus X) → X}
   rw [hAij k j, hc_def]
   rfl
 
+/-- Around each base point there is a chart ball whose preimage stays inside the separating
+neighbourhood. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we
+hold ourselves to. -/
+private theorem exists_ball_subset_sep {a : Fin (genus X) → X} {U : X → Set X}
+    (hUmem' : ∀ j, a j ∈ U (a j) ∧ IsOpen (U (a j))) :
+    ∀ j : Fin (genus X), ∃ r : ℝ, 0 < r ∧
+      ball (chartAt ℂ (a j) (a j)) r ⊆ (chartAt ℂ (a j)).target ∧
+      (chartAt ℂ (a j)).symm '' ball (chartAt ℂ (a j) (a j)) r ⊆ U (a j) := by
+  set e : Fin (genus X) → OpenPartialHomeomorph X ℂ := fun j => chartAt ℂ (a j) with he_def
+  show ∀ j : Fin (genus X), ∃ r : ℝ, 0 < r ∧ ball (e j (a j)) r ⊆ (e j).target ∧
+    (e j).symm '' ball (e j (a j)) r ⊆ U (a j)
+  intro j
+  have h1 : IsOpen (e j '' (U (a j) ∩ (e j).source)) :=
+    (e j).isOpen_image_of_subset_source ((hUmem' j).2.inter (e j).open_source)
+      inter_subset_right
+  have h2 : e j (a j) ∈ e j '' (U (a j) ∩ (e j).source) :=
+    ⟨a j, ⟨(hUmem' j).1, mem_chart_source ℂ (a j)⟩, rfl⟩
+  obtain ⟨ρ, hρ, hρsub⟩ := Metric.isOpen_iff.mp h1 (e j (a j)) h2
+  obtain ⟨ρ', hρ', hρ'sub⟩ :=
+    Metric.isOpen_iff.mp (e j).open_target (e j (a j)) (mem_chart_target ℂ (a j))
+  refine ⟨min ρ ρ', lt_min hρ hρ', (ball_subset_ball (min_le_right ρ ρ')).trans hρ'sub, ?_⟩
+  intro x hx
+  obtain ⟨z, hz, rfl⟩ := hx
+  have hzρ : z ∈ ball (e j (a j)) ρ := (ball_subset_ball (min_le_left ρ ρ')) hz
+  obtain ⟨y, ⟨hyU, hysrc⟩, hyz⟩ := hρsub hzρ
+  rw [← hyz, (e j).left_inv hysrc]
+  exact hyU
+
 /-- **Forster 21.4(a)+(b)**: the local Jacobi map (inverse function theorem) plus the Abel
 `k`-point sufficiency direction plus the residue theorem isolate `0` in the period subgroup. -/
 theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : DiscretenessHyp X) :
@@ -165,24 +193,7 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
   /- **Stage A**: pairwise disjoint chart-ball images around the `a j`. -/
   obtain ⟨U, hUmem, hUdisj⟩ := (Set.finite_range a).t2_separation (X := X)
   have hUmem' : ∀ j, a j ∈ U (a j) ∧ IsOpen (U (a j)) := fun j => hUmem (a j)
-  have hex : ∀ j : Fin (genus X), ∃ r : ℝ, 0 < r ∧ ball (e j (a j)) r ⊆ (e j).target ∧
-      (e j).symm '' ball (e j (a j)) r ⊆ U (a j) := by
-    intro j
-    have h1 : IsOpen (e j '' (U (a j) ∩ (e j).source)) :=
-      (e j).isOpen_image_of_subset_source ((hUmem' j).2.inter (e j).open_source)
-        inter_subset_right
-    have h2 : e j (a j) ∈ e j '' (U (a j) ∩ (e j).source) :=
-      ⟨a j, ⟨(hUmem' j).1, mem_chart_source ℂ (a j)⟩, rfl⟩
-    obtain ⟨ρ, hρ, hρsub⟩ := Metric.isOpen_iff.mp h1 (e j (a j)) h2
-    obtain ⟨ρ', hρ', hρ'sub⟩ :=
-      Metric.isOpen_iff.mp (e j).open_target (e j (a j)) (mem_chart_target ℂ (a j))
-    refine ⟨min ρ ρ', lt_min hρ hρ', (ball_subset_ball (min_le_right ρ ρ')).trans hρ'sub, ?_⟩
-    intro x hx
-    obtain ⟨z, hz, rfl⟩ := hx
-    have hzρ : z ∈ ball (e j (a j)) ρ := (ball_subset_ball (min_le_left ρ ρ')) hz
-    obtain ⟨y, ⟨hyU, hysrc⟩, hyz⟩ := hρsub hzρ
-    rw [← hyz, (e j).left_inv hysrc]
-    exact hyU
+  have hex := exists_ball_subset_sep hUmem'
   choose r hr hballsub hVsub using hex
   set V : Fin (genus X) → Set X := fun j => (e j).symm '' ball (e j (a j)) (r j) with hV_def
   have hVdisj : Pairwise (fun j j' => Disjoint (V j) (V j')) := by
