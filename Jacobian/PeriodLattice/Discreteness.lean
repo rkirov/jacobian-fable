@@ -183,6 +183,35 @@ private theorem exists_ball_subset_sep {a : Fin (genus X) → X} {U : X → Set 
   rw [← hyz, (e j).left_inv hysrc]
   exact hyU
 
+/-- Away from the base points the twisted form has no residue. Split out of
+`exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold ourselves to. -/
+private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
+    {a : Fin (genus X) → X} {a' x' : (↥S : Type) → X} (ha'_def : a' = fun i => a i.1)
+    {F : RS.Mero X} (hFordx : ∀ i, F.ord (x' i) = 1)
+    (hFord0 : ∀ y, (∀ i, y ≠ a' i) → (∀ i, y ≠ x' i) → F.ord y = 0) :
+    ∀ k, ∀ y ∉ (Finset.univ.image a : Set X),
+      ((F • MForm.ofForm1 (basis X k) : MForm X)).resAt y = 0 := by
+  set Θ : Fin (genus X) → MForm X := fun k => F • MForm.ofForm1 (basis X k) with hΘ_def
+  show ∀ k, ∀ y ∉ (Finset.univ.image a : Set X), (Θ k).resAt y = 0
+  intro k y hy
+  have hordΘ : 0 ≤ (Θ k).ord y := by
+    rw [hΘ_def]
+    show 0 ≤ (F • MForm.ofForm1 (basis X k)).ord y
+    rw [MForm.ord_smul_mero]
+    by_cases hyx : ∃ i : (↥S : Type), y = x' i
+    · obtain ⟨i, hi⟩ := hyx
+      have hFy : F.ord y = 1 := hi ▸ hFordx i
+      rw [hFy]
+      exact add_nonneg (by decide) (MForm.ofForm1_ord_nonneg (basis X k) y)
+    · push Not at hyx
+      have hya : ∀ i : (↥S : Type), y ≠ a' i := by
+        intro i hcon
+        exact hy (Finset.mem_coe.mpr (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, (ha'_def ▸ hcon).symm⟩))
+      have hFy : F.ord y = 0 := hFord0 y hya hyx
+      rw [hFy]
+      simpa using MForm.ofForm1_ord_nonneg (basis X k) y
+  exact MForm.resAt_eq_zero_of_ord_nonneg hordΘ
+
 /-- **Forster 21.4(a)+(b)**: the local Jacobi map (inverse function theorem) plus the Abel
 `k`-point sufficiency direction plus the residue theorem isolate `0` in the period subgroup. -/
 theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : DiscretenessHyp X) :
@@ -376,25 +405,8 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
         (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j₀) (mem_univ _))
     have := laurentCoeffAt_order_ne_zero hmerF (by rw [hordeq]; simp)
     rwa [hordeq] at this
-  have hressum : ∀ k, ∀ x' ∉ (Finset.univ.image a : Set X), (Θ k).resAt x' = 0 := by
-    intro k y hy
-    have hordΘ : 0 ≤ (Θ k).ord y := by
-      rw [hΘ_def]
-      show 0 ≤ (F • MForm.ofForm1 (basis X k)).ord y
-      rw [MForm.ord_smul_mero]
-      by_cases hyx : ∃ i : (↥S : Type), y = x' i
-      · obtain ⟨i, hi⟩ := hyx
-        have hFy : F.ord y = 1 := hi ▸ hFordx i
-        rw [hFy]
-        exact add_nonneg (by decide) (MForm.ofForm1_ord_nonneg (basis X k) y)
-      · push Not at hyx
-        have hya : ∀ i : (↥S : Type), y ≠ a' i := by
-          intro i hcon
-          exact hy (Finset.mem_coe.mpr (Finset.mem_image.mpr ⟨i.1, Finset.mem_univ _, hcon.symm⟩))
-        have hFy : F.ord y = 0 := hFord0 y hya hyx
-        rw [hFy]
-        simpa using MForm.ofForm1_ord_nonneg (basis X k) y
-    exact MForm.resAt_eq_zero_of_ord_nonneg hordΘ
+  have hressum : ∀ k, ∀ x' ∉ (Finset.univ.image a : Set X), (Θ k).resAt x' = 0 :=
+    resAt_twisted_eq_zero_off_base ha'_def hFordx hFord0
   have hsupp : ∀ k, Function.support (fun x => (Θ k).resAt x) ⊆
       (Finset.univ.image a : Set X) := by
     intro k y hy
