@@ -169,7 +169,12 @@ theorem mlClass_eq_zero_of_exists (g : C0 D' 𝒰) (hg : (d0 D' 𝒰 g).MemLD D)
           ((g i : RS.MeroGermOn X _) -
             RS.MeroGermOn.restrict (𝒰.le_base i) (φ : RS.MeroGermOn X (Set.univ : Set X)))
     simp only [map_sub]
-    rw [RS.MeroGermOn.restrict_restrict, RS.MeroGermOn.restrict_restrict]
+    -- proofs supplied explicitly: `rw`/`simp` will not instantiate a metavariable sitting in a
+    -- proof-valued argument of `MeroGermOn.restrict`
+    rw [RS.MeroGermOn.restrict_restrict (𝒰.le_base j) inf_le_right
+        (φ : RS.MeroGermOn X (Set.univ : Set X)),
+      RS.MeroGermOn.restrict_restrict (𝒰.le_base i) inf_le_left
+        (φ : RS.MeroGermOn X (Set.univ : Set X))]
     have hcancel : RS.MeroGermOn.restrict (inf_le_right.trans (𝒰.le_base j))
         (φ : RS.MeroGermOn X (Set.univ : Set X)) =
         RS.MeroGermOn.restrict (inf_le_left.trans (𝒰.le_base i))

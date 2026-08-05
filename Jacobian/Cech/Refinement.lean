@@ -271,7 +271,7 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem resZ1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : IsRefIdx 𝒱 𝒲 σ) (f : Z1 D 𝒰) :
     (resZ1 D σ hσ) (resZ1 D τ hτ f) = resZ1 D (τ ∘ σ) (fun k => (hσ k).trans (hτ (σ k))) f := by
   apply Subtype.ext
-  rw [resZ1_apply_coe, resZ1_apply_coe, resZ1_apply_coe]
+  simp only [resZ1_apply_coe]
   exact LinearMap.congr_fun (resC1_comp D τ hτ σ hσ) (f : C1 D 𝒰)
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
@@ -281,6 +281,8 @@ theorem resH1_comp {𝒲 : FinCover Ω} (σ : Fin 𝒲.n → Fin 𝒱.n) (hσ : 
   intro ξ
   obtain ⟨f, rfl⟩ := H1Cover.mk_surjective D 𝒰 ξ
   show resH1 D σ hσ (resH1 D τ hτ (H1Cover.mk D 𝒰 f)) = _
-  rw [resH1_mk, resH1_mk, resZ1_comp, ← resH1_mk]
+  simp only [resH1_mk]
+  rw [resZ1_comp]
+  exact (resH1_mk D _ _ f).symm
 
 end RS.Cech

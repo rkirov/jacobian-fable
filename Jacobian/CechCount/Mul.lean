@@ -138,8 +138,9 @@ theorem restrictL_mulOn {V U : Opens X} (hVU : V ≤ U) (f : ℳ X) {D E : RS.Di
     (hf : MulBound f D E) (φ : RS.LinSysOn D (U : Set X)) :
     LinSysOn.restrictL E hVU (mulOn f hf U φ) = mulOn f hf V (LinSysOn.restrictL D hVU φ) := by
   apply Subtype.ext
-  rw [restrictL_apply_coe, mulOn_apply_coe, mulOn_apply_coe, restrictL_apply_coe, map_mul,
-    RS.MeroGermOn.restrict_restrict]
+  rw [restrictL_apply_coe, mulOn_apply_coe, mulOn_apply_coe, restrictL_apply_coe, map_mul]
+  congr 1
+  exact RS.MeroGermOn.restrict_restrict _ _ f
 
 /-! ### Cochain level: `mulC0`, `mulC1` -/
 

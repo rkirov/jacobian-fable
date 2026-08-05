@@ -362,7 +362,7 @@ theorem exists_dbar_solution_ball (hR : 0 < R) (hg : ContDiffOn ℝ ∞ g (ball 
       | succ k ih =>
         rw [Finset.sum_range_succ, ih]
         simp only [hfN_def, Pi.sub_apply]
-        ring
+        ring_nf
     set TN : ℂ → ℂ := fun w => ∑' j, fN j w with hTN_def
     have htend' : TendstoUniformlyOn (fun m w => Fseq (N + m) w - Fseq N w) TN atTop BN := by
       have heq : (fun m w => ∑ j ∈ Finset.range m, fN j w) =

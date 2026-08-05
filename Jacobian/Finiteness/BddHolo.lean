@@ -223,8 +223,8 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
   toFun f := MeroGermOn.mk f.2.choose
     (fun x hx => RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx)))
   map_add' f₁ f₂ := by
-    rw [MeroGermOn.mk_add]
-    apply mk_eq_mk_of_eqOn S.2
+    -- `mk_add` right-to-left as a term: neither `rw` nor `simp` matches the sum here
+    refine Eq.trans (mk_eq_mk_of_eqOn S.2 _ _ ?_) MeroGermOn.mk_add.symm
     intro x hx
     show (f₁ + f₂ : BddHoloOn S).2.choose x = f₁.2.choose x + f₂.2.choose x
     have e12 := (f₁ + f₂ : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
@@ -234,8 +234,7 @@ noncomputable def toGerm (S : Opens X) : BddHoloOn S →ₗ[ℂ] MeroGermOn X (S
         = (f₁ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ + (f₂ : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := rfl
     rw [← e12, hval, e1, e2]
   map_smul' c f := by
-    rw [MeroGermOn.mk_smul]
-    apply mk_eq_mk_of_eqOn S.2
+    refine Eq.trans (mk_eq_mk_of_eqOn S.2 _ _ ?_) (MeroGermOn.mk_smul c).symm
     intro x hx
     show (c • f : BddHoloOn S).2.choose x = (c • f.2.choose) x
     have ecf := (c • f : BddHoloOn S).2.choose_spec.2 ⟨x, hx⟩
@@ -257,24 +256,36 @@ theorem toGerm_eq_mk {S : Opens X} (f : BddHoloOn S) :
 omit [T1Space X] in
 theorem toGerm_mem_linSysOn {S : Opens X} (f : BddHoloOn S) :
     toGerm S f ∈ RS.LinSysOn (0 : RS.Divisor X) (S : Set X) := by
-  rw [toGerm_eq_mk]
   refine (RS.mem_linSysOn_iff_of_isOpen S.2).2 (fun x hx => ?_)
   have h0 : (0 : RS.Divisor X) x = 0 := by
     simp [Function.locallyFinsuppWithin.coe_zero]
-  rw [h0, RS.MeroGermOn.ord_mk S.2 hx]
+  -- routed through a fully elaborated equation: `rw` will not instantiate a metavariable
+  -- standing in a proof-valued argument of `MeroGermOn.mk`
+  have hord : (toGerm S f).ord x = RS.ordAtX f.2.choose x := by
+    rw [toGerm_eq_mk]
+    exact RS.MeroGermOn.ord_mk S.2 hx
+  rw [h0, hord]
   simpa using RS.ContMDiffAt.ordAtX_nonneg (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
 
 omit [T1Space X] in
 theorem evalAt_toGerm {S : Opens X} (f : BddHoloOn S) {x : X} (hx : x ∈ S) :
     (toGerm S f).evalAt x = (f : ↥(S : Set X) →ᵇ ℂ) ⟨x, hx⟩ := by
-  rw [toGerm_eq_mk, RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
-    (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))]
+  have heval : (toGerm S f).evalAt x = f.2.choose x := by
+    rw [toGerm_eq_mk]
+    exact RS.MeroGermOn.evalAt_mk_of_contMDiffAt S.2 hx
+      (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds hx))
+  rw [heval]
   exact (f.2.choose_spec.2 ⟨x, hx⟩).symm
 
 omit [T1Space X] in
 theorem toGerm_restrict_comm {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S) :
     toGerm S' (restrictCLM h f) = RS.MeroGermOn.restrict h (toGerm S f) := by
-  rw [toGerm_eq_mk, toGerm_eq_mk, RS.MeroGermOn.restrict_mk]
+  have hres : RS.MeroGermOn.restrict h (toGerm S f) =
+      RS.MeroGermOn.mk f.2.choose (fun _x hx =>
+        RS.ContMDiffAt.meromorphicAtX (f.2.choose_spec.1.contMDiffAt (S.2.mem_nhds (h hx)))) := by
+    rw [toGerm_eq_mk]
+    exact RS.MeroGermOn.restrict_mk h
+  rw [toGerm_eq_mk, hres]
   apply mk_eq_mk_of_eqOn S'.2
   intro x hx
   show (restrictCLM h f).2.choose x = f.2.choose x

@@ -339,7 +339,7 @@ theorem smul_mem_omegaSpace {f : RS.Mero X} {θ : MForm X} {E F : RS.Divisor X}
     have h := MForm.mem_omegaSpace_iff.mp hθ p
     rwa [Divisor.neg_apply, neg_neg] at h
   calc ((E p + F p : ℤ) : WithTop ℤ) = ((E p : ℤ) : WithTop ℤ) + ((F p : ℤ) : WithTop ℤ) := by
-        push_cast; ring
+        push_cast; ring_nf
     _ ≤ θ.ord p + f.ord p := add_le_add hEp (hf p)
     _ = f.ord p + θ.ord p := add_comm _ _
 
@@ -374,9 +374,12 @@ theorem pairAt_mulInto (f : RS.Mero X) (p : X) (θ : MForm X)
     pairAt θ p (RS.MeroGermOn.restrict (Set.subset_univ _) f * ψ) = pairAt (f • θ) p ψ := by
   obtain ⟨θdata, rfl⟩ := MForm.exists_rep θ
   obtain ⟨g, hg, rfl⟩ := RS.MeroGermOn.exists_rep ψ
+  -- the meromorphy witness is a named `have`: applying `meromorphicOnX_holoRepr` inline leaves a
+  -- term that is not type-correct at `implicit` transparency, which blocks the rewrites below
+  have hholo : RS.MeromorphicOnX (RS.MeroGermOn.holoRepr f) ((chartAt ℂ p).source) :=
+    fun x _ => RS.MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f x (Set.mem_univ x)
   have hrestr : RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ p).source) f
-      = RS.MeroGermOn.mk f.holoRepr (fun x hx =>
-          RS.MeroGermOn.meromorphicOnX_holoRepr isOpen_univ f x (Set.mem_univ x)) := by
+      = RS.MeroGermOn.mk f.holoRepr hholo := by
     conv_lhs => rw [← RS.MeroGermOn.mk_holoRepr isOpen_univ f]
     rw [RS.MeroGermOn.restrict_mk]
   rw [hrestr, RS.MeroGermOn.mk_mul, pairAt_apply_mk, pairAtData_mk,

@@ -1,0 +1,75 @@
+name: pool-dryrun
+
+# Assembles this library into a real `Vilin97/lean-pool` checkout exactly as the content PR
+# would, and runs the pool's own gates against it — on GitHub runners, so the v4.33.0-rc1 port
+# can be iterated without a local mathlib for that pin. Only when this is green is the PR worth
+# opening; nothing here ever touches the pool repository.
+
+on:
+  push:
+    branches: [pool-bump-4.33]
+  workflow_dispatch:
+
+concurrency:
+  group: pool-dryrun-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this library
+        uses: actions/checkout@v4
+        with:
+          path: jacobian-fable
+
+      - name: Checkout lean-pool
+        run: git clone --depth 1 https://github.com/Vilin97/lean-pool pool
+
+      # A mismatch here is the whole reason the port exists; fail loudly and early rather than
+      # spending twenty minutes discovering it in the build.
+      - name: Pins must match the pool
+        run: |
+          set -euo pipefail
+          echo "pool:    $(cat pool/lean-toolchain)"
+          echo "library: $(cat jacobian-fable/lean-toolchain)"
+          diff pool/lean-toolchain jacobian-fable/lean-toolchain
+          pool_rev=$(python3 -c "import json;print([p['rev'] for p in json.load(open('pool/lake-manifest.json'))['packages'] if p['name']=='mathlib'][0])")
+          our_rev=$(python3 -c "import json;print([p['rev'] for p in json.load(open('jacobian-fable/lake-manifest.json'))['packages'] if p['name']=='mathlib'][0])")
+          echo "pool mathlib:    $pool_rev"
+          echo "library mathlib: $our_rev"
+          [ "$pool_rev" = "$our_rev" ]
+
+      - name: Generate and install the payload
+        run: |
+          set -euo pipefail
+          cd jacobian-fable && python3 scripts/make_pool_pr.py && cd ..
+          cp jacobian-fable/build/pool-pr/LeanPool/JacobianDiffgeo.lean pool/LeanPool/
+          cp -r jacobian-fable/build/pool-pr/LeanPool/JacobianDiffgeo pool/LeanPool/
+          cat jacobian-fable/build/pool-pr/projects.yml.fragment >> pool/LeanPool/projects.yml
+
+      # Only this project is built, not all 143 — minutes, not the pool's ~1.5h cold build.
+      - name: Build the project inside the pool
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: pool
+          build-args: LeanPool.JacobianDiffgeo
+          use-mathlib-cache: true
+
+      - name: Index is regenerable
+        run: cd pool && lake exe mk_all
+
+      - name: Mathlib linters over the project
+        run: cd pool && lake exe runLinter LeanPool.JacobianDiffgeo
+
+      - name: Style linter over the project
+        run: cd pool && lake exe lint-style LeanPool.JacobianDiffgeo
+
+      # The pool's own quality checker: headers, no set_option / nolint / diagnostics, size caps,
+      # the projects.yml card schema, and the environment backdoor audit.
+      - name: Pool quality checker
+        run: |
+          set -euo pipefail
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          cd pool/python && uv sync && uv run python -m lean_pool.quality --repo ..

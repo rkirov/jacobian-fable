@@ -117,29 +117,31 @@ omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem covers_Ustar (x : X) : ∃ i, x ∈ T.Ustar i :=
   (T.covers_W x).imp (fun i hi => T.U_subset_Ustar i (T.V_subset_U i (T.W_subset_V i hi)))
 
-/-- The four `FinCover ⊤`s induced by a `ShrinkChain`. -/
-noncomputable def coverW : FinCover (⊤ : Opens X) where
+/-- The four `FinCover ⊤`s induced by a `ShrinkChain`. Reducible: their fields must unfold at
+`implicit` transparency, or applications like `C1 D T.coverW` are not type-correct there and
+every rewrite in such a goal fails. -/
+@[reducible] noncomputable def coverW : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.W
   le_base _ := le_top
   covers x _ := T.covers_W x
 
 /-- The cover of `X` by the `V`-level opens. -/
-noncomputable def coverV : FinCover (⊤ : Opens X) where
+@[reducible] noncomputable def coverV : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.V
   le_base _ := le_top
   covers x _ := T.covers_V x
 
 /-- The cover of `X` by the `U`-level opens. -/
-noncomputable def coverU : FinCover (⊤ : Opens X) where
+@[reducible] noncomputable def coverU : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.U
   le_base _ := le_top
   covers x _ := T.covers_U x
 
 /-- The cover of `X` by the outermost `Ustar`-level opens. -/
-noncomputable def coverStar : FinCover (⊤ : Opens X) where
+@[reducible] noncomputable def coverStar : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.Ustar
   le_base _ := le_top

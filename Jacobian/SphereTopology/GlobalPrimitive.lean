@@ -80,11 +80,15 @@ theorem contMDiff_and_mdifferential_eq_of_isPrimitiveAlongMap_id
       hg'diffOn.analyticOnNhd Metric.isOpen_ball
     exact (hg'an _ (Metric.mem_ball_self hε)).congr hFeq.symm
   -- Step 3: holomorphy.
-  refine ⟨fun x => contMDiffAt_iff_analyticAt_comp_chartAt.mpr (hana x), ?_⟩
+  -- named rather than inlined into the anonymous constructor: inline, the proof reaches the
+  -- goal as a delayed-assignment metavariable that `rw` cannot match against
+  have hFcm : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω F :=
+    fun x => contMDiffAt_iff_analyticAt_comp_chartAt.mpr (hana x)
+  refine ⟨hFcm, ?_⟩
   -- Step 4–5: coefficient matching, then `Form1.ext_coeffAt`.
   refine RS.Form1.ext_coeffAt fun x => ?_
   obtain ⟨g', hg', hFeq⟩ := hkey x
-  rw [RS.coeffAt_mdifferential, hFeq.deriv_eq, hg'.self_of_nhds.deriv]
+  rw [RS.coeffAt_mdifferential F hFcm x, hFeq.deriv_eq, hg'.self_of_nhds.deriv]
   rfl
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in

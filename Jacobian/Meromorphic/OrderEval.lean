@@ -62,7 +62,10 @@ theorem ord_apply_mk (f : X → ℂ) (hf : MeromorphicOnX f U) (x : X) :
 theorem ord_restrict (h : V ⊆ U) (hV : IsOpen V) (hU : IsOpen U) {x : X} (hx : x ∈ V)
     (φ : MeroGermOn X U) : (restrict h φ).ord x = φ.ord x := by
   obtain ⟨f, hf, rfl⟩ := exists_rep φ
-  rw [restrict_mk, ord_mk hV hx, ord_mk hU (h hx)]
+  rw [restrict_mk, ord_mk hU (h hx)]
+  -- `exact` (full defeq) rather than another `rw`: the restricted germ's `mk` proof argument is
+  -- not syntactically the lemma's, so rewriting cannot see the match
+  exact ord_mk hV hx
 
 theorem ord_zero : (0 : MeroGermOn X U).ord x = if IsOpen U ∧ x ∈ U then ⊤ else 0 := by
   rw [← mk_zero, ord_apply_mk]
@@ -221,12 +224,14 @@ theorem evalAt_restrict (h : V ⊆ U) (hV : IsOpen V) (hU : IsOpen U) {x : X} (h
   by_cases h0 : 0 ≤ (mk f hf).ord x
   · rw [ord_mk hU (h hx)] at h0
     have e1 :=
-        tendsto_evalAt hV hx (mk f (fun y hy => hf y (h hy))) (by rw [ord_mk hV hx]; exact h0)
+        tendsto_evalAt hV hx (mk f (fun y hy => hf y (h hy))) (le_of_le_of_eq h0
+          (ord_mk hV hx).symm)
       rfl
     have e2 := tendsto_evalAt hU (h hx) (mk f hf) (by rw [ord_mk hU (h hx)]; exact h0) rfl
     exact tendsto_nhds_unique e1 e2
   · have h0' : ¬ 0 ≤ (mk f (fun y hy => hf y (h hy))).ord x := by
-      rw [ord_mk hV hx]; rw [ord_mk hU (h hx)] at h0; exact h0
+      rw [ord_mk hU (h hx)] at h0
+      exact fun hle => h0 (le_of_le_of_eq hle (ord_mk hV hx))
     rw [evalAt_of_not_nonneg h0, evalAt_of_not_nonneg h0']
 
 /-! ### `holoRepr` (D5) -/

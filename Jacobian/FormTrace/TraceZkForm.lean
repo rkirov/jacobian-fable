@@ -95,7 +95,7 @@ theorem laurentCoeffAt_traceZkForm (hh : MeromorphicAt h 0) (hk : k ≠ 0) (j : 
   rw [RS.MTrace.laurentCoeffAt_traceZk hH hk j]
   have heq : (fun v : ℂ => h v * ((k : ℂ) * v ^ ((k : ℤ) - 1))⁻¹)
       = fun v => (k : ℂ)⁻¹ * ((v - 0) ^ (-((k : ℤ) - 1)) * h v) := by
-    funext v; rw [mul_inv, ← zpow_neg]; ring
+    funext v; rw [mul_inv, ← zpow_neg]; ring_nf
   rw [heq, RS.laurentCoeffAt_const_mul, RS.laurentCoeffAt_zpow_mul hh]
   have hidx : (k : ℤ) * j - -((k : ℤ) - 1) = (k : ℤ) * j + ((k : ℤ) - 1) := by ring
   rw [hidx, mul_inv_cancel_left₀ hkC]

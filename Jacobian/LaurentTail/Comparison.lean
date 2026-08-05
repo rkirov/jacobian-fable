@@ -144,7 +144,7 @@ theorem mlClass_res {D D' : RS.Divisor X} {𝒰 𝒱 : RS.Cech.FinCover (⊤ : O
 /-! ### The per-point construction: realizing a clean representative -/
 
 /-- The 2-member cover `{V, X ∖ {p}}`, used to realize a single tail datum at `p`. -/
-noncomputable def pairCover (p : X) (V : Opens X) (hpV : p ∈ V) :
+@[reducible] noncomputable def pairCover (p : X) (V : Opens X) (hpV : p ∈ V) :
     RS.Cech.FinCover (⊤ : Opens X) where
   n := 2
   U := ![V, ⟨{p}ᶜ, isOpen_compl_singleton⟩]
@@ -522,20 +522,22 @@ theorem mlClassAtOf_raise_res (p : X) (D D' D'' : RS.Divisor X)
           (gOf p W hpW D'' (RS.Cech.LinSysOn.restrictL D'' hWV ψV''))
         (gOf_memLD_of_clean p D D'' ψ W hpW hWsub hWclean hWDzero
           (RS.Cech.LinSysOn.restrictL D'' hWV ψV'')
-          (by rw [RS.Cech.restrictL_apply_coe, hψV'', RS.MeroGermOn.restrict_restrict])) :=
+          (by rw [RS.Cech.restrictL_apply_coe, hψV'']
+              exact RS.MeroGermOn.restrict_restrict _ _ ψ)) :=
     (mlClass_res (𝒰 := pairCover p V hpV) (𝒱 := pairCover p W hpW) id
       (pairCover_isRefIdx p V W hpV hpW hWV) (gOf p V hpV D'' ψV'')
       (gOf_memLD_of_clean p D D'' ψ V hpV hVsub hVclean hVDzero ψV'' hψV'')
       (by rw [gOf_resC0]
           exact gOf_memLD_of_clean p D D'' ψ W hpW hWsub hWclean hWDzero
             (RS.Cech.LinSysOn.restrictL D'' hWV ψV'')
-            (by rw [RS.Cech.restrictL_apply_coe, hψV'', RS.MeroGermOn.restrict_restrict]))).trans
+            (by rw [RS.Cech.restrictL_apply_coe, hψV'']
+                exact RS.MeroGermOn.restrict_restrict _ _ ψ))).trans
       (mlClass_congr (gOf_resC0 p V W hpV hpW hWV D'' ψV''))
   rw [e2]
   have hval : gOf p W hpW D'' (RS.Cech.LinSysOn.restrictL D'' hWV ψV'') = gOf p W hpW D'' ψW :=
     congrArg (gOf p W hpW D'') (Subtype.ext (by
-      rw [RS.Cech.restrictL_apply_coe, hψV'', RS.MeroGermOn.restrict_restrict]
-      exact hψW.symm))
+      rw [RS.Cech.restrictL_apply_coe, hψV'']
+      exact (RS.MeroGermOn.restrict_restrict _ _ ψ).trans hψW.symm))
   exact mlClass_congr hval
 
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
@@ -1069,7 +1071,7 @@ private theorem alpha_claim1 (h𝒱Adapted : 𝒱.IsAdapted (alphaFinset D f))
       show RS.MeroGermOn.restrict hj (gOf p Vp hpVp (alphaAuxD D f) ψVp (1 : Fin 2) :
         RS.MeroGermOn X ((pairCover p Vp hpVp).U (1 : Fin 2) : Set X)) = (0 : RS.MeroGermOn X _)
       rw [gOf_apply_one]
-      simp
+      exact map_zero _
   have hgp_eq : RS.Cech.resC0 (alphaAuxD D f) τp hτp (gOf p Vp hpVp (alphaAuxD D f) ψVp) =
       mlSumCochain (𝒱 := 𝒱) (alphaAuxD D f) f hfD' {p} := by
     funext k
@@ -1474,7 +1476,7 @@ theorem inj_CLAIM1 (p : X) (hp : p ∈ S) : mlClassAt D p (ψ p) =
             Set X)) =
         (0 : RS.MeroGermOn X (𝒱.U k : Set X))
       rw [gOf_apply_one]
-      simp
+      exact map_zero _
   have hgp_eq : RS.Cech.resC0 D' τp hτp
       (gOf p (injPatch ψ S D p) (mem_injPatch ψ S D p) D' (injψVD' ψ S D D' hD'mem p hp)) =
       injG ψ S D D' hD'mem hOclause {p} := by
@@ -1576,7 +1578,9 @@ theorem inj_hcoe (φ : RS.LinSys D') (q : X) (hq : q ∈ S) (k : Fin 𝒱.n) (hq
       (ψ q - RS.MeroGermOn.restrict (Set.subset_univ (chartAt ℂ q).source)
         (φ : RS.MeroGermOn X (Set.univ : Set X))) := by
     rw [map_sub, RS.Cech.restrictL_apply_coe, injψVD'_eq ψ S D D' hD'mem q hq,
-      RS.MeroGermOn.restrict_restrict, RS.MeroGermOn.restrict_restrict]
+      RS.MeroGermOn.restrict_restrict]
+    congr 1
+    exact RS.MeroGermOn.restrict_restrict _ _ (ψ q)
   rw [heq, RS.MeroGermOn.ord_restrict hqk'' (𝒱.U k).isOpen (chartAt ℂ q).open_source hx]
 
 theorem H1Tail.toH1_injective (D : RS.Divisor X) : Function.Injective (H1Tail.toH1 D) := by

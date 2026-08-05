@@ -88,7 +88,9 @@ theorem coeffInFun_toSection {e' : OpenPartialHomeomorph X ℂ}
       D.coeff (D.idx (e'.symm z)) (D.chart (D.idx (e'.symm z)) (e'.symm z)) *
         tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (D.chart (D.idx (e'.symm z))) (e'.symm z)
           (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ))) := by
-    rw [coeffInFun_eq_evalC, evalC_toSection]
+    -- both steps are `rfl`; `rw` cannot match `evalC`'s `w : ℂ` against a term whose type is
+    -- the (defeq) `TangentSpace 𝓘(ℂ) _`
+    rfl
   have h2 : tangentCoord (mfderiv 𝓘(ℂ) 𝓘(ℂ) (D.chart (D.idx (e'.symm z))) (e'.symm z)
       (mfderiv 𝓘(ℂ) 𝓘(ℂ) (⇑e'.symm) z (1 : ℂ))) =
       deriv (⇑(D.chart (D.idx (e'.symm z))) ∘ ⇑e'.symm) z :=

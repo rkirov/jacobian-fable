@@ -132,9 +132,10 @@ theorem exists_smul_eq {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (Θ : MForm X) :
         (t := (chartAt ℂ y).source)) (φ y) := by
     intro x y
     rw [hφ_def]
-    rw [MeroGermOn.restrict_mk, MeroGermOn.restrict_mk, MeroGermOn.mk_eq_mk,
-      eventuallyEq_codiscreteWithin_iff_of_isOpen
-        ((chartAt ℂ x).open_source.inter (chartAt ℂ y).open_source)]
+    rw [MeroGermOn.restrict_mk, MeroGermOn.restrict_mk]
+    refine MeroGermOn.mk_eq_mk.mpr ?_
+    rw [eventuallyEq_codiscreteWithin_iff_of_isOpen
+      ((chartAt ℂ x).open_source.inter (chartAt ℂ y).open_source)]
     exact hagree x y
   -- C. glue
   obtain ⟨Φ, hΦ⟩ := MeroGermOn.exists_glue (fun x : X => (chartAt ℂ x).open_source) φ hcompat

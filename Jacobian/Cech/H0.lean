@@ -103,7 +103,7 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
     obtain ⟨i, hi⟩ := 𝒰.covers x hx
     have hrestr : RS.MeroGermOn.restrict (𝒰.le_base i) (e Φ) = g i := by
       show RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
-      rw [RS.MeroGermOn.restrict_restrict, hΦ]
+      exact (RS.MeroGermOn.restrict_restrict _ _ Φ).trans (hΦ i)
     have hord := RS.MeroGermOn.ord_restrict (𝒰.le_base i) (𝒰.U i).2 Ω.2 hi (e Φ)
     rw [hrestr] at hord
     rw [← hord]
@@ -115,7 +115,7 @@ theorem toC0'_surjective : Function.Surjective (toC0' D 𝒰) := by
   apply Subtype.ext
   show RS.MeroGermOn.restrict (𝒰.le_base i) (e Φ) = g i
   show RS.MeroGermOn.restrict (𝒰.le_base i) (RS.MeroGermOn.restrict _ Φ) = g i
-  rw [RS.MeroGermOn.restrict_restrict, hΦ]
+  exact (RS.MeroGermOn.restrict_restrict _ _ Φ).trans (hΦ i)
 
 theorem toC0'_bijective : Function.Bijective (toC0' D 𝒰) :=
   ⟨toC0'_injective D 𝒰, toC0'_surjective D 𝒰⟩

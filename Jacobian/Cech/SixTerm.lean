@@ -284,7 +284,9 @@ theorem windowDefect_ord_restrict {V V' : Opens X} {q : X} (hVV' : V' ≤ V) (hq
   rw [windowDefect_ord_congr (V'.2.inter (chartAt ℂ q).open_source)
     (fun x hx => hVV' hx.1) Set.inter_subset_right ⟨hq, mem_chart_source ℂ q⟩ γ ψ]
   congr 1
-  rw [windowDefect, RS.MeroGermOn.restrict_restrict]
+  rw [windowDefect]
+  congr 1
+  exact RS.MeroGermOn.restrict_restrict _ _ γ
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Rep-change: the defect bound only depends on the `WindowAt`-class of the chart-source germ
@@ -829,8 +831,9 @@ private theorem ord_sub_global_eq_defect {𝒰 : FinCover (⊤ : Opens X)} {i : 
       RS.MeroGermOn.restrict Set.inter_subset_left
         (γ - RS.MeroGermOn.restrict (𝒰.le_base i)
           (φ : RS.MeroGermOn X (Set.univ : Set X))) := by
-    rw [windowDefect, restrictToChart_apply_coe, map_sub, RS.MeroGermOn.restrict_restrict,
-      RS.MeroGermOn.restrict_restrict]
+    rw [windowDefect, restrictToChart_apply_coe, map_sub, RS.MeroGermOn.restrict_restrict]
+    congr 1
+    exact (RS.MeroGermOn.restrict_restrict _ _ (φ : RS.MeroGermOn X (Set.univ : Set X))).symm
   rw [hgerm, RS.MeroGermOn.ord_restrict Set.inter_subset_left hopen (𝒰.U i).2 hqmem]
 
 /-- **Exactness at `Window D D'` (§6.9(e))**: `windowConnect h w = 0` iff `w` is the window

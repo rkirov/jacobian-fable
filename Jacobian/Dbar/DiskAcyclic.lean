@@ -231,13 +231,14 @@ theorem subsingleton_h1Cover_zero_of_isChartDisk {V : Opens X} (hV : IsChartDisk
     rw [MeroGermOn.restrict_mk, MeroGermOn.restrict_mk,
       ← MeroGermOn.mk_holoRepr (𝒱.U (i, j).1 ⊓ 𝒱.U (i, j).2).2
         (f (i, j) : MeroGermOn X ((𝒱.U (i, j).1 ⊓ 𝒱.U (i, j).2 : Opens X) : Set X)),
-      sub_eq_add_neg, MeroGermOn.mk_neg, MeroGermOn.mk_add]
+      ]
+    -- `rw` cannot instantiate the proof-valued arguments of `mk`; `refine` matches up to defeq
+    refine MeroGermOn.mk_sub.trans ?_
     apply MeroGermOn.mk_eq_mk.2
     apply heqOn_to_evEq
     intro p hp
-    show v j p + -v i p = F i j p
-    rw [hpointwise i j p hp]
-    ring
+    show v j p - v i p = F i j p
+    exact (hpointwise i j p hp).symm
   rw [← hd0h]
   exact LinearMap.mem_range_self _ _
 
@@ -415,8 +416,10 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
         (LinSysOn.restrictL (0 : Divisor X) hac (g (i, k)) : RS.MeroGermOn X (Uijk : Set X)) +
         (LinSysOn.restrictL (0 : Divisor X) hab (g (i, j)) : RS.MeroGermOn X (Uijk : Set X)) = 0
     rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe, hg_coe, hg_coe, hg_coe,
-      map_mul, map_mul, map_mul, MeroGermOn.restrict_restrict, MeroGermOn.restrict_restrict,
-      MeroGermOn.restrict_restrict]
+      map_mul, map_mul, map_mul,
+      MeroGermOn.restrict_restrict (hWleV (j, k)) hbc t,
+      MeroGermOn.restrict_restrict (hWleV (i, k)) hac t,
+      MeroGermOn.restrict_restrict (hWleV (i, j)) hab t]
     have hcomb : (RS.MeroGermOn.restrict hUijkV t) *
           (RS.MeroGermOn.restrict hbc (f (j, k) : RS.MeroGermOn X (W (j, k) : Set X))) -
         (RS.MeroGermOn.restrict hUijkV t) *
@@ -477,8 +480,9 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
         RS.MeroGermOn.restrict hij_l (h' i : RS.MeroGermOn X (𝒱.U i : Set X)) :
         RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X)) =
       (f (i, j) : RS.MeroGermOn X (𝒱.U i ⊓ 𝒱.U j : Set X))
-    rw [hh'_coe, hh'_coe, map_mul, map_mul, MeroGermOn.restrict_restrict,
-        MeroGermOn.restrict_restrict]
+    rw [hh'_coe, hh'_coe, map_mul, map_mul,
+      MeroGermOn.restrict_restrict (hUiV j) hij_r t⁻¹,
+      MeroGermOn.restrict_restrict (hUiV i) hij_l t⁻¹]
     have hcomb : (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *
           (RS.MeroGermOn.restrict hij_r (h j : RS.MeroGermOn X (𝒱.U j : Set X))) -
         (RS.MeroGermOn.restrict (hWleV (i, j)) t⁻¹) *

@@ -227,7 +227,7 @@ lemmas typecheck for a bare `P : Fin T.n → Opens X` without needing `𝒰.n` t
 `T.n` — a genuine dependent-type obstruction for a free `𝒰 : FinCover (⊤ : Opens X)` variable).
 `T.coverU`/`T.coverV`/`T.coverW` are `rfl`-equal to `coverOfP T.U T.covers_U` etc. (same fields,
 `Prop`-irrelevant `covers` witness), so this is used transparently at call sites. -/
-noncomputable def coverOfP (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈ P i) :
+@[reducible] noncomputable def coverOfP (P : Fin T.n → Opens X) (hcov : ∀ x, ∃ i, x ∈ P i) :
     FinCover (⊤ : Opens X) where
   n := T.n
   U := P
@@ -432,7 +432,6 @@ omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem cComp_eq (ξ : NZ1 T T.V) (α β : Fin T.n) :
     cComp T ξ α β = toGerm (T.V α ⊓ T.V β) ((ξ : NC1 T T.V) (α, β)) := by
   rw [cComp, cCompMem, cC1, toGermZ1_apply_coe, toGermC1_apply, toGermSub_apply_coe]
-  rfl
 
 omit [T1Space X] in
 /-- **§5's centerpiece**: the trade projection `π : L →L Z¹(𝔙)` is onto (Forster 14.6(a) upgraded
@@ -499,7 +498,6 @@ theorem toGermC1_deltaCLM_eq_d0 (η : NC0 T T.W) (p : Fin T.n × Fin T.n) :
       d0 (0 : RS.Divisor X) T.coverW (toGermC0 T T.W η) p := by
   rw [toGermC1_apply, deltaCLM_apply, map_sub, toGermSub_restrictCLM_comm,
     toGermSub_restrictCLM_comm, d0_apply, toGermC0_apply, toGermC0_apply]
-  rfl
 
 /-- The `toGermZ1`-image of a `T.W`-level bounded cocycle, viewed at `T.coverW` directly (same
 two-step naming device as `cC1`). -/
@@ -520,13 +518,12 @@ noncomputable def classMap : NZ1 T T.V →ₗ[ℂ] H1Cover (0 : RS.Divisor X) T.
          rw [toGermZ1W_apply_coe]
          simp only [Submodule.coe_add]
          rw [map_add, toGermZ1W_apply_coe, toGermZ1W_apply_coe]
-         rfl
        map_smul' := fun c ψ => by
          apply Subtype.ext
          rw [toGermZ1W_apply_coe]
          simp only [Submodule.coe_smul, RingHom.id_apply]
          rw [map_smul, toGermZ1W_apply_coe]
-         rfl } ∘ₗ (resZ T T.V T.W T.W_le_V))
+         } ∘ₗ (resZ T T.V T.W T.W_le_V))
 
 omit [T2Space X] [CompactSpace X] [T1Space X] in
 theorem classMap_apply (ψ : NZ1 T T.V) :

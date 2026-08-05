@@ -46,8 +46,8 @@ theorem restrictL_restrictL {W V U : Opens X} (D : RS.Divisor X) (h1 : V ≤ U) 
     (h3 : W ≤ U) (φ : RS.LinSysOn D (U : Set X)) :
     LinSysOn.restrictL D h2 (LinSysOn.restrictL D h1 φ) = LinSysOn.restrictL D h3 φ := by
   apply Subtype.ext
-  rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe,
-    RS.MeroGermOn.restrict_restrict]
+  rw [restrictL_apply_coe, restrictL_apply_coe, restrictL_apply_coe]
+  exact RS.MeroGermOn.restrict_restrict h1 h2 _
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 @[simp] theorem restrictL_id {U : Opens X} (D : RS.Divisor X) (φ : RS.LinSysOn D (U : Set X)) :

@@ -126,6 +126,12 @@ theorem ind {motive : MeroGermOn X U → Prop} (h : ∀ f (hf : MeromorphicOnX f
     -mk f hf = mk (-f) hf.neg :=
   Subtype.ext (Filter.Germ.coe_neg f).symm
 
+/-- `mk` turns subtraction into subtraction. Stated directly (rather than via `mk_neg`/`mk_add`)
+because a rewrite chain through those cannot instantiate the proof-valued arguments. -/
+@[simp] theorem mk_sub {f g : X → ℂ} {hf : MeromorphicOnX f U} {hg : MeromorphicOnX g U} :
+    mk f hf - mk g hg = mk (f - g) (hf.sub hg) :=
+  Subtype.ext (Filter.Germ.coe_sub f g).symm
+
 @[simp] theorem mk_smul (c : ℂ) {f : X → ℂ} {hf : MeromorphicOnX f U} :
     c • mk f hf = mk (c • f) (hf.smul c) :=
   Subtype.ext (Filter.Germ.coe_smul c f).symm
@@ -216,7 +222,7 @@ noncomputable def restrict (h : V ⊆ U) : MeroGermOn X U →ₐ[ℂ] MeroGermOn
 theorem restrict_restrict {W : Set X} (h₁ : V ⊆ U) (h₂ : W ⊆ V) (φ : MeroGermOn X U) :
     restrict h₂ (restrict h₁ φ) = restrict (h₂.trans h₁) φ := by
   induction φ using ind with
-  | h f hf => simp
+  | h f hf => exact Subtype.ext (by simp only [restrict_mk]; rfl)
 
 theorem restrict_id (φ : MeroGermOn X U) : restrict (subset_refl U) φ = φ := by
   induction φ using ind with

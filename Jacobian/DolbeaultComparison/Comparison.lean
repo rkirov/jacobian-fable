@@ -263,25 +263,30 @@ theorem cechToH01_injective [T2Space X] [CompactSpace X] :
     obtain ⟨i, j⟩ := p
     apply Subtype.ext
     rw [d0_apply]
-    show (RS.MeroGermOn.restrict (inf_le_right : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U j)
+    -- the subset proofs are named `have`s at the `Set`-level type: an `Opens`-`≤` proof makes
+    -- the application ill-typed at `implicit` transparency, which blocks every later rewrite
+    have hj : (↑(𝒰.U i ⊓ 𝒰.U j) : Set X) ⊆ ↑(𝒰.U j) := fun _ hx => hx.2
+    have hi : (↑(𝒰.U i ⊓ 𝒰.U j) : Set X) ⊆ ↑(𝒰.U i) := fun _ hx => hx.1
+    show (RS.MeroGermOn.restrict hj
           (b j : RS.MeroGermOn X (𝒰.U j : Set X)) -
-        RS.MeroGermOn.restrict (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U i)
+        RS.MeroGermOn.restrict hi
           (b i : RS.MeroGermOn X (𝒰.U i : Set X)) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) =
       ((F : C1 (0 : RS.Divisor X) 𝒰) (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X))
-    show RS.MeroGermOn.restrict (inf_le_right : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U j)
-        (RS.MeroGermOn.mk (s.g j - ⇑u) (hmero j)) -
-      RS.MeroGermOn.restrict (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ≤ 𝒰.U i)
-        (RS.MeroGermOn.mk (s.g i - ⇑u) (hmero i)) =
+    show (RS.MeroGermOn.restrict hj
+          (RS.MeroGermOn.mk (s.g j - ⇑u) (hmero j)) -
+        RS.MeroGermOn.restrict hi
+          (RS.MeroGermOn.mk (s.g i - ⇑u) (hmero i)) :
+        RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) =
       ((F : C1 (0 : RS.Divisor X) 𝒰) (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X))
     rw [← RS.MeroGermOn.mk_holoRepr (𝒰.U i ⊓ 𝒰.U j).isOpen
       ((F : C1 (0 : RS.Divisor X) 𝒰) (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X))]
-    simp only [RS.MeroGermOn.restrict_mk, sub_eq_add_neg, RS.MeroGermOn.mk_neg,
-      RS.MeroGermOn.mk_add]
+    rw [RS.MeroGermOn.restrict_mk, RS.MeroGermOn.restrict_mk]
+    refine RS.MeroGermOn.mk_sub.trans ?_
     apply RS.MeroGermOn.mk_eq_mk.2
     refine Filter.mem_of_superset (Filter.self_mem_codiscreteWithin _) ?_
     intro y hy
-    show (s.g j y - u y) + -(s.g i y - u y) =
+    show (s.g j y - u y) - (s.g i y - u y) =
       RS.Dolb.Z1.repr F (i, j) y
     rw [s.split i j y hy]
     ring
@@ -319,26 +324,33 @@ theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
     rintro ⟨i, j, k⟩
     apply Subtype.ext
     rw [d1_apply]
-    show (RS.MeroGermOn.restrict
-          (le_inf (inf_le_left.trans inf_le_right) inf_le_right :
-            𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k ≤ 𝒰.U j ⊓ 𝒰.U k) (F (j, k) : RS.MeroGermOn X _) -
-        RS.MeroGermOn.restrict
-          (le_inf (inf_le_left.trans inf_le_left) inf_le_right :
-            𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k ≤ 𝒰.U i ⊓ 𝒰.U k) (F (i, k) : RS.MeroGermOn X _) +
-        RS.MeroGermOn.restrict (inf_le_left : 𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k ≤ 𝒰.U i ⊓ 𝒰.U j)
-          (F (i, j) : RS.MeroGermOn X _) :
+    have hjk : (↑(𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k) : Set X) ⊆ ↑(𝒰.U j ⊓ 𝒰.U k) :=
+      fun _ hx => ⟨hx.1.2, hx.2⟩
+    have hik : (↑(𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k) : Set X) ⊆ ↑(𝒰.U i ⊓ 𝒰.U k) :=
+      fun _ hx => ⟨hx.1.1, hx.2⟩
+    have hij : (↑(𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k) : Set X) ⊆ ↑(𝒰.U i ⊓ 𝒰.U j) := fun _ hx => hx.1
+    show (RS.MeroGermOn.restrict hjk
+          (F (j, k) : RS.MeroGermOn X (𝒰.U j ⊓ 𝒰.U k : Set X)) -
+        RS.MeroGermOn.restrict hik
+          (F (i, k) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U k : Set X)) +
+        RS.MeroGermOn.restrict hij
+          (F (i, j) : RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j : Set X)) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k : Set X)) = 0
-    show (RS.MeroGermOn.restrict _ (RS.MeroGermOn.mk (h k - h j) (hmero j k)) -
-        RS.MeroGermOn.restrict _ (RS.MeroGermOn.mk (h k - h i) (hmero i k)) +
-        RS.MeroGermOn.restrict _ (RS.MeroGermOn.mk (h j - h i) (hmero i j)) :
+    show (RS.MeroGermOn.restrict hjk
+          (RS.MeroGermOn.mk (h k - h j) (hmero j k)) -
+        RS.MeroGermOn.restrict hik
+          (RS.MeroGermOn.mk (h k - h i) (hmero i k)) +
+        RS.MeroGermOn.restrict hij
+          (RS.MeroGermOn.mk (h j - h i) (hmero i j)) :
         RS.MeroGermOn X (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k : Set X)) = 0
-    simp only [RS.MeroGermOn.restrict_mk, sub_eq_add_neg, RS.MeroGermOn.mk_neg,
-      RS.MeroGermOn.mk_add, ← RS.MeroGermOn.mk_zero
-        (U := (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k : Set X))]
+    rw [RS.MeroGermOn.restrict_mk, RS.MeroGermOn.restrict_mk, RS.MeroGermOn.restrict_mk,
+      ← RS.MeroGermOn.mk_zero (U := (𝒰.U i ⊓ 𝒰.U j ⊓ 𝒰.U k : Set X))]
+    refine (congrArg (· + _) RS.MeroGermOn.mk_sub).trans ?_
+    refine RS.MeroGermOn.mk_add.trans ?_
     apply RS.MeroGermOn.mk_eq_mk.2
     refine Filter.mem_of_superset (Filter.self_mem_codiscreteWithin _) ?_
     intro y _
-    simp only [Set.mem_setOf_eq, Pi.add_apply, Pi.neg_apply]
+    show (h k y - h j y) - (h k y - h i y) + (h j y - h i y) = 0
     ring
   set FZ1 : Z1 (0 : RS.Divisor X) 𝒰 := ⟨F, hFZ1⟩ with hFZ1_def
   have hsplit : ∀ i j, ∀ x ∈ (𝒰.U i ⊓ 𝒰.U j : Opens X),

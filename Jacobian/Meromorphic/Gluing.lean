@@ -54,8 +54,11 @@ theorem exists_glue {ι : Type*} {W : ι → Set X} (hW : ∀ i, IsOpen (W i))
       Filter.eventuallyEq_of_mem hWimem (fun y hy => (hFeq i y hy).symm)
     exact MeromorphicAtX.congr ((meromorphicOnX_holoRepr (hW i) (φ i)) x hxi) heq
   refine ⟨mk F hmerF, fun i => ?_⟩
-  rw [restrict_mk, ← mk_holoRepr (hW i) (φ i), mk_eq_mk,
-    eventuallyEq_codiscreteWithin_iff_of_isOpen (hW i)]
+  rw [restrict_mk, ← mk_holoRepr (hW i) (φ i)]
+  -- `mk_eq_mk` as an `iff` applied with `refine`: rewriting cannot match its pattern against
+  -- the `mk` proof arguments produced above
+  refine mk_eq_mk.mpr ?_
+  rw [eventuallyEq_codiscreteWithin_iff_of_isOpen (hW i)]
   intro x hx
   exact Filter.eventuallyEq_of_mem (mem_nhdsWithin_of_mem_nhds ((hW i).mem_nhds hx))
     (fun y hy => hFeq i y hy)
