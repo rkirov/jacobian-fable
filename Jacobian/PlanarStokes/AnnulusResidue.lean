@@ -460,6 +460,30 @@ private theorem smul_intervalIntegral_eq_circleIntegral {u : ℂ → ℂ} {c : �
   simp only [zero_add, smul_eq_mul]
   ring
 
+/-- The open rectangle is nonempty when `a < b`. Split out of
+`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the 200-line proof
+size we hold ourselves to. -/
+private theorem reProdIm_Ioo_nonempty {a b : ℝ} (hab : a < b) :
+    (Complex.reProdIm (Set.Ioo a b) (Set.Ioo (0 : ℝ) (2 * π))).Nonempty := by
+  refine ⟨⟨(a + b) / 2, π⟩, ?_⟩
+  rw [Complex.mem_reProdIm]
+  refine ⟨?_, ?_⟩
+  · show (a + b) / 2 ∈ Set.Ioo a b
+    constructor <;> linarith
+  · show π ∈ Set.Ioo (0 : ℝ) (2 * π)
+    constructor <;> linarith [Real.pi_pos]
+
+/-- The iterated interval integral over the rectangle is the set integral over it. Split out of
+`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the 200-line proof
+size we hold ourselves to. -/
+private theorem iterated_eq_setIntegral_reProdIm {a b : ℝ} (hab : a < b)
+    {G : ℂ → ℂ} (hHi : IntegrableOn G
+      (Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π)))) :
+    (∫ x : ℝ in a..b, ∫ y : ℝ in (0 : ℝ)..(2 * π), G ((x : ℂ) + y * I)) =
+      ∫ ζ in Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π)), G ζ :=
+  (setIntegral_reProdIm_eq_intervalIntegral
+    (z := (⟨a, 0⟩ : ℂ)) (w := (⟨b, 2 * π⟩ : ℂ)) hab.le Real.two_pi_pos.le hHi).symm
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -528,14 +552,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       rw [hRecOpen_def, hRec_def]
       exact Complex.reProdIm_subset_iff.mpr
         (Set.prod_mono Set.Ioo_subset_Icc_self Set.Ioo_subset_Icc_self)
-    have hRecOpen_nonempty : RecOpen.Nonempty := by
-      refine ⟨⟨(a + b) / 2, π⟩, ?_⟩
-      rw [hRecOpen_def, Complex.mem_reProdIm]
-      refine ⟨?_, ?_⟩
-      · show (a + b) / 2 ∈ Set.Ioo a b
-        constructor <;> linarith
-      · show π ∈ Set.Ioo (0 : ℝ) (2 * π)
-        constructor <;> linarith [Real.pi_pos]
+    have hRecOpen_nonempty : RecOpen.Nonempty := reProdIm_Ioo_nonempty hab
     have hRec_int : (interior Rec).Nonempty :=
       hRecOpen_nonempty.mono (interior_maximal hRecOpen_sub hRecOpen_isOpen)
     have hRec_uniqueDiff : UniqueDiffOn ℝ Rec := uniqueDiffOn_convex hRec_convex hRec_int
@@ -609,18 +626,11 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
     have hcircleR := smul_intervalIntegral_eq_circleIntegral (u := u) (c := c) heb
     have hcircler := smul_intervalIntegral_eq_circleIntegral (u := u) (c := c) hea
     rw [hLHS_yb, zero_add, hcircleR, hcircler] at hrect
-    clear hHc hHd hHc' hHd' hHi' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
+    clear hHc hHd hHc' hHd' hf'_cont hF_CDRec hu_CDRec hRec_convex hRec_uniqueDiff
       hRec_int hτ_CD hexp_CD hRec_eq hperiod hLHS_yb hFexp hcircleR hcircler
     -- Convert the RHS iterated integral to a set integral over `Rec`.
-    have hiter_to_set : (∫ x : ℝ in a..b, ∫ y : ℝ in (0 : ℝ)..(2 * π),
-        I • f' ((x : ℂ) + y * I) 1 - f' ((x : ℂ) + y * I) I) = ∫ ζ in Rec, I • f' ζ 1 - f' ζ I := by
-      have hHi' : IntegrableOn (fun ζ => I • f' ζ 1 - f' ζ I)
-          (Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π))) := by
-        rw [← hRec_def]; exact hHi
-      have hkey := (setIntegral_reProdIm_eq_intervalIntegral
-        (z := (⟨a, 0⟩ : ℂ)) (w := (⟨b, 2 * π⟩ : ℂ)) hab.le Real.two_pi_pos.le hHi').symm
-      rw [hRec_def]
-      exact hkey
+    have hiter_to_set := iterated_eq_setIntegral_reProdIm hab (G := fun ζ => I • f' ζ 1 - f' ζ I)
+      (by rw [← hRec_def]; exact hHi)
     rw [hiter_to_set] at hrect
     -- Pointwise, on `RecOpen`, the integrand matches `2i·normSq(exp ζ)·wirtingerDbar u (τ ζ)`.
     have hpt := stokes_integrand_eq hInterior_diff

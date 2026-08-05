@@ -45,6 +45,7 @@ abbrev DiscretenessHyp (X : Type*) [TopologicalSpace X] [T2Space X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   ∀ S : Finset (Fin (genus X)), RS.Abel.WeakSolutionUpgradeFinset X (↥S : Type)
 
+omit [ConnectedSpace X] in
 /-- The coordinate map assembled from the per-chart primitives is strictly differentiable at the
 base point, with the generic matrix as its derivative. Split out of
 `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold ourselves to. -/
@@ -98,6 +99,7 @@ private theorem hasStrictFDerivAt_coordMap {e : Fin (genus X) → OpenPartialHom
       dotProduct]
   rwa [heq] at hpi
 
+omit [ConnectedSpace X] in
 /-- The residue of the `k`-th twisted form at the `j`-th base point is the generic-matrix entry
 times the local residue. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line
 proof size we hold ourselves to. -/
@@ -155,6 +157,7 @@ private theorem resAt_twisted_eq {a x : Fin (genus X) → X}
   rw [hAij k j, hc_def]
   rfl
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- Around each base point there is a chart ball whose preimage stays inside the separating
 neighbourhood. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we
 hold ourselves to. -/
@@ -183,6 +186,7 @@ private theorem exists_ball_subset_sep {a : Fin (genus X) → X} {U : X → Set 
   rw [← hyz, (e j).left_inv hysrc]
   exact hyU
 
+omit [ConnectedSpace X] in
 /-- Away from the base points the twisted form has no residue. Split out of
 `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold ourselves to. -/
 private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
@@ -212,6 +216,7 @@ private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
       simpa using MForm.ofForm1_ord_nonneg (basis X k) y
   exact MForm.resAt_eq_zero_of_ord_nonneg hordΘ
 
+omit [T2Space X] [CompactSpace X] [ConnectedSpace X] in
 /-- A base point where the meromorphic function has a genuine pole contributes a nonzero local
 residue. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold
 ourselves to. -/
