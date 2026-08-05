@@ -19,7 +19,7 @@ import Mathlib.Topology.Algebra.Module.Determinant
 Unit: abel-theorem. Namespace `RS.Abel`.
 
 The blueprint's routing decision #2 budgeted ONE "honest integration atom" for the whole
-challenge: the Dolbeault-side Serre functional `(σ, ω) ↦ ∬_X σ ∧ ω` pairing a smooth
+challenge: the Dolbeault-side Serre functional `(σ, ω) ↦ ∫∫_X σ ∧ ω` pairing a smooth
 `(0,1)`-form `σ : Form01 X` against a holomorphic `1`-form `ω : Form1 X`. This file builds its
 foundation:
 
@@ -38,7 +38,7 @@ foundation:
   fixed partition `PU`, with integrability (`integrable_pairingTerm`) and bilinearity
   (`pairing_add_left`/`pairing_smul_left`/`pairing_add_right`/`pairing_smul_right`).
 
-`SerreFunctional.lean` proves the two analytic properties (∂̄-exact forms pair to zero;
+`SerreFunctional.lean` proves the two analytic properties (dbar-exact forms pair to zero;
 positivity against the conjugate form); `ChartSupported.lean` localizes the pairing for
 single-chart-supported `(0,1)`-data. No independence-of-`PU` statement is ever needed: every
 downstream conclusion is a `Prop` quantified over a single fixed `PU`.
@@ -353,7 +353,7 @@ theorem sum_psiC_eventuallyEq_one {e : OpenPartialHomeomorph X ℂ} {z : ℂ}
 
 end SurfPoU
 
-/-! ## Planar sum rule for `∂̄` and eventual-vanishing helpers -/
+/-! ## Planar sum rule for `dbar` and eventual-vanishing helpers -/
 
 theorem wirtingerDbar_finset_sum {ι' : Type*} (s : Finset ι') {f : ι' → ℂ → ℂ} {z : ℂ}
     (hf : ∀ i ∈ s, DifferentiableAt ℝ (f i) z) :

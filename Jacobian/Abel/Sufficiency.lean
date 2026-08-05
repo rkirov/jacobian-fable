@@ -69,6 +69,7 @@ namespace RS.Abel
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
   [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+omit [CompactSpace X] in
 /-- **The one remaining, precisely-isolated hypothesis** (see the file docstring): Forster's own
 Lemma 20.3 + design §4.1 steps 5 and 7, bundled — given a weak solution `f` of a pair `(P, Q)`
 along a path `δ` whose integral against EVERY holomorphic `1`-form vanishes EXACTLY (not just on
@@ -97,7 +98,7 @@ hypothesis off `{P, Q}`, plus a short direct `wirtingerDbar f P = 0` computation
 extend holomorphy of the local `ψ`-cofactor across the puncture) similarly at `Q`. Investigated
 and found tractable in outline this pass (recorded above and in the build log) but not completed
 on top of everything else — this is precisely the boundary of what this pass closed. -/
-def WeakSolutionUpgrade (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
+def WeakSolutionUpgrade (X : Type*) [TopologicalSpace X] [T2Space X]
     [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] : Prop :=
   ∀ {f : X → ℂ} {P Q : X}, Q ≠ P → ∀ δ : Path Q P, RS.AbelWeak.IsWeakSolutionOfPair f P Q →
     (∀ θ : RS.Form1 X, RS.pathIntegral δ θ = 0) →
@@ -139,15 +140,16 @@ theorem genus_eq_zero_of_pathIntegral_mem (hupgrade : WeakSolutionUpgrade X) {P 
 
 /-! ## The `k`-point generalization (§4.1, the shape `period-lattice-rank`'s Thm 21.4(b) needs) -/
 
+omit [CompactSpace X] in
 /-- The `Finset`-generalized analogue of `WeakSolutionUpgrade`, bundling Forster's Lemma 20.1
 multiplicativity (weak solutions of pairwise-disjoint pairs multiply, `IsWeakSolutionOfFinset` /
 `isWeakSolutionOfFinset_prod`, ALREADY BUILT — `AbelWeak/WeakSolution.lean`) with design steps 5
 and 7 run once for the assembled product weak solution (`η := ∑ i, η i`, the design's own
 account of the `k`-point case, §4.1). Same discharge roadmap as `WeakSolutionUpgrade`'s own
 docstring, mechanically re-run for a `Finset`-indexed family instead of a single pair. -/
-def WeakSolutionUpgradeFinset (X : Type*) [TopologicalSpace X] [T2Space X] [CompactSpace X]
-    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (ι : Type*) [Fintype ι]
-    [DecidableEq ι] : Prop :=
+def WeakSolutionUpgradeFinset (X : Type*) [TopologicalSpace X] [T2Space X]
+    [ConnectedSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] (ι : Type*) [Fintype ι] :
+    Prop :=
   ∀ {f : X → ℂ} {a x : ι → X},
     Function.Injective a → Function.Injective x → (∀ i j, a i ≠ x j) →
     (γ : (i : ι) → Path (a i) (x i)) → RS.AbelWeak.IsWeakSolutionOfFinset f a x →

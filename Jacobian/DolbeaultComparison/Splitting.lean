@@ -206,6 +206,7 @@ private theorem contMDiffOn_finset_sum {ι : Type*} [DecidableEq ι] (s : Finset
 /-- A smooth splitting of a `D = 0` cocycle (Forster 12.6 output, D5's frozen sign
 convention). -/
 structure SmoothSplitting (𝒰 : FinCover (⊤ : Opens X)) (f : Z1 (0 : RS.Divisor X) 𝒰) where
+  /-- The member-wise functions realizing the splitting. -/
   g : Fin 𝒰.n → X → ℂ
   smoothOn : ∀ i, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (g i) (𝒰.U i : Set X)
   split : ∀ i j, ∀ x ∈ (𝒰.U i ⊓ 𝒰.U j : Opens X), Z1.repr f (i, j) x = g j x - g i x

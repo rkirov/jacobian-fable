@@ -27,8 +27,8 @@ blueprint's ⚠ is honored); no `Jacobian.Monodromy`/`Jacobian.FormTrace` import
 unit (confirmed at build time, matching the design's DAG audit §3).
 
 **Status**: design steps 5-7 (the `WeakSolutionUpgrade`/`WeakSolutionUpgradeFinset` content —
-packaging a weak solution's chart-local `∂̄log f` data into a global `Form01 X`, the vanishing
-pairing, the `∂̄`-correction, and the CR-promotion/order bookkeeping) are now **DISCHARGED**
+packaging a weak solution's chart-local `dbarlog f` data into a global `Form01 X`, the vanishing
+pairing, the `dbar`-correction, and the CR-promotion/order bookkeeping) are now **DISCHARGED**
 (`AreaPairing.lean` + `SerreFunctional.lean` + `ChartSupported.lean` + `LogPiece.lean` +
 `LinkData.lean` + `UpgradeDischarge.lean`, this pass), gated ONLY on `serre-duality-tails`'s one
 remaining external fact `Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X))` — the
@@ -38,7 +38,7 @@ unit's job): `RS.Abel.weakSolutionUpgrade_of_surjective : (surjectivity) → Wea
 and `RS.Abel.weakSolutionUpgradeFinset_of_surjective` (the `k`-point form), consumed by the new
 `Jacobian.ofCurve_inj_of_surjective'`/`ofCurve_inj_of_surjective`. The blueprint's routing
 decision #2 "honest integration atom" — the Dolbeault-side Serre functional
-`(σ, θ) ↦ ∬_X σ ∧ θ` — is BUILT (`RS.Abel.pairing`), with the compact-surface Stokes vanishing
+`(σ, θ) ↦ ∫∫_X σ ∧ θ` — is BUILT (`RS.Abel.pairing`), with the compact-surface Stokes vanishing
 (`pairing_dbar_eq_zero`, unconditional), the conjugate-form positivity injection
 (`pairingDual_injective`, unconditional, Hodge-free), and the integral-pairing bridge
 (`exists_dbar_of_forall_pairing_eq_zero`, same single gate). `scripts/check.sh Jacobian/Abel`
@@ -66,7 +66,7 @@ every breakpoint, including the case where the path revisits its own basepoint).
   not just the basis — extended via `RS.pathIntegralₗ` + `Module.Basis.ext`). Zero sorries.
 
 * **`WeakToMero.lean`** (§4.2 D2, §2.1 step 7, §2.2): `wirtingerDbar_exp_neg_mul_eq_zero` (the
-  `∂̄F = 0` computation for `F := exp(-u) * f`, via `wirtingerDbar_mul` + a new holomorphic-outer
+  `dbarF = 0` computation for `F := exp(-u) * f`, via `wirtingerDbar_mul` + a new holomorphic-outer
   chain rule for `Complex.exp` built from mathlib's `HasDerivAt.comp_hasFDerivAt`) and
   `genus_eq_zero_of_exists_simple_pole` (Forster's necessity shortcut, composing the ALREADY-BUILT
   `RS.homeoSphere_of_exists_simple_pole` + `RS.SphereTopology.genus_eq_zero_of_homeo_sphere` —
@@ -98,12 +98,12 @@ every breakpoint, including the case where the path revisits its own basepoint).
   design's spike-verified `det_fderiv_eq_normSq_deriv`), and the Serre area pairing
   `RS.Abel.pairing PU σ θ = ∑ i, ∫ ψᵢ σᵢ θᵢ dA` with integrability and bilinearity. Zero sorries.
 
-* **`SerreFunctional.lean`**: `pairing_dbar_eq_zero` (compact-surface Stokes: `∬ ∂̄u ∧ θ = 0`,
+* **`SerreFunctional.lean`**: `pairing_dbar_eq_zero` (compact-surface Stokes: `∫∫ dbaru ∧ θ = 0`,
   PoU-globalized planar Atom 1, unconditional), `conjForm`/`pairingDual_injective` (the
   positivity injection `Form1 X ↪ Dual (H01 X)`, unconditional, no Hodge theory),
   `finrank_H01_eq_genus` and `exists_dbar_of_forall_pairing_eq_zero` (the INTEGRAL-pairing
   Dolbeault bridge — a `(0,1)`-form pairing to zero against every holomorphic `1`-form is
-  `∂̄`-exact), the latter two gated on the single `serre-duality-tails` fact. Zero sorries.
+  `dbar`-exact), the latter two gated on the single `serre-duality-tails` fact. Zero sorries.
 
 * **`ChartSupported.lean`**: `ChartSupportedData.form` (a compactly-chart-supported planar
   `(0,1)`-coefficient spreads to a global `Form01 X`) and the localization
@@ -111,16 +111,16 @@ every breakpoint, including the case where the path revisits its own basepoint).
   `deriv_trans_mul_deriv_trans_symm`/`deriv_trans_ne_zero`. Zero sorries.
 
 * **`LogPiece.lean`** (planar, no manifold imports): `LogPieceData` (one `SingleChart`-style
-  interpolated piece `(z-β)/(z-α) ⇝ exp(χL) ⇝ 1`), its `∂̄log` coefficient `dlog` with
-  `∂̄g = dlog · g`, the punctured-limit factorizations at the zero/pole, and
+  interpolated piece `(z-β)/(z-α) ⇝ exp(χL) ⇝ 1`), its `dbarlog` coefficient `dlog` with
+  `dbarg = dlog · g`, the punctured-limit factorizations at the zero/pole, and
   **`integral_dlog_mul`** — Forster's Lemma 20.3/20.5 in planar form:
   `∫ dlog · θ dA = π (Gp β - Gp α)` via the annulus-Stokes atom + circle integration by parts +
   the Cauchy integral formula. Zero sorries.
 
 * **`LinkData.lean`**: `exists_link` (one chain link ⇒ piece function + packaged `Form01` +
-  smoothness/non-vanishing/`∂̄log`-matching/factor-limits/pairing-identity), the planar
+  smoothness/non-vanishing/`dbarlog`-matching/factor-limits/pairing-identity), the planar
   promotion lemma `meromorphicAt_of_tendsto_factor` (punctured holomorphy + factor limit pin
-  `meromorphicOrderAt` — the `Rechart`-free order bookkeeping), and the `∂̄` finite product
+  `meromorphicOrderAt` — the `Rechart`-free order bookkeeping), and the `dbar` finite product
   rule. Zero sorries.
 
 * **`UpgradeDischarge.lean`** (the discharge): `exists_mero_of_sum_pathIntegral_eq_zero` (the

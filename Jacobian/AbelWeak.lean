@@ -56,13 +56,13 @@ NOT registered in `Jacobian.lean` (orchestrator's job, per this unit's task hard
     21.4(a) disjoint-chart construction produces, per its design's own §1.4 account) plus
     `isWeakSolutionOfFinset_prod`.
   * `pathIntegral_eq_sum_chartChain` — the CC6-compliant telescoped path-integral identity
-    (§7.1's `(1/2πi) ∬_X (df/f) ∧ ω` replacement, D5): for any `ChartChain` `C` and holomorphic
+    (§7.1's `(1/2πi) ∫∫_X (df/f) ∧ ω` replacement, D5): for any `ChartChain` `C` and holomorphic
     `η`, `pathIntegral γ η` equals the finite sum of chart-local primitive differences. Pure
     `Path`-API bookkeeping, no Stokes.
   * `residue_identity_two_point` / `logDeriv_rat_eq` — the Lemma-20.3-specialized residue
     identity (Stokes-driven): for the two-puncture kernel `(w−b)⁻¹ − (w−a)⁻¹` (a weak solution's
     own log-derivative shape, `logDeriv_rat_eq`) and any `C¹` compactly-supported `g`, the area
-    integral of `∂̄g` against that kernel recovers `g b − g a` — no local-constancy hypothesis on
+    integral of `dbarg` against that kernel recovers `g b − g a` — no local-constancy hypothesis on
     `g` needed (citing `planar-stokes-atoms`' own hypothesis-free two-puncture export
     `RS.integral_wirtingerDbar_mul_inv_sub_sub_inv_sub_eq` directly).
 

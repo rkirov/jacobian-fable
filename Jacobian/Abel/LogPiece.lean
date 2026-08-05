@@ -21,8 +21,8 @@ pole at `α`), interpolated to `1` across the bump annulus `ρ < rIn ≤ ‖z - 
 * `g` — the piece itself, with the `SingleChart`-style facts (`g_eqOn_inner`, `g_one`,
   `g_contDiffAt`, `g_ne_zero`) plus the punctured-limit factorizations `tendsto_zero_factor` /
   `tendsto_pole_factor` (feeding the order bookkeeping of `UpgradeDischarge.lean`);
-* `dlog` — the `(0,1)` logarithmic-derivative coefficient `h = ∂̄(χL)`, globally smooth,
-  compactly supported in the closed bump annulus, with `∂̄g = h · g` off `{α, β}`
+* `dlog` — the `(0,1)` logarithmic-derivative coefficient `h = dbar(χL)`, globally smooth,
+  compactly supported in the closed bump annulus, with `dbarg = h · g` off `{α, β}`
   (`wirtingerDbar_g`);
 * **`integral_dlog_mul`** — Forster's Lemma 20.3/20.5 in planar form: for any holomorphic
   primitive pair `Gp' = w` on a ball containing the piece,
@@ -183,7 +183,7 @@ theorem g_zero_at_zero : P.g P.β = 0 := by
 
 /-! ## The `(0,1)` logarithmic-derivative coefficient -/
 
-/-- The `∂̄ log g` coefficient: `∂̄(χ L)` on the exterior region, `0` inside. -/
+/-- The `dbar log g` coefficient: `dbar(χ L)` on the exterior region, `0` inside. -/
 def dlog : ℂ → ℂ :=
   {w : ℂ | P.ρ < ‖w - P.c‖}.indicator
     (RS.wirtingerDbar (fun w => ((P.χ (w - P.c) : ℝ) : ℂ) * P.L (w - P.c)))
@@ -266,7 +266,7 @@ theorem contDiff_dlog : ContDiff ℝ ∞ P.dlog := by
 
 /-! ## The exponential chain rule and the logarithmic-derivative identity -/
 
-/-- `∂̄(exp v) = exp v · ∂̄v` for real-differentiable `v`. -/
+/-- `dbar(exp v) = exp v · dbarv` for real-differentiable `v`. -/
 theorem wirtingerDbar_cexp (v : ℂ → ℂ) (z : ℂ) (hv : DifferentiableAt ℝ v z) :
     RS.wirtingerDbar (fun w => Complex.exp (v w)) z
       = Complex.exp (v z) * RS.wirtingerDbar v z := by
@@ -277,7 +277,7 @@ theorem wirtingerDbar_cexp (v : ℂ → ℂ) (z : ℂ) (hv : DifferentiableAt �
   simp only [smul_apply, smul_eq_mul]
   ring
 
-/-- **The logarithmic-derivative identity**: `∂̄g = dlog · g` off the divisor. -/
+/-- **The logarithmic-derivative identity**: `dbarg = dlog · g` off the divisor. -/
 theorem wirtingerDbar_g {z : ℂ} (hzα : z ≠ P.α) (_hzβ : z ≠ P.β) :
     RS.wirtingerDbar P.g z = P.dlog z * P.g z := by
   by_cases hcase : ‖z - P.c‖ < P.χ.rIn

@@ -24,7 +24,7 @@ Main declarations:
   the chart family `ι := Y` (preferred charts restricted to the stack neighborhoods `S.V`).
 * `RS.qCoeff f η e₀ x = (deriv (e₀ ∘ f ∘ (chartAt x).symm))⁻¹ * coeffAt x η` — the canonical
   (stack-free) per-fibre-point coefficient of the trace; `RS.traceCoeffFun_eq_qSum` identifies
-  the defining coefficient with `∑ᶠ x ∈ f⁻¹{ŷ}, qCoeff …` away from the chart center (well-
+  the defining coefficient with `∑ᶠ x ∈ f⁻¹{yhat}, qCoeff …` away from the chart center (well-
   definedness), and `RS.qSum_trans` is its chart-transition law — together these give `compat`
   on a dense subset of each chart overlap, extended to the whole overlap by continuity
   (`ContinuousOn.eqOn_of_subset_closure`, `Density.lean`).
@@ -307,33 +307,33 @@ theorem qCoeff_eq_branch_term {y : Y} (S : RS.FiberStack f y) (i : Fin S.n)
     simp
   · field_simp
 
-/-- Well-definedness at non-center points: the defining coefficient of the trace at `ŷ ≠ y`
-(in the chart at index `y`) is the canonical `qCoeff` fibre sum over `f⁻¹{ŷ}`. -/
-theorem traceCoeffFun_eq_qSum (η : Form1 X) {y ŷ : Y}
-    (hŷ : ŷ ∈ (traceChart hf hne y).source) (hŷne : ŷ ≠ y) :
-    traceCoeffFun hf hne η y (chartAt ℂ y ŷ)
-      = ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η (chartAt ℂ y) x := by
-  rw [traceChart_source] at hŷ
-  obtain ⟨hŷsrc, hŷV⟩ := hŷ
+/-- Well-definedness at non-center points: the defining coefficient of the trace at `yhat ≠ y`
+(in the chart at index `y`) is the canonical `qCoeff` fibre sum over `f⁻¹{yhat}`. -/
+theorem traceCoeffFun_eq_qSum (η : Form1 X) {y yhat : Y}
+    (hyhat : yhat ∈ (traceChart hf hne y).source) (hyhatne : yhat ≠ y) :
+    traceCoeffFun hf hne η y (chartAt ℂ y yhat)
+      = ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η (chartAt ℂ y) x := by
+  rw [traceChart_source] at hyhat
+  obtain ⟨hyhatsrc, hyhatV⟩ := hyhat
   have hterm : ∀ i : Fin (stackAt hf hne y).n,
-      deriv (branchTrans hf hne y i) (chartAt ℂ y ŷ)
+      deriv (branchTrans hf hne y i) (chartAt ℂ y yhat)
         * traceCoeff (coeffIn ((stackAt hf hne y).A i).e η)
             (multiplicity f ((stackAt hf hne y).pt i))
-            (branchTrans hf hne y i (chartAt ℂ y ŷ))
+            (branchTrans hf hne y i (chartAt ℂ y yhat))
       = RS.MTrace.traceZk (qCoeff f η (chartAt ℂ y) ∘ ⇑((stackAt hf hne y).A i).e.symm)
-          (multiplicity f ((stackAt hf hne y).pt i)) (((stackAt hf hne y).A i).e' ŷ) := by
+          (multiplicity f ((stackAt hf hne y).pt i)) (((stackAt hf hne y).A i).e' yhat) := by
     intro i
     have hk0 : multiplicity f ((stackAt hf hne y).pt i) ≠ 0 := (stackAt hf hne y).mult_ne_zero i
-    have hval : branchTrans hf hne y i (chartAt ℂ y ŷ) = ((stackAt hf hne y).A i).e' ŷ := by
-      show ((stackAt hf hne y).A i).e' ((chartAt ℂ y).symm (chartAt ℂ y ŷ)) = _
-      rw [(chartAt ℂ y).left_inv hŷsrc]
+    have hval : branchTrans hf hne y i (chartAt ℂ y yhat) = ((stackAt hf hne y).A i).e' yhat := by
+      show ((stackAt hf hne y).A i).e' ((chartAt ℂ y).symm (chartAt ℂ y yhat)) = _
+      rw [(chartAt ℂ y).left_inv hyhatsrc]
     have hy0 : ((stackAt hf hne y).A i).e' y = 0 := by
       have h := ((stackAt hf hne y).A i).map_eq_zero'
       rwa [(stackAt hf hne y).maps_pt_eq i] at h
-    have hζne : ((stackAt hf hne y).A i).e' ŷ ≠ 0 := by
+    have hζne : ((stackAt hf hne y).A i).e' yhat ≠ 0 := by
       intro h0
-      apply hŷne
-      apply ((stackAt hf hne y).A i).e'.injOn ((stackAt hf hne y).V_subset i hŷV)
+      apply hyhatne
+      apply ((stackAt hf hne y).A i).e'.injOn ((stackAt hf hne y).V_subset i hyhatV)
         ((stackAt hf hne y).V_subset i (stackAt hf hne y).mem_V)
       rw [h0, hy0]
     have hcoeff0 := analyticAt_coeffIn_stack_zero hf hne η y i
@@ -342,17 +342,17 @@ theorem traceCoeffFun_eq_qSum (η : Form1 X) {y ŷ : Y}
       (h := fun v => coeffIn ((stackAt hf hne y).A i).e η v
         * ((multiplicity f ((stackAt hf hne y).pt i) : ℂ)
             * v ^ ((multiplicity f ((stackAt hf hne y).pt i) : ℤ) - 1))⁻¹)
-      (deriv (branchTrans hf hne y i) (chartAt ℂ y ŷ))
-      (multiplicity f ((stackAt hf hne y).pt i))) (((stackAt hf hne y).A i).e' ŷ)]
+      (deriv (branchTrans hf hne y i) (chartAt ℂ y yhat))
+      (multiplicity f ((stackAt hf hne y).pt i))) (((stackAt hf hne y).A i).e' yhat)]
     apply RS.MTrace.traceZk_congr_root
     intro v hv
     have hv0 : v ≠ 0 := by
       rintro rfl
       rw [zero_pow hk0] at hv
       exact hζne hv.symm
-    have hζball : ‖((stackAt hf hne y).A i).e' ŷ‖
+    have hζball : ‖((stackAt hf hne y).A i).e' yhat‖
         < ((stackAt hf hne y).A i).radius ^ multiplicity f ((stackAt hf hne y).pt i) :=
-      mem_ball_zero_iff.mp ((stackAt hf hne y).map_V_mem_ball i ŷ hŷV)
+      mem_ball_zero_iff.mp ((stackAt hf hne y).map_V_mem_ball i yhat hyhatV)
     have hvlt : ‖v‖ < ((stackAt hf hne y).A i).radius :=
       RS.norm_lt_of_pow_eq hk0 ((stackAt hf hne y).radius_pos i).le hv hζball
     have hvt : v ∈ ((stackAt hf hne y).A i).e.target := by
@@ -362,40 +362,40 @@ theorem traceCoeffFun_eq_qSum (η : Form1 X) {y ŷ : Y}
       ((stackAt hf hne y).A i).e.map_target hvt
     have hex : ((stackAt hf hne y).A i).e (((stackAt hf hne y).A i).e.symm v) = v :=
       ((stackAt hf hne y).A i).e.right_inv hvt
-    have hfx : f (((stackAt hf hne y).A i).e.symm v) = ŷ := by
+    have hfx : f (((stackAt hf hne y).A i).e.symm v) = yhat := by
       apply ((stackAt hf hne y).A i).e'.injOn
-        (((stackAt hf hne y).A i).mapsTo hxs) ((stackAt hf hne y).V_subset i hŷV)
+        (((stackAt hf hne y).A i).mapsTo hxs) ((stackAt hf hne y).V_subset i hyhatV)
       rw [((stackAt hf hne y).A i).eqOn_pow _ hxs, hex, hv]
     have hfxsrc : f (((stackAt hf hne y).A i).e.symm v) ∈ (chartAt ℂ y).source := by
-      rw [hfx]; exact hŷsrc
+      rw [hfx]; exact hyhatsrc
     have hq := qCoeff_eq_branch_term (stackAt hf hne y) i (chart_mem_maximalAtlas y) hxs
       hfxsrc η
-    show deriv (branchTrans hf hne y i) (chartAt ℂ y ŷ)
+    show deriv (branchTrans hf hne y i) (chartAt ℂ y yhat)
         * (coeffIn ((stackAt hf hne y).A i).e η v
             * ((multiplicity f ((stackAt hf hne y).pt i) : ℂ)
                 * v ^ ((multiplicity f ((stackAt hf hne y).pt i) : ℤ) - 1))⁻¹)
       = (qCoeff f η (chartAt ℂ y) ∘ ⇑((stackAt hf hne y).A i).e.symm) v
     rw [Function.comp_apply, hq, hex, hfx]
     rfl
-  calc traceCoeffFun hf hne η y (chartAt ℂ y ŷ)
+  calc traceCoeffFun hf hne η y (chartAt ℂ y yhat)
       = ∑ i, RS.MTrace.traceZk (qCoeff f η (chartAt ℂ y) ∘ ⇑((stackAt hf hne y).A i).e.symm)
-          (multiplicity f ((stackAt hf hne y).pt i)) (((stackAt hf hne y).A i).e' ŷ) :=
+          (multiplicity f ((stackAt hf hne y).pt i)) (((stackAt hf hne y).A i).e' yhat) :=
         Finset.sum_congr rfl fun i _ => hterm i
-    _ = ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η (chartAt ℂ y) x :=
-        RS.MTrace.sum_traceZk_stack (stackAt hf hne y) hŷV
+    _ = ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η (chartAt ℂ y) x :=
+        RS.MTrace.sum_traceZk_stack (stackAt hf hne y) hyhatV
 
 include hf in
 omit [T2Space X] [CompactSpace X] [ConnectedSpace X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- The chart-transition law for the canonical fibre sum. -/
-theorem qSum_trans (η : Form1 X) {ŷ : Y} {e₀ e₁ : OpenPartialHomeomorph Y ℂ}
+theorem qSum_trans (η : Form1 X) {yhat : Y} {e₀ e₁ : OpenPartialHomeomorph Y ℂ}
     (he₀ : e₀ ∈ maximalAtlas 𝓘(ℂ) ω Y) (he₁ : e₁ ∈ maximalAtlas 𝓘(ℂ) ω Y)
-    (hŷ₀ : ŷ ∈ e₀.source) (hŷ₁ : ŷ ∈ e₁.source) :
-    ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η e₁ x
-      = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ ŷ) * ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η e₀ x := by
+    (hyhat₀ : yhat ∈ e₀.source) (hyhat₁ : yhat ∈ e₁.source) :
+    ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η e₁ x
+      = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ yhat) * ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η e₀ x := by
   rw [mul_finsum_mem]
   apply finsum_mem_congr rfl
   intro x hx
-  have hfx : f x = ŷ := hx
+  have hfx : f x = yhat := hx
   have hz₀t : chartAt ℂ x x ∈ (chartAt ℂ x).target := mem_chart_target ℂ x
   have hsymm0 : (chartAt ℂ x).symm (chartAt ℂ x x) = x :=
     (chartAt ℂ x).left_inv (mem_chart_source ℂ x)
@@ -404,10 +404,10 @@ theorem qSum_trans (η : Form1 X) {ŷ : Y} {e₀ e₁ : OpenPartialHomeomorph Y 
   have houter : DifferentiableAt ℂ (⇑e₁ ∘ ⇑e₀.symm)
       ((⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)) := by
     rw [hptr, hfx]
-    exact (analyticAt_transition_fun he₀ he₁ hŷ₀ hŷ₁).differentiableAt
+    exact (analyticAt_transition_fun he₀ he₁ hyhat₀ hyhat₁).differentiableAt
   have hinner : DifferentiableAt ℂ (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) := by
     have h := analyticAt_of_mem_maximalAtlas (hf x) (chart_mem_maximalAtlas x)
-      (mem_chart_source ℂ x) he₀ (by rw [hfx]; exact hŷ₀)
+      (mem_chart_source ℂ x) he₀ (by rw [hfx]; exact hyhat₀)
     exact h.differentiableAt
   have heq : (⇑e₁ ∘ f ∘ ⇑(chartAt ℂ x).symm) =ᶠ[𝓝 (chartAt ℂ x x)]
       (⇑e₁ ∘ ⇑e₀.symm) ∘ (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) := by
@@ -417,17 +417,17 @@ theorem qSum_trans (η : Form1 X) {ŷ : Y} {e₀ e₁ : OpenPartialHomeomorph Y 
       exact hfc.comp ((chartAt ℂ x).continuousAt_symm hz₀t)
     have hmem : (f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ∈ e₀.source := by
       simp only [Function.comp_apply, hsymm0]
-      rw [hfx]; exact hŷ₀
+      rw [hfx]; exact hyhat₀
     filter_upwards [hcont.preimage_mem_nhds (e₀.open_source.mem_nhds hmem)] with z hz
     have hz' : f ((chartAt ℂ x).symm z) ∈ e₀.source := hz
     simp only [Function.comp_apply, e₀.left_inv hz']
   have hD := deriv_eq_of_eventuallyEq_comp' houter hinner heq
   show (deriv (⇑e₁ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η
-    = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ ŷ)
+    = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ yhat)
       * ((deriv (⇑e₀ ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x))⁻¹ * coeffAt x η)
   rw [hD, hptr, hfx, mul_inv]
-  have hprod := deriv_transition_mul he₁ he₀ hŷ₁ hŷ₀
-  have hTinv : (deriv (⇑e₁ ∘ ⇑e₀.symm) (e₀ ŷ))⁻¹ = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ ŷ) :=
+  have hprod := deriv_transition_mul he₁ he₀ hyhat₁ hyhat₀
+  have hTinv : (deriv (⇑e₁ ∘ ⇑e₀.symm) (e₀ yhat))⁻¹ = deriv (⇑e₀ ∘ ⇑e₁.symm) (e₁ yhat) :=
     (eq_inv_of_mul_eq_one_left hprod).symm
   rw [hTinv]
   ring
@@ -534,19 +534,19 @@ theorem coeffIn_traceChart_traceForm (η : Form1 X) (y : Y) {w : ℂ}
     coeffIn (traceChart hf hne y) (traceForm hf hne η) w = traceCoeffFun hf hne η y w :=
   Form1.coeffIn_ofCoeffs (traceData hf hne η) y hw
 
-/-- Preferred-chart evaluation of the trace: the chart at index `ŷ` restricts the preferred
-chart at `ŷ`, so the transition factor is `1`. -/
-theorem coeffAt_traceForm (η : Form1 X) (ŷ : Y) :
-    coeffAt ŷ (traceForm hf hne η) = traceCoeffFun hf hne η ŷ (chartAt ℂ ŷ ŷ) := by
-  have h : coeffAt ŷ (Form1.ofCoeffs (traceData hf hne η))
-      = deriv (⇑(traceChart hf hne ŷ) ∘ ⇑(chartAt ℂ ŷ).symm) (chartAt ℂ ŷ ŷ)
-        * traceCoeffFun hf hne η ŷ (traceChart hf hne ŷ ŷ) :=
-    Form1.coeffAt_ofCoeffs (traceData hf hne η) (mem_traceChart_source_self hf hne ŷ)
+/-- Preferred-chart evaluation of the trace: the chart at index `yhat` restricts the preferred
+chart at `yhat`, so the transition factor is `1`. -/
+theorem coeffAt_traceForm (η : Form1 X) (yhat : Y) :
+    coeffAt yhat (traceForm hf hne η) = traceCoeffFun hf hne η yhat (chartAt ℂ yhat yhat) := by
+  have h : coeffAt yhat (Form1.ofCoeffs (traceData hf hne η))
+      = deriv (⇑(traceChart hf hne yhat) ∘ ⇑(chartAt ℂ yhat).symm) (chartAt ℂ yhat yhat)
+        * traceCoeffFun hf hne η yhat (traceChart hf hne yhat yhat) :=
+    Form1.coeffAt_ofCoeffs (traceData hf hne η) (mem_traceChart_source_self hf hne yhat)
   unfold traceForm
-  have hid : (⇑(traceChart hf hne ŷ) ∘ ⇑(chartAt ℂ ŷ).symm) =ᶠ[𝓝 (chartAt ℂ ŷ ŷ)] id := by
-    filter_upwards [(chartAt ℂ ŷ).open_target.mem_nhds (mem_chart_target ℂ ŷ)] with z hz
-    show chartAt ℂ ŷ ((chartAt ℂ ŷ).symm z) = z
-    exact (chartAt ℂ ŷ).right_inv hz
+  have hid : (⇑(traceChart hf hne yhat) ∘ ⇑(chartAt ℂ yhat).symm) =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
+    filter_upwards [(chartAt ℂ yhat).open_target.mem_nhds (mem_chart_target ℂ yhat)] with z hz
+    show chartAt ℂ yhat ((chartAt ℂ yhat).symm z) = z
+    exact (chartAt ℂ yhat).right_inv hz
   rw [h, hid.deriv_eq, deriv_id, one_mul]
   rfl
 
@@ -584,13 +584,13 @@ theorem traceCoeffFun_smul (c : ℂ) (η : Form1 X) (y : Y) (w : ℂ) :
 
 theorem traceForm_add (η η' : Form1 X) :
     traceForm hf hne (η + η') = traceForm hf hne η + traceForm hf hne η' :=
-  Form1.ext_coeffAt fun ŷ => by
+  Form1.ext_coeffAt fun yhat => by
     rw [coeffAt_traceForm, coeffAt_add, coeffAt_traceForm, coeffAt_traceForm,
       traceCoeffFun_add]
 
 theorem traceForm_smul (c : ℂ) (η : Form1 X) :
     traceForm hf hne (c • η) = c • traceForm hf hne η :=
-  Form1.ext_coeffAt fun ŷ => by
+  Form1.ext_coeffAt fun yhat => by
     rw [coeffAt_traceForm, coeffAt_smul, coeffAt_traceForm, traceCoeffFun_smul]
 
 variable (f) in
@@ -625,47 +625,47 @@ theorem traceCoeff_eq_of_eq_one {h : ℂ → ℂ} {k : ℕ} (hk : k = 1) (hh : A
   subst hk
   exact traceCoeff_one hh
 
-/-- **Regular-value evaluation of the trace**: at a regular value `ŷ`, the preferred-chart
+/-- **Regular-value evaluation of the trace**: at a regular value `yhat`, the preferred-chart
 coefficient of `traceForm η` is the canonical fibre sum of `qCoeff` (every branch is unramified
 there, so the repaired coefficient evaluates literally). -/
-theorem coeffAt_traceForm_of_isRegularValue (η : Form1 X) {ŷ : Y}
-    (hŷ : RS.IsRegularValue f ŷ) :
-    coeffAt ŷ (traceForm hf hne η) = ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η (chartAt ℂ ŷ) x := by
+theorem coeffAt_traceForm_of_isRegularValue (η : Form1 X) {yhat : Y}
+    (hyhat : RS.IsRegularValue f yhat) :
+    coeffAt yhat (traceForm hf hne η) = ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η (chartAt ℂ yhat) x := by
   rw [coeffAt_traceForm]
-  have hterm : ∀ i : Fin (stackAt hf hne ŷ).n,
-      deriv (branchTrans hf hne ŷ i) (chartAt ℂ ŷ ŷ)
-        * traceCoeff (coeffIn ((stackAt hf hne ŷ).A i).e η)
-            (multiplicity f ((stackAt hf hne ŷ).pt i))
-            (branchTrans hf hne ŷ i (chartAt ℂ ŷ ŷ))
-      = qCoeff f η (chartAt ℂ ŷ) ((stackAt hf hne ŷ).pt i) := by
+  have hterm : ∀ i : Fin (stackAt hf hne yhat).n,
+      deriv (branchTrans hf hne yhat i) (chartAt ℂ yhat yhat)
+        * traceCoeff (coeffIn ((stackAt hf hne yhat).A i).e η)
+            (multiplicity f ((stackAt hf hne yhat).pt i))
+            (branchTrans hf hne yhat i (chartAt ℂ yhat yhat))
+      = qCoeff f η (chartAt ℂ yhat) ((stackAt hf hne yhat).pt i) := by
     intro i
-    have hm1 : multiplicity f ((stackAt hf hne ŷ).pt i) = 1 :=
-      multiplicity_eq_one_of_isRegularValue hf hne hŷ ((stackAt hf hne ŷ).maps_pt_eq i)
-    have hval : branchTrans hf hne ŷ i (chartAt ℂ ŷ ŷ) = 0 := by
-      show ((stackAt hf hne ŷ).A i).e' ((chartAt ℂ ŷ).symm (chartAt ℂ ŷ ŷ)) = 0
-      rw [(chartAt ℂ ŷ).left_inv (mem_chart_source ℂ ŷ)]
-      have h := ((stackAt hf hne ŷ).A i).map_eq_zero'
-      rwa [(stackAt hf hne ŷ).maps_pt_eq i] at h
-    rw [hval, traceCoeff_eq_of_eq_one hm1 (analyticAt_coeffIn_stack_zero hf hne η ŷ i)]
-    have hq := qCoeff_eq_branch_term (stackAt hf hne ŷ) i (chart_mem_maximalAtlas ŷ)
-      ((stackAt hf hne ŷ).mem_source_pt i)
-      (by rw [(stackAt hf hne ŷ).maps_pt_eq i]; exact mem_chart_source ℂ ŷ) η
-    rw [hq, ((stackAt hf hne ŷ).A i).map_eq_zero]
-    have hJ : ((multiplicity f ((stackAt hf hne ŷ).pt i) : ℂ)
-        * (0 : ℂ) ^ ((multiplicity f ((stackAt hf hne ŷ).pt i) : ℤ) - 1))⁻¹ = 1 := by
+    have hm1 : multiplicity f ((stackAt hf hne yhat).pt i) = 1 :=
+      multiplicity_eq_one_of_isRegularValue hf hne hyhat ((stackAt hf hne yhat).maps_pt_eq i)
+    have hval : branchTrans hf hne yhat i (chartAt ℂ yhat yhat) = 0 := by
+      show ((stackAt hf hne yhat).A i).e' ((chartAt ℂ yhat).symm (chartAt ℂ yhat yhat)) = 0
+      rw [(chartAt ℂ yhat).left_inv (mem_chart_source ℂ yhat)]
+      have h := ((stackAt hf hne yhat).A i).map_eq_zero'
+      rwa [(stackAt hf hne yhat).maps_pt_eq i] at h
+    rw [hval, traceCoeff_eq_of_eq_one hm1 (analyticAt_coeffIn_stack_zero hf hne η yhat i)]
+    have hq := qCoeff_eq_branch_term (stackAt hf hne yhat) i (chart_mem_maximalAtlas yhat)
+      ((stackAt hf hne yhat).mem_source_pt i)
+      (by rw [(stackAt hf hne yhat).maps_pt_eq i]; exact mem_chart_source ℂ yhat) η
+    rw [hq, ((stackAt hf hne yhat).A i).map_eq_zero]
+    have hJ : ((multiplicity f ((stackAt hf hne yhat).pt i) : ℂ)
+        * (0 : ℂ) ^ ((multiplicity f ((stackAt hf hne yhat).pt i) : ℤ) - 1))⁻¹ = 1 := by
       rw [hm1]
       norm_num
-    rw [hJ, mul_one, (stackAt hf hne ŷ).maps_pt_eq i]
+    rw [hJ, mul_one, (stackAt hf hne yhat).maps_pt_eq i]
     rfl
-  calc traceCoeffFun hf hne η ŷ (chartAt ℂ ŷ ŷ)
-      = ∑ i, qCoeff f η (chartAt ℂ ŷ) ((stackAt hf hne ŷ).pt i) :=
+  calc traceCoeffFun hf hne η yhat (chartAt ℂ yhat yhat)
+      = ∑ i, qCoeff f η (chartAt ℂ yhat) ((stackAt hf hne yhat).pt i) :=
         Finset.sum_congr rfl fun i _ => hterm i
-    _ = ∑ᶠ i, qCoeff f η (chartAt ℂ ŷ) ((stackAt hf hne ŷ).pt i) :=
+    _ = ∑ᶠ i, qCoeff f η (chartAt ℂ yhat) ((stackAt hf hne yhat).pt i) :=
         (finsum_eq_sum_of_fintype _).symm
-    _ = ∑ᶠ x ∈ Set.range (stackAt hf hne ŷ).pt, qCoeff f η (chartAt ℂ ŷ) x :=
-        (finsum_mem_range (stackAt hf hne ŷ).pt_injective).symm
-    _ = ∑ᶠ x ∈ f ⁻¹' {ŷ}, qCoeff f η (chartAt ℂ ŷ) x := by
-        rw [(stackAt hf hne ŷ).range_pt]
+    _ = ∑ᶠ x ∈ Set.range (stackAt hf hne yhat).pt, qCoeff f η (chartAt ℂ yhat) x :=
+        (finsum_mem_range (stackAt hf hne yhat).pt_injective).symm
+    _ = ∑ᶠ x ∈ f ⁻¹' {yhat}, qCoeff f η (chartAt ℂ yhat) x := by
+        rw [(stackAt hf hne yhat).range_pt]
 
 end RS
 

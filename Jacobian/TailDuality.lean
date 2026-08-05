@@ -93,7 +93,7 @@ a finite-dimensional space).
   Čech comparison) composed with `resEquiv 0`. That full equivalence is **not available**
   (blocked on the same out-of-scope surjectivity as above) — only `resEquiv 0 :
   ↥(MForm.OmegaSpace 0) ≃ₗ[ℂ] Module.Dual ℂ (H1Tail 0)` (tail-level) and
-  `LaurentTail.H1Tail.equiv_of_surjective` (conditional) exist. The Abel fixer's bridge needs
+  `LaurentTail.H1Tail.equivOfSurjective` (conditional) exist. The Abel fixer's bridge needs
   restating at the tail level (through `H1Tail`, not `Cech.H1`) or needs to accept the
   conditional equivalence as a hypothesis.
 -/

@@ -189,17 +189,17 @@ theorem eventually_ord_eq_zero {Θ : MForm X} {x : X} (h : Θ.ord x ≠ ⊤) :
 
 /-- D6: the divisor of a meromorphic 1-form (lifted from `MFormData.divisor`; well-defined since
 `ord` is). -/
-noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (Θ : MForm X) : Divisor X :=
+noncomputable def divisor [T1Space X] (Θ : MForm X) : Divisor X :=
   Quotient.liftOn Θ MFormData.divisor fun θ η h =>
     Function.locallyFinsuppWithin.ext fun y => by
       show (θ.ord y).untop₀ = (η.ord y).untop₀
       have hord : θ.ord y = η.ord y := meromorphicOrderAt_congr (h y)
       rw [hord]
 
-@[simp] theorem divisor_mk [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) :
+@[simp] theorem divisor_mk [T1Space X] (θ : MFormData X) :
     (mk θ).divisor = θ.divisor := rfl
 
-@[simp] theorem divisor_apply [T1Space X] [T2Space X] [CompactSpace X] (Θ : MForm X) (x : X) :
+@[simp] theorem divisor_apply [T1Space X] (Θ : MForm X) (x : X) :
     Θ.divisor x = (Θ.ord x).untop₀ := by
   obtain ⟨θ, rfl⟩ := exists_rep Θ
   rfl
@@ -208,7 +208,7 @@ noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (Θ : MForm X
 noncomputable def degree [T1Space X] [T2Space X] [CompactSpace X] (Θ : MForm X) : ℤ :=
   Θ.divisor.degree
 
-@[simp] theorem divisor_zero [T1Space X] [T2Space X] [CompactSpace X] :
+@[simp] theorem divisor_zero [T1Space X] :
     (0 : MForm X).divisor = 0 := MFormData.divisor_zero
 
 /-! ### D5: the global zero-dichotomy

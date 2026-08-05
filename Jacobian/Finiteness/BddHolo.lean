@@ -185,7 +185,7 @@ noncomputable def restrictCLM {S' S : Opens X} (h : S' ≤ S) : BddHoloOn S →L
       show ‖restrictFun h f‖ ≤ ‖(f : ↥(S : Set X) →ᵇ ℂ)‖
       exact BoundedContinuousFunction.norm_ofNormedAddCommGroup_le _ (norm_nonneg _) _)
 
-@[simp] theorem restrictCLM_apply_coe {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S)
+theorem restrictCLM_apply_coe {S' S : Opens X} (h : S' ≤ S) (f : BddHoloOn S)
     (z : ↥(S' : Set X)) :
     (restrictCLM h f : ↥(S' : Set X) →ᵇ ℂ) z = (f : ↥(S : Set X) →ᵇ ℂ) (Set.inclusion h z) := rfl
 
@@ -314,7 +314,7 @@ noncomputable def restrictGerm {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (
     ⟨(φ : RS.MeroGermOn X (S : Set X)).holoRepr, hCS', fun _ => rfl⟩⟩
 
 omit [T1Space X] [T2Space X] in
-@[simp] theorem restrictGerm_apply {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
+theorem restrictGerm_apply {S' S : Opens X} (hc : closure (S' : Set X) ⊆ (S : Set X))
     (φ : RS.LinSysOn (0 : RS.Divisor X) (S : Set X)) (z : ↥(S' : Set X)) :
     (restrictGerm hc φ : ↥(S' : Set X) →ᵇ ℂ) z
       = RS.MeroGermOn.holoRepr (φ : RS.MeroGermOn X (S : Set X)) z := rfl

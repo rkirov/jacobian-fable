@@ -34,10 +34,13 @@ variable {X Y : Type*}
 Both charts belong to the analytic maximal atlases (so all holomorphy transports), both are
 centered, targets are round balls, and `F` is exactly `(· ^ k)` in these coordinates. -/
 structure AdaptedChartsAt (F : X → Y) (x : X) (k : ℕ) where
+  /-- The source chart, centred at the point. -/
   e : OpenPartialHomeomorph X ℂ
+  /-- The target chart, centred at the image point. -/
   e' : OpenPartialHomeomorph Y ℂ
   mem_maximalAtlas : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X
   mem_maximalAtlas' : e' ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω Y
+  /-- The radius of the source disc on which the normal form holds. -/
   radius : ℝ
   radius_pos : 0 < radius
   mem_source : x ∈ e.source
@@ -78,19 +81,19 @@ theorem image_source (hk : k ≠ 0) (A : AdaptedChartsAt F x k) :
 
 section ContMDiff
 
-theorem contMDiffOn_e [IsManifold 𝓘(ℂ) ω X] (A : AdaptedChartsAt F x k) :
+theorem contMDiffOn_e (A : AdaptedChartsAt F x k) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω A.e A.e.source :=
   contMDiffOn_of_mem_maximalAtlas A.mem_maximalAtlas
 
-theorem contMDiffOn_e_symm [IsManifold 𝓘(ℂ) ω X] (A : AdaptedChartsAt F x k) :
+theorem contMDiffOn_e_symm (A : AdaptedChartsAt F x k) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω A.e.symm A.e.target :=
   contMDiffOn_symm_of_mem_maximalAtlas A.mem_maximalAtlas
 
-theorem contMDiffOn_e' [IsManifold 𝓘(ℂ) ω Y] (A : AdaptedChartsAt F x k) :
+theorem contMDiffOn_e' (A : AdaptedChartsAt F x k) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω A.e' A.e'.source :=
   contMDiffOn_of_mem_maximalAtlas A.mem_maximalAtlas'
 
-theorem contMDiffOn_e'_symm [IsManifold 𝓘(ℂ) ω Y] (A : AdaptedChartsAt F x k) :
+theorem contMDiffOn_e'_symm (A : AdaptedChartsAt F x k) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω A.e'.symm A.e'.target :=
   contMDiffOn_symm_of_mem_maximalAtlas A.mem_maximalAtlas'
 

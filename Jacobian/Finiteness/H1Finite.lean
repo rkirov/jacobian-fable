@@ -55,7 +55,7 @@ theorem finiteDimensional_h1Cover_W (T : ShrinkChain X) :
 /-- Compat: `AddCommGroup (H1 D)` does not resolve by plain `inferInstance` in this codebase (a
 higher-order-instance gap resolving `∀ 𝒰, AddCommGroup (H1Cover D 𝒰)` for
 `Module.DirectLimit.addCommGroup`, per cech's own recorded gotcha) — supply it explicitly. -/
-noncomputable instance addCommGroup_H1 (D : RS.Divisor X) : AddCommGroup (H1 D) :=
+noncomputable instance addCommGroupH1 (D : RS.Divisor X) : AddCommGroup (H1 D) :=
   Module.DirectLimit.addCommGroup (fun 𝒰 : FinCover (⊤ : Opens X) => H1Cover D 𝒰)
     (fun _ _ h => resH1' D h)
 

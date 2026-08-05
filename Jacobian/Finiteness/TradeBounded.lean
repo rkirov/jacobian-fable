@@ -291,6 +291,7 @@ noncomputable def starPairMem (F : Z1 (0 : RS.Divisor X) T.coverStar) (i j : Fin
     RS.LinSysOn (0 : RS.Divisor X) ((T.Ustar i ⊓ T.Ustar j : Opens X) : Set X) :=
   (F : C1 (0 : RS.Divisor X) T.coverStar) (i, j)
 
+/-- The `(i, j)` component of a `coverStar`-level cocycle, as a germ. -/
 noncomputable def starPairGerm (F : Z1 (0 : RS.Divisor X) T.coverStar) (i j : Fin T.n) :
     RS.MeroGermOn X ((T.Ustar i ⊓ T.Ustar j : Opens X) : Set X) :=
   starPairMem T F i j
@@ -339,6 +340,7 @@ noncomputable def vMem (g : C0 (0 : RS.Divisor X) T.coverV) (i : Fin T.n) :
     RS.LinSysOn (0 : RS.Divisor X) (T.V i : Set X) :=
   (g : C0 (0 : RS.Divisor X) T.coverV) i
 
+/-- The `i`-th component of a `coverV`-level cochain, as a germ. -/
 noncomputable def vGerm (g : C0 (0 : RS.Divisor X) T.coverV) (i : Fin T.n) :
     RS.MeroGermOn X (T.V i : Set X) :=
   vMem T g i
@@ -416,10 +418,12 @@ are `rfl`-equal but the coercion chain `Z1 → C1 → (ascribe)` cannot be neste
 noncomputable def cC1 (ξ : NZ1 T T.V) : C1 (0 : RS.Divisor X) T.coverV :=
   (toGermZ1 T T.V T.covers_V ξ : C1 (0 : RS.Divisor X) (coverOfP T T.V T.covers_V))
 
+/-- Membership witness for the `(α, β)` component of a norm-bounded cocycle. -/
 noncomputable def cCompMem (ξ : NZ1 T T.V) (α β : Fin T.n) :
     RS.LinSysOn (0 : RS.Divisor X) ((T.V α ⊓ T.V β : Opens X) : Set X) :=
   cC1 T ξ (α, β)
 
+/-- The `(α, β)` component of a norm-bounded cocycle, as a `LinSysOn` element. -/
 noncomputable def cComp (ξ : NZ1 T T.V) (α β : Fin T.n) :
     RS.MeroGermOn X ((T.V α ⊓ T.V β : Opens X) : Set X) :=
   cCompMem T ξ α β
@@ -595,6 +599,7 @@ noncomputable def wPairMem (c : Z1 (0 : RS.Divisor X) T.coverW) (i j : Fin T.n) 
     RS.LinSysOn (0 : RS.Divisor X) ((T.W i ⊓ T.W j : Opens X) : Set X) :=
   (c : C1 (0 : RS.Divisor X) T.coverW) (i, j)
 
+/-- The `(i, j)` component of a `coverW`-level cocycle, as a germ. -/
 noncomputable def wPairGerm (c : Z1 (0 : RS.Divisor X) T.coverW) (i j : Fin T.n) :
     RS.MeroGermOn X ((T.W i ⊓ T.W j : Opens X) : Set X) :=
   wPairMem T c i j

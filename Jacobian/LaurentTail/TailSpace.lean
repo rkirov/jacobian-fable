@@ -16,7 +16,7 @@ Unit: laurent-tails (`docs/design/laurent-tails.md`).
   of order `≥ -(D p)` (D1). A **direct quotient**, no colimit: every germ has some finite order,
   so the "growing window" colimit Miranda's definition literally describes collapses to a single
   quotient (verified by the spike, `scratch_ltails.lean`).
-* `windowAt_toTailAt`: Cech's finite `WindowAt p (D p) d'` embeds into `TailAt p D` for every
+* `windowAtToTailAt`: Cech's finite `WindowAt p (D p) d'` embeds into `TailAt p D` for every
   finite `d'` (the two defining submodules are literally equal, not just comparable).
 * `T D := Π₀ p : X, TailAt p D` (D2): a `DFinsupp` (dependent on `p` via `chartAt ℂ p`/`D p`).
   **`abbrev`, not `def`** — matching `Cech.C0/C1/Window/H1`'s own convention (a plain `def` breaks
@@ -66,31 +66,31 @@ omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem TailAt.mk_surjective (p : X) (D : RS.Divisor X) :
     Function.Surjective (TailAt.mk p D) := Submodule.mkQ_surjective _
 
-/-! ### `windowAt_toTailAt` (D1 continued) -/
+/-! ### `windowAtToTailAt` (D1 continued) -/
 
 /-- Cech's finite Laurent window at `p` (between orders `-d'` and `-(D p)`) embeds into the full
 tail space: `WindowAt p (D p) d'`'s defining submodule, viewed inside `ordGe p (-d')`, is exactly
 the restriction of `ordGe p (-(D p))` there. -/
-noncomputable def windowAt_toTailAt (p : X) (D : RS.Divisor X) (d' : ℤ) :
+noncomputable def windowAtToTailAt (p : X) (D : RS.Divisor X) (d' : ℤ) :
     RS.Cech.WindowAt p (D p) d' →ₗ[ℂ] TailAt p D :=
   Submodule.mapQ _ _ (RS.Cech.ordGe p (-d')).subtype le_rfl
 
 omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
-theorem windowAt_toTailAt_mk (p : X) (D : RS.Divisor X) (d' : ℤ) (ψ : RS.Cech.ordGe p (-d')) :
-    windowAt_toTailAt p D d' (RS.Cech.WindowAt.mk p (D p) d' ψ) = TailAt.mk p D ψ := rfl
+theorem windowAtToTailAt_mk (p : X) (D : RS.Divisor X) (d' : ℤ) (ψ : RS.Cech.ordGe p (-d')) :
+    windowAtToTailAt p D d' (RS.Cech.WindowAt.mk p (D p) d' ψ) = TailAt.mk p D ψ := rfl
 
 omit [T2Space X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Every tail class is *represented* by some finite window (the union-of-`ordGe` fact): every
 germ has an honest `WithTop ℤ`-order, hence lies in `ordGe p (-d')` for `d'` large enough. -/
 theorem exists_windowAt_repr (p : X) (D : RS.Divisor X) (z : TailAt p D) :
     ∃ (d' : ℤ) (ψ : RS.Cech.ordGe p (-d')),
-      windowAt_toTailAt p D d' (RS.Cech.WindowAt.mk p (D p) d' ψ) = z := by
+      windowAtToTailAt p D d' (RS.Cech.WindowAt.mk p (D p) d' ψ) = z := by
   obtain ⟨ψ₀, rfl⟩ := TailAt.mk_surjective p D z
   by_cases htop : ψ₀.ord p = ⊤
-  · refine ⟨0, ⟨ψ₀, ?_⟩, windowAt_toTailAt_mk p D 0 ⟨ψ₀, ?_⟩⟩ <;>
+  · refine ⟨0, ⟨ψ₀, ?_⟩, windowAtToTailAt_mk p D 0 ⟨ψ₀, ?_⟩⟩ <;>
       · rw [RS.Cech.mem_ordGe_iff]; rw [htop]; exact le_top
   · obtain ⟨n, hn⟩ := WithTop.ne_top_iff_exists.mp htop
-    refine ⟨-n, ⟨ψ₀, ?_⟩, windowAt_toTailAt_mk p D (-n) ⟨ψ₀, ?_⟩⟩ <;>
+    refine ⟨-n, ⟨ψ₀, ?_⟩, windowAtToTailAt_mk p D (-n) ⟨ψ₀, ?_⟩⟩ <;>
       · rw [RS.Cech.mem_ordGe_iff]; simp only [neg_neg]; rw [← hn]
 
 /-! ### `T D` (D2) -/
@@ -135,7 +135,7 @@ re-proving it). -/
 noncomputable def windowToT (D D' : RS.Divisor X) (_h : D ≤ D') :
     RS.Cech.Window D D' →ₗ[ℂ] T D where
   toFun w := T.mk D (RS.Cech.diffSupp D D')
-    (fun q => windowAt_toTailAt (q : X) D (D' q) (w q))
+    (fun q => windowAtToTailAt (q : X) D (D' q) (w q))
   map_add' w w' := by
     apply DFinsupp.ext
     intro p
@@ -155,8 +155,8 @@ noncomputable def windowToT (D D' : RS.Divisor X) (_h : D ≤ D') :
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem windowToT_apply (D D' : RS.Divisor X) (h : D ≤ D') (w : RS.Cech.Window D D')
     (q : RS.Cech.diffSupp D D') :
-    windowToT D D' h w (q : X) = windowAt_toTailAt (q : X) D (D' q) (w q) := by
-  show T.mk D (RS.Cech.diffSupp D D') (fun q => windowAt_toTailAt (q : X) D (D' q) (w q))
+    windowToT D D' h w (q : X) = windowAtToTailAt (q : X) D (D' q) (w q) := by
+  show T.mk D (RS.Cech.diffSupp D D') (fun q => windowAtToTailAt (q : X) D (D' q) (w q))
     (q : X) = _
   exact T.mk_apply_mem q.2
 

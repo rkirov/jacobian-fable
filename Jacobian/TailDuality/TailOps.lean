@@ -265,7 +265,7 @@ theorem nu_bound (A C : RS.Divisor X) (f : ↥(RS.LinSys C)) (p : X) :
 
 /-- Miranda's `μ_f` packaged uniformly across `f ∈ L(C)` into the FIXED target `T A`
 (the key linearity-restoring trick, §3 D3). -/
-noncomputable def nuL (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] :
+noncomputable def nuL (A C : RS.Divisor X) [ConnectedSpace X] :
     ↥(RS.LinSys C) →ₗ[ℂ] (T (A - C) →ₗ[ℂ] T A) where
   toFun f := mulInto (f : RS.Mero X) (nu_bound A C f)
   map_add' f g := mulInto_add (f : RS.Mero X) (g : RS.Mero X) (nu_bound A C f) (nu_bound A C g)
@@ -273,7 +273,7 @@ noncomputable def nuL (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X] :
   map_smul' c f := mulInto_smul c (f : RS.Mero X) (nu_bound A C f) (nu_bound A C (c • f))
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
-theorem nuL_apply (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
+theorem nuL_apply (A C : RS.Divisor X) [ConnectedSpace X]
     (f : ↥(RS.LinSys C)) : nuL A C f = mulInto (f : RS.Mero X) (nu_bound A C f) := rfl
 
 theorem nuL_alpha (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
@@ -282,7 +282,7 @@ theorem nuL_alpha (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
   rw [nuL_apply, mulInto_alpha]
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] [DecidableEq X] in
-theorem nuL_surjective (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
+theorem nuL_surjective (A C : RS.Divisor X) [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0) : Function.Surjective (nuL A C f) := by
   rw [nuL_apply]
   exact mulInto_surjective hf0 (nu_bound A C f)
@@ -309,7 +309,7 @@ theorem sub_divisor_le (A C : RS.Divisor X) [ConnectedSpace X]
 omit [DecidableEq X] in
 /-- The `μ_{1/f}` inversion identity (endgame step): inverting `f` and truncating recovers the
 plain truncation. -/
-theorem nuL_mulInto_inv (A C : RS.Divisor X) [CompactSpace X] [ConnectedSpace X]
+theorem nuL_mulInto_inv (A C : RS.Divisor X) [ConnectedSpace X]
     {f : ↥(RS.LinSys C)} (hf0 : (f : RS.Mero X) ≠ 0)
     (hinv : ∀ p, (((A - C - RS.divisor (f : RS.Mero X)) p - (A - C) p : ℤ) : WithTop ℤ)
       ≤ (f : RS.Mero X)⁻¹.ord p)

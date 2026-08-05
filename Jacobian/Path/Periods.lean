@@ -42,7 +42,7 @@ theorem period_trans (γ γ' : Path x x) (η : Form1 X) :
 theorem period_symm (γ : Path x x) (η : Form1 X) : period γ.symm η = -period γ η :=
   pathIntegral_symm γ η
 
-@[simp] theorem period_refl (η : Form1 X) : period (Path.refl x) η = 0 := pathIntegral_refl x η
+theorem period_refl (η : Form1 X) : period (Path.refl x) η = 0 := pathIntegral_refl x η
 
 theorem period_congr_homotopic {γ γ' : Path x x} (h : γ.Homotopic γ') (η : Form1 X) :
     period γ η = period γ' η := pathIntegral_congr_homotopic h η

@@ -67,8 +67,8 @@ and trace of holomorphic `1`-forms.
   per-fibre-point coefficient `RS.qCoeff` (`traceCoeffFun_eq_qSum` off the chart center,
   `qSum_trans` chart transition, extended over the whole overlap by continuity + density of the
   non-center locus). Key evaluation exports: `RS.coeffAt_traceForm` and
-  **`RS.coeffAt_traceForm_of_isRegularValue`** (`coeffAt ŷ (Tr_f η) = ∑ᶠ x ∈ f⁻¹{ŷ},
-  qCoeff f η (chartAt ℂ ŷ) x` at regular values). Chart helpers `RS.deriv_transition_mul`,
+  **`RS.coeffAt_traceForm_of_isRegularValue`** (`coeffAt yhat (Tr_f η) = ∑ᶠ x ∈ f⁻¹{yhat},
+  qCoeff f η (chartAt ℂ yhat) x` at regular values). Chart helpers `RS.deriv_transition_mul`,
   `RS.deriv_chartRead_eq_of_adapted`, `RS.open_subset_closure_diff`.
 * **`Jacobian/JacFunctorial/TraceLaws.lean`**: `RS.Form1.trace_id`, `RS.Form1.trace_comp`
   (doubly-regular density argument), **`RS.Form1.trace_pullback`** (the projection formula

@@ -25,9 +25,9 @@ Proof shape (Forster 20.5/20.7(a), dissection-free):
   pairing at chart primitives, and `pathIntegral_eq_sum_chartChain` telescopes them back into
   the path integrals (the SAME primitives, from `DifferentiableOn.isExactOn_ball`);
 * the Serre-functional bridge `exists_dbar_of_forall_pairing_eq_zero` (gated on
-  `Function.Surjective (tailToH1 0)`) yields `u` with `∂̄u = ∑ η_l`;
-* `F₀ := exp (-u) · ∏ f_l` is `∂̄`-closed off the divisor points
-  (`wirtingerDbar_exp_neg_mul_eq_zero` + the per-link `∂̄ log`-matching + the `∂̄` product
+  `Function.Surjective (tailToH1 0)`) yields `u` with `dbaru = ∑ η_l`;
+* `F₀ := exp (-u) · ∏ f_l` is `dbar`-closed off the divisor points
+  (`wirtingerDbar_exp_neg_mul_eq_zero` + the per-link `dbar log`-matching + the `dbar` product
   rule), hence holomorphic there (`contMDiffOn_omega_of_isDbarOn_zero`), and the per-link
   factor limits multiply into the promotion lemma `meromorphicAt_of_tendsto_factor` at EVERY
   point — meromorphy plus the exact order `∑ linkOrd` in one stroke, no rechart bookkeeping.
@@ -142,7 +142,7 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
       refine Finset.sum_congr rfl (fun k _ => ?_)
       exact hpairing ⟨i, k⟩ PU θ (G i k) (hG i k)
     rw [hsum, ← Finset.mul_sum, hper θ, mul_zero]
-  -- STEP 2: solve ∂̄u = ηT
+  -- STEP 2: solve dbaru = ηT
   obtain ⟨u, hu⟩ := exists_dbar_of_forall_pairing_eq_zero PU hsurj hpair_total
   -- STEP 3: the corrected function
   set F₀ : X → ℂ := fun x => Complex.exp (-(u x)) * fT x with hF₀_def
@@ -172,7 +172,7 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
     intro x hx
     exact (contMDiffAt_mul_real' (hexp_smooth.contMDiffAt)
       ((hfT_smooth x hx).contMDiffAt (hSc_open.mem_nhds hx))).contMDiffWithinAt
-  -- the ∂̄-closure of `F₀` off `S`
+  -- the dbar-closure of `F₀` off `S`
   have hdbar_zero : RS.IsDbarOn F₀ 0 Sᶜ := by
     intro x hx
     -- chart representatives
@@ -187,7 +187,7 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
       exact this
     have hud : DifferentiableAt ℝ (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) :=
       u.differentiableAt_comp_chartAt_symm x (mem_chart_target ℂ x)
-    -- the ∂̄ log identity for the product
+    -- the dbar log identity for the product
     have hfT_ne : fT x ≠ 0 := by
       rw [hfT_def]
       refine Finset.prod_ne_zero_iff.mpr (fun l _ => ?_)
@@ -219,7 +219,7 @@ theorem exists_mero_of_sum_pathIntegral_eq_zero {ι : Type*} [Fintype ι] [Conne
             (f l x * ∏ j ∈ Finset.univ.erase l, f j x) := by ring
         _ = (η l).coeffAt x (chartAt ℂ x x) * fT x := by
             rw [Finset.mul_prod_erase Finset.univ (fun j => f j x) (Finset.mem_univ l)]
-    -- the ∂̄ equation for `u`
+    -- the dbar equation for `u`
     have hux : RS.wirtingerDbar (⇑u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
         = ηT.coeffAt x (chartAt ℂ x x) := by
       have h1 : RS.IsDbarOn (⇑u) ηT Set.univ := RS.dbar_eq_iff.mp hu

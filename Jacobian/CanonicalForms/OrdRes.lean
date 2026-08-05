@@ -223,7 +223,7 @@ theorem eventually_ord_eq_zero {θ : MFormData X} {x : X} (h : θ.ord x ≠ ⊤)
 
 /-- D6: the divisor of `θ` (local finiteness, connectedness-free — mirrors `MeroGermOn.divisorOn`
 exactly, `Divisor.lean:134`). -/
-noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : Divisor X
+noncomputable def divisor [T1Space X] (θ : MFormData X) : Divisor X
     where
   toFun x := (θ.ord x).untop₀
   supportWithinDomain' := by intro x _; trivial
@@ -251,14 +251,14 @@ noncomputable def divisor [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormDa
         exact hyS (by rw [hWsub y hyW hyz]; exact WithTop.untop₀_zero)
       exact Set.Finite.subset (Set.finite_singleton z) hsub
 
-@[simp] theorem divisor_apply [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) (x : X) :
+@[simp] theorem divisor_apply [T1Space X] (θ : MFormData X) (x : X) :
     θ.divisor x = (θ.ord x).untop₀ := rfl
 
 /-- D6: the degree of `θ`'s divisor. -/
 noncomputable def degree [T1Space X] [T2Space X] [CompactSpace X] (θ : MFormData X) : ℤ :=
   θ.divisor.degree
 
-@[simp] theorem divisor_zero [T1Space X] [T2Space X] [CompactSpace X] :
+@[simp] theorem divisor_zero [T1Space X] :
     (0 : MFormData X).divisor = 0 := by
   apply Function.locallyFinsuppWithin.ext
   intro y

@@ -12,7 +12,7 @@ import Jacobian.Dbar.Operator
 
 Unit: dolbeault-comparison (`docs/design/dolbeault-comparison.md` §4.2/§6.1). The reusable
 gluing atom of the comparison: local smooth functions with holomorphic discrepancies on a
-chart-subordinate cover determine a UNIQUE global `Form01` solving `∂̄u_i = ω` on each piece.
+chart-subordinate cover determine a UNIQUE global `Form01` solving `dbaru_i = ω` on each piece.
 
 * `Form01.ext_center` [Compat]: a `Form01` is determined by its center-coefficients.
 * `DbarGlueData`: the gluing data (member cover, per-member center/local solution, holomorphic
@@ -70,7 +70,7 @@ private theorem contDiffOn_comp_chart_symm_of_contMDiffOn {u : X → ℂ} {s : S
 
 /-! ### `DbarGlueData` -/
 
-/-- Local `∂̄`-data: smooth local functions, a chart-subordinate cover, holomorphic discrepancies.
+/-- Local `dbar`-data: smooth local functions, a chart-subordinate cover, holomorphic discrepancies.
 The single gluing atom of the comparison (D4). -/
 structure DbarGlueData (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] where
@@ -82,7 +82,7 @@ structure DbarGlueData (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
   /-- The chart center for each member. -/
   center : Fin n → X
   subChart : ∀ i, (V i : Set X) ⊆ (chartAt ℂ (center i)).source
-  /-- The local `∂̄`-solution on each member. -/
+  /-- The local `dbar`-solution on each member. -/
   u : Fin n → X → ℂ
   smoothOn : ∀ i, ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (u i) (V i)
   holoSub : ∀ i j, ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω (u i - u j) ↑(V i ⊓ V j)
@@ -232,7 +232,7 @@ noncomputable def coeffData : Form01CoeffData X (Fin d.n) where
     exact d.wirtingerDbar_u_transport i hxi (d.chart j) (d.chart_mem_maximalAtlas j)
       (d.mem_chart_source_of_mem_V hxj)
 
-/-- The glued global `(0,1)`-form: `ω|V i = ∂̄(u i)` (design §6.1). -/
+/-- The glued global `(0,1)`-form: `ω|V i = dbar(u i)` (design §6.1). -/
 noncomputable def form : Form01 X := Form01.ofCoeffs d.coeffData
 
 theorem isDbarOn_form (i : Fin d.n) : IsDbarOn (d.u i) d.form (d.V i) := by

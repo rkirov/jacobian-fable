@@ -13,7 +13,7 @@ import Jacobian.DolbeaultComparison.Splitting
 Unit: dolbeault-comparison (`docs/design/dolbeault-comparison.md` §4.4/§6.4). Forster 15.14(a),
 PDE-free at `D = 0`: `H01 X := Form01 X ⧸ range dbar`, the Čech → Dolbeault map `cechToH01`
 (built via `H1.lift` from the per-good-cover map `toDolb`, using `dolbForm`), its injectivity
-(the CR-bridge argument) and surjectivity (chart-disk ∂̄-solvability + PoU gluing), packaged as
+(the CR-bridge argument) and surjectivity (chart-disk dbar-solvability + PoU gluing), packaged as
 `dolbeaultEquiv : H1 (0 : Divisor X) ≃ₗ[ℂ] H01 X`.
 
 `finiteDimensional_H01` is gated on a `[FiniteDimensional ℂ (H1 (0 : Divisor X))]` hypothesis: at
@@ -128,15 +128,15 @@ theorem toDolb_res {𝒰 𝒱 : FinCover (⊤ : Opens X)} [T2Space X] [CompactSp
 /-! ### `cechToH01`: extend `toDolb` to the whole colimit via `H1.lift` -/
 
 /-- A classical choice of good refinement of any cover. -/
-noncomputable def goodRef [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
+noncomputable def goodRef [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     FinCover (⊤ : Opens X) := (exists_good_refinement 𝒰).choose
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-theorem goodRef_le [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
+theorem goodRef_le [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     𝒰 ≤ goodRef 𝒰 := (exists_good_refinement 𝒰).choose_spec.1
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-theorem goodRef_isGood [T2Space X] [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
+theorem goodRef_isGood [CompactSpace X] (𝒰 : FinCover (⊤ : Opens X)) :
     (goodRef 𝒰).IsGood := (exists_good_refinement 𝒰).choose_spec.2
 
 
@@ -362,7 +362,7 @@ theorem cechToH01_surjective [T2Space X] [CompactSpace X] :
 
 /-! ### Assembly -/
 
-/-- **DOLBEAULT** (Forster 15.14(a), PDE-free): `H¹(X, 𝒪) ≃ H^{0,1}_∂̄(X)`. -/
+/-- **DOLBEAULT** (Forster 15.14(a), PDE-free): `H¹(X, 𝒪) ≃ H^{0,1}_dbar(X)`. -/
 noncomputable def dolbeaultEquiv [T2Space X] [CompactSpace X] :
     H1 (0 : RS.Divisor X) ≃ₗ[ℂ] H01 X :=
   LinearEquiv.ofBijective cechToH01 ⟨cechToH01_injective, cechToH01_surjective⟩
@@ -379,7 +379,7 @@ theorem finiteDimensional_H01 [T2Space X] [CompactSpace X]
     [FiniteDimensional ℂ (H1 (0 : RS.Divisor X))] : FiniteDimensional ℂ (H01 X) :=
   Module.Finite.equiv dolbeaultEquiv
 
-/-- Global ∂̄-solvability criterion (free corollary): solvable iff the Čech class of the Leray
+/-- Global dbar-solvability criterion (free corollary): solvable iff the Čech class of the Leray
 cocycle of local solutions vanishes. -/
 theorem exists_dbar_eq_iff [T2Space X] [CompactSpace X] {η : Form01 X}
     {ξ : H1 (0 : RS.Divisor X)} (hξ : cechToH01 ξ = H01.mk η) :

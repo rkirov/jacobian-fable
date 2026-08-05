@@ -45,14 +45,14 @@ variable (f g : ℂ → ℂ) (z w c : ℂ)
 def wirtingerD (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   (fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I) / 2
 
-/-- The Wirtinger `∂̄` (anti-holomorphic) derivative, `(∂f/∂x + i ∂f/∂y)/2` in real coordinates.
+/-- The Wirtinger `dbar` (anti-holomorphic) derivative, `(∂f/∂x + i ∂f/∂y)/2` in real coordinates.
 Junk `0` if `f` is not `ℝ`-differentiable at `z`. -/
 def wirtingerDbar (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   (fderiv ℝ f z 1 + Complex.I * fderiv ℝ f z Complex.I) / 2
 
 /-! ### The Wirtinger decomposition of an `ℝ`-linear map -/
 
-/-- `ℝ`-linear maps `ℂ → ℂ` decompose as `v ↦ a v + b v̄` (values on the basis `1, I`). -/
+/-- `ℝ`-linear maps `ℂ → ℂ` decompose as `v ↦ a v + b v-bar` (values on the basis `1, I`). -/
 theorem clm_apply_eq_add_conj_smul (L : ℂ →L[ℝ] ℂ) (v : ℂ) :
     L v = (L 1 - Complex.I * L Complex.I) / 2 * v
         + (L 1 + Complex.I * L Complex.I) / 2 * (starRingEnd ℂ) v := by

@@ -51,14 +51,19 @@ theorem continuous_gridK (H : C(↥unitInterval × ↥unitInterval, X)) : Contin
 /-- A grid subdivision of `[0,1]²` with chart-and-ball data adapted to `H`: on each cell
 `Icc (t j) (t (j+1)) ×ˢ Icc (t k) (t (k+1))`, `gridK H` stays inside a single chart-ball. -/
 structure GridChain (H : C(↥unitInterval × ↥unitInterval, X)) where
+  /-- The number of subdivisions in the homotopy direction. -/
   m : ℕ
+  /-- The subdivision times. -/
   t : ℕ → ℝ
   ht0 : t 0 = 0
   ht1 : ∀ k, m ≤ k → t k = 1
   mono : Monotone t
+  /-- The chart used on each square of the grid. -/
   e : ℕ → ℕ → OpenPartialHomeomorph X ℂ
   he : ∀ j k, e j k ∈ maximalAtlas 𝓘(ℂ) ω X
+  /-- The centre of each square's disc. -/
   c : ℕ → ℕ → ℂ
+  /-- The radius of each square's disc. -/
   r : ℕ → ℕ → ℝ
   hr : ∀ j k, 0 < r j k
   ball_subset : ∀ j k, ball (c j k) (r j k) ⊆ (e j k).target

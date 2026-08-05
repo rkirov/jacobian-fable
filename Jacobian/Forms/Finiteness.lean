@@ -347,7 +347,7 @@ theorem gext_apply (f : G.P) {i : Fin G.n} {z : ℂ} (hz : z ∈ G.K i) :
     G.gext f i z = f i ⟨z, hz⟩ := dif_pos hz
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
-theorem continuousOn_gext [CompactSpace X] (f : G.P) (i : Fin G.n) :
+theorem continuousOn_gext (f : G.P) (i : Fin G.n) :
     ContinuousOn (G.gext f i) (G.K i) := by
   rw [continuousOn_iff_continuous_restrict]
   have : (G.K i).restrict (G.gext f i) = ⇑(f i) := funext fun z => G.gext_apply f z.2

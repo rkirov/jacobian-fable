@@ -506,7 +506,7 @@ theorem contMDiff_inducedHom {L : AddSubgroup V} {L' : AddSubgroup V'}
 
 omit [FiniteDimensional ℂ V] in
 /-- `inducedHom` at the identity is the identity (`QuotientAddGroup.map` functoriality). -/
-theorem inducedHom_id [FiniteDimensional ℂ V] [CompleteSpace V] (L : AddSubgroup V)
+theorem inducedHom_id [FiniteDimensional ℂ V] (L : AddSubgroup V)
     (hT : L ≤ L.comap (LinearMap.id (R := ℂ) (M := V)).toAddMonoidHom) :
     inducedHom L L LinearMap.id hT = ContinuousAddMonoidHom.id (V ⧸ L) := by
   ext q
@@ -518,7 +518,7 @@ theorem inducedHom_id [FiniteDimensional ℂ V] [CompleteSpace V] (L : AddSubgro
 omit [CompleteSpace V'] in
 /-- `inducedHom` is compositional (`QuotientAddGroup.map` functoriality). -/
 theorem inducedHom_comp {V'' : Type*} [NormedAddCommGroup V''] [NormedSpace ℂ V'']
-    [CompleteSpace V''] [FiniteDimensional ℂ V''] [CompleteSpace V']
+   
     (L : AddSubgroup V) (L' : AddSubgroup V') (L'' : AddSubgroup V'')
     (T : V →ₗ[ℂ] V') (T' : V' →ₗ[ℂ] V'')
     (hT : L ≤ L'.comap T.toAddMonoidHom) (hT' : L' ≤ L''.comap T'.toAddMonoidHom)

@@ -56,11 +56,17 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-- Forster's `𝔚 ⋐ 𝔙 ⋐ 𝔘 ⋐ 𝔘*` with `𝔘*` chart disks; same index set (D3). -/
 structure ShrinkChain (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] where
+  /-- The number of chart centres in the chain. -/
   n : ℕ
+  /-- The chart centres. -/
   c : Fin n → X
+  /-- The outermost opens, each inside its centre's chart source. -/
   Ustar : Fin n → Opens X
+  /-- The first shrinking: `closure (U i) ⊆ Ustar i`. -/
   U : Fin n → Opens X
+  /-- The second shrinking: `closure (V i) ⊆ U i`. -/
   V : Fin n → Opens X
+  /-- The innermost opens, which still cover `X`. -/
   W : Fin n → Opens X
   isChartDisk_Ustar : ∀ i, IsChartDisk (Ustar i)
   Ustar_subset_source : ∀ i, (Ustar i : Set X) ⊆ (chartAt ℂ (c i)).source
@@ -118,18 +124,21 @@ noncomputable def coverW : FinCover (⊤ : Opens X) where
   le_base _ := le_top
   covers x _ := T.covers_W x
 
+/-- The cover of `X` by the `V`-level opens. -/
 noncomputable def coverV : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.V
   le_base _ := le_top
   covers x _ := T.covers_V x
 
+/-- The cover of `X` by the `U`-level opens. -/
 noncomputable def coverU : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.U
   le_base _ := le_top
   covers x _ := T.covers_U x
 
+/-- The cover of `X` by the outermost `Ustar`-level opens. -/
 noncomputable def coverStar : FinCover (⊤ : Opens X) where
   n := T.n
   U := T.Ustar
@@ -237,6 +246,7 @@ closedness proof needed. -/
       - restrictCLM (le_inf (inf_le_left.trans inf_le_left) inf_le_right) (f (t.1, t.2.2))
       + restrictCLM inf_le_left (f (t.1, t.2.1)) := rfl
 
+/-- The norm-bounded cocycles at level `P`: the kernel of the bounded coboundary `d1NC`. -/
 noncomputable def NZ1 : Submodule ℂ (NC1 T P) := (d1NC T P).ker
 
 instance : CompleteSpace (NZ1 T P) := ContinuousLinearMap.completeSpace_ker (d1NC T P)

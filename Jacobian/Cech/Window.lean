@@ -136,6 +136,8 @@ coefficient recursion. -/
 noncomputable abbrev WindowAt (p : X) (d d' : ℤ) : Type _ :=
   ordGe p (-d') ⧸ (ordGe p (-d)).comap (ordGe p (-d')).subtype
 
+/-- The quotient map onto the window at `p`: a germ of order at least `-d'`, taken modulo those of
+order at least `-d`. -/
 noncomputable def WindowAt.mk (p : X) (d d' : ℤ) : ordGe p (-d') →ₗ[ℂ] WindowAt p d d' :=
   Submodule.mkQ _
 

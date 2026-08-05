@@ -69,7 +69,7 @@ congruences; the raw files remain the foundation every proof works through via r
 * **D11** (`LinearSystems.lean`): `RS.MForm.OmegaSpace D : Submodule ℂ (MForm X)` (order-wise,
   instance-free)/`RS.MForm.mem_omegaSpace_iff`/`RS.MForm.i D` (index of speciality);
   `RS.MForm.smul_mem_omegaSpace_iff` (the pointwise dictionary);
-  `RS.Ω_iso_linSys (h₀ : θ₀ ≠ 0) (D) : MForm.OmegaSpace D ≃ₗ[ℂ] LinSys (D + canonicalDivisorOf θ₀)`
+  `RS.ΩIsoLinSys (h₀ : θ₀ ≠ 0) (D) : MForm.OmegaSpace D ≃ₗ[ℂ] LinSys (D + canonicalDivisorOf θ₀)`
   and `RS.i_eq_l_add_canonicalDivisorOf` (`[T1] [T2] [CompactSpace] [ConnectedSpace]`).
 * **D12** (`LinearSystems.lean`): `RS.form1ToOmega`/`RS.form1ToOmega_surjective`/
   `RS.holomorphicMFormsEquiv : Form1 X ≃ₗ[ℂ] MForm.OmegaSpace (0 : Divisor X)` (NO topological

@@ -40,7 +40,7 @@ variable {g f : ℂ → ℂ} {z : ℂ}
 
 /-! ## The Leibniz rule -/
 
-/-- Leibniz rule for the Wirtinger `∂̄` (requested for upstreaming to
+/-- Leibniz rule for the Wirtinger `dbar` (requested for upstreaming to
 `Jacobian/Dbar/Wirtinger.lean` — see `docs/requests/dbar-solvability.md`; proved locally here
 meanwhile, exactly as compiled in the design's spike). -/
 theorem wirtingerDbar_mul (hg : DifferentiableAt ℝ g z) (hf : DifferentiableAt ℝ f z) :
@@ -50,8 +50,8 @@ theorem wirtingerDbar_mul (hg : DifferentiableAt ℝ g z) (hf : DifferentiableAt
   simp
   ring
 
-/-- The `f`-holomorphic specialization: the `∂̄` of a product with a holomorphic factor sees only
-the other factor's `∂̄`. -/
+/-- The `f`-holomorphic specialization: the `dbar` of a product with a holomorphic factor sees only
+the other factor's `dbar`. -/
 theorem wirtingerDbar_mul_of_differentiableAt (hg : DifferentiableAt ℝ g z)
     (hf : DifferentiableAt ℂ f z) :
     wirtingerDbar (fun w => g w * f w) z = wirtingerDbar g z * f z := by
@@ -59,7 +59,7 @@ theorem wirtingerDbar_mul_of_differentiableAt (hg : DifferentiableAt ℝ g z)
     wirtingerDbar_eq_zero_of_differentiableAt f z hf, mul_zero, add_zero]
 
 /-- `g` vanishes identically on a whole neighborhood of any point outside `tsupport g`, so a
-product with an arbitrary (possibly non-differentiable/junk) `f` is still `∂̄`-trivial there. -/
+product with an arbitrary (possibly non-differentiable/junk) `f` is still `dbar`-trivial there. -/
 theorem wirtingerDbar_mul_eq_zero_of_notMem_tsupport (hz : z ∉ tsupport g) :
     wirtingerDbar (fun w => g w * f w) z = 0 := by
   have hg0 : g =ᶠ[nhds z] (fun _ => (0 : ℂ)) := notMem_tsupport_iff_eventuallyEq.mp hz

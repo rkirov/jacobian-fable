@@ -34,14 +34,19 @@ variable {x y : X}
 `Icc (t k) (t (k+1))`, `γ` stays inside a single chart `e k` with image inside a ball
 `ball (c k) (r k) ⊆ (e k).target`. -/
 structure ChartChain (γ : Path x y) where
+  /-- The number of steps in the chain. -/
   n : ℕ
+  /-- The subdivision times. -/
   t : ℕ → ℝ
   ht0 : t 0 = 0
   ht1 : ∀ k, n ≤ k → t k = 1
   mono : Monotone t
+  /-- The chart used on each step. -/
   e : ℕ → OpenPartialHomeomorph X ℂ
   he : ∀ k, e k ∈ maximalAtlas 𝓘(ℂ) ω X
+  /-- The centre of each step's disc, in that step's chart. -/
   c : ℕ → ℂ
+  /-- The radius of each step's disc. -/
   r : ℕ → ℝ
   hr : ∀ k, 0 < r k
   ball_subset : ∀ k, ball (c k) (r k) ⊆ (e k).target

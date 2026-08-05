@@ -79,8 +79,8 @@ theorem Form1.trace_id : Form1.trace (id : X → X) contMDiff_id = LinearMap.id 
   intro η
   rw [Form1.trace_apply contMDiff_id hne η, LinearMap.id_apply]
   apply Form1.eq_of_eqOn_dense (s := (Set.univ : Set X)) dense_univ
-  intro ŷ _
-  have hreg : RS.IsRegularValue (id : X → X) ŷ := by
+  intro yhat _
+  have hreg : RS.IsRegularValue (id : X → X) yhat := by
     intro x _ hram
     have hnc : ¬ Filter.EventuallyConst (id : X → X) (𝓝 x) :=
       RS.not_eventuallyConst contMDiff_id hne x
@@ -89,18 +89,18 @@ theorem Form1.trace_id : Form1.trace (id : X → X) contMDiff_id = LinearMap.id 
         ⟨Set.univ, Filter.univ_mem, fun a _ b _ h => h⟩
     have h2 : 2 ≤ RS.multiplicity (id : X → X) x := hram
     omega
-  show coeffAt ŷ (traceForm contMDiff_id hne η) = coeffAt ŷ η
+  show coeffAt yhat (traceForm contMDiff_id hne η) = coeffAt yhat η
   rw [coeffAt_traceForm_of_isRegularValue contMDiff_id hne η hreg]
-  have hfib : (id : X → X) ⁻¹' {ŷ} = {ŷ} := by
+  have hfib : (id : X → X) ⁻¹' {yhat} = {yhat} := by
     ext u
     simp
   rw [hfib, finsum_mem_singleton]
-  show (deriv (⇑(chartAt ℂ ŷ) ∘ (id : X → X) ∘ ⇑(chartAt ℂ ŷ).symm) (chartAt ℂ ŷ ŷ))⁻¹
-      * coeffAt ŷ η = coeffAt ŷ η
-  have hid : (⇑(chartAt ℂ ŷ) ∘ (id : X → X) ∘ ⇑(chartAt ℂ ŷ).symm) =ᶠ[𝓝 (chartAt ℂ ŷ ŷ)] id := by
-    filter_upwards [(chartAt ℂ ŷ).open_target.mem_nhds (mem_chart_target ℂ ŷ)] with z hz
+  show (deriv (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm) (chartAt ℂ yhat yhat))⁻¹
+      * coeffAt yhat η = coeffAt yhat η
+  have hid : (⇑(chartAt ℂ yhat) ∘ (id : X → X) ∘ ⇑(chartAt ℂ yhat).symm) =ᶠ[𝓝 (chartAt ℂ yhat yhat)] id := by
+    filter_upwards [(chartAt ℂ yhat).open_target.mem_nhds (mem_chart_target ℂ yhat)] with z hz
     simp only [Function.comp_apply, id_eq]
-    exact (chartAt ℂ ŷ).right_inv hz
+    exact (chartAt ℂ yhat).right_inv hz
   rw [hid.deriv_eq, deriv_id, inv_one, one_mul]
 
 /-! ### `trace_comp` -/
@@ -252,12 +252,12 @@ include hf hne in
 omit [CompactSpace Y] [ConnectedSpace Y] [T2Space X] [CompactSpace X] in
 /-- Per-point cancellation: the canonical trace coefficient of a pulled-back form at an
 unramified fibre point is the coefficient of the original form. -/
-theorem qCoeff_pullback {ŷ : Y} (hŷ : RS.IsRegularValue f ŷ) {x : X} (hx : f x = ŷ)
+theorem qCoeff_pullback {yhat : Y} (hyhat : RS.IsRegularValue f yhat) {x : X} (hx : f x = yhat)
     (η : Form1 Y) :
-    qCoeff f (Form1.pullback f hf η) (chartAt ℂ ŷ) x = coeffAt ŷ η := by
+    qCoeff f (Form1.pullback f hf η) (chartAt ℂ yhat) x = coeffAt yhat η := by
   subst hx
   have hmult : RS.multiplicity f x = 1 :=
-    RS.multiplicity_eq_one_of_isRegularValue hf hne hŷ rfl
+    RS.multiplicity_eq_one_of_isRegularValue hf hne hyhat rfl
   obtain ⟨A, -⟩ := RS.exists_adaptedChartsAt (hf x) (RS.not_eventuallyConst hf hne x)
     (Filter.univ_mem)
   have hDne : deriv (⇑(chartAt ℂ (f x)) ∘ f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) ≠ 0 :=
@@ -271,18 +271,18 @@ omit [CompactSpace Y] in
 theorem traceForm_pullback (η : Form1 Y) :
     traceForm hf hne (Form1.pullback f hf η) = (RS.degree f : ℂ) • η := by
   apply Form1.eq_of_eqOn_dense (RS.dense_setOf_isRegularValue hf hne)
-  intro ŷ hŷ
-  show coeffAt ŷ (traceForm hf hne (Form1.pullback f hf η)) = coeffAt ŷ ((RS.degree f : ℂ) • η)
-  rw [coeffAt_traceForm_of_isRegularValue hf hne _ hŷ, coeffAt_smul]
-  have hterm : ∀ x ∈ f ⁻¹' {ŷ},
-      qCoeff f (Form1.pullback f hf η) (chartAt ℂ ŷ) x = coeffAt ŷ η := fun x hx =>
-    qCoeff_pullback hf hne hŷ hx η
+  intro yhat hyhat
+  show coeffAt yhat (traceForm hf hne (Form1.pullback f hf η)) = coeffAt yhat ((RS.degree f : ℂ) • η)
+  rw [coeffAt_traceForm_of_isRegularValue hf hne _ hyhat, coeffAt_smul]
+  have hterm : ∀ x ∈ f ⁻¹' {yhat},
+      qCoeff f (Form1.pullback f hf η) (chartAt ℂ yhat) x = coeffAt yhat η := fun x hx =>
+    qCoeff_pullback hf hne hyhat hx η
   rw [finsum_mem_congr rfl hterm]
-  have hfin : (f ⁻¹' {ŷ}).Finite := RS.fiber_finite hf hne ŷ
+  have hfin : (f ⁻¹' {yhat}).Finite := RS.fiber_finite hf hne yhat
   rw [finsum_mem_eq_finite_toFinset_sum _ hfin, Finset.sum_const]
   have hcard : hfin.toFinset.card = RS.degree f := by
     rw [← Set.ncard_eq_toFinset_card _ hfin]
-    exact RS.ncard_fiber_of_isRegularValue hf hne hŷ
+    exact RS.ncard_fiber_of_isRegularValue hf hne hyhat
   rw [hcard, nsmul_eq_mul]
 
 variable (f) in

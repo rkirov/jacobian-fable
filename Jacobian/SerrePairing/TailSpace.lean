@@ -34,10 +34,11 @@ namespace RS.SerrePairing
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Miranda VI.3's *ambient* Laurent-tail space: at finitely many points of `X`, an arbitrary
 finite tail of Laurent coefficients (any integer exponents), read in each point's own `chartAt`. -/
-noncomputable abbrev Tail (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
-    [IsManifold 𝓘(ℂ) ω X] : Type _ := X →₀ (ℤ →₀ ℂ)
+noncomputable abbrev Tail (X : Type*)
+    : Type _ := X →₀ (ℤ →₀ ℂ)
 
 /-- Miranda's `T[D](X)`-membership condition: the exponent at each point in `τ`'s support is
 bounded by `D` (exponent range `< -(D x)`, matching her convention exactly — for `D = 0` this is
@@ -76,6 +77,7 @@ def TailSpace (D : RS.Divisor X) : Submodule ℂ (Tail X) where
       Finsupp.mem_support_iff.2 (fun h0 => hτxk (by rw [h0]; simp))
     exact hτ x hxτ k (Finsupp.mem_support_iff.2 hτxk)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [ChartedSpace ℂ X] in
 @[simp] theorem mem_tailSpace_iff {τ : Tail X} {D : RS.Divisor X} :
     τ ∈ TailSpace D ↔ τ.BoundedBy D := Iff.rfl
 
@@ -83,11 +85,13 @@ def TailSpace (D : RS.Divisor X) : Submodule ℂ (Tail X) where
 noncomputable def Tail.single (p : X) (n : ℤ) (c : ℂ) : Tail X :=
   Finsupp.single p (Finsupp.single n c)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [ChartedSpace ℂ X] [TopologicalSpace X] in
 theorem Tail.single_apply (p : X) (n : ℤ) (c : ℂ) (x : X) :
     Tail.single p n c x = if x = p then Finsupp.single n c else 0 := by
   rw [Tail.single, Finsupp.single_apply]
   exact if_congr eq_comm rfl rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] [ChartedSpace ℂ X] in
 theorem Tail.single_boundedBy {p : X} {n : ℤ} {c : ℂ} {D : RS.Divisor X}
     (h : c ≠ 0 → n < -(D p)) : (Tail.single p n c).BoundedBy D := by
   intro x hx k hk

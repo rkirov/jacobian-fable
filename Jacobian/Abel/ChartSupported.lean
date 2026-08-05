@@ -15,12 +15,12 @@ The packaging device for design step 5: a planar function `h` smooth on `ℂ`, s
 compact `K` inside the target of one maximal-atlas chart `e`, spreads to a global
 `(0,1)`-form `ChartSupportedData.form` whose coefficient in any preferred chart is the
 `conj (deriv τ)`-transported copy of `h` (exactly `Form01.compat`'s law) — the concrete global
-object that a weak solution's chart-local `∂̄f/f`-data assembles into.
+object that a weak solution's chart-local `dbarf/f`-data assembles into.
 
 Two consumption lemmas:
 
 * `ChartSupportedData.coeffAt_center` / `coeffAt_center_of_notMem`: the coefficient at a chart
-  center, active and inactive cases (feeding the `∂̄`-matching of `UpgradeDischarge.lean`).
+  center, active and inactive cases (feeding the `dbar`-matching of `UpgradeDischarge.lean`).
 * **`pairing_form`** (the localization): `pairing PU D.form θ = ∫ z, h z · coeffIn e θ z` — the
   global PoU pairing of a chart-supported form collapses to ONE planar integral in the
   supporting chart. Proof: per PoU index, transport by the `(1,1)`-density change of variables

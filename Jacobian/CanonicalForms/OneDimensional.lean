@@ -200,12 +200,12 @@ end MForm
 
 /-- D10: "a" canonical divisor, seeded by an explicit nonzero reference (no silent
 `Classical.choice`-baked default; downstream fixes one when a definite `K` is needed). -/
-noncomputable abbrev canonicalDivisorOf [T1Space X] [T2Space X] [CompactSpace X]
+noncomputable abbrev canonicalDivisorOf [T1Space X]
     (Θ₀ : MForm X) : Divisor X := Θ₀.divisor
 
 /-- Divisors add under the `ℳ(X)`-action (pointwise from `ord_smul_mero`; both orders are finite
 by the D5 dichotomy and `Mero.ord_ne_top`). -/
-theorem MForm.divisor_smul_mero [T1Space X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
+theorem MForm.divisor_smul_mero [T1Space X] [T2Space X] [ConnectedSpace X]
     {h : ℳ X} {Θ : MForm X} (hh : h ≠ 0) (hΘ : Θ ≠ 0) :
     (h • Θ).divisor = RS.divisor h + Θ.divisor := by
   apply Function.locallyFinsuppWithin.ext
@@ -216,7 +216,7 @@ theorem MForm.divisor_smul_mero [T1Space X] [T2Space X] [CompactSpace X] [Connec
 
 /-- **D10 (Forster 16.7)**: the canonical divisor is well defined up to linear equivalence — any
 two nonzero references have divisors differing by a principal divisor. -/
-theorem canonicalDivisorOf_linearEquiv [T1Space X] [T2Space X] [CompactSpace X]
+theorem canonicalDivisorOf_linearEquiv [T1Space X] [T2Space X]
     [ConnectedSpace X] {Θ₀ Θ₀' : MForm X} (h₀ : Θ₀ ≠ 0) (h₀' : Θ₀' ≠ 0) :
     ∃ f : ℳ X, f ≠ 0 ∧ canonicalDivisorOf Θ₀' = canonicalDivisorOf Θ₀ + divisor f := by
   obtain ⟨h, hh, -⟩ := MForm.exists_unique_smul_of_ne_zero h₀ Θ₀'

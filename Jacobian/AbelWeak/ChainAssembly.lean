@@ -87,7 +87,7 @@ theorem exists_weakSolutionOfFinset {ι : Type*} [Fintype ι] [DecidableEq ι]
 /-! ## §7.2: the telescoped path-integral identity (pure `Path`-API, no Stokes) -/
 
 omit [T2Space X] in
-/-- **The CC6-compliant replacement for Forster's `∬_X`-formula (D5)**: for any `ω : Form1 X` and
+/-- **The CC6-compliant replacement for Forster's `∫∫_X`-formula (D5)**: for any `ω : Form1 X` and
 any `ChartChain` `C` adapted to `γ`, `pathIntegral γ ω` is exactly the finite telescoped sum of
 chart-local holomorphic-primitive differences. -/
 theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartChain γ)
@@ -135,7 +135,7 @@ theorem pathIntegral_eq_sum_chartChain {x y : X} {γ : Path x y} (C : RS.ChartCh
 to translate its period-vanishing hypothesis into a statement about a weak solution's chart-local
 log-derivative): for the two-puncture kernel `(w - b)⁻¹ - (w - a)⁻¹` (residues `+1` at `b`, `-1`
 at `a` — matching a weak solution's own `df/f` local model, §7.3 step 3) and ANY `C¹`
-compactly-supported `g` on an open `U`, the area integral of `∂̄g` against that kernel recovers
+compactly-supported `g` on an open `U`, the area integral of `dbarg` against that kernel recovers
 `g b - g a`, with **no local-constancy hypothesis on `g`** (the `abel-weak-solutions` refinement
 of `planar-stokes-atoms`' Atom 2 that this unit's design flagged as needed, §7.3/§10/§11 risk R1
 — already supplied by `planar-stokes-atoms`' own

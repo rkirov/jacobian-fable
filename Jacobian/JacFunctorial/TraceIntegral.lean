@@ -310,11 +310,14 @@ theorem pathIntegral_segMap {a b : Y} {δ : Path a b} {η₂ : Form1 Y} {F : ℝ
 single (regular-centered) trace charts. -/
 structure TraceChain (hf : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω f) (hne : ¬ ∃ c, ∀ x, f x = c)
     {a b : Y} (δ : Path a b) where
+  /-- The number of subdivision steps. -/
   n : ℕ
+  /-- The subdivision times. -/
   t : ℕ → ℝ
   ht0 : t 0 = 0
   ht1 : ∀ k, n ≤ k → t k = 1
   mono : Monotone t
+  /-- The centre of each step's chart. -/
   c : ℕ → Y
   hreg : ∀ k, RS.IsRegularValue f (c k)
   maps : ∀ k, ∀ u ∈ Icc (t k) (t (k + 1)), δ.extend u ∈ (traceChart hf hne (c k)).source

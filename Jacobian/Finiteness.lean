@@ -68,7 +68,7 @@ forbidden tactic.
   `ShrinkChain`) ⇒ **`finiteDimensional_H1_zero`** (`FiniteDimensional ℂ (H1 (0 : Divisor X))`,
   Forster §14's headline) ⇒ **`finiteDimensional_H1`** (`FiniteDimensional ℂ (H1 D)` for ALL `D`,
   §7, via cech's six-term skyscraper fragment — decision D2, NOT twisted norms). Records the
-  `addCommGroup_H1` Compat instance (`AddCommGroup (H1 D)` does not resolve by plain
+  `addCommGroupH1` Compat instance (`AddCommGroup (H1 D)` does not resolve by plain
   `inferInstance` in this codebase — a documented cech gotcha; supplied explicitly via
   `Module.DirectLimit.addCommGroup`).
 

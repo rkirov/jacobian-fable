@@ -15,9 +15,9 @@ import Jacobian.SphereTopology
 
 Unit: abel-theorem. Namespace `RS.Abel`. Two deliverables:
 
-* `wirtingerDbar_exp_neg_mul_eq_zero` — the `∂̄F = 0` computation underlying the meromorphic
-  promotion: if `u`'s Wirtinger `∂̄`-derivative matches `f`'s own logarithmic `∂̄`-derivative
-  (`∂̄u = ∂̄f / f`) at a point where `f ≠ 0`, then `F := exp(-u) * f` has `∂̄F = 0` there — a direct
+* `wirtingerDbar_exp_neg_mul_eq_zero` — the `dbarF = 0` computation underlying the meromorphic
+  promotion: if `u`'s Wirtinger `dbar`-derivative matches `f`'s own logarithmic `dbar`-derivative
+  (`dbaru = dbarf / f`) at a point where `f ≠ 0`, then `F := exp(-u) * f` has `dbarF = 0` there — a direct
   Leibniz/chain-rule computation (`wirtingerDbar_mul` + the holomorphic-outer chain rule for
   `Complex.exp`, via mathlib's `HasDerivAt.comp_hasFDerivAt`).
 * `genus_eq_zero_of_exists_simple_pole_zero` — Forster's necessity shortcut (§2.2): a meromorphic
@@ -34,10 +34,10 @@ noncomputable section
 
 namespace RS.Abel
 
-/-! ## D2: the `∂̄`-product-rule identity (mathlib-only, pure `ℂ → ℂ`) -/
+/-! ## D2: the `dbar`-product-rule identity (mathlib-only, pure `ℂ → ℂ`) -/
 
 /-- The holomorphic-outer chain rule for `wirtingerDbar`: `Complex.exp` composed with an
-arbitrary (only `ℝ`-differentiable) inner function `v` satisfies `∂̄(exp ∘ v) = exp(v z) * ∂̄v`. -/
+arbitrary (only `ℝ`-differentiable) inner function `v` satisfies `dbar(exp ∘ v) = exp(v z) * dbarv`. -/
 private theorem wirtingerDbar_cexp_comp {v : ℂ → ℂ} {z : ℂ} (hv : DifferentiableAt ℝ v z) :
     wirtingerDbar (fun w => Complex.exp (v w)) z = Complex.exp (v z) * wirtingerDbar v z := by
   have hFD : HasFDerivAt v (fderiv ℝ v z) z := hv.hasFDerivAt
@@ -55,8 +55,8 @@ private theorem wirtingerDbar_cexp_comp {v : ℂ → ℂ} {z : ℂ} (hv : Differ
   show _ = Complex.exp (v z) * ((fderiv ℝ v z 1 + Complex.I * fderiv ℝ v z Complex.I) / 2)
   ring
 
-/-- **D2, the `∂̄F = 0` computation** (§2.1 step 7): the exponential-corrected function
-`F := fun w => exp(-(u w)) * f w` is genuinely `∂̄`-flat wherever `u`'s `∂̄`-derivative matches
+/-- **D2, the `dbarF = 0` computation** (§2.1 step 7): the exponential-corrected function
+`F := fun w => exp(-(u w)) * f w` is genuinely `dbar`-flat wherever `u`'s `dbar`-derivative matches
 `f`'s own logarithmic one. -/
 theorem wirtingerDbar_exp_neg_mul_eq_zero {u f : ℂ → ℂ} {z : ℂ}
     (hu : DifferentiableAt ℝ u z) (hf : DifferentiableAt ℝ f z)

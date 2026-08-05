@@ -7,10 +7,10 @@ Authors: Rado Kirov
 import Jacobian.PlanarStokes.Compat
 
 /-!
-# Atom 1: compact-support planar Stokes for `∂̄`
+# Atom 1: compact-support planar Stokes for `dbar`
 
 Unit: planar-stokes-atoms (`docs/design/planar-stokes.md` §6). Proves the honest 2-D Stokes
-theorem this unit exists to supply: a compactly-supported `C¹` function's `∂̄` integrates to zero
+theorem this unit exists to supply: a compactly-supported `C¹` function's `dbar` integrates to zero
 over the whole plane (`integral_wirtingerDbar_eq_zero`), by picking a rectangle strictly
 containing the support and invoking `Complex.integral_boundary_rect_of_differentiableOn_real`
 (mathlib's rectangle divergence theorem, specialized to `ℂ`) — the boundary terms vanish since `g`
@@ -27,7 +27,7 @@ namespace RS
 
 variable {g f : ℂ → ℂ} {U : Set ℂ}
 
-/-- **Atom 1** (compact-support planar Stokes for `∂̄`): the `∂̄` of a compactly-supported `C¹`
+/-- **Atom 1** (compact-support planar Stokes for `dbar`): the `dbar` of a compactly-supported `C¹`
 function integrates to zero over the whole plane. -/
 theorem integral_wirtingerDbar_eq_zero (hU : IsOpen U) (hg : ContDiffOn ℝ 1 g U)
     (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U) :
@@ -139,7 +139,7 @@ theorem integral_wirtingerDbar_eq_zero (hU : IsOpen U) (hg : ContDiffOn ℝ 1 g 
 
 /-- **Atom 1b** (immediate corollary, the "no pole in this chart" case residue-theorem needs for
 every PoU piece that does not touch a pole): if `f` is holomorphic throughout `U`, the
-`∂̄`-weighted integral against `f` also vanishes. -/
+`dbar`-weighted integral against `f` also vanishes. -/
 theorem integral_wirtingerDbar_mul_eq_zero_of_differentiableOn (hU : IsOpen U)
     (hg : ContDiffOn ℝ 1 g U) (hcs : HasCompactSupport g) (hsub : tsupport g ⊆ U)
     (hf : DifferentiableOn ℂ f U) :

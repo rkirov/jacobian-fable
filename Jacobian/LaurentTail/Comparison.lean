@@ -32,7 +32,7 @@ the unit's four original deferrals are now closed):**
   `f` is available a priori, that is exactly what injectivity produces), then
   `Cech.mlClass_eq_zero_iff`'s `⇒` half (Forster 12.4, confirmed landed) extracts a global
   witness `φ : LinSys D'` realizing `z` pointwise, i.e. `z = alpha D φ`.
-* `H1Tail.equiv_of_surjective` — a genuine, honestly-parametrized (`CONVENTIONS.md` rule 3)
+* `H1Tail.equivOfSurjective` — a genuine, honestly-parametrized (`CONVENTIONS.md` rule 3)
   conditional equivalence: `Function.Surjective (tailToH1 D) → H1Tail D ≃ₗ[ℂ] Cech.H1 D`, built
   from the now-unconditional `H1Tail.toH1_injective`. **Surjectivity itself is NOT proved** — see
   the file-end note for a full account of why (this is now a *proven-hard* fact, not a
@@ -269,6 +269,8 @@ theorem gOf_zero (p : X) (V : Opens X) (hpV : p ∈ V) (D' : RS.Divisor X) :
 
 /-! ### A clean neighborhood also avoiding `D`'s other poles -/
 
+/-- A chart neighbourhood of `p` clean for `ψ`: small enough that `ψ` is the only departure from `D`
+on it. -/
 noncomputable def cleanNbhd (D : RS.Divisor X) (p : X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : Opens X :=
   (exists_clean_nhds (chartAt ℂ p).open_source ψ (mem_chart_source ℂ p)).choose ⊓
@@ -304,6 +306,7 @@ theorem cleanNbhd_D_eq_zero (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (ch
 
 /-! ### The auxiliary divisor `D'` bumped at `p` -/
 
+/-- The order of the pole that `ψ` contributes at `p`. -/
 noncomputable def nOf (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) : ℤ :=
   max (D p) (-(ψ.ord p).untop₀)
 
@@ -326,6 +329,7 @@ theorem neg_nOf_le_ord (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt
     have hfin : -(nOf D p ψ) ≤ k := by linarith
     exact_mod_cast hfin
 
+/-- The auxiliary divisor admitting `ψ` at `p` on top of `D`. -/
 noncomputable def DPrimeOf (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     RS.Divisor X :=
   D + bumpDivisor p (nOf D p ψ - D p)
@@ -385,6 +389,7 @@ theorem gOf_apply_one (p : X) (V : Opens X) (hpV : p ∈ V) (D' : RS.Divisor X)
     (ψV : RS.LinSysOn D' (V : Set X)) :
     gOf p V hpV D' ψV (1 : Fin 2) = 0 := rfl
 
+/-- `ψ` restricted to its clean neighbourhood, as a section of the auxiliary linear system. -/
 noncomputable def ψVOf (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     RS.LinSysOn (DPrimeOf D p ψ) (cleanNbhd D p ψ : Set X) :=
   ⟨RS.MeroGermOn.restrict (cleanNbhd_sub_source D p ψ) ψ, restrict_ψ_mem_linSysOn D p ψ⟩
@@ -468,6 +473,7 @@ theorem mlClass_congr {𝒰 : RS.Cech.FinCover (⊤ : Opens X)} {D D' : RS.Divis
 
 /-! ### The single-point Mittag-Leffler class, and its independence of choices -/
 
+/-- The Mittag-Leffler class of `ψ` at `p`, computed through a chosen clean neighbourhood `V`. -/
 noncomputable def mlClassAtOf (p : X) (D D' : RS.Divisor X)
     (ψ : RS.MeroGermOn X (chartAt ℂ p).source) (V : Opens X) (hpV : p ∈ V)
     (hVsub : (V : Set X) ⊆ (chartAt ℂ p).source)
@@ -582,6 +588,7 @@ theorem mlClassAtOf_agree (p : X) (D : RS.Divisor X) (ψ : RS.MeroGermOn X (char
 
 /-! ### `mlClassAt` (the canonical single-point construction) -/
 
+/-- The Mittag-Leffler class in `H¹(D)` of a germ `ψ` at the point `p`. -/
 noncomputable def mlClassAt (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     RS.Cech.H1 D :=
   mlClassAtOf p D (DPrimeOf D p ψ) ψ (cleanNbhd D p ψ) (mem_cleanNbhd D p ψ)
@@ -754,6 +761,7 @@ noncomputable instance instAddCommGroupH1 (D : RS.Divisor X) : AddCommGroup (RS.
   Module.DirectLimit.addCommGroup (fun 𝒰 : RS.Cech.FinCover (⊤ : Opens X) => RS.Cech.H1Cover D 𝒰)
     (fun _ _ h => RS.Cech.resH1' D h)
 
+/-- `mlClassAt` packaged as a linear map on germs at `p`. -/
 noncomputable def mlClassAtRaw (D : RS.Divisor X) (p : X) :
     RS.MeroGermOn X (chartAt ℂ p).source →ₗ[ℂ] RS.Cech.H1 D where
   toFun := mlClassAt D p
@@ -764,6 +772,7 @@ omit [ConnectedSpace X] in
 theorem mlClassAtRaw_apply (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt ℂ p).source) :
     mlClassAtRaw D p ψ = mlClassAt D p ψ := rfl
 
+/-- The tail-to-cohomology map at a single point. -/
 noncomputable def tailAtToH1 (D : RS.Divisor X) (p : X) : TailAt p D →ₗ[ℂ] RS.Cech.H1 D :=
   Submodule.liftQ (RS.Cech.ordGe p (-(D p))) (mlClassAtRaw D p) (fun ψ hψ => by
     rw [LinearMap.mem_ker, mlClassAtRaw_apply]
@@ -774,6 +783,7 @@ theorem tailAtToH1_mk (D : RS.Divisor X) (p : X) (ψ : RS.MeroGermOn X (chartAt 
     tailAtToH1 D p (TailAt.mk p D ψ) = mlClassAt D p ψ :=
   Submodule.liftQ_apply _ _ ψ
 
+/-- The tail-to-cohomology map on the whole tail space `T D`. -/
 noncomputable def tailToH1 (D : RS.Divisor X) : T D →ₗ[ℂ] RS.Cech.H1 D :=
   DFinsupp.lsum ℕ (fun p => tailAtToH1 D p)
 
@@ -811,6 +821,7 @@ theorem restrict_mem_linSysOn_of_mem_linSys {D' : RS.Divisor X} {f : RS.Mero X}
   rw [RS.MeroGermOn.ord_restrict (Set.subset_univ V) hV isOpen_univ hx]
   exact (RS.mem_linSys_iff.1 hf) x
 
+/-- The auxiliary divisor `D ⊔ (-div f)`, which admits `f`. -/
 noncomputable def alphaAuxD (D : RS.Divisor X) (f : RS.Mero X) : RS.Divisor X :=
   D ⊔ (-(RS.divisor f))
 
@@ -831,6 +842,7 @@ theorem mem_linSys_alphaAuxD (D : RS.Divisor X) {f : RS.Mero X} (hf : f ≠ 0) :
 
 /-! ### The clean patch at a marked point, avoiding the other marked points -/
 
+/-- A neighbourhood of `p` clean for `f` and meeting no other marked point of `S`. -/
 noncomputable def alphaPatch (D : RS.Divisor X) (f : RS.Mero X) (S : Finset X) (p : X) : Opens X :=
   cleanNbhd D p (RS.MeroGermOn.restrict (Set.subset_univ _) f) ⊓ RS.Cech.compOpens (S.erase p)
 
@@ -864,6 +876,7 @@ theorem alphaPatch_excl (D : RS.Divisor X) (f : RS.Mero X) (S : Finset X) (p : X
 
 /-! ### The Finset-indexed Mittag-Leffler cochain -/
 
+/-- The 0-cochain assembling `f`'s local data over the marked points of `T`. -/
 noncomputable def mlSumCochain {𝒱 : RS.Cech.FinCover (⊤ : Opens X)} (D' : RS.Divisor X)
     (f : RS.Mero X) (hf : f ∈ RS.LinSys D') (T : Finset X) : RS.Cech.C0 D' 𝒱 :=
   fun k => if _h : ∃ p ∈ T, p ∈ 𝒱.U k then
@@ -1208,6 +1221,7 @@ theorem tailToH1_alpha (D : RS.Divisor X) (f : RS.Mero X) : tailToH1 D (alphaL D
 
 /-! ### `H1Tail.toH1` -/
 
+/-- The induced map from the tail quotient to `H¹(D)`. -/
 noncomputable def H1Tail.toH1 (D : RS.Divisor X) : H1Tail D →ₗ[ℂ] RS.Cech.H1 D :=
   Submodule.liftQ (LinearMap.range (alphaL D)) (tailToH1 D) (by
     intro z hz
@@ -1247,6 +1261,7 @@ theorem injPatch_excl (D : RS.Divisor X) (p : X) :
 
 variable (D : RS.Divisor X)
 
+/-- A single auxiliary divisor dominating `DPrimeOf` at every point of `S`. -/
 noncomputable def injD' (hSne : S.Nonempty) : RS.Divisor X :=
   S.sup' hSne (fun p => DPrimeOf D p (ψ p))
 
@@ -1673,7 +1688,7 @@ theorem H1Tail.toH1_surjective_of_tailToH1_surjective (D : RS.Divisor X)
 gated on `dolbeault-comparison`'s Leray/Mittag-Leffler-existence machinery — see this file's
 file-end note for the exact obstruction). Injectivity (`H1Tail.toH1_injective`) is unconditional
 and fully proved above; this is the one remaining hypothesis. -/
-noncomputable def H1Tail.equiv_of_surjective (D : RS.Divisor X)
+noncomputable def H1Tail.equivOfSurjective (D : RS.Divisor X)
     (hsurj : Function.Surjective (tailToH1 D)) : H1Tail D ≃ₗ[ℂ] RS.Cech.H1 D :=
   LinearEquiv.ofBijective (H1Tail.toH1 D)
     ⟨H1Tail.toH1_injective D, H1Tail.toH1_surjective_of_tailToH1_surjective D hsurj⟩
@@ -1735,7 +1750,7 @@ end RS.LaurentTail
    `p`, via the *sum-splitting* trick `restrict φ = ψ q + (-(ψ q - restrict φ))` and `ord_add`/
    `ord_neg` (mirrors exactly how `gOf_memLD_of_clean` bounds a coboundary from two one-sided
    pieces, one level up).
-3. **`H1Tail.equiv_of_surjective`**: a conditional equivalence, parametrized by an explicit
+3. **`H1Tail.equivOfSurjective`**: a conditional equivalence, parametrized by an explicit
    `Function.Surjective (tailToH1 D)` hypothesis (per `CONVENTIONS.md` rule 3 and the design's own
    R1 fallback plan) — an honest statement, not a vacuous one, ready the moment surjectivity lands.
 
@@ -1756,11 +1771,11 @@ the next builder does not have to redo this analysis) shows:
   `H¹(𝒪_X)`-valued obstruction (dimension = genus), and there is no elementary reason it vanishes
   — indeed it should generically **not** vanish; what Mittag-Leffler theory guarantees is that the
   *marked-point tail data* can absorb it, which is a genuinely analytic fact (classically proved
-  via ∂̄-solving with prescribed principal parts, i.e. subtracting a local singular correction then
-  solving a *smooth* ∂̄-problem for the remainder) — **not** a fact this unit's editable surface
+  via dbar-solving with prescribed principal parts, i.e. subtracting a local singular correction then
+  solving a *smooth* dbar-problem for the remainder) — **not** a fact this unit's editable surface
   (`Jacobian/LaurentTail/` only, per the task's hard rules) has the machinery to prove: it would
   need a genuinely new result in `Jacobian/Dbar/`/`Jacobian/DolbeaultComparison/` (a meromorphic,
-  not smooth, ∂̄-existence theorem), which is out of scope for this unit to build even if time
+  not smooth, dbar-existence theorem), which is out of scope for this unit to build even if time
   permitted, since those directories are not in this unit's edit surface.
 - An inductive bootstrap from the `D = 0` case (`dolbeaultEquiv`/`cechToH01`, PDE-based, *is* built
   in `DolbeaultComparison/Comparison.lean`) via the six-term sequence's `H1Incl_surjective` was
@@ -1769,11 +1784,11 @@ the next builder does not have to redo this analysis) shows:
   from `0` by a monotone chain in one direction only — this route does not close either without
   additional (unbuilt) input.
 - **Recommendation for whoever picks this up**: either (a) prove a bespoke local statement in
-  `Jacobian/Dbar/` (a meromorphic ∂̄-existence lemma: given a smooth `(0,1)`-form and finitely many
-  prescribed principal parts, solve `∂̄ u = η` away from the marked points with `u` having exactly
+  `Jacobian/Dbar/` (a meromorphic dbar-existence lemma: given a smooth `(0,1)`-form and finitely many
+  prescribed principal parts, solve `dbar u = η` away from the marked points with `u` having exactly
   those principal parts — the classical route), filed as a `docs/requests/dolbeault-comparison.md`
   or `docs/requests/dbar-solvability.md` ask since it is outside this unit's own surface, or
-  (b) accept `H1Tail.equiv_of_surjective`'s conditional form as the unit's final deliverable on
+  (b) accept `H1Tail.equivOfSurjective`'s conditional form as the unit's final deliverable on
   this point, matching the design's own R1 fallback plan exactly.
 
 **Two build-engineering gotchas hit and fixed this pass (recorded so no one repeats the slow

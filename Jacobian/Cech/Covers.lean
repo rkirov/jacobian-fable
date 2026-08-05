@@ -38,7 +38,9 @@ variable {X : Type*} [TopologicalSpace X]
 
 /-- A finite cover of the open set `Ω` by opens of `X`, indexed by `Fin n` (D2). -/
 structure FinCover (Ω : Opens X) : Type _ where
+  /-- The number of members of the cover. -/
   n : ℕ
+  /-- The members of the cover. -/
   U : Fin n → Opens X
   le_base : ∀ i, U i ≤ Ω
   covers : ∀ x ∈ Ω, ∃ i, x ∈ U i

@@ -14,7 +14,7 @@ import Jacobian.Dbar.PlanarCousin
 import Jacobian.Dbar.DiskAcyclic
 
 /-!
-# dbar-solvability: the `∂̄`-equation on Riemann surfaces (namespace `RS`)
+# dbar-solvability: the `dbar`-equation on Riemann surfaces (namespace `RS`)
 
 API summary (see `docs/design/dbar-solvability.md`). Zero sorries throughout.
 

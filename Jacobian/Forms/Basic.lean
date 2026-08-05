@@ -65,22 +65,17 @@ theorem Form1.ext_apply {η η' : Form1 X} (h : ∀ x, ∀ v : TangentSpace 𝓘
     η = η' :=
   Form1.ext' fun x => ContinuousLinearMap.ext fun v => h x v
 
-@[simp]
 theorem Form1.add_apply (η η' : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
     (η + η') x v = η x v + η' x v := rfl
 
-@[simp]
 theorem Form1.smul_apply (c : ℂ) (η : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
     (c • η) x v = c * η x v := rfl
 
-@[simp]
 theorem Form1.zero_apply (x : X) (v : TangentSpace 𝓘(ℂ) x) : (0 : Form1 X) x v = 0 := rfl
 
-@[simp]
 theorem Form1.sub_apply (η η' : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
     (η - η') x v = η x v - η' x v := rfl
 
-@[simp]
 theorem Form1.neg_apply (η : Form1 X) (x : X) (v : TangentSpace 𝓘(ℂ) x) :
     (-η) x v = -(η x v) := rfl
 

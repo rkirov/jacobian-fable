@@ -93,7 +93,7 @@ theorem windowToT_apply_of_not_mem {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.
     {p : X} (hp : p ∉ RS.Cech.diffSupp D D') :
     RS.LaurentTail.windowToT D D' h w p = 0 := by
   show RS.LaurentTail.T.mk D (RS.Cech.diffSupp D D')
-      (fun q => RS.LaurentTail.windowAt_toTailAt (q : X) D (D' q) (w q)) p = 0
+      (fun q => RS.LaurentTail.windowAtToTailAt (q : X) D (D' q) (w q)) p = 0
   exact RS.LaurentTail.T.mk_apply_not_mem hp
 
 /-! ### Exactness at `Window D D'`: `ker (windowConnectT h) = range (windowMap h)` -/
@@ -108,7 +108,7 @@ theorem windowToT_windowMap {D D' : RS.Divisor X} (h : D ≤ D') (φ : RS.LinSys
   rw [alphaL_apply]
   by_cases hp : p ∈ RS.Cech.diffSupp D D'
   · rw [RS.LaurentTail.windowToT_apply D D' h (RS.Cech.windowMap h φ) ⟨p, hp⟩,
-      RS.Cech.windowMap_apply, RS.LaurentTail.windowAt_toTailAt_mk,
+      RS.Cech.windowMap_apply, RS.LaurentTail.windowAtToTailAt_mk,
       RS.Cech.restrictToChart_apply_coe, alpha_apply]
   · rw [windowToT_apply_of_not_mem h _ hp, eq_comm, alpha_apply_eq_zero_iff]
     have hDeq : D p = D' p := by
@@ -149,7 +149,7 @@ theorem windowConnectT_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.
     have h1 : TailAt.mk (q : X) D (RS.MeroGermOn.restrict (Set.subset_univ _) f) =
         TailAt.mk (q : X) D (ξ q : RS.MeroGermOn X (chartAt ℂ (q : X)).source) := by
       rw [← alpha_apply, ← alphaL_apply, hf, RS.LaurentTail.windowToT_apply D D' h w q,
-        ← hξspec q, RS.LaurentTail.windowAt_toTailAt_mk]
+        ← hξspec q, RS.LaurentTail.windowAtToTailAt_mk]
     have h2 : TailAt.mk (q : X) D
         ((RS.MeroGermOn.restrict (Set.subset_univ _) f : RS.MeroGermOn X (chartAt ℂ (q : X)).source)
           - (ξ q : RS.MeroGermOn X (chartAt ℂ (q : X)).source)) = 0 := by
@@ -234,7 +234,7 @@ theorem truncT_windowToT_eq_zero {D D' : RS.Divisor X} (h : D ≤ D') (w : RS.Ce
   · obtain ⟨ξ, hξ⟩ := RS.Cech.WindowAt.mk_surjective p (D p) (D' p) (w ⟨p, hp⟩)
     have hval : RS.LaurentTail.windowToT D D' h w p = TailAt.mk p D (ξ : RS.MeroGermOn X _) := by
       rw [RS.LaurentTail.windowToT_apply D D' h w ⟨p, hp⟩, ← hξ,
-        RS.LaurentTail.windowAt_toTailAt_mk]
+        RS.LaurentTail.windowAtToTailAt_mk]
     rw [hval, truncAt_mk, TailAt.mk_eq_zero_iff]
     exact ξ.2
   · rw [windowToT_apply_of_not_mem h w hp, map_zero]
@@ -275,9 +275,9 @@ theorem H1TailIncl_eq_zero_iff {D D' : RS.Divisor X} (h : D ≤ D') (z : H1Tail 
     intro p
     by_cases hp : p ∈ RS.Cech.diffSupp D D'
     · rw [RS.LaurentTail.windowToT_apply D D' h w ⟨p, hp⟩]
-      show RS.LaurentTail.windowAt_toTailAt p D (D' p)
+      show RS.LaurentTail.windowAtToTailAt p D (D' p)
           (RS.Cech.WindowAt.mk p (D p) (D' p) ⟨ψ ⟨p, hp⟩, hψmem ⟨p, hp⟩⟩) = τ' p
-      rw [RS.LaurentTail.windowAt_toTailAt_mk]
+      rw [RS.LaurentTail.windowAtToTailAt_mk]
       exact hψspec ⟨p, hp⟩
     · rw [windowToT_apply_of_not_mem h w hp]
       have hDeq : D p = D' p := by

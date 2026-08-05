@@ -26,7 +26,7 @@ part of its Serre-duality export bank (`i_neg_eq_h1T` at `D = 0`, composed with 
 which is gated on `tailToH1`'s surjectivity, a genuinely hard (classically Serre-circular / Cousin
 I-flavored) analytic fact that `laurent-tails`'s own build pass left open and which is out of
 scope for this challenge (per the orchestrator's 2026-07-08 addendum). Only the CONDITIONAL
-`RS.LaurentTail.H1Tail.equiv_of_surjective` exists upstream. The challenge API itself never
+`RS.LaurentTail.H1Tail.equivOfSurjective` exists upstream. The challenge API itself never
 mentions Čech `H¹` — this gap does not block anything else in this project.
 -/
 

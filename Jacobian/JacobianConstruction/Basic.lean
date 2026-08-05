@@ -66,7 +66,7 @@ abbrev Jac₀ : Type := (Fin (genus X) → ℂ) ⧸ (periodSubgroup X).topologic
 `Torus.compactSpace_torus` is stated for a `Submodule ℤ V`, while the `ChartedSpace`/`IsManifold`/
 `LieAddGroup` hooks are stated for the `AddSubgroup` directly): the underlying carrier sets agree
 (`AddSubgroup.coe_toIntSubmodule`), so the two subtypes are homeomorphic. -/
-instance discreteTopology_toIntSubmodule {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
+instance discreteTopology_toIntSubmodule {V : Type*} [NormedAddCommGroup V]
     (S : AddSubgroup V) [DiscreteTopology S] : DiscreteTopology S.toIntSubmodule := by
   have h : (S.toIntSubmodule : Set V) = (S : Set V) := AddSubgroup.coe_toIntSubmodule S
   exact (Homeomorph.setCongr h).discreteTopology_iff.2 ‹DiscreteTopology S›

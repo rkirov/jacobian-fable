@@ -18,21 +18,21 @@ Unit: abel-theorem. Namespace `RS.Abel`.
 `A` (pole) and `B` (zero) inside a common chart ball — exactly what one `ChartChain` link
 supplies — it produces the piece function `f : X → ℂ` (the `SingleChart.lean` recipe:
 `g ∘ e` on the chart source, `1` outside) TOGETHER with its packaged global `(0,1)`-form
-`η = ∂̄ log f` (via `ChartSupportedData.form`) and the five facts the assembly
+`η = dbar log f` (via `ChartSupportedData.form`) and the five facts the assembly
 (`UpgradeDischarge.lean`) needs:
 
 1. real-smoothness off the pole;
 2. non-vanishing off the divisor;
-3. the `∂̄ log`-matching `∂̄(f ∘ chart⁻¹) = η-coefficient · f` at every preferred-chart center
+3. the `dbar log`-matching `dbar(f ∘ chart⁻¹) = η-coefficient · f` at every preferred-chart center
    off the divisor;
 4. the punctured-limit factorization `f(z)·(z - z₀)^(-linkOrd) → C ≠ 0` at EVERY point (the
    `Rechart`-free order bookkeeping input);
-5. the pairing identity `∬ η ∧ θ = π (Gp(eB) - Gp(eA))` for any chart primitive `Gp` of `θ`
+5. the pairing identity `∫∫ η ∧ θ = π (Gp(eB) - Gp(eA))` for any chart primitive `Gp` of `θ`
    (`pairing_form` + `integral_dlog_mul`).
 
 Also here: the planar promotion lemma `meromorphicAt_of_tendsto_factor` (punctured holomorphy
 plus a factor limit pin `meromorphicOrderAt`, via mathlib's removable-singularity theorem and
-`tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero`) and the `∂̄` finite product rule
+`tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero`) and the `dbar` finite product rule
 `wirtingerDbar_finset_prod`.
 -/
 
@@ -110,7 +110,7 @@ theorem meromorphicAt_of_tendsto_factor {F : ℂ → ℂ} {z₀ C : ℂ} {m : �
     exact meromorphicOrderAt_zpow_id_sub_const
   rw [hordG, hzo, zero_add]
 
-/-! ## The `∂̄` finite product rule -/
+/-! ## The `dbar` finite product rule -/
 
 theorem differentiableAt_finset_prod {ι : Type*} (s : Finset ι) {f : ι → ℂ → ℂ} {z : ℂ}
     (hf : ∀ i ∈ s, DifferentiableAt ℝ (f i) z) :
@@ -334,7 +334,7 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
         exact hxK
       filter_upwards [hpre] with z hz
       exact hf_one_off_Kf _ hz
-    -- (3) the ∂̄ log matching at chart centers
+    -- (3) the dbar log matching at chart centers
     have hdlog : ∀ x, x ≠ A → x ≠ B →
         RS.wirtingerDbar (f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x)
           = D.form.coeffAt x (chartAt ℂ x x) * f x := by

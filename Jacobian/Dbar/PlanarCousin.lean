@@ -16,7 +16,7 @@ project-independent (design D10).
 `exists_smooth_splitting`: `H¹(finite cover of open `V`, sheaf of smooth functions) = 0`
 (Forster 12.6, planar) — PoU-weighted average splits any smooth additive cocycle.
 `exists_holo_splitting_ball`: Forster 13.4 (disk Cousin I) — correct the smooth splitting by a
-`∂̄`-solution (13.2/`SolveDisk`) to make it holomorphic.
+`dbar`-solution (13.2/`SolveDisk`) to make it holomorphic.
 
 Cocycle convention matched to cech's `d0` (`(d0 h)_{ij} = h_j − h_i`) and `Z1.rel_res`
 (`f_{jk} − f_{ik} + f_{ij} = 0`, i.e. `f i k = f i j + f j k`).

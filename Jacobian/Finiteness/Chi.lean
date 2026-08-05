@@ -61,9 +61,11 @@ instance finiteDimensional_linSys [ConnectedSpace X] (D : RS.Divisor X) :
 
 /-! ### The χ ledger's frozen definitions -/
 
+/-- `h¹(D)`: the dimension of the first Čech cohomology of `𝒪_D`. -/
 noncomputable def h1 (D : RS.Divisor X) : ℕ := Module.finrank ℂ (H1 D)
 
-noncomputable def chi [ConnectedSpace X] (D : RS.Divisor X) : ℤ := (RS.l D : ℤ) - (h1 D : ℤ)
+/-- The Euler characteristic `χ(D) = l(D) - h¹(D)`. -/
+noncomputable def chi (D : RS.Divisor X) : ℤ := (RS.l D : ℤ) - (h1 D : ℤ)
 
 /-! ### The shared six-term rank bookkeeping -/
 

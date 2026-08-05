@@ -51,7 +51,7 @@ defer), now unconditional. -/
 theorem finrank_H1_zero_eq_genus :
     Module.finrank ℂ (RS.Cech.H1 (0 : RS.Divisor X)) = genus X := by
   classical
-  have e1 := RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X)
+  have e1 := RS.LaurentTail.H1Tail.equivOfSurjective (0 : RS.Divisor X)
     tailToH1_zero_surjective
   rw [← e1.finrank_eq]
   exact RS.TailDuality.h1T_zero_eq_genus

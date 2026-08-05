@@ -14,8 +14,8 @@ import Jacobian.Dbar.CauchyKernel
 
 Unit: dbar-solvability (`docs/design/dbar-solvability.md` §4.3, §6). Mathlib-only planar file.
 
-The main theorem `exists_dbar_solution_ball` solves `∂̄u = g` on a finite open disk for `g`
-smooth there, by an exhaustion + correction sequence: solve `∂̄fₙ = g` on shrinking closed
+The main theorem `exists_dbar_solution_ball` solves `dbaru = g` on a finite open disk for `g`
+smooth there, by an exhaustion + correction sequence: solve `dbarfₙ = g` on shrinking closed
 sub-balls via `cauchyTransform` of a cutoff of `g` (13.1), then correct each `fₙ` by a partial
 sum of the power series of the (holomorphic) difference `f_{n+1} - fₙ`, chosen small enough
 that the corrected sequence converges locally uniformly to a solution on the whole disk.

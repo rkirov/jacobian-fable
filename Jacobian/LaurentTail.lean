@@ -19,7 +19,7 @@ not a missing dependency). **NOT registered in `Jacobian.lean`** (orchestrator's
 
 * **`TailSpace.lean`** (D1/D2/D4, zero sorries): `TailAt p D` (**`abbrev`**, germs at the chart
   source of `p` modulo `Cech.ordGe p (-(D p))`) + `TailAt.mk`/`mk_eq_zero_iff`/`mk_surjective`;
-  `windowAt_toTailAt`/`exists_windowAt_repr` (Cech's finite window embeds, every class has *some*
+  `windowAtToTailAt`/`exists_windowAt_repr` (Cech's finite window embeds, every class has *some*
   finite representative); `T D := Π₀ p, TailAt p D` (**`abbrev`**, `[DecidableEq X]`) + `T.mk`/
   `mk_apply_mem`/`mk_apply_not_mem`; `windowToT` (the finite skyscraper `Window D D'` embeds in
   `T D`, `[CompactSpace X]`). `mulTailAt`/`mulTail`/`mulTailEquiv` (design §2 D5) are **not
@@ -44,7 +44,7 @@ not a missing dependency). **NOT registered in `Jacobian.lean`** (orchestrator's
   genuinely beyond this unit's own `Jacobian/LaurentTail/`-only edit surface, **not** a
   bookkeeping gap despite `dolbeault-comparison`'s Leray theorem (`toH1_surjective_of_isGood`)
   having landed in the interim — Leray gets a good-cover representative but does not by itself
-  collapse it to marked-point-supported Mittag-Leffler data. `H1Tail.equiv_of_surjective` ships
+  collapse it to marked-point-supported Mittag-Leffler data. `H1Tail.equivOfSurjective` ships
   as an honest conditional equivalence (`Function.Surjective (tailToH1 D) → H1Tail D ≃ₗ[ℂ]
   Cech.H1 D`), ready the moment surjectivity lands. Reusable byproducts: a registered
   `AddCommGroup (Cech.H1 D)` instance (`instAddCommGroupH1`), `mlClass_congr` (dependent-argument
@@ -66,7 +66,7 @@ audit already reconciled against these exact names): `T D`, `TailAt p D`, `alpha
 shapes exactly. `H1Tail.toH1 : H1Tail D →ₗ[ℂ] Cech.H1 D` is now **unconditionally injective**
 (`H1Tail.toH1_injective`, zero sorries) — only the full `H1Tail.equiv : H1Tail D ≃ₗ[ℂ] Cech.H1 D`
 (needing surjectivity too) remains gated; `Comparison.lean` ships the conditional
-`H1Tail.equiv_of_surjective` (an honest, non-vacuous, hypothesis-parametrized equivalence) in the
+`H1Tail.equivOfSurjective` (an honest, non-vacuous, hypothesis-parametrized equivalence) in the
 meantime. `serre-duality-tails` should build everything that only needs `T D`/`TailAt p D`/
 `alphaL`/`H1Tail D` now (per its own design doc §4's build-wave note: "file 1 gates only on
 `TailSpace.lean`/`Truncation.lean` — NOT on `Comparison.lean`"), and revisit the full `H1Tail.equiv`

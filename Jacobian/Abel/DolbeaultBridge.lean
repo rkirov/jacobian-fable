@@ -26,7 +26,7 @@ actually landed, its own root docstring flagged that `H1Tail.equiv` does **not e
 Čech-comparison direction `H1Tail D ≃ₗ Cech.H1 D` needs `LaurentTail.tailToH1`'s **surjectivity**,
 which is a genuine, out-of-scope Mittag-Leffler/Cousin-I-style existence theorem (`laurent-tails`'
 own `Comparison.lean` file-end note), *not* a bookkeeping gap — only the UNCONDITIONAL injectivity
-(`H1Tail.toH1_injective`) and the conditional `LaurentTail.H1Tail.equiv_of_surjective` (taking
+(`H1Tail.toH1_injective`) and the conditional `LaurentTail.H1Tail.equivOfSurjective` (taking
 surjectivity as an explicit hypothesis, per that unit's own `CONVENTIONS.md`-rule-3-compliant
 fallback) are available.
 
@@ -45,7 +45,7 @@ this file's own conclusion.
   (`Form1 X ≃ₗ MForm.OmegaSpace 0`, canonical-forms, unconditional) composed with a `neg_zero`
   cast and `RS.TailDuality.resEquiv 0` (`MForm.OmegaSpace (-0) ≃ₗ Dual (H1Tail 0)`,
   serre-duality-tails, unconditional — Miranda Thm 3.3 itself, not merely a dimension count).
-* Given `hsurj`, `RS.LaurentTail.H1Tail.equiv_of_surjective 0 hsurj : H1Tail 0 ≃ₗ Cech.H1 0` and
+* Given `hsurj`, `RS.LaurentTail.H1Tail.equivOfSurjective 0 hsurj : H1Tail 0 ≃ₗ Cech.H1 0` and
   `RS.dolbeaultEquiv : Cech.H1 0 ≃ₗ H01 X` (dolbeault-comparison, unconditional) let us pull
   `H01.mk η` (the Dolbeault class of a candidate `(0,1)`-form `η`) BACK to an `H1Tail 0` element
   `e`. If `e` pairs to zero (via `formDualEquiv`) against a full basis of `Form1 X`, then — since
@@ -90,25 +90,25 @@ honored: no harmonic theory, no Hodge `*`-operator). Gated on `hsurj`, `serre-du
 one remaining external blocker (Mittag-Leffler/Cousin-I surjectivity, out of scope for this
 challenge) — see the file docstring. If a smooth global `(0,1)`-form `η` pairs to zero (via
 `formDualEquiv`, the residue/Serre pairing) against a full basis of `Form1 X` — after pulling
-`η`'s Dolbeault class back to `H1Tail 0` through `dolbeaultEquiv`/`H1Tail.equiv_of_surjective` —
+`η`'s Dolbeault class back to `H1Tail 0` through `dolbeaultEquiv`/`H1Tail.equivOfSurjective` —
 then `η` is `d''`-exact. -/
 theorem exists_dbar_eq_zero_of_forall_basis_pairing_eq_zero
     (hsurj : Function.Surjective (RS.LaurentTail.tailToH1 (0 : RS.Divisor X)))
     {η : RS.Form01 X}
     (h : ∀ i : Fin (genus X),
       formDualEquiv (RS.basis X i)
-        ((RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
+        ((RS.LaurentTail.H1Tail.equivOfSurjective (0 : RS.Divisor X) hsurj).symm
           ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η))) = 0) :
     ∃ u : RS.SmoothC X, RS.dbar u = η := by
   apply RS.H01.mk_eq_zero_iff.1
   have hzero :
-      (RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
+      (RS.LaurentTail.H1Tail.equivOfSurjective (0 : RS.Divisor X) hsurj).symm
         ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η)) = 0 := by
     rw [← Module.forall_dual_apply_eq_zero_iff ℂ]
     intro φ
     obtain ⟨g, rfl⟩ := formDualEquiv.surjective φ
     have hL : ((LinearMap.applyₗ
-          ((RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj).symm
+          ((RS.LaurentTail.H1Tail.equivOfSurjective (0 : RS.Divisor X) hsurj).symm
             ((RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η)))).comp formDualEquiv.toLinearMap
         : RS.Form1 X →ₗ[ℂ] ℂ) = 0 := by
       apply (RS.basis X).ext
@@ -117,7 +117,7 @@ theorem exists_dbar_eq_zero_of_forall_basis_pairing_eq_zero
     have := congrArg (fun L => L g) hL
     simpa using this
   have hde : (RS.dolbeaultEquiv (X := X)).symm (RS.H01.mk η) = 0 := by
-    have h2 := congrArg (RS.LaurentTail.H1Tail.equiv_of_surjective (0 : RS.Divisor X) hsurj) hzero
+    have h2 := congrArg (RS.LaurentTail.H1Tail.equivOfSurjective (0 : RS.Divisor X) hsurj) hzero
     rwa [LinearEquiv.apply_symm_apply, map_zero] at h2
   have h3 := congrArg (RS.dolbeaultEquiv (X := X)) hde
   rwa [LinearEquiv.apply_symm_apply, map_zero] at h3

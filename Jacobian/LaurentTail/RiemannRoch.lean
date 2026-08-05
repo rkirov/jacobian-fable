@@ -30,12 +30,12 @@ Unit: laurent-tails (`docs/design/laurent-tails.md` §4.4, §0).
    as a **proven-hard** analytic fact (comparable to a Mittag-Leffler/Cousin-I existence theorem,
    genuinely outside this unit's `Jacobian/LaurentTail/`-only edit surface — see that note for the
    full risk writeup and recommended next steps), not a bookkeeping gap. `Comparison.lean` ships
-   a conditional `H1Tail.equiv_of_surjective : Function.Surjective (tailToH1 D) →
+   a conditional `H1Tail.equivOfSurjective : Function.Surjective (tailToH1 D) →
    (H1Tail D ≃ₗ[ℂ] Cech.H1 D)` as an honest (non-vacuous, `CONVENTIONS.md` rule 3) placeholder for
    this file's own bridge to key off once surjectivity lands.
 
 Since gate 2 is still closed, this file remains **empty of content** (a stub restating §4.4 now,
-keyed off `H1Tail.equiv_of_surjective` plus an unproved surjectivity hypothesis, would just move
+keyed off `H1Tail.equivOfSurjective` plus an unproved surjectivity hypothesis, would just move
 the same open hypothesis here without discharging it — no more usable than leaving it absent, and
 `CONVENTIONS.md` rule 3 prefers absence to a hypothesis-parametrized restatement that
 adds a layer of indirection for zero benefit here, since the true blocker is identical either way).

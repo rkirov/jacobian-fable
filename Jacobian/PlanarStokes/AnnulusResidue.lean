@@ -25,7 +25,7 @@ import Mathlib.MeasureTheory.Group.MeasurableEquiv
 Unit: planar-stokes-atoms (`docs/design/planar-stokes.md` §7–§8). Two theorems:
 
 * `circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` (Atom 1′): the
-  area-to-boundary identity for the `∂̄` of an arbitrary `C¹` function on a closed annulus, proved
+  area-to-boundary identity for the `dbar` of an arbitrary `C¹` function on a closed annulus, proved
   by the exponential substitution `w = c + exp ζ` mapping a rectangle onto the annulus. No
   meromorphy, no residues.
 * `integral_wirtingerDbar_mul_eq_neg_pi_mul_resAt` (Atom 2, the smeared residue theorem) and its
@@ -134,8 +134,8 @@ private theorem measure_frame_null (a b lo hi : ℝ) (hab : a ≤ b) (hlohi : lo
       (measure_reProdIm_pair_im (Set.Icc a b) lo hi)
   exact measure_mono_null hsub hbound
 
-/-- The exp-substitution algebraic core (de-risked in the design's spike, §9): the `∂̄` of the
-transported function `u(c + exp ·) * exp` sees `u`'s `∂̄` scaled by `‖exp ζ‖²`. -/
+/-- The exp-substitution algebraic core (de-risked in the design's spike, §9): the `dbar` of the
+transported function `u(c + exp ·) * exp` sees `u`'s `dbar` scaled by `‖exp ζ‖²`. -/
 private theorem wirtingerDbar_expSubst_eq {c ζ : ℂ}
     (hu : DifferentiableAt ℝ u (c + Complex.exp ζ)) :
     wirtingerDbar (fun w => u (c + Complex.exp w) * Complex.exp w) ζ =
@@ -163,7 +163,7 @@ end Helpers
 /-! ## The annulus identity (Atom 1′) -/
 
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
-for the `∂̄` of an arbitrary `C¹` function on a closed annulus. -/
+for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
     {u : ℂ → ℂ} {c : ℂ} {r R : ℝ} (h0 : 0 < r) (hle : r ≤ R)
     (hu : ContDiffOn ℝ 1 u (Metric.closedBall c R \ Metric.ball c r)) :

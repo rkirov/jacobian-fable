@@ -16,7 +16,7 @@ import Jacobian.Dbar.Wirtinger
 Unit: dbar-solvability (`docs/design/dbar-solvability.md` §4.2, §5). Mathlib-only planar file.
 
 `cauchyKernel w := (π w)⁻¹`; `cauchyTransform g := cauchyKernel ⋆[mul ℝ ℂ] g`. The pointwise
-identity `∂̄(cauchyKernel ⋆ g) = g` for compactly supported `C¹` `g` (`cauchyPompeiu`) is proved by
+identity `dbar(cauchyKernel ⋆ g) = g` for compactly supported `C¹` `g` (`cauchyPompeiu`) is proved by
 polar coordinates + 1-D FTC in the radial and angular directions (design §5): the convolution
 derivative package handles "differentiate under the integral", and the polar substitution makes
 the kernel singularity cancel exactly.
@@ -447,14 +447,14 @@ theorem cauchyPompeiu (hg : ContDiff ℝ 1 g) (hcs : HasCompactSupport g) (z : �
   field_simp
   ring
 
-/-- Forster 13.1: `∂̄` of the Cauchy transform recovers `g`. -/
+/-- Forster 13.1: `dbar` of the Cauchy transform recovers `g`. -/
 theorem wirtingerDbar_cauchyTransform_eq (hg : ContDiff ℝ ∞ g) (hcs : HasCompactSupport g) :
     ∀ z, wirtingerDbar (cauchyTransform g) z = g z := by
   intro z
   rw [wirtingerDbar_cauchyTransform g hg hcs z]
   exact cauchyPompeiu g (hg.of_le (by norm_num)) hcs z
 
-/-- Forster 13.1, existential form: `∂̄u = g` is solvable for compactly supported smooth `g`. -/
+/-- Forster 13.1, existential form: `dbaru = g` is solvable for compactly supported smooth `g`. -/
 theorem exists_dbar_solution_of_hasCompactSupport (hg : ContDiff ℝ ∞ g)
     (hcs : HasCompactSupport g) : ∃ u, ContDiff ℝ ∞ u ∧ ∀ z, wirtingerDbar u z = g z :=
   ⟨cauchyTransform g, contDiff_cauchyTransform g hg hcs, wirtingerDbar_cauchyTransform_eq g hg hcs⟩

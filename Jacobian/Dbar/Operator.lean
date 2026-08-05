@@ -8,7 +8,7 @@ import Jacobian.Dbar.SolveDisk
 import Jacobian.Dbar.Form01
 
 /-!
-# The intrinsic `∂̄` operator and `IsDbarOn` (`Jacobian/Dbar/Operator.lean`)
+# The intrinsic `dbar` operator and `IsDbarOn` (`Jacobian/Dbar/Operator.lean`)
 
 Unit: dbar-solvability (`docs/design/dbar-solvability.md` D6/D7, §4.7, §7.3-4).
 
@@ -24,8 +24,8 @@ chart-representative smoothness needed for `dbar`, are proved via the CC7 bridge
 smoothness" lemma (`extChartAt 𝓘(ℂ) x` coincides with `chartAt ℂ x` definitionally, `Compat`
 bridge facts checked in-line).
 
-The intrinsic `∂̄ : SmoothC X →ₗ[ℂ] Form01 X` is chart-local `wirtingerDbar` of the chart
-representative; `IsDbarAt`/`IsDbarOn` are the chart-free (evaluated-at-centers) local ∂̄-equation
+The intrinsic `dbar : SmoothC X →ₗ[ℂ] Form01 X` is chart-local `wirtingerDbar` of the chart
+representative; `IsDbarAt`/`IsDbarOn` are the chart-free (evaluated-at-centers) local dbar-equation
 predicates (D7); `exists_dbar_solution_chart_ball` transports Forster 13.2 (`SolveDisk.lean`)
 through a chart.
 -/
@@ -41,8 +41,9 @@ variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(
 
 /-! ### `SmoothC X`: real-smooth `ℂ`-valued functions, with `ℂ`-linear structure -/
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Real-smooth `ℂ`-valued functions on `X`, as a private subtype (D6). -/
-def SmoothC (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] :
+def SmoothC (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] :
     Type _ :=
   {f : X → ℂ // ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f}
 
@@ -52,6 +53,7 @@ instance : FunLike (SmoothC X) X ℂ where
   coe f := f.1
   coe_injective _ _ h := Subtype.ext h
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem contMDiff (f : SmoothC X) : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ (⇑f) := f.2
 
 /-- **Compat** (design §4.7): the chart representative of a `SmoothC` function is planar-smooth
@@ -112,6 +114,7 @@ instance : SMul ℂ (SmoothC X) where
 @[simp] theorem coe_zero (x : X) : (0 : SmoothC X) x = 0 := rfl
 @[simp] theorem coe_smul (c : ℂ) (f : SmoothC X) (x : X) : (c • f) x = c * f x := rfl
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem ext' {f g : SmoothC X} (h : ∀ x, f x = g x) : f = g :=
   DFunLike.coe_injective (funext h)
 
@@ -135,13 +138,14 @@ instance : Module ℂ (SmoothC X) where
 
 end SmoothC
 
-/-! ### The intrinsic `∂̄` -/
+/-! ### The intrinsic `dbar` -/
 
 /-- The raw coefficient family underlying `dbar f`: chart-local `wirtingerDbar` of the chart
 representative of `f`, junk-zero off the chart target. -/
 private def dbarCoeffAt (f : SmoothC X) (x : X) : ℂ → ℂ :=
   (chartAt ℂ x).target.indicator (fun z => wirtingerDbar (⇑f ∘ ⇑(chartAt ℂ x).symm) z)
 
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 private theorem dbarCoeffAt_of_mem (f : SmoothC X) (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ x).target) :
     dbarCoeffAt f x z = wirtingerDbar (⇑f ∘ ⇑(chartAt ℂ x).symm) z :=
   Set.indicator_of_mem hz _
@@ -179,7 +183,7 @@ private theorem dbarCoeffAt_compat (f : SmoothC X) (x y : X) (z : ℂ)
     wirtingerDbar_comp_differentiableAt (⇑f ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ y p) hFx_diff hτ_diff,
     hτ_pt]
 
-/-- The intrinsic `∂̄`, chart-locally the planar Wirtinger operator. -/
+/-- The intrinsic `dbar`, chart-locally the planar Wirtinger operator. -/
 noncomputable def dbar : SmoothC X →ₗ[ℂ] Form01 X where
   toFun f :=
     { coeffAt := dbarCoeffAt f
@@ -217,13 +221,13 @@ theorem coeffAt_dbar (f : SmoothC X) (x : X) {z : ℂ} (hz : z ∈ (chartAt ℂ 
     (dbar f).coeffAt x z = wirtingerDbar (⇑f ∘ ⇑(chartAt ℂ x).symm) z :=
   dbarCoeffAt_of_mem f x hz
 
-/-! ### `IsDbarAt` / `IsDbarOn` (D7): chart-free local `∂̄`-equations -/
+/-! ### `IsDbarAt` / `IsDbarOn` (D7): chart-free local `dbar`-equations -/
 
-/-- `u` solves `∂̄u = η` at `x`, evaluated in `x`'s own preferred chart. -/
+/-- `u` solves `dbaru = η` at `x`, evaluated in `x`'s own preferred chart. -/
 def IsDbarAt (u : X → ℂ) (η : Form01 X) (x : X) : Prop :=
   wirtingerDbar (u ∘ ⇑(chartAt ℂ x).symm) (chartAt ℂ x x) = η.coeffAt x (chartAt ℂ x x)
 
-/-- `u` solves `∂̄u = η` at every point of `s`. -/
+/-- `u` solves `dbaru = η` at every point of `s`. -/
 def IsDbarOn (u : X → ℂ) (η : Form01 X) (s : Set X) : Prop := ∀ x ∈ s, IsDbarAt u η x
 
 theorem isDbarOn_dbar (f : SmoothC X) : IsDbarOn (⇑f) (dbar f) Set.univ := by
@@ -232,7 +236,7 @@ theorem isDbarOn_dbar (f : SmoothC X) : IsDbarOn (⇑f) (dbar f) Set.univ := by
     (dbar f).coeffAt x (chartAt ℂ x x)
   rw [coeffAt_dbar f x (mem_chart_target ℂ x)]
 
-/-- The chart-transition transport of the local `∂̄`-equation: `IsDbarAt` at every point of `s`
+/-- The chart-transition transport of the local `dbar`-equation: `IsDbarAt` at every point of `s`
 (each evaluated in ITS OWN preferred chart) forces the coefficient equation for `η` to hold on
 the WHOLE image of `s` under any single chart `x₀` whose source contains `s`, provided `u` is
 `ContMDiff` there (needed to actually invoke the `(0,1)` chain rule, not just junk-`0`
@@ -308,7 +312,7 @@ private theorem contDiffOn_comp_chartAt_symm_of_contMDiffOn {u : X → ℂ} {s :
     exact hys
   exact contMDiffOn_iff_contDiffOn.1 hcomp
 
-/-- Deliverable (iv): a smooth `∂̄`-closed function is holomorphic. -/
+/-- Deliverable (iv): a smooth `dbar`-closed function is holomorphic. -/
 theorem contMDiffOn_omega_of_isDbarOn_zero {u : X → ℂ} {s : Set X} (hs : IsOpen s)
     (hu : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u s) (h : IsDbarOn u 0 s) :
     ContMDiffOn 𝓘(ℂ) 𝓘(ℂ) ω u s := by
@@ -337,7 +341,7 @@ theorem contMDiffOn_omega_of_isDbarOn_zero {u : X → ℂ} {s : Set X} (hs : IsO
       inter_subset_right (hs.inter (chartAt ℂ x₀).open_source)).2 hanalytic
   exact (hOn.contMDiffAt ((hs.inter (chartAt ℂ x₀).open_source).mem_nhds hxs₀)).contMDiffWithinAt
 
-/-- Deliverable (v): two smooth solutions of the same `∂̄`-equation differ by a holomorphic
+/-- Deliverable (v): two smooth solutions of the same `dbar`-equation differ by a holomorphic
 function. -/
 theorem contMDiffOn_omega_sub_of_isDbarOn {u v : X → ℂ} {η : Form01 X} {s : Set X}
     (hs : IsOpen s) (hu : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ u s)
@@ -360,7 +364,7 @@ theorem contMDiffOn_omega_sub_of_isDbarOn {u v : X → ℂ} {η : Form01 X} {s :
 
 /-! ### Chart-disk solvability -/
 
-/-- Deliverable (vi): Forster 13.2, transported through a chart — `∂̄` is surjective from
+/-- Deliverable (vi): Forster 13.2, transported through a chart — `dbar` is surjective from
 `SmoothC`-representatives onto `Form01` data supported in a chart disk. -/
 theorem exists_dbar_solution_chart_ball {x₀ : X} {r : ℝ} (hr : 0 < r) {V : Set X}
     (hVs : V ⊆ (chartAt ℂ x₀).source)

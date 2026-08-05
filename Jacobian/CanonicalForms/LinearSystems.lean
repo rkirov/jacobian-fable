@@ -15,7 +15,7 @@ Unit: canonical-forms (`docs/design/canonical-forms.md` §2 D11–D13, §4.5, pr
   meromorphic 1-forms with `-D ≤` order everywhere, defined order-wise on the QUOTIENT (mirrors
   `LinSys`'s primary definition); `MForm.i D` (index of speciality). Instance-free (the order-wise
   carrier needs no topology), strictly more general than the design's listing.
-* **D11** `Ω_iso_linSys : OmegaSpace D ≃ₗ[ℂ] LinSys (D + canonicalDivisorOf θ₀)` (Forster 17.4 /
+* **D11** `ΩIsoLinSys : OmegaSpace D ≃ₗ[ℂ] LinSys (D + canonicalDivisorOf θ₀)` (Forster 17.4 /
   Miranda `Ω_D ≅ O_{D+K}`), via D8's one-dimensionality (`LinearEquiv.ofBijective` of
   `h ↦ h • θ₀`, membership transported by the pointwise `smul_mem_omegaSpace_iff` dictionary);
   `i_eq_l_add_canonicalDivisorOf`.
@@ -99,6 +99,7 @@ section OmegaLinSys
 
 variable [T1Space X] [T2Space X] [CompactSpace X] [ConnectedSpace X]
 
+omit [T2Space X] [CompactSpace X] in
 /-- The pointwise membership dictionary (Forster 17.4's computation): `h • θ₀` has order `≥ -D`
 everywhere iff `h ∈ L(D + K)`, `K := canonicalDivisorOf θ₀`. -/
 theorem MForm.smul_mem_omegaSpace_iff {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) {h : ℳ X} {D : Divisor X} :
@@ -125,7 +126,7 @@ noncomputable def linSysToOmega {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (D : Divi
 
 /-- **D11 (Forster 17.4 / Miranda `Ω_D ≅ O_{D+K}`)**: multiplication by a fixed nonzero
 reference `θ₀` (with `K := canonicalDivisorOf θ₀`) is a linear equivalence `Ω(D) ≅ L(D+K)`. -/
-noncomputable def Ω_iso_linSys {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (D : Divisor X) :
+noncomputable def ΩIsoLinSys {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (D : Divisor X) :
     MForm.OmegaSpace D ≃ₗ[ℂ] LinSys (D + canonicalDivisorOf Θ₀) :=
   (LinearEquiv.ofBijective (linSysToOmega h₀ D)
     ⟨fun a b hab =>
@@ -134,10 +135,11 @@ noncomputable def Ω_iso_linSys {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (D : Divi
       obtain ⟨h, hh⟩ := MForm.exists_smul_eq h₀ t.1
       exact ⟨⟨h, (MForm.smul_mem_omegaSpace_iff h₀).1 (hh ▸ t.2)⟩, Subtype.ext hh.symm⟩⟩).symm
 
+omit [CompactSpace X] in
 /-- D11's dimension dictionary: `i(D) = l(D + K)`. -/
 theorem i_eq_l_add_canonicalDivisorOf {Θ₀ : MForm X} (h₀ : Θ₀ ≠ 0) (D : Divisor X) :
     MForm.i D = l (D + canonicalDivisorOf Θ₀) :=
-  (Ω_iso_linSys h₀ D).finrank_eq
+  (ΩIsoLinSys h₀ D).finrank_eq
 
 end OmegaLinSys
 
@@ -296,7 +298,9 @@ theorem genus_eq_finrank_omegaSpace_zero [T2Space X] [CompactSpace X] [Connected
 the preferred chart. A thin wrapper around residue-calculus's already-built `PrincipalPartData`. -/
 structure MLFormData (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X]
     [IsManifold 𝓘(ℂ) ω X] where
+  /-- The finite set of points carrying prescribed principal parts. -/
   pts : Finset X
+  /-- The principal part prescribed at each marked point, read in that point's chart. -/
   data : ∀ x ∈ pts, PrincipalPartData (chartAt ℂ x).target
 
 /-- `μ` realizes the principal parts of `Θ` at every point of `μ.pts` (read in each point's own

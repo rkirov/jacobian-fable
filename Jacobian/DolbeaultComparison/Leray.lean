@@ -60,7 +60,7 @@ omit [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ, ℂ) ω X] in
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- Good covers exist (§6.3 of cech-cohomology, applied to the trivial cover). -/
-theorem exists_goodCover [T2Space X] [CompactSpace X] :
+theorem exists_goodCover [CompactSpace X] :
     ∃ 𝒰 : FinCover (⊤ : Opens X), 𝒰.IsGood := by
   obtain ⟨𝒲, -, hgood⟩ := exists_good_refinement (FinCover.single (⊤ : Opens X))
   exact ⟨𝒲, hgood⟩

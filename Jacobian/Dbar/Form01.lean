@@ -15,7 +15,7 @@ Unit: dbar-solvability (`docs/design/dbar-solvability.md` D5/D8, §4.6).
 Per design D5, `Form01 X` is **not** a bundled `ContMDiffSection` (unlike `Form1`, CC1): there is
 no anti-linear Hom-bundle in mathlib at the pin, and the blueprint's `restrictScalars ℂ→ℝ`
 diamond warning rules out building one. Instead `Form01 X` is a plain structure: a
-`chartAt`-indexed family of coefficient functions (the coefficient of `dz̄`), zero off chart
+`chartAt`-indexed family of coefficient functions (the coefficient of `dz-bar`), zero off chart
 targets (junk-normalized so `ext` is honest), smooth on targets, with the anti-holomorphic
 transition rule `coeff_y = conj (deriv τ) * (coeff_x ∘ τ)`. This mirrors the frozen CC1
 `coeffIn` philosophy (`Jacobian/Forms/Coeffs.lean`) with `conj` inserted, reusing
@@ -35,7 +35,7 @@ namespace RS
 
 variable {X : Type*} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
-/-- A smooth `(0,1)`-form on `X`: a `chartAt`-indexed coefficient family for `dz̄`, junk-zero off
+/-- A smooth `(0,1)`-form on `X`: a `chartAt`-indexed coefficient family for `dz-bar`, junk-zero off
 chart targets, smooth on targets, related on overlaps by the anti-holomorphic transition rule. -/
 structure Form01 (X : Type*) [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X] where
   /-- The coefficient function in the preferred chart at each point. -/
