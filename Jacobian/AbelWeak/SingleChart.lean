@@ -36,6 +36,66 @@ namespace RS.AbelWeak
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) ω X]
 
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
+/-- The planar model is real-smooth away from the two marked points. Split out of
+`exists_weakSolutionOfPair_chart` to keep that proof under the 200-line size we hold ourselves
+to; `g` is rebuilt here so the argument reads exactly as it did inline. -/
+private theorem contDiffAt_planar_model {P Q : X} {e : OpenPartialHomeomorph X ℂ} {c : ℂ} {ρ : ℝ}
+    (ψ : ContDiffBump (0 : ℂ)) (hρψ : ρ < ψ.rIn) (L : ℂ → ℂ)
+    (heq_inner : Set.EqOn (fun z => if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q)
+        else Complex.exp ((ψ (z - c) : ℝ) * L (z - c)))
+      (fun z => (z - e P) / (z - e Q)) (Metric.ball c ψ.rIn))
+    (hLderiv : ∀ z ∈ {z : ℂ | ρ < ‖z‖}, HasDerivAt L
+      (1 / (z - (e P - c)) - 1 / (z - (e Q - c))) z) :
+    ∀ z : ℂ, z ≠ e Q → ContDiffAt ℝ ∞ (fun z => if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q)
+      else Complex.exp ((ψ (z - c) : ℝ) * L (z - c))) z := by
+  set g : ℂ → ℂ := fun z =>
+    if ‖z - c‖ ≤ ρ then (z - e P) / (z - e Q) else Complex.exp ((ψ (z - c) : ℝ) * L (z - c))
+    with hg_def
+  show ∀ z : ℂ, z ≠ e Q → ContDiffAt ℝ ∞ g z
+  intro z hzQ
+  by_cases hcase : ‖z - c‖ < ψ.rIn
+  · have hzmem : z ∈ Metric.ball c ψ.rIn := by rw [Metric.mem_ball, dist_eq_norm]; exact hcase
+    have heq : g =ᶠ[𝓝 z] (fun w => (w - e P) / (w - e Q)) := by
+      filter_upwards [Metric.isOpen_ball.mem_nhds hzmem] with w hw using heq_inner hw
+    have hdiff : ContDiffAt ℝ ∞ (fun w : ℂ => (w - e P) / (w - e Q)) z := by
+      have h1 : ContDiffAt ℂ ∞ (fun w : ℂ => (w - e P) / (w - e Q)) z :=
+        (contDiffAt_id.sub contDiffAt_const).div (contDiffAt_id.sub contDiffAt_const)
+          (sub_ne_zero.mpr hzQ)
+      exact h1.restrict_scalars ℝ
+    exact hdiff.congr_of_eventuallyEq heq
+  · rw [not_lt] at hcase
+    have hzρ : ρ < ‖z - c‖ := lt_of_lt_of_le hρψ hcase
+    have hopen : IsOpen {w : ℂ | ρ < ‖w - c‖} :=
+      isOpen_lt continuous_const (continuous_norm.comp (continuous_id.sub continuous_const))
+    have heq : g =ᶠ[𝓝 z] (fun w => Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) := by
+      filter_upwards [hopen.mem_nhds hzρ] with w hw
+      show (if ‖w - c‖ ≤ ρ then (w - e P) / (w - e Q) else
+        Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) = Complex.exp ((ψ (w - c) : ℝ) * L (w - c))
+      exact if_neg (not_le.mpr hw)
+    have hL_diffOn : DifferentiableOn ℂ L {w : ℂ | ρ < ‖w‖} :=
+      fun w hw => (hLderiv w hw).differentiableAt.differentiableWithinAt
+    have hL_contDiffAt : ContDiffAt ℝ ∞ (fun w : ℂ => L (w - c)) z := by
+      have hLan : AnalyticOnNhd ℂ L {w : ℂ | ρ < ‖w‖} := hL_diffOn.analyticOnNhd
+        (isOpen_lt continuous_const continuous_norm)
+      have h1 : ContDiffAt ℂ ∞ L (z - c) := (hLan (z - c) hzρ).contDiffAt
+      have h2 : ContDiffAt ℝ ∞ L (z - c) := h1.restrict_scalars ℝ
+      have hsub : ContDiffAt ℝ ∞ (fun w : ℂ => w - c) z :=
+        contDiffAt_id.sub contDiffAt_const
+      exact h2.comp z hsub
+    have hψ_contDiffAt : ContDiffAt ℝ ∞ (fun w : ℂ => ψ (w - c)) z := by
+      have hsub : ContDiffAt ℝ ∞ (fun w : ℂ => w - c) z := contDiffAt_id.sub contDiffAt_const
+      have hcomp : ContDiffAt ℝ ∞ ((⇑ψ) ∘ (fun w : ℂ => w - c)) z :=
+        ψ.contDiffAt.comp z hsub
+      exact hcomp
+    have hψ_ofReal : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ)) z :=
+      Complex.ofRealCLM.contDiff.contDiffAt.comp z hψ_contDiffAt
+    have hprod : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ) * L (w - c)) z :=
+      hψ_ofReal.mul hL_contDiffAt
+    have hexp : ContDiffAt ℝ ∞ (fun w : ℂ => Complex.exp (((ψ (w - c) : ℝ) : ℂ) * L (w - c))) z :=
+      (Complex.contDiff_exp (𝕜 := ℝ)).contDiffAt.comp z hprod
+    exact hexp.congr_of_eventuallyEq heq
+
+omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 /-- **The single-chart weak solution** (§6.2-6.3). -/
 theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
     {e : OpenPartialHomeomorph X ℂ} (he : e ∈ IsManifold.maximalAtlas 𝓘(ℂ) ω X)
@@ -91,49 +151,7 @@ theorem exists_weakSolutionOfPair_chart {P Q : X} (hPQ : P ≠ Q)
       rw [if_pos h]
     · exact hg_consistent z (not_le.mp h) hz.le
   -- Step 4: `ContDiffAt ℝ ∞ g z` for every `z ≠ e Q`.
-  have hg_contDiffAt : ∀ z : ℂ, z ≠ e Q → ContDiffAt ℝ ∞ g z := by
-    intro z hzQ
-    by_cases hcase : ‖z - c‖ < ψ.rIn
-    · have hzmem : z ∈ Metric.ball c ψ.rIn := by rw [Metric.mem_ball, dist_eq_norm]; exact hcase
-      have heq : g =ᶠ[𝓝 z] (fun w => (w - e P) / (w - e Q)) := by
-        filter_upwards [Metric.isOpen_ball.mem_nhds hzmem] with w hw using heq_inner hw
-      have hdiff : ContDiffAt ℝ ∞ (fun w : ℂ => (w - e P) / (w - e Q)) z := by
-        have h1 : ContDiffAt ℂ ∞ (fun w : ℂ => (w - e P) / (w - e Q)) z :=
-          (contDiffAt_id.sub contDiffAt_const).div (contDiffAt_id.sub contDiffAt_const)
-            (sub_ne_zero.mpr hzQ)
-        exact h1.restrict_scalars ℝ
-      exact hdiff.congr_of_eventuallyEq heq
-    · rw [not_lt] at hcase
-      have hzρ : ρ < ‖z - c‖ := lt_of_lt_of_le hρψ hcase
-      have hopen : IsOpen {w : ℂ | ρ < ‖w - c‖} :=
-        isOpen_lt continuous_const (continuous_norm.comp (continuous_id.sub continuous_const))
-      have heq : g =ᶠ[𝓝 z] (fun w => Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) := by
-        filter_upwards [hopen.mem_nhds hzρ] with w hw
-        show (if ‖w - c‖ ≤ ρ then (w - e P) / (w - e Q) else
-          Complex.exp ((ψ (w - c) : ℝ) * L (w - c))) = Complex.exp ((ψ (w - c) : ℝ) * L (w - c))
-        exact if_neg (not_le.mpr hw)
-      have hL_diffOn : DifferentiableOn ℂ L {w : ℂ | ρ < ‖w‖} :=
-        fun w hw => (hLderiv w hw).differentiableAt.differentiableWithinAt
-      have hL_contDiffAt : ContDiffAt ℝ ∞ (fun w : ℂ => L (w - c)) z := by
-        have hLan : AnalyticOnNhd ℂ L {w : ℂ | ρ < ‖w‖} := hL_diffOn.analyticOnNhd
-          (isOpen_lt continuous_const continuous_norm)
-        have h1 : ContDiffAt ℂ ∞ L (z - c) := (hLan (z - c) hzρ).contDiffAt
-        have h2 : ContDiffAt ℝ ∞ L (z - c) := h1.restrict_scalars ℝ
-        have hsub : ContDiffAt ℝ ∞ (fun w : ℂ => w - c) z :=
-          contDiffAt_id.sub contDiffAt_const
-        exact h2.comp z hsub
-      have hψ_contDiffAt : ContDiffAt ℝ ∞ (fun w : ℂ => ψ (w - c)) z := by
-        have hsub : ContDiffAt ℝ ∞ (fun w : ℂ => w - c) z := contDiffAt_id.sub contDiffAt_const
-        have hcomp : ContDiffAt ℝ ∞ ((⇑ψ) ∘ (fun w : ℂ => w - c)) z :=
-          ψ.contDiffAt.comp z hsub
-        exact hcomp
-      have hψ_ofReal : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ)) z :=
-        Complex.ofRealCLM.contDiff.contDiffAt.comp z hψ_contDiffAt
-      have hprod : ContDiffAt ℝ ∞ (fun w : ℂ => ((ψ (w - c) : ℝ) : ℂ) * L (w - c)) z :=
-        hψ_ofReal.mul hL_contDiffAt
-      have hexp : ContDiffAt ℝ ∞ (fun w : ℂ => Complex.exp (((ψ (w - c) : ℝ) : ℂ) * L (w - c))) z :=
-        (Complex.contDiff_exp (𝕜 := ℝ)).contDiffAt.comp z hprod
-      exact hexp.congr_of_eventuallyEq heq
+  have hg_contDiffAt := contDiffAt_planar_model ψ hρψ L heq_inner hLderiv
   -- `ψ.rIn < ψ.rOut`, hence `ρ < ψ.rOut` (needed repeatedly below).
   have hρψ'' : ρ < ψ.rOut := hρψ.trans ψ.rIn_lt_rOut
   have hball_sub_target : Metric.ball c ψ.rOut ⊆ e.target :=
