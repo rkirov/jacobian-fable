@@ -282,6 +282,208 @@ private theorem merge_two' {f₀ h₁ h₂ : X → ℂ} {y₁ y₂ y₃ : X} {k�
   · intro x hx1 hx2 hx3
     rw [Function.update_of_ne hx3, hh1_eq x hx1 hx2]
 
+/-- The chain induction behind `exists_weakSolutionOfPair`: a weak solution along the first `m`
+steps of the chart chain, with the endpoint orders prescribed. Split out to keep that proof under
+the 200-line size we hold ourselves to; the `M`/`ordAt` abbreviations are rebuilt here so the
+argument reads exactly as it did inline. -/
+private theorem exists_weakSolution_chain_step {P Q : X} {δ : Path Q P} (C : ChartChain δ)
+    (B0 : Set X) (hB0open : IsOpen B0) (hB0compact : IsCompact (closure B0))
+    (hB0mem : δ.extend (C.t 0) ∈ B0) :
+    ∀ m ≤ C.n, ∃ (f : X → ℂ) (U : Set X), IsOpen U ∧ IsCompact (closure U) ∧
+    δ.extend (C.t 0) ∈ U ∧
+    (∀ x ∉ U, x ≠ δ.extend (C.t 0) → f x = 1) ∧
+    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {δ.extend (C.t 0)}ᶜ ∧
+    (∀ x, x ≠ δ.extend (C.t 0) → x ≠ δ.extend (C.t m) → f x ≠ 0) ∧
+    IsWeakSolutionAt f (δ.extend (C.t 0))
+        ((if δ.extend (C.t 0) = δ.extend (C.t 0) then (-1 : ℤ) else 0) +
+          (if δ.extend (C.t 0) = δ.extend (C.t m) then (1 : ℤ) else 0)) ∧
+      IsWeakSolutionAt f (δ.extend (C.t m))
+        ((if δ.extend (C.t m) = δ.extend (C.t 0) then (-1 : ℤ) else 0) +
+          (if δ.extend (C.t m) = δ.extend (C.t m) then (1 : ℤ) else 0)) := by
+  set M : ℕ → X := fun k => δ.extend (C.t k) with hM_def
+  set ordAt : ℕ → X → ℤ :=
+    fun m x => (if x = M 0 then (-1 : ℤ) else 0) + (if x = M m then (1 : ℤ) else 0)
+    with hordAt_def
+  show ∀ m ≤ C.n, ∃ (f : X → ℂ) (U : Set X), IsOpen U ∧ IsCompact (closure U) ∧
+    M 0 ∈ U ∧
+    (∀ x ∉ U, x ≠ M 0 → f x = 1) ∧
+    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {M 0}ᶜ ∧
+    (∀ x, x ≠ M 0 → x ≠ M m → f x ≠ 0) ∧
+    IsWeakSolutionAt f (M 0) (ordAt m (M 0)) ∧ IsWeakSolutionAt f (M m) (ordAt m (M m))
+  intro m
+  induction m with
+  | zero =>
+    intro _
+    refine ⟨fun _ => 1, B0, hB0open, hB0compact, hB0mem, ?_, ?_, ?_, ?_, ?_⟩
+    · intro x _ _; rfl
+    · exact fun x _ => contMDiffAt_const.contMDiffWithinAt
+    · intro x _ _; exact one_ne_zero
+    · have hval : ordAt 0 (M 0) = 0 := by simp [hordAt_def]
+      rw [hval]; exact isWeakSolutionAt_one_zero (M 0)
+    · have hval : ordAt 0 (M 0) = 0 := by simp [hordAt_def]
+      rw [hval]; exact isWeakSolutionAt_one_zero (M 0)
+  | succ m ih =>
+    intro hm1
+    obtain ⟨f, U, hUopen, hUcompact, hM0U, hoff, hcm, hne, hwp0, hwpm⟩ :=
+      ih (Nat.le_of_succ_le hm1)
+    by_cases hdeg : M (m + 1) = M m
+    · have heq0 : ordAt (m + 1) (M 0) = ordAt m (M 0) := by
+        simp only [hordAt_def]; rw [hdeg]
+      have heqm : ordAt (m + 1) (M (m + 1)) = ordAt m (M m) := by
+        simp only [hordAt_def]; rw [hdeg]
+      refine ⟨f, U, hUopen, hUcompact, hM0U, ?_, hcm, ?_, ?_, ?_⟩
+      · intro x hx1 hx2; exact hoff x hx1 hx2
+      · rw [hdeg]; exact hne
+      · rw [heq0]; exact hwp0
+      · rw [heqm, hdeg]; exact hwpm
+    · -- genuine new piece: `M m ≠ M (m + 1)`.
+      rename' hdeg => hdeg'
+      have hdeg : M (m + 1) ≠ M m := hdeg'
+      have hicc1 : C.t m ∈ Set.Icc (C.t m) (C.t (m + 1)) := ⟨le_rfl, C.mono (Nat.le_succ m)⟩
+      have hicc2 : C.t (m + 1) ∈ Set.Icc (C.t m) (C.t (m + 1)) :=
+        ⟨C.mono (Nat.le_succ m), le_rfl⟩
+      have hL := C.maps m (C.t m) hicc1
+      have hR := C.maps m (C.t (m + 1)) hicc2
+      have hQs : M m ∈ (C.e m).source := hL.1
+      have hPs : M (m + 1) ∈ (C.e m).source := hR.1
+      have hQball : C.e m (M m) ∈ Metric.ball (C.c m) (C.r m) := hL.2
+      have hPball : C.e m (M (m + 1)) ∈ Metric.ball (C.c m) (C.r m) := hR.2
+      have hr0 : 0 < C.r m := C.hr m
+      have hdQ : dist (C.e m (M m)) (C.c m) < C.r m := hQball
+      have hdP : dist (C.e m (M (m + 1))) (C.c m) < C.r m := hPball
+      set ρ : ℝ := (max (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m + 1))) (C.c m))
+        + C.r m) / 2 with hρ_def
+      set rIn : ℝ := (ρ + C.r m) / 2 with hrIn_def
+      set rOut : ℝ := (rIn + C.r m) / 2 with hrOut_def
+      have hρpos : 0 < ρ := by
+        have := le_max_left (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m+1))) (C.c m))
+        have h2 : (0:ℝ) ≤ dist (C.e m (M m)) (C.c m) := dist_nonneg
+        rw [hρ_def]; linarith
+      have hρlt : ρ < C.r m := by
+        rw [hρ_def]
+        rcases le_total (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m+1))) (C.c m)) with h|h
+        · rw [max_eq_right h]; linarith
+        · rw [max_eq_left h]; linarith
+      have hrInlt : ρ < rIn := by rw [hrIn_def]; linarith
+      have hrOutlt : rIn < rOut := by rw [hrOut_def]; linarith
+      have hrOutR : rOut < C.r m := by rw [hrOut_def]; linarith
+      have haQ : C.e m (M m) - C.c m ∈ Metric.ball (0 : ℂ) ρ := by
+        rw [Metric.mem_ball, dist_zero_right]
+        rw [dist_eq_norm] at hdQ
+        calc ‖C.e m (M m) - C.c m‖ ≤ max (dist (C.e m (M m)) (C.c m))
+              (dist (C.e m (M (m+1))) (C.c m)) := by
+                rw [← dist_eq_norm]; exact le_max_left _ _
+          _ < ρ := by rw [hρ_def]; linarith
+      have haP : C.e m (M (m + 1)) - C.c m ∈ Metric.ball (0 : ℂ) ρ := by
+        rw [Metric.mem_ball, dist_zero_right]
+        rw [dist_eq_norm] at hdP
+        calc ‖C.e m (M (m + 1)) - C.c m‖ ≤ max (dist (C.e m (M m)) (C.c m))
+              (dist (C.e m (M (m+1))) (C.c m)) := by
+                rw [← dist_eq_norm]; exact le_max_right _ _
+          _ < ρ := by rw [hρ_def]; linarith
+      set ψ : ContDiffBump (0 : ℂ) := ⟨rIn, rOut, by linarith, hrOutlt⟩ with hψ_def
+      have hballsub : Metric.closedBall (C.c m) ψ.rOut ⊆ (C.e m).target := by
+        have h1 : Metric.closedBall (C.c m) rOut ⊆ Metric.ball (C.c m) (C.r m) :=
+          Metric.closedBall_subset_ball hrOutR
+        exact h1.trans (C.ball_subset m)
+      obtain ⟨g, hg, hUgopen, hUgcompact, hM1Ug, hMUg, hg1⟩ :=
+        exists_weakSolutionOfPair_chart hdeg (C.he m) hPs hQs hρpos haQ haP ψ hrInlt hballsub
+      -- `f`'s and `g`'s local model at ANY point (not just their own special ones).
+      have hfAt : ∀ y, IsWeakSolutionAt f y (ordAt m y) := by
+        intro y
+        by_cases hy0 : y = M 0
+        · rw [hy0]; exact hwp0
+        · by_cases hym : y = M m
+          · rw [hym]; exact hwpm
+          · have hzero : ordAt m y = 0 := by
+              simp only [hordAt_def]; rw [if_neg hy0, if_neg hym]; ring
+            rw [hzero]; exact isWeakSolutionAt_zero_of_ne hcm hne hy0 hym
+      have hgAt : ∀ y, IsWeakSolutionAt g y
+          ((if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)) := by
+        intro y
+        by_cases hy1 : y = M (m + 1)
+        · have hval : (if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
+              = 1 := by
+            rw [if_pos hy1, if_neg (hy1 ▸ hdeg : y ≠ M m)]; ring
+          rw [hval, hy1]; exact hg.weakAt_P
+        · by_cases hym : y = M m
+          · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
+                + (if y = M m then (-1 : ℤ) else 0) = -1 := by
+              rw [if_neg hy1, if_pos hym]; ring
+            rw [hval, hym]; exact hg.weakAt_Q
+          · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
+                + (if y = M m then (-1 : ℤ) else 0) = 0 := by
+              rw [if_neg hy1, if_neg hym]; ring
+            rw [hval]
+            exact isWeakSolutionAt_zero_of_ne hg.contMDiffOn
+              (fun z h1 h2 => hg.ne_zero_off z h2 h1) hym hy1
+      have hsum : ∀ y, ordAt m y +
+          ((if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0))
+            = ordAt (m + 1) y := by
+        intro y
+        simp only [hordAt_def]
+        have hcancel : (if y = M m then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
+            = 0 := by by_cases h : y = M m <;> simp [h]
+        linarith [hcancel]
+      obtain ⟨hMm, hMm_ord0, hMm_eq0⟩ := (hfAt (M m)).mul (hgAt (M m))
+      obtain ⟨hMm1, hMm1_ord0, hMm1_eq0⟩ := (hfAt (M (m + 1))).mul (hgAt (M (m + 1)))
+      have hMm_ord : IsWeakSolutionAt hMm (M m) (ordAt (m + 1) (M m)) := hsum (M m) ▸ hMm_ord0
+      have hMm1_ord : IsWeakSolutionAt hMm1 (M (m + 1)) (ordAt (m + 1) (M (m + 1))) :=
+        hsum (M (m + 1)) ▸ hMm1_ord0
+      have hk1 : 0 ≤ ordAt (m + 1) (M (m + 1)) := by
+        simp only [hordAt_def]; split_ifs <;> omega
+      have hgne' : ∀ x, x ≠ M (m + 1) → x ≠ M m → g x ≠ 0 :=
+        fun x h1 h2 => hg.ne_zero_off x h1 h2
+      by_cases hM0m : M 0 = M m
+      · -- Case (ii): `M 0 = M m ≠ M (m + 1)`.
+        have hne1 : M 0 ≠ M (m + 1) := by rw [hM0m]; exact hdeg.symm
+        have hh0 : IsWeakSolutionAt hMm (M 0) (ordAt (m + 1) (M 0)) := by
+          rw [hM0m]; exact hMm_ord
+        have hh0_eq : ∀ x, x ≠ M 0 → hMm x = f x * g x := fun x hx =>
+          hMm_eq0 x (by rw [← hM0m]; exact hx)
+        obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne1 hh0 hh0_eq hMm1_ord hMm1_eq0
+        have hMUg' : M 0 ∈ ↑(C.e m).symm '' Metric.ball (C.c m) ψ.rOut := by
+          rw [hM0m]; exact hMUg
+        have hne'' : ∀ x, x ≠ M 0 → f x ≠ 0 := fun x hx => hne x hx (by rw [← hM0m]; exact hx)
+        have hgcm'' : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g {M 0}ᶜ := by rw [hM0m]; exact hg.contMDiffOn
+        have hgne'' : ∀ x, x ≠ M (m + 1) → x ≠ M 0 → g x ≠ 0 :=
+          fun x h1 h2 => hg.ne_zero_off x h1 (by rw [← hM0m]; exact h2)
+        obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
+          chainFinishSame hUopen hUcompact hoff hcm hne'' hUgopen hUgcompact hMUg' hM1Ug hg1
+            hgcm'' hgne'' hh_ordA hh_ordB hk1 (fun x hxp hxr => hh_eq x hxp hxr)
+        exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
+      · have hMmzero : ordAt (m + 1) (M m) = 0 := by
+          simp only [hordAt_def]; rw [if_neg (Ne.symm hM0m), if_neg hdeg.symm]; ring
+        by_cases hM01 : M 0 = M (m + 1)
+        · -- Case (iii): `M 0 = M (m + 1) ≠ M m`.
+          have hne2 : M m ≠ M 0 := by rw [hM01]; exact hdeg.symm
+          have hh1 : IsWeakSolutionAt hMm1 (M 0) (ordAt (m + 1) (M 0)) := by
+            rw [hM01]; exact hMm1_ord
+          have hh1_eq : ∀ x, x ≠ M 0 → hMm1 x = f x * g x := fun x hx =>
+            hMm1_eq0 x (by rw [← hM01]; exact hx)
+          obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne2 hMm_ord hMm_eq0 hh1 hh1_eq
+          have hh_ordA0 : IsWeakSolutionAt h (M m) 0 := hMmzero ▸ hh_ordA
+          have hh_ordB' : IsWeakSolutionAt h (M (m + 1)) (ordAt (m + 1) (M (m + 1))) := by
+            rw [← hM01]; exact hh_ordB
+          obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
+            chainFinish hUopen hUcompact hM0U hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
+              hg.contMDiffOn hgne' hh_ordB hh_ordB' hh_ordA0 hk1 (fun x hxp hxq hxr =>
+                hh_eq x hxq hxp)
+          exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
+        · -- Case (i): three genuinely distinct points.
+          obtain ⟨h0, h0_ord0, h0_eq0⟩ := (hfAt (M 0)).mul (hgAt (M 0))
+          have h0_ord : IsWeakSolutionAt h0 (M 0) (ordAt (m + 1) (M 0)) := hsum (M 0) ▸ h0_ord0
+          obtain ⟨h12, hh12_ordA, hh12_ordB, hh12_eq⟩ :=
+            merge_two hdeg.symm hMm_ord hMm_eq0 hMm1_ord hMm1_eq0
+          obtain ⟨h, hh_ordA, hh_ordB, hh_ordC, hh_eq⟩ :=
+            merge_two' (Ne.symm hM0m) (Ne.symm hM01) hh12_ordA hh12_ordB hh12_eq h0_ord h0_eq0
+          have hh_ordA0 : IsWeakSolutionAt h (M m) 0 := hMmzero ▸ hh_ordA
+          obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
+            chainFinish hUopen hUcompact hM0U hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
+              hg.contMDiffOn hgne' hh_ordC hh_ordB hh_ordA0 hk1 (fun x hxp hxq hxr =>
+                hh_eq x hxq hxr hxp)
+          exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
+
 /-- **The general multi-chart weak solution** (§6.3/§7.1 of `abel-weak-solutions.md`, the gap
 this file closes): for an ARBITRARY path `δ : Path Q P` (not confined to one chart), there is a
 weak solution of the pair `(P, Q)`. Built by inducting along a `RS.ChartChain δ`
@@ -324,185 +526,7 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
   have hB0mem : M 0 ∈ B0 :=
     ⟨chartAt ℂ (M 0) (M 0), Metric.mem_ball_self (by linarith), (chartAt ℂ (M 0)).left_inv
       (mem_chart_source ℂ (M 0))⟩
-  have main : ∀ m ≤ C.n, ∃ (f : X → ℂ) (U : Set X), IsOpen U ∧ IsCompact (closure U) ∧
-      M 0 ∈ U ∧
-      (∀ x ∉ U, x ≠ M 0 → f x = 1) ∧
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ f {M 0}ᶜ ∧
-      (∀ x, x ≠ M 0 → x ≠ M m → f x ≠ 0) ∧
-      IsWeakSolutionAt f (M 0) (ordAt m (M 0)) ∧ IsWeakSolutionAt f (M m) (ordAt m (M m)) := by
-    intro m
-    induction m with
-    | zero =>
-      intro _
-      refine ⟨fun _ => 1, B0, hB0open, hB0compact, hB0mem, ?_, ?_, ?_, ?_, ?_⟩
-      · intro x _ _; rfl
-      · exact fun x _ => contMDiffAt_const.contMDiffWithinAt
-      · intro x _ _; exact one_ne_zero
-      · have hval : ordAt 0 (M 0) = 0 := by simp [hordAt_def]
-        rw [hval]; exact isWeakSolutionAt_one_zero (M 0)
-      · have hval : ordAt 0 (M 0) = 0 := by simp [hordAt_def]
-        rw [hval]; exact isWeakSolutionAt_one_zero (M 0)
-    | succ m ih =>
-      intro hm1
-      obtain ⟨f, U, hUopen, hUcompact, hM0U, hoff, hcm, hne, hwp0, hwpm⟩ :=
-        ih (Nat.le_of_succ_le hm1)
-      by_cases hdeg : M (m + 1) = M m
-      · have heq0 : ordAt (m + 1) (M 0) = ordAt m (M 0) := by
-          simp only [hordAt_def]; rw [hdeg]
-        have heqm : ordAt (m + 1) (M (m + 1)) = ordAt m (M m) := by
-          simp only [hordAt_def]; rw [hdeg]
-        refine ⟨f, U, hUopen, hUcompact, hM0U, ?_, hcm, ?_, ?_, ?_⟩
-        · intro x hx1 hx2; exact hoff x hx1 hx2
-        · rw [hdeg]; exact hne
-        · rw [heq0]; exact hwp0
-        · rw [heqm, hdeg]; exact hwpm
-      · -- genuine new piece: `M m ≠ M (m + 1)`.
-        rename' hdeg => hdeg'
-        have hdeg : M (m + 1) ≠ M m := hdeg'
-        have hicc1 : C.t m ∈ Set.Icc (C.t m) (C.t (m + 1)) := ⟨le_rfl, C.mono (Nat.le_succ m)⟩
-        have hicc2 : C.t (m + 1) ∈ Set.Icc (C.t m) (C.t (m + 1)) :=
-          ⟨C.mono (Nat.le_succ m), le_rfl⟩
-        have hL := C.maps m (C.t m) hicc1
-        have hR := C.maps m (C.t (m + 1)) hicc2
-        have hQs : M m ∈ (C.e m).source := hL.1
-        have hPs : M (m + 1) ∈ (C.e m).source := hR.1
-        have hQball : C.e m (M m) ∈ Metric.ball (C.c m) (C.r m) := hL.2
-        have hPball : C.e m (M (m + 1)) ∈ Metric.ball (C.c m) (C.r m) := hR.2
-        have hr0 : 0 < C.r m := C.hr m
-        have hdQ : dist (C.e m (M m)) (C.c m) < C.r m := hQball
-        have hdP : dist (C.e m (M (m + 1))) (C.c m) < C.r m := hPball
-        set ρ : ℝ := (max (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m + 1))) (C.c m))
-          + C.r m) / 2 with hρ_def
-        set rIn : ℝ := (ρ + C.r m) / 2 with hrIn_def
-        set rOut : ℝ := (rIn + C.r m) / 2 with hrOut_def
-        have hρpos : 0 < ρ := by
-          have := le_max_left (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m+1))) (C.c m))
-          have h2 : (0:ℝ) ≤ dist (C.e m (M m)) (C.c m) := dist_nonneg
-          rw [hρ_def]; linarith
-        have hρlt : ρ < C.r m := by
-          rw [hρ_def]
-          rcases le_total (dist (C.e m (M m)) (C.c m)) (dist (C.e m (M (m+1))) (C.c m)) with h|h
-          · rw [max_eq_right h]; linarith
-          · rw [max_eq_left h]; linarith
-        have hrInlt : ρ < rIn := by rw [hrIn_def]; linarith
-        have hrOutlt : rIn < rOut := by rw [hrOut_def]; linarith
-        have hrOutR : rOut < C.r m := by rw [hrOut_def]; linarith
-        have haQ : C.e m (M m) - C.c m ∈ Metric.ball (0 : ℂ) ρ := by
-          rw [Metric.mem_ball, dist_zero_right]
-          rw [dist_eq_norm] at hdQ
-          calc ‖C.e m (M m) - C.c m‖ ≤ max (dist (C.e m (M m)) (C.c m))
-                (dist (C.e m (M (m+1))) (C.c m)) := by
-                  rw [← dist_eq_norm]; exact le_max_left _ _
-            _ < ρ := by rw [hρ_def]; linarith
-        have haP : C.e m (M (m + 1)) - C.c m ∈ Metric.ball (0 : ℂ) ρ := by
-          rw [Metric.mem_ball, dist_zero_right]
-          rw [dist_eq_norm] at hdP
-          calc ‖C.e m (M (m + 1)) - C.c m‖ ≤ max (dist (C.e m (M m)) (C.c m))
-                (dist (C.e m (M (m+1))) (C.c m)) := by
-                  rw [← dist_eq_norm]; exact le_max_right _ _
-            _ < ρ := by rw [hρ_def]; linarith
-        set ψ : ContDiffBump (0 : ℂ) := ⟨rIn, rOut, by linarith, hrOutlt⟩ with hψ_def
-        have hballsub : Metric.closedBall (C.c m) ψ.rOut ⊆ (C.e m).target := by
-          have h1 : Metric.closedBall (C.c m) rOut ⊆ Metric.ball (C.c m) (C.r m) :=
-            Metric.closedBall_subset_ball hrOutR
-          exact h1.trans (C.ball_subset m)
-        obtain ⟨g, hg, hUgopen, hUgcompact, hM1Ug, hMUg, hg1⟩ :=
-          exists_weakSolutionOfPair_chart hdeg (C.he m) hPs hQs hρpos haQ haP ψ hrInlt hballsub
-        -- `f`'s and `g`'s local model at ANY point (not just their own special ones).
-        have hfAt : ∀ y, IsWeakSolutionAt f y (ordAt m y) := by
-          intro y
-          by_cases hy0 : y = M 0
-          · rw [hy0]; exact hwp0
-          · by_cases hym : y = M m
-            · rw [hym]; exact hwpm
-            · have hzero : ordAt m y = 0 := by
-                simp only [hordAt_def]; rw [if_neg hy0, if_neg hym]; ring
-              rw [hzero]; exact isWeakSolutionAt_zero_of_ne hcm hne hy0 hym
-        have hgAt : ∀ y, IsWeakSolutionAt g y
-            ((if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)) := by
-          intro y
-          by_cases hy1 : y = M (m + 1)
-          · have hval : (if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
-                = 1 := by
-              rw [if_pos hy1, if_neg (hy1 ▸ hdeg : y ≠ M m)]; ring
-            rw [hval, hy1]; exact hg.weakAt_P
-          · by_cases hym : y = M m
-            · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
-                  + (if y = M m then (-1 : ℤ) else 0) = -1 := by
-                rw [if_neg hy1, if_pos hym]; ring
-              rw [hval, hym]; exact hg.weakAt_Q
-            · have hval : (if y = M (m + 1) then (1 : ℤ) else 0)
-                  + (if y = M m then (-1 : ℤ) else 0) = 0 := by
-                rw [if_neg hy1, if_neg hym]; ring
-              rw [hval]
-              exact isWeakSolutionAt_zero_of_ne hg.contMDiffOn
-                (fun z h1 h2 => hg.ne_zero_off z h2 h1) hym hy1
-        have hsum : ∀ y, ordAt m y +
-            ((if y = M (m + 1) then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0))
-              = ordAt (m + 1) y := by
-          intro y
-          simp only [hordAt_def]
-          have hcancel : (if y = M m then (1 : ℤ) else 0) + (if y = M m then (-1 : ℤ) else 0)
-              = 0 := by by_cases h : y = M m <;> simp [h]
-          linarith [hcancel]
-        obtain ⟨hMm, hMm_ord0, hMm_eq0⟩ := (hfAt (M m)).mul (hgAt (M m))
-        obtain ⟨hMm1, hMm1_ord0, hMm1_eq0⟩ := (hfAt (M (m + 1))).mul (hgAt (M (m + 1)))
-        have hMm_ord : IsWeakSolutionAt hMm (M m) (ordAt (m + 1) (M m)) := hsum (M m) ▸ hMm_ord0
-        have hMm1_ord : IsWeakSolutionAt hMm1 (M (m + 1)) (ordAt (m + 1) (M (m + 1))) :=
-          hsum (M (m + 1)) ▸ hMm1_ord0
-        have hk1 : 0 ≤ ordAt (m + 1) (M (m + 1)) := by
-          simp only [hordAt_def]; split_ifs <;> omega
-        have hgne' : ∀ x, x ≠ M (m + 1) → x ≠ M m → g x ≠ 0 :=
-          fun x h1 h2 => hg.ne_zero_off x h1 h2
-        by_cases hM0m : M 0 = M m
-        · -- Case (ii): `M 0 = M m ≠ M (m + 1)`.
-          have hne1 : M 0 ≠ M (m + 1) := by rw [hM0m]; exact hdeg.symm
-          have hh0 : IsWeakSolutionAt hMm (M 0) (ordAt (m + 1) (M 0)) := by
-            rw [hM0m]; exact hMm_ord
-          have hh0_eq : ∀ x, x ≠ M 0 → hMm x = f x * g x := fun x hx =>
-            hMm_eq0 x (by rw [← hM0m]; exact hx)
-          obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne1 hh0 hh0_eq hMm1_ord hMm1_eq0
-          have hMUg' : M 0 ∈ ↑(C.e m).symm '' Metric.ball (C.c m) ψ.rOut := by
-            rw [hM0m]; exact hMUg
-          have hne'' : ∀ x, x ≠ M 0 → f x ≠ 0 := fun x hx => hne x hx (by rw [← hM0m]; exact hx)
-          have hgcm'' : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ∞ g {M 0}ᶜ := by rw [hM0m]; exact hg.contMDiffOn
-          have hgne'' : ∀ x, x ≠ M (m + 1) → x ≠ M 0 → g x ≠ 0 :=
-            fun x h1 h2 => hg.ne_zero_off x h1 (by rw [← hM0m]; exact h2)
-          obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
-            chainFinishSame hUopen hUcompact hoff hcm hne'' hUgopen hUgcompact hMUg' hM1Ug hg1
-              hgcm'' hgne'' hh_ordA hh_ordB hk1 (fun x hxp hxr => hh_eq x hxp hxr)
-          exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
-        · have hMmzero : ordAt (m + 1) (M m) = 0 := by
-            simp only [hordAt_def]; rw [if_neg (Ne.symm hM0m), if_neg hdeg.symm]; ring
-          by_cases hM01 : M 0 = M (m + 1)
-          · -- Case (iii): `M 0 = M (m + 1) ≠ M m`.
-            have hne2 : M m ≠ M 0 := by rw [hM01]; exact hdeg.symm
-            have hh1 : IsWeakSolutionAt hMm1 (M 0) (ordAt (m + 1) (M 0)) := by
-              rw [hM01]; exact hMm1_ord
-            have hh1_eq : ∀ x, x ≠ M 0 → hMm1 x = f x * g x := fun x hx =>
-              hMm1_eq0 x (by rw [← hM01]; exact hx)
-            obtain ⟨h, hh_ordA, hh_ordB, hh_eq⟩ := merge_two hne2 hMm_ord hMm_eq0 hh1 hh1_eq
-            have hh_ordA0 : IsWeakSolutionAt h (M m) 0 := hMmzero ▸ hh_ordA
-            have hh_ordB' : IsWeakSolutionAt h (M (m + 1)) (ordAt (m + 1) (M (m + 1))) := by
-              rw [← hM01]; exact hh_ordB
-            obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
-              chainFinish hUopen hUcompact hM0U hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
-                hg.contMDiffOn hgne' hh_ordB hh_ordB' hh_ordA0 hk1 (fun x hxp hxq hxr =>
-                  hh_eq x hxq hxp)
-            exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
-          · -- Case (i): three genuinely distinct points.
-            obtain ⟨h0, h0_ord0, h0_eq0⟩ := (hfAt (M 0)).mul (hgAt (M 0))
-            have h0_ord : IsWeakSolutionAt h0 (M 0) (ordAt (m + 1) (M 0)) := hsum (M 0) ▸ h0_ord0
-            obtain ⟨h12, hh12_ordA, hh12_ordB, hh12_eq⟩ :=
-              merge_two hdeg.symm hMm_ord hMm_eq0 hMm1_ord hMm1_eq0
-            obtain ⟨h, hh_ordA, hh_ordB, hh_ordC, hh_eq⟩ :=
-              merge_two' (Ne.symm hM0m) (Ne.symm hM01) hh12_ordA hh12_ordB hh12_eq h0_ord h0_eq0
-            have hh_ordA0 : IsWeakSolutionAt h (M m) 0 := hMmzero ▸ hh_ordA
-            obtain ⟨f', U', h1o, h2o, h3o, h4o, h5o, h6o, h7o, h8o, h9o⟩ :=
-              chainFinish hUopen hUcompact hM0U hoff hcm hne hUgopen hUgcompact hMUg hM1Ug hg1
-                hg.contMDiffOn hgne' hh_ordC hh_ordB hh_ordA0 hk1 (fun x hxp hxq hxr =>
-                  hh_eq x hxq hxr hxp)
-            exact ⟨f', U', h1o, h2o, h3o, h5o, h6o, h7o, h8o, h9o⟩
+  have main := exists_weakSolution_chain_step C B0 hB0open hB0compact hB0mem
   obtain ⟨f, U, hUopen, hUcompact, hM0U, hoff, hcm, hne, hwQ, hwP⟩ := main C.n le_rfl
   have hM0ne : M 0 ≠ M C.n := by rw [hM0, hMn]; exact hPQ
   have hordQ : ordAt C.n (M 0) = -1 := by simp [hordAt_def, hM0ne]
@@ -520,8 +544,10 @@ theorem exists_weakSolutionOfPair {P Q : X} (hPQ : Q ≠ P) (δ : Path Q P) :
   · rw [← hM0]; exact hcm
   · intro x hxP hxQ
     apply hne x
-    · rw [hM0]; exact hxQ
-    · rw [hMn]; exact hxP
+    · show x ≠ M 0
+      rw [hM0]; exact hxQ
+    · show x ≠ M C.n
+      rw [hMn]; exact hxP
   · intro x hx
     exact hoff x hx (fun hxeq => hx (hxeq ▸ hM0U))
 
