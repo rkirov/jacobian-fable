@@ -165,6 +165,201 @@ theorem linkOrd_self_eq_zero [DecidableEq X] (A x : X) : linkOrd A A x = 0 := by
   rw [linkOrd, sub_self]
 
 omit [CompactSpace X] in
+/-- Every point has a nonzero limit for `f` divided out by its `linkOrd` factor: the local
+factorization behind `exists_link`'s fourth component. Split out to keep that proof under the
+200-line size we hold ourselves to. -/
+private theorem exists_linkOrd_factor [DecidableEq X] {A B : X} (hAB : A ≠ B)
+    {e : OpenPartialHomeomorph X ℂ} (he : e ∈ maximalAtlas 𝓘(ℂ) ω X)
+    (hA : A ∈ e.source) (hB : B ∈ e.source) {P : LogPieceData}
+    (hPα : P.α = e A) (hPβ : P.β = e B) (hαβ : P.α ≠ P.β) {f : X → ℂ}
+    (hf_source : ∀ x ∈ e.source, f x = P.g (e x))
+    (hlocal_out : ∀ {x : X}, x ∉ e.source →
+      (f ∘ ⇑(chartAt ℂ x).symm) =ᶠ[nhds (chartAt ℂ x x)] (fun _ => (1 : ℂ))) :
+    ∀ x : X, ∃ C : ℂ, C ≠ 0 ∧ Tendsto
+      (fun z => f ((chartAt ℂ x).symm z) * (z - chartAt ℂ x x) ^ (-(linkOrd A B x)))
+      (nhdsWithin (chartAt ℂ x x) {chartAt ℂ x x}ᶜ) (nhds C) := by
+  intro x
+  by_cases hxe : x ∈ e.source
+  · set z₀ : ℂ := chartAt ℂ x x with hz₀_def
+    set τ : ℂ → ℂ := ⇑e ∘ ⇑(chartAt ℂ x).symm with hτ_def
+    have hz₀mem : z₀ ∈ ⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ e.source) :=
+      ⟨x, ⟨mem_chart_source ℂ x, hxe⟩, rfl⟩
+    have hSopen : IsOpen (⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ e.source)) :=
+      (chartAt ℂ x).isOpen_image_of_subset_source
+        ((chartAt ℂ x).open_source.inter e.open_source) inter_subset_left
+    have hτz₀ : τ z₀ = e x := by
+      rw [hτ_def, hz₀_def]
+      simp only [Function.comp_apply, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
+    have hτan : AnalyticAt ℂ τ z₀ :=
+      RS.analyticAt_trans he (IsManifold.chart_mem_maximalAtlas x)
+        (mem_chart_target ℂ x)
+        (by rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]; exact hxe)
+    have hτderiv : HasDerivAt τ (deriv τ z₀) z₀ :=
+      hτan.differentiableAt.hasDerivAt
+    have hz₀mem' : z₀ ∈ ⇑(chartAt ℂ x) '' (e.source ∩ (chartAt ℂ x).source) :=
+      ⟨x, ⟨hxe, mem_chart_source ℂ x⟩, rfl⟩
+    have hτderiv_ne : deriv τ z₀ ≠ 0 :=
+      deriv_trans_ne_zero he (IsManifold.chart_mem_maximalAtlas x) hz₀mem'
+    -- τ maps the punctured filter into the punctured filter at `e x`
+    have hτpunct : Tendsto τ (nhdsWithin z₀ {z₀}ᶜ)
+        (nhdsWithin (e x) {e x}ᶜ) := by
+      rw [tendsto_nhdsWithin_iff]
+      constructor
+      · have hcont : Tendsto τ (nhds z₀) (nhds (τ z₀)) := hτan.continuousAt
+        rw [hτz₀] at hcont
+        exact hcont.mono_left nhdsWithin_le_nhds
+      · filter_upwards [self_mem_nhdsWithin,
+          mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem)] with z hz1 hz2
+        obtain ⟨q, hq, rfl⟩ := hz2
+        have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
+          (chartAt ℂ x).left_inv hq.1
+        have hτq : τ (chartAt ℂ x q) = e q := by
+          rw [hτ_def]
+          simp only [Function.comp_apply, hq1]
+        intro heq
+        rw [Set.mem_singleton_iff, hτq] at heq
+        have hqx : q = x := e.injOn hq.2 hxe heq
+        apply hz1
+        rw [Set.mem_singleton_iff, hz₀_def, hqx]
+    -- slope limit
+    have hslope : Tendsto (fun z => (τ z - τ z₀) * (z - z₀)⁻¹)
+        (nhdsWithin z₀ {z₀}ᶜ) (nhds (deriv τ z₀)) := by
+      have hts := hasDerivAt_iff_tendsto_slope.mp hτderiv
+      refine hts.congr' ?_
+      filter_upwards [self_mem_nhdsWithin] with z hz
+      have hzz : z ≠ z₀ := by simpa using hz
+      have h1 : z₀ - z ≠ 0 := sub_ne_zero.mpr (Ne.symm hzz)
+      have h2 : z - z₀ ≠ 0 := sub_ne_zero.mpr hzz
+      rw [slope_def_field]
+      field_simp
+    rcases eq_or_ne x B with rfl | hxB
+    · -- the zero: `linkOrd = 1`
+      have hxA : x ≠ A := fun heq => hAB heq.symm
+      have hord : linkOrd A x x = 1 := by
+        rw [linkOrd, if_pos rfl, if_neg hxA, sub_zero]
+      refine ⟨(P.β - P.α)⁻¹ * deriv τ z₀, mul_ne_zero (inv_ne_zero
+        (sub_ne_zero.mpr (Ne.symm hαβ))) hτderiv_ne, ?_⟩
+      have hzero := P.tendsto_zero_factor
+      have hβval : P.β = e x := hPβ
+      have hcomp : Tendsto (fun z => P.g (τ z) * (τ z - P.β)⁻¹)
+          (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.β - P.α)⁻¹)) := by
+        refine hzero.comp ?_
+        rw [hβval]
+        exact hτpunct
+      have hmain : Tendsto (fun z => (P.g (τ z) * (τ z - P.β)⁻¹) *
+          ((τ z - τ z₀) * (z - z₀)⁻¹))
+          (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.β - P.α)⁻¹ * deriv τ z₀)) :=
+        hcomp.mul hslope
+      refine hmain.congr' ?_
+      filter_upwards [self_mem_nhdsWithin,
+        mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem),
+        hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz2 hz3
+      have hτβ : τ z - P.β ≠ 0 := by
+        rw [hβval]
+        exact sub_ne_zero.mpr (by simpa using hz3)
+      obtain ⟨q, hq, rfl⟩ := hz2
+      have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
+        (chartAt ℂ x).left_inv hq.1
+      rw [hord]
+      show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.β)⁻¹ *
+          ((τ (chartAt ℂ x q) - τ z₀) * (chartAt ℂ x q - z₀)⁻¹)
+        = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
+          (chartAt ℂ x q - z₀) ^ (-(1 : ℤ))
+      have hfq : f ((chartAt ℂ x).symm (chartAt ℂ x q)) = P.g (τ (chartAt ℂ x q)) := by
+        rw [hq1, hf_source q hq.2, hτ_def]
+        simp only [Function.comp_apply, hq1]
+      rw [hfq, zpow_neg_one, show τ z₀ = P.β from hτz₀.trans hβval.symm]
+      rw [mul_assoc, ← mul_assoc ((τ (chartAt ℂ x q) - P.β)⁻¹),
+        inv_mul_cancel₀ hτβ, one_mul]
+    · rcases eq_or_ne x A with rfl | hxA
+      · -- the pole: `linkOrd = -1`
+        have hord : linkOrd x B x = -1 := by
+          rw [linkOrd, if_neg hAB, if_pos rfl, zero_sub]
+        have hslope_inv : Tendsto (fun z => (z - z₀) * (τ z - τ z₀)⁻¹)
+            (nhdsWithin z₀ {z₀}ᶜ) (nhds ((deriv τ z₀)⁻¹)) := by
+          have h1 := hslope.inv₀ hτderiv_ne
+          refine h1.congr' ?_
+          filter_upwards [self_mem_nhdsWithin,
+            hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz3
+          have hzz : z - z₀ ≠ 0 := sub_ne_zero.mpr (by simpa using hz1)
+          have hττ : τ z - τ z₀ ≠ 0 := by
+            rw [hτz₀]
+            exact sub_ne_zero.mpr (by simpa [hτz₀] using hz3)
+          simp only [mul_inv, inv_inv]
+          exact mul_comm _ _
+        refine ⟨(P.α - P.β) * (deriv τ z₀)⁻¹, mul_ne_zero
+          (sub_ne_zero.mpr hαβ) (inv_ne_zero hτderiv_ne), ?_⟩
+        have hpole := P.tendsto_pole_factor
+        have hαval : P.α = e x := hPα
+        have hcomp : Tendsto (fun z => P.g (τ z) * (τ z - P.α))
+            (nhdsWithin z₀ {z₀}ᶜ) (nhds (P.α - P.β)) := by
+          refine hpole.comp ?_
+          rw [hαval]
+          exact hτpunct
+        have hmain : Tendsto (fun z => (P.g (τ z) * (τ z - P.α)) *
+            ((z - z₀) * (τ z - τ z₀)⁻¹))
+            (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.α - P.β) * (deriv τ z₀)⁻¹)) :=
+          hcomp.mul hslope_inv
+        refine hmain.congr' ?_
+        filter_upwards [self_mem_nhdsWithin,
+          mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem),
+          hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz2 hz3
+        have hτα : τ z - P.α ≠ 0 := by
+          rw [hαval]
+          exact sub_ne_zero.mpr (by simpa using hz3)
+        obtain ⟨q, hq, rfl⟩ := hz2
+        have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
+          (chartAt ℂ x).left_inv hq.1
+        rw [hord]
+        show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.α) *
+            ((chartAt ℂ x q - z₀) * (τ (chartAt ℂ x q) - τ z₀)⁻¹)
+          = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
+            (chartAt ℂ x q - z₀) ^ (-(-1 : ℤ))
+        have hfq : f ((chartAt ℂ x).symm (chartAt ℂ x q))
+            = P.g (τ (chartAt ℂ x q)) := by
+          rw [hq1, hf_source q hq.2, hτ_def]
+          simp only [Function.comp_apply, hq1]
+        rw [hfq, neg_neg, zpow_one, show τ z₀ = P.α from hτz₀.trans hαval.symm]
+        rw [mul_assoc, mul_comm (chartAt ℂ x q - z₀) ((τ (chartAt ℂ x q) - P.α)⁻¹),
+          ← mul_assoc (τ (chartAt ℂ x q) - P.α), mul_inv_cancel₀ hτα, one_mul]
+      · -- a regular point: `linkOrd = 0`
+        have hord : linkOrd A B x = 0 := by
+          rw [linkOrd, if_neg hxB, if_neg hxA, sub_zero]
+        have hexA : e x ≠ P.α := fun heq => hxA (e.injOn hxe hA (hPα ▸ heq))
+        have hexB : e x ≠ P.β := fun heq => hxB (e.injOn hxe hB (hPβ ▸ heq))
+        refine ⟨P.g (e x), P.g_ne_zero hexA hexB, ?_⟩
+        have hcont : ContinuousAt (P.g ∘ τ) z₀ := by
+          refine ContinuousAt.comp ?_ hτan.continuousAt
+          rw [hτz₀]
+          exact (P.g_contDiffAt hexA).continuousAt
+        have hgoal : Tendsto (P.g ∘ τ) (nhdsWithin z₀ {z₀}ᶜ) (nhds (P.g (e x))) := by
+          have h1 : Tendsto (P.g ∘ τ) (nhds z₀) (nhds ((P.g ∘ τ) z₀)) := hcont
+          rw [Function.comp_apply, hτz₀] at h1
+          exact h1.mono_left nhdsWithin_le_nhds
+        refine hgoal.congr' ?_
+        filter_upwards [mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem)] with z hz2
+        obtain ⟨q, hq, rfl⟩ := hz2
+        have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
+          (chartAt ℂ x).left_inv hq.1
+        rw [hord]
+        show P.g (τ (chartAt ℂ x q))
+          = f ((chartAt ℂ x).symm (chartAt ℂ x q)) * (chartAt ℂ x q - z₀) ^ (-(0 : ℤ))
+        rw [neg_zero, zpow_zero, mul_one, hq1, hf_source q hq.2, hτ_def]
+        simp only [Function.comp_apply, hq1]
+  · -- off the chart: `f ≡ 1` near `x`, `linkOrd = 0`
+    have hxA : x ≠ A := fun heq => hxe (heq ▸ hA)
+    have hxB : x ≠ B := fun heq => hxe (heq ▸ hB)
+    have hord : linkOrd A B x = 0 := by
+      rw [linkOrd, if_neg hxB, if_neg hxA, sub_zero]
+    refine ⟨1, one_ne_zero, ?_⟩
+    have hev := hlocal_out hxe
+    refine (tendsto_const_nhds).congr' ?_
+    filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with z hz
+    rw [hord]
+    show (1 : ℂ) = f ((chartAt ℂ x).symm z) * (z - chartAt ℂ x x) ^ (-(0 : ℤ))
+    rw [neg_zero, zpow_zero, mul_one]
+    exact hz.symm
+
 /-- **The link construction** (design §4.1 step 5, one chain link): the piece function `f`,
 its packaged `(0,1)`-form `η`, and the five assembly facts. Degenerate links (`A = B`) yield
 the constant `1` and the zero form. -/
@@ -377,190 +572,7 @@ theorem exists_link [DecidableEq X] {A B : X} {e : OpenPartialHomeomorph X ℂ}
           D.form_coeffAt_center_of_notMem hxe, zero_mul]
         exact RS.wirtingerDbar_const (chartAt ℂ x x) 1
     -- (4) the factor limits
-    have hfactor : ∀ x : X, ∃ C : ℂ, C ≠ 0 ∧ Tendsto
-        (fun z => f ((chartAt ℂ x).symm z) * (z - chartAt ℂ x x) ^ (-(linkOrd A B x)))
-        (nhdsWithin (chartAt ℂ x x) {chartAt ℂ x x}ᶜ) (nhds C) := by
-      intro x
-      by_cases hxe : x ∈ e.source
-      · set z₀ : ℂ := chartAt ℂ x x with hz₀_def
-        set τ : ℂ → ℂ := ⇑e ∘ ⇑(chartAt ℂ x).symm with hτ_def
-        have hz₀mem : z₀ ∈ ⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ e.source) :=
-          ⟨x, ⟨mem_chart_source ℂ x, hxe⟩, rfl⟩
-        have hSopen : IsOpen (⇑(chartAt ℂ x) '' ((chartAt ℂ x).source ∩ e.source)) :=
-          (chartAt ℂ x).isOpen_image_of_subset_source
-            ((chartAt ℂ x).open_source.inter e.open_source) inter_subset_left
-        have hτz₀ : τ z₀ = e x := by
-          rw [hτ_def, hz₀_def]
-          simp only [Function.comp_apply, (chartAt ℂ x).left_inv (mem_chart_source ℂ x)]
-        have hτan : AnalyticAt ℂ τ z₀ :=
-          RS.analyticAt_trans he (IsManifold.chart_mem_maximalAtlas x)
-            (mem_chart_target ℂ x)
-            (by rw [(chartAt ℂ x).left_inv (mem_chart_source ℂ x)]; exact hxe)
-        have hτderiv : HasDerivAt τ (deriv τ z₀) z₀ :=
-          hτan.differentiableAt.hasDerivAt
-        have hz₀mem' : z₀ ∈ ⇑(chartAt ℂ x) '' (e.source ∩ (chartAt ℂ x).source) :=
-          ⟨x, ⟨hxe, mem_chart_source ℂ x⟩, rfl⟩
-        have hτderiv_ne : deriv τ z₀ ≠ 0 :=
-          deriv_trans_ne_zero he (IsManifold.chart_mem_maximalAtlas x) hz₀mem'
-        -- τ maps the punctured filter into the punctured filter at `e x`
-        have hτpunct : Tendsto τ (nhdsWithin z₀ {z₀}ᶜ)
-            (nhdsWithin (e x) {e x}ᶜ) := by
-          rw [tendsto_nhdsWithin_iff]
-          constructor
-          · have hcont : Tendsto τ (nhds z₀) (nhds (τ z₀)) := hτan.continuousAt
-            rw [hτz₀] at hcont
-            exact hcont.mono_left nhdsWithin_le_nhds
-          · filter_upwards [self_mem_nhdsWithin,
-              mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem)] with z hz1 hz2
-            obtain ⟨q, hq, rfl⟩ := hz2
-            have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
-              (chartAt ℂ x).left_inv hq.1
-            have hτq : τ (chartAt ℂ x q) = e q := by
-              rw [hτ_def]
-              simp only [Function.comp_apply, hq1]
-            intro heq
-            rw [Set.mem_singleton_iff, hτq] at heq
-            have hqx : q = x := e.injOn hq.2 hxe heq
-            apply hz1
-            rw [Set.mem_singleton_iff, hz₀_def, hqx]
-        -- slope limit
-        have hslope : Tendsto (fun z => (τ z - τ z₀) * (z - z₀)⁻¹)
-            (nhdsWithin z₀ {z₀}ᶜ) (nhds (deriv τ z₀)) := by
-          have hts := hasDerivAt_iff_tendsto_slope.mp hτderiv
-          refine hts.congr' ?_
-          filter_upwards [self_mem_nhdsWithin] with z hz
-          have hzz : z ≠ z₀ := by simpa using hz
-          have h1 : z₀ - z ≠ 0 := sub_ne_zero.mpr (Ne.symm hzz)
-          have h2 : z - z₀ ≠ 0 := sub_ne_zero.mpr hzz
-          rw [slope_def_field]
-          field_simp
-        rcases eq_or_ne x B with rfl | hxB
-        · -- the zero: `linkOrd = 1`
-          have hxA : x ≠ A := fun heq => hAB heq.symm
-          have hord : linkOrd A x x = 1 := by
-            rw [linkOrd, if_pos rfl, if_neg hxA, sub_zero]
-          refine ⟨(P.β - P.α)⁻¹ * deriv τ z₀, mul_ne_zero (inv_ne_zero
-            (sub_ne_zero.mpr (Ne.symm heAB))) hτderiv_ne, ?_⟩
-          have hzero := P.tendsto_zero_factor
-          have hβval : P.β = e x := rfl
-          have hcomp : Tendsto (fun z => P.g (τ z) * (τ z - P.β)⁻¹)
-              (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.β - P.α)⁻¹)) := by
-            refine hzero.comp ?_
-            rw [hβval]
-            exact hτpunct
-          have hmain : Tendsto (fun z => (P.g (τ z) * (τ z - P.β)⁻¹) *
-              ((τ z - τ z₀) * (z - z₀)⁻¹))
-              (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.β - P.α)⁻¹ * deriv τ z₀)) :=
-            hcomp.mul hslope
-          refine hmain.congr' ?_
-          filter_upwards [self_mem_nhdsWithin,
-            mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem),
-            hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz2 hz3
-          have hτβ : τ z - P.β ≠ 0 := by
-            rw [hβval]
-            exact sub_ne_zero.mpr (by simpa using hz3)
-          obtain ⟨q, hq, rfl⟩ := hz2
-          have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
-            (chartAt ℂ x).left_inv hq.1
-          rw [hord]
-          show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.β)⁻¹ *
-              ((τ (chartAt ℂ x q) - τ z₀) * (chartAt ℂ x q - z₀)⁻¹)
-            = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
-              (chartAt ℂ x q - z₀) ^ (-(1 : ℤ))
-          have hfq : f ((chartAt ℂ x).symm (chartAt ℂ x q)) = P.g (τ (chartAt ℂ x q)) := by
-            rw [hq1, hf_source q hq.2, hτ_def]
-            simp only [Function.comp_apply, hq1]
-          rw [hfq, zpow_neg_one, show τ z₀ = P.β from hτz₀.trans hβval.symm]
-          rw [mul_assoc, ← mul_assoc ((τ (chartAt ℂ x q) - P.β)⁻¹),
-            inv_mul_cancel₀ hτβ, one_mul]
-        · rcases eq_or_ne x A with rfl | hxA
-          · -- the pole: `linkOrd = -1`
-            have hord : linkOrd x B x = -1 := by
-              rw [linkOrd, if_neg hAB, if_pos rfl, zero_sub]
-            have hslope_inv : Tendsto (fun z => (z - z₀) * (τ z - τ z₀)⁻¹)
-                (nhdsWithin z₀ {z₀}ᶜ) (nhds ((deriv τ z₀)⁻¹)) := by
-              have h1 := hslope.inv₀ hτderiv_ne
-              refine h1.congr' ?_
-              filter_upwards [self_mem_nhdsWithin,
-                hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz3
-              have hzz : z - z₀ ≠ 0 := sub_ne_zero.mpr (by simpa using hz1)
-              have hττ : τ z - τ z₀ ≠ 0 := by
-                rw [hτz₀]
-                exact sub_ne_zero.mpr (by simpa [hτz₀] using hz3)
-              simp only [mul_inv, inv_inv]
-              exact mul_comm _ _
-            refine ⟨(P.α - P.β) * (deriv τ z₀)⁻¹, mul_ne_zero
-              (sub_ne_zero.mpr heAB) (inv_ne_zero hτderiv_ne), ?_⟩
-            have hpole := P.tendsto_pole_factor
-            have hαval : P.α = e x := rfl
-            have hcomp : Tendsto (fun z => P.g (τ z) * (τ z - P.α))
-                (nhdsWithin z₀ {z₀}ᶜ) (nhds (P.α - P.β)) := by
-              refine hpole.comp ?_
-              rw [hαval]
-              exact hτpunct
-            have hmain : Tendsto (fun z => (P.g (τ z) * (τ z - P.α)) *
-                ((z - z₀) * (τ z - τ z₀)⁻¹))
-                (nhdsWithin z₀ {z₀}ᶜ) (nhds ((P.α - P.β) * (deriv τ z₀)⁻¹)) :=
-              hcomp.mul hslope_inv
-            refine hmain.congr' ?_
-            filter_upwards [self_mem_nhdsWithin,
-              mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem),
-              hτpunct.eventually self_mem_nhdsWithin] with z hz1 hz2 hz3
-            have hτα : τ z - P.α ≠ 0 := by
-              rw [hαval]
-              exact sub_ne_zero.mpr (by simpa using hz3)
-            obtain ⟨q, hq, rfl⟩ := hz2
-            have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
-              (chartAt ℂ x).left_inv hq.1
-            rw [hord]
-            show P.g (τ (chartAt ℂ x q)) * (τ (chartAt ℂ x q) - P.α) *
-                ((chartAt ℂ x q - z₀) * (τ (chartAt ℂ x q) - τ z₀)⁻¹)
-              = f ((chartAt ℂ x).symm (chartAt ℂ x q)) *
-                (chartAt ℂ x q - z₀) ^ (-(-1 : ℤ))
-            have hfq : f ((chartAt ℂ x).symm (chartAt ℂ x q))
-                = P.g (τ (chartAt ℂ x q)) := by
-              rw [hq1, hf_source q hq.2, hτ_def]
-              simp only [Function.comp_apply, hq1]
-            rw [hfq, neg_neg, zpow_one, show τ z₀ = P.α from hτz₀.trans hαval.symm]
-            rw [mul_assoc, mul_comm (chartAt ℂ x q - z₀) ((τ (chartAt ℂ x q) - P.α)⁻¹),
-              ← mul_assoc (τ (chartAt ℂ x q) - P.α), mul_inv_cancel₀ hτα, one_mul]
-          · -- a regular point: `linkOrd = 0`
-            have hord : linkOrd A B x = 0 := by
-              rw [linkOrd, if_neg hxB, if_neg hxA, sub_zero]
-            have hexA : e x ≠ P.α := fun heq => hxA (e.injOn hxe hA heq)
-            have hexB : e x ≠ P.β := fun heq => hxB (e.injOn hxe hB heq)
-            refine ⟨P.g (e x), P.g_ne_zero hexA hexB, ?_⟩
-            have hcont : ContinuousAt (P.g ∘ τ) z₀ := by
-              refine ContinuousAt.comp ?_ hτan.continuousAt
-              rw [hτz₀]
-              exact (P.g_contDiffAt hexA).continuousAt
-            have hgoal : Tendsto (P.g ∘ τ) (nhdsWithin z₀ {z₀}ᶜ) (nhds (P.g (e x))) := by
-              have h1 : Tendsto (P.g ∘ τ) (nhds z₀) (nhds ((P.g ∘ τ) z₀)) := hcont
-              rw [Function.comp_apply, hτz₀] at h1
-              exact h1.mono_left nhdsWithin_le_nhds
-            refine hgoal.congr' ?_
-            filter_upwards [mem_nhdsWithin_of_mem_nhds (hSopen.mem_nhds hz₀mem)] with z hz2
-            obtain ⟨q, hq, rfl⟩ := hz2
-            have hq1 : (chartAt ℂ x).symm (chartAt ℂ x q) = q :=
-              (chartAt ℂ x).left_inv hq.1
-            rw [hord]
-            show P.g (τ (chartAt ℂ x q))
-              = f ((chartAt ℂ x).symm (chartAt ℂ x q)) * (chartAt ℂ x q - z₀) ^ (-(0 : ℤ))
-            rw [neg_zero, zpow_zero, mul_one, hq1, hf_source q hq.2, hτ_def]
-            simp only [Function.comp_apply, hq1]
-      · -- off the chart: `f ≡ 1` near `x`, `linkOrd = 0`
-        have hxA : x ≠ A := fun heq => hxe (heq ▸ hA)
-        have hxB : x ≠ B := fun heq => hxe (heq ▸ hB)
-        have hord : linkOrd A B x = 0 := by
-          rw [linkOrd, if_neg hxB, if_neg hxA, sub_zero]
-        refine ⟨1, one_ne_zero, ?_⟩
-        have hev := hlocal_out hxe
-        refine (tendsto_const_nhds).congr' ?_
-        filter_upwards [mem_nhdsWithin_of_mem_nhds hev] with z hz
-        rw [hord]
-        show (1 : ℂ) = f ((chartAt ℂ x).symm z) * (z - chartAt ℂ x x) ^ (-(0 : ℤ))
-        rw [neg_zero, zpow_zero, mul_one]
-        exact hz.symm
+    have hfactor := exists_linkOrd_factor hAB he hA hB rfl rfl heAB hf_source hlocal_out
     -- (5) the pairing identity
     have hpairing : ∀ (PU : SurfPoU X) (θ : RS.Form1 X) (Gp : ℂ → ℂ),
         (∀ z ∈ ball c r, HasDerivAt Gp (RS.coeffIn e θ z) z) →
