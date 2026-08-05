@@ -162,6 +162,119 @@ end Helpers
 
 /-! ## The annulus identity (Atom 1′) -/
 
+/-- The polar-log change of variables `τ ζ = c + exp ζ` carries the rectangle onto the annulus:
+it maps `Rec` into `A`, is injective on the half-open `s`, and has image exactly `A`. Split out of
+`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the 200-line proof
+size we hold ourselves to; the abbreviations are rebuilt here so the arguments read as inline. -/
+private theorem polarLog_mapsTo_injOn_image {c : ℂ} {r R : ℝ} (h0 : 0 < r) (hRpos : 0 < R)
+    (hRr : r < R) :
+    Set.MapsTo (fun ζ : ℂ => c + Complex.exp ζ)
+        (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R)) (Set.Icc (0 : ℝ) (2 * π)))
+        (Metric.closedBall c R \ Metric.ball c r) ∧
+      Set.InjOn (fun ζ : ℂ => c + Complex.exp ζ)
+        (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R)) (Set.Ico (0 : ℝ) (2 * π))) ∧
+      (fun ζ : ℂ => c + Complex.exp ζ) ''
+          (Complex.reProdIm (Set.Icc (Real.log r) (Real.log R)) (Set.Ico (0 : ℝ) (2 * π))) =
+        Metric.closedBall c R \ Metric.ball c r := by
+  set a : ℝ := Real.log r with ha_def
+  set b : ℝ := Real.log R with hb_def
+  have hea : Real.exp a = r := Real.exp_log h0
+  have heb : Real.exp b = R := Real.exp_log hRpos
+  have hab : a < b := (Real.log_lt_log_iff h0 hRpos).mpr hRr
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set A : Set ℂ := Metric.closedBall c R \ Metric.ball c r with hA_def
+  set Rec : Set ℂ := Complex.reProdIm (Set.Icc a b) (Set.Icc (0 : ℝ) (2 * π)) with hRec_def
+  set s : Set ℂ := Complex.reProdIm (Set.Icc a b) (Set.Ico (0 : ℝ) (2 * π)) with hs_def
+  have hs_sub_Rec : s ⊆ Rec := by
+    intro ζ hζ
+    rw [hs_def, Complex.mem_reProdIm] at hζ
+    rw [hRec_def, Complex.mem_reProdIm]
+    exact ⟨hζ.1, ⟨hζ.2.1, hζ.2.2.le⟩⟩
+  have hτ_maps : Set.MapsTo τ Rec A := by
+    intro ζ hζ
+    rw [hRec_def, Complex.mem_reProdIm] at hζ
+    have hdist : dist (τ ζ) c = Real.exp ζ.re := by
+      rw [hτ_def, dist_eq_norm, show c + Complex.exp ζ - c = Complex.exp ζ from by ring,
+        Complex.norm_exp]
+    have hlow : r ≤ Real.exp ζ.re := by
+      rw [← hea]; exact Real.exp_le_exp.mpr hζ.1.1
+    have hhigh : Real.exp ζ.re ≤ R := by
+      rw [← heb]; exact Real.exp_le_exp.mpr hζ.1.2
+    refine ⟨?_, ?_⟩
+    · rw [Metric.mem_closedBall, hdist]; exact hhigh
+    · rw [Metric.mem_ball, not_lt, hdist] at *; exact hlow
+  have hs_maps : Set.MapsTo τ s A := hτ_maps.mono_left hs_sub_Rec
+  refine ⟨hτ_maps, ?_, ?_⟩
+  · show Set.InjOn τ s
+    intro ζ1 hζ1 ζ2 hζ2 heq
+    rw [hs_def, Complex.mem_reProdIm] at hζ1 hζ2
+    have heq' : Complex.exp ζ1 = Complex.exp ζ2 := by
+      have hh : c + Complex.exp ζ1 = c + Complex.exp ζ2 := by simpa [hτ_def] using heq
+      exact add_left_cancel hh
+    rw [Complex.exp_eq_exp_iff_exists_int] at heq'
+    obtain ⟨n, hn⟩ := heq'
+    have hre : ζ1.re = ζ2.re := by
+      have := congrArg Complex.re hn; simpa using this
+    have him : ζ1.im = ζ2.im + n * (2 * π) := by
+      have := congrArg Complex.im hn; simpa using this
+    have hn0 : n = 0 := by
+      have hb1 := hζ1.2.1; have hb2 := hζ1.2.2
+      have hc1 := hζ2.2.1; have hc2 := hζ2.2.2
+      have hbound1 : -(2 * π) < (n : ℝ) * (2 * π) := by nlinarith
+      have hbound2 : (n : ℝ) * (2 * π) < 2 * π := by nlinarith
+      have hpi : (0 : ℝ) < 2 * π := Real.two_pi_pos
+      have hn1 : (-1 : ℝ) < (n : ℝ) := by nlinarith
+      have hn2 : (n : ℝ) < 1 := by nlinarith
+      have h1' : (-1 : ℤ) < n := by exact_mod_cast hn1
+      have h2' : n < (1 : ℤ) := by exact_mod_cast hn2
+      omega
+    rw [hn0] at him
+    simp only [Int.cast_zero, zero_mul, add_zero] at him
+    exact Complex.ext hre him
+  · show τ '' s = A
+    apply Set.Subset.antisymm (Set.image_subset_iff.mpr hs_maps)
+    intro w hw
+    set ρ : ℝ := ‖w - c‖ with hρ_def
+    have hρpos : 0 < ρ := by
+      rw [hρ_def, norm_pos_iff, sub_ne_zero]
+      rintro rfl
+      exact hw.2 (Metric.mem_ball_self h0)
+    have hρr : r ≤ ρ := by
+      have hh := hw.2
+      rw [Metric.mem_ball, not_lt] at hh
+      rwa [hρ_def, ← dist_eq_norm]
+    have hρR : ρ ≤ R := by
+      have hh := hw.1
+      rw [Metric.mem_closedBall] at hh
+      rwa [hρ_def, ← dist_eq_norm]
+    set θ₀ : ℝ := Complex.arg (w - c) with hθ₀_def
+    have hθ₀range := Complex.arg_mem_Ioc (w - c)
+    set y : ℝ := if θ₀ < 0 then θ₀ + 2 * π else θ₀ with hy_def
+    have hyrange : y ∈ Set.Ico (0 : ℝ) (2 * π) := by
+      rw [hy_def]
+      split_ifs with hneg
+      · exact ⟨by linarith [hθ₀range.1], by linarith [hθ₀range.2]⟩
+      · push Not at hneg
+        exact ⟨hneg, by linarith [hθ₀range.2, Real.pi_pos]⟩
+    have hexpy : Complex.exp (y * I) = Complex.exp (θ₀ * I) := by
+      rw [hy_def]
+      split_ifs with hneg
+      · rw [show ((θ₀ + 2 * π : ℝ) : ℂ) * I = θ₀ * I + 2 * π * I by push_cast; ring,
+          Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
+      · rfl
+    set x : ℝ := Real.log ρ with hx_def
+    have hxrange : x ∈ Set.Icc a b := by
+      rw [hx_def, ha_def, hb_def]
+      exact ⟨(Real.log_le_log_iff h0 hρpos).mpr hρr, (Real.log_le_log_iff hρpos hRpos).mpr hρR⟩
+    refine ⟨x + y * I, ?_, ?_⟩
+    · rw [hs_def, Complex.mem_reProdIm]
+      simpa using ⟨hxrange, hyrange⟩
+    · rw [hτ_def]
+      simp only
+      rw [Complex.exp_add, ← Complex.ofReal_exp, hx_def, Real.exp_log hρpos, hexpy,
+        Complex.norm_mul_exp_arg_mul_I]
+      ring
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -198,19 +311,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       intro ζ
       rw [hτ_def, deriv_const_add, congrFun Complex.deriv_exp ζ]
     -- `τ` maps `Rec` into `A`.
-    have hτ_maps : Set.MapsTo τ Rec A := by
-      intro ζ hζ
-      rw [hRec_def, Complex.mem_reProdIm] at hζ
-      have hdist : dist (τ ζ) c = Real.exp ζ.re := by
-        rw [hτ_def, dist_eq_norm, show c + Complex.exp ζ - c = Complex.exp ζ from by ring,
-          Complex.norm_exp]
-      have hlow : r ≤ Real.exp ζ.re := by
-        rw [← hea]; exact Real.exp_le_exp.mpr hζ.1.1
-      have hhigh : Real.exp ζ.re ≤ R := by
-        rw [← heb]; exact Real.exp_le_exp.mpr hζ.1.2
-      refine ⟨?_, ?_⟩
-      · rw [Metric.mem_closedBall, hdist]; exact hhigh
-      · rw [Metric.mem_ball, not_lt, hdist] at *; exact hlow
+    obtain ⟨hτ_maps, -, -⟩ := polarLog_mapsTo_injOn_image h0 hRpos hRr
     -- The half-open-in-angle domain, on which `τ` is a genuine bijection onto `A`.
     set s : Set ℂ := Complex.reProdIm (Set.Icc a b) (Set.Ico (0 : ℝ) (2 * π)) with hs_def
     have hs_sub_Rec : s ⊆ Rec := by
@@ -220,76 +321,9 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
       exact ⟨hζ.1, ⟨hζ.2.1, hζ.2.2.le⟩⟩
     have hs_maps : Set.MapsTo τ s A := hτ_maps.mono_left hs_sub_Rec
     -- Injectivity of `τ` on `s`.
-    have hτ_inj : Set.InjOn τ s := by
-      intro ζ1 hζ1 ζ2 hζ2 heq
-      rw [hs_def, Complex.mem_reProdIm] at hζ1 hζ2
-      have heq' : Complex.exp ζ1 = Complex.exp ζ2 := by
-        have hh : c + Complex.exp ζ1 = c + Complex.exp ζ2 := by simpa [hτ_def] using heq
-        exact add_left_cancel hh
-      rw [Complex.exp_eq_exp_iff_exists_int] at heq'
-      obtain ⟨n, hn⟩ := heq'
-      have hre : ζ1.re = ζ2.re := by
-        have := congrArg Complex.re hn; simpa using this
-      have him : ζ1.im = ζ2.im + n * (2 * π) := by
-        have := congrArg Complex.im hn; simpa using this
-      have hn0 : n = 0 := by
-        have hb1 := hζ1.2.1; have hb2 := hζ1.2.2
-        have hc1 := hζ2.2.1; have hc2 := hζ2.2.2
-        have hbound1 : -(2 * π) < (n : ℝ) * (2 * π) := by nlinarith
-        have hbound2 : (n : ℝ) * (2 * π) < 2 * π := by nlinarith
-        have hpi : (0 : ℝ) < 2 * π := Real.two_pi_pos
-        have hn1 : (-1 : ℝ) < (n : ℝ) := by nlinarith
-        have hn2 : (n : ℝ) < 1 := by nlinarith
-        have h1' : (-1 : ℤ) < n := by exact_mod_cast hn1
-        have h2' : n < (1 : ℤ) := by exact_mod_cast hn2
-        omega
-      rw [hn0] at him
-      simp only [Int.cast_zero, zero_mul, add_zero] at him
-      exact Complex.ext hre him
+    obtain ⟨-, hτ_inj, -⟩ := polarLog_mapsTo_injOn_image h0 hRpos hRr
     -- `τ '' s = A` exactly.
-    have hτ_image : τ '' s = A := by
-      apply Set.Subset.antisymm (Set.image_subset_iff.mpr hs_maps)
-      intro w hw
-      set ρ : ℝ := ‖w - c‖ with hρ_def
-      have hρpos : 0 < ρ := by
-        rw [hρ_def, norm_pos_iff, sub_ne_zero]
-        rintro rfl
-        exact hw.2 (Metric.mem_ball_self h0)
-      have hρr : r ≤ ρ := by
-        have hh := hw.2
-        rw [Metric.mem_ball, not_lt] at hh
-        rwa [hρ_def, ← dist_eq_norm]
-      have hρR : ρ ≤ R := by
-        have hh := hw.1
-        rw [Metric.mem_closedBall] at hh
-        rwa [hρ_def, ← dist_eq_norm]
-      set θ₀ : ℝ := Complex.arg (w - c) with hθ₀_def
-      have hθ₀range := Complex.arg_mem_Ioc (w - c)
-      set y : ℝ := if θ₀ < 0 then θ₀ + 2 * π else θ₀ with hy_def
-      have hyrange : y ∈ Set.Ico (0 : ℝ) (2 * π) := by
-        rw [hy_def]
-        split_ifs with hneg
-        · exact ⟨by linarith [hθ₀range.1], by linarith [hθ₀range.2]⟩
-        · push Not at hneg
-          exact ⟨hneg, by linarith [hθ₀range.2, Real.pi_pos]⟩
-      have hexpy : Complex.exp (y * I) = Complex.exp (θ₀ * I) := by
-        rw [hy_def]
-        split_ifs with hneg
-        · rw [show ((θ₀ + 2 * π : ℝ) : ℂ) * I = θ₀ * I + 2 * π * I by push_cast; ring,
-            Complex.exp_add, Complex.exp_two_pi_mul_I, mul_one]
-        · rfl
-      set x : ℝ := Real.log ρ with hx_def
-      have hxrange : x ∈ Set.Icc a b := by
-        rw [hx_def, ha_def, hb_def]
-        exact ⟨(Real.log_le_log_iff h0 hρpos).mpr hρr, (Real.log_le_log_iff hρpos hRpos).mpr hρR⟩
-      refine ⟨x + y * I, ?_, ?_⟩
-      · rw [hs_def, Complex.mem_reProdIm]
-        simpa using ⟨hxrange, hyrange⟩
-      · rw [hτ_def]
-        simp only
-        rw [Complex.exp_add, ← Complex.ofReal_exp, hx_def, Real.exp_log hρpos, hexpy,
-          Complex.norm_mul_exp_arg_mul_I]
-        ring
+    obtain ⟨-, -, hτ_image⟩ := polarLog_mapsTo_injOn_image h0 hRpos hRr
     -- `Rec` is convex with nonempty interior, hence a set of unique differentiability.
     have hRe_lin : IsLinearMap ℝ Complex.re := ⟨Complex.add_re, fun t v => by
       simp [Complex.real_smul, Complex.mul_re]⟩
