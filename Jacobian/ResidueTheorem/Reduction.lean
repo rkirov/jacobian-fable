@@ -219,6 +219,27 @@ scope unchanged; the call site below (`MForm.d_ne_zero hφ`) is untouched. -/
 
 /-! ### THE residue theorem -/
 
+/-- The `∞`-chart reading of a meromorphic function on `ℂ` is again meromorphic. Split out of
+`residue_sum_eq_zero_of_exists_nonconstant` to keep that proof under the 200-line size we hold
+ourselves to. -/
+private theorem meromorphicOn_invChart_reading {R_T G : ℂ → ℂ}
+    (hRT : MeromorphicOn R_T Set.univ) (hInfMeroT : MeromorphicAt G 0)
+    (hgermInf : (fun w : ℂ => -(w ^ 2)⁻¹ * R_T w⁻¹) =ᶠ[𝓝[≠] (0 : ℂ)] G) :
+    MeromorphicOn (fun w : ℂ => -(w ^ 2)⁻¹ * R_T w⁻¹) Set.univ := by
+  intro w₀ _
+  by_cases hw₀ : w₀ = 0
+  · subst hw₀
+    exact hInfMeroT.congr hgermInf.symm
+  · have h1 : MeromorphicAt (fun w : ℂ => -(w ^ 2)⁻¹) w₀ :=
+      ((MeromorphicAt.id w₀).pow 2).inv.neg
+    have hτ : AnalyticAt ℂ (Inv.inv : ℂ → ℂ) w₀ := analyticAt_id.inv hw₀
+    have hτ' : deriv (Inv.inv : ℂ → ℂ) w₀ ≠ 0 := by
+      rw [deriv_inv]
+      exact neg_ne_zero.2 (inv_ne_zero (pow_ne_zero 2 hw₀))
+    have h2 : MeromorphicAt (R_T ∘ Inv.inv) w₀ :=
+      (meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ').2 (hRT w₀⁻¹ (Set.mem_univ _))
+    exact h1.mul h2
+
 /-- **THE residue theorem** (Forster 10.21 / Miranda VI eq. 3.2, blueprint headline
 `∑_p Res_p(θ) = 0`): on a compact connected Riemann surface admitting a nonconstant meromorphic
 function (the exact shape of canonical-forms D9's `exists_nonconstant_mero`), the residues of
@@ -313,20 +334,7 @@ theorem residue_sum_eq_zero_of_exists_nonconstant
         rw [P1.invChart_source]
         simp)).1 h1
     rwa [P1.invChart_apply_infty] at h2
-  have hRT' : MeromorphicOn (fun w : ℂ => -(w ^ 2)⁻¹ * R_T w⁻¹) Set.univ := by
-    intro w₀ _
-    by_cases hw₀ : w₀ = 0
-    · subst hw₀
-      exact hInfMeroT.congr hgermInf.symm
-    · have h1 : MeromorphicAt (fun w : ℂ => -(w ^ 2)⁻¹) w₀ :=
-        ((MeromorphicAt.id w₀).pow 2).inv.neg
-      have hτ : AnalyticAt ℂ (Inv.inv : ℂ → ℂ) w₀ := analyticAt_id.inv hw₀
-      have hτ' : deriv (Inv.inv : ℂ → ℂ) w₀ ≠ 0 := by
-        rw [deriv_inv]
-        exact neg_ne_zero.2 (inv_ne_zero (pow_ne_zero 2 hw₀))
-      have h2 : MeromorphicAt (R_T ∘ Inv.inv) w₀ :=
-        (meromorphicAt_comp_iff_of_deriv_ne_zero hτ hτ').2 (hRT w₀⁻¹ (Set.mem_univ _))
-      exact h1.mul h2
+  have hRT' := meromorphicOn_invChart_reading hRT hInfMeroT hgermInf
   -- the trace form on ℙ¹
   set θT : MFormData (OnePoint ℂ) := P1.formOfCoeFn R_T hRT hRT' with hθT_def
   -- THE per-fibre identity
