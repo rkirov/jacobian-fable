@@ -275,6 +275,47 @@ private theorem polarLog_mapsTo_injOn_image {c : ℂ} {r R : ℝ} (h0 : 0 < r) (
         Complex.norm_mul_exp_arg_mul_I]
       ring
 
+/-- On the open rectangle the pulled-back function is real-differentiable: its image sits in the
+interior of the annulus. Split out of
+`circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar` for the 200-line proof
+size we hold ourselves to. -/
+private theorem differentiableAt_comp_polarLog {u : ℂ → ℂ} {c : ℂ} {r R : ℝ} (h0 : 0 < r)
+    (hRpos : 0 < R)
+    (hu : ContDiffOn ℝ 1 u (Metric.closedBall c R \ Metric.ball c r)) :
+    ∀ ζ ∈ Complex.reProdIm (Set.Ioo (Real.log r) (Real.log R)) (Set.Ioo (0 : ℝ) (2 * π)),
+      DifferentiableAt ℝ u (c + Complex.exp ζ) := by
+  set a : ℝ := Real.log r with ha_def
+  set b : ℝ := Real.log R with hb_def
+  have hea : Real.exp a = r := Real.exp_log h0
+  have heb : Real.exp b = R := Real.exp_log hRpos
+  set τ : ℂ → ℂ := fun ζ => c + Complex.exp ζ with hτ_def
+  set A : Set ℂ := Metric.closedBall c R \ Metric.ball c r with hA_def
+  set RecOpen : Set ℂ := Complex.reProdIm (Set.Ioo a b) (Set.Ioo (0 : ℝ) (2 * π)) with
+    hRecOpen_def
+  show ∀ ζ ∈ RecOpen, DifferentiableAt ℝ u (τ ζ)
+  intro ζ hζ
+  rw [hRecOpen_def, Complex.mem_reProdIm] at hζ
+  have hτζ_int : τ ζ ∈ Metric.ball c R \ Metric.closedBall c r := by
+    have hdist : dist (τ ζ) c = Real.exp ζ.re := by
+      rw [hτ_def, dist_eq_norm, show c + Complex.exp ζ - c = Complex.exp ζ from by ring,
+        Complex.norm_exp]
+    have hlt1 : Real.exp ζ.re < R := by rw [← heb]; exact Real.exp_lt_exp.mpr hζ.1.2
+    have hlt2 : r < Real.exp ζ.re := by rw [← hea]; exact Real.exp_lt_exp.mpr hζ.1.1
+    refine ⟨?_, ?_⟩
+    · rw [Metric.mem_ball, hdist]; exact hlt1
+    · rw [Metric.mem_closedBall, not_le, hdist]; exact hlt2
+  have hAmem : A ∈ nhds (τ ζ) := by
+    have hopenset : IsOpen (Metric.ball c R \ Metric.closedBall c r) :=
+      Metric.isOpen_ball.sdiff Metric.isClosed_closedBall
+    have hsub2 : Metric.ball c R \ Metric.closedBall c r ⊆ A := by
+      rw [hA_def]
+      rintro x ⟨hx1, hx2⟩
+      rw [Metric.mem_ball] at hx1
+      rw [Metric.mem_closedBall, not_le] at hx2
+      exact ⟨by rw [Metric.mem_closedBall]; linarith, by rw [Metric.mem_ball, not_lt]; linarith⟩
+    exact Filter.mem_of_superset (hopenset.mem_nhds hτζ_int) hsub2
+  exact (hu.contDiffAt hAmem).differentiableAt (by norm_num)
+
 /-- **Atom 1′** (annulus Stokes, general — no meromorphy, no residue): area-to-boundary identity
 for the `dbar` of an arbitrary `C¹` function on a closed annulus. -/
 theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDbar
@@ -382,29 +423,7 @@ theorem circleIntegral_sub_circleIntegral_eq_two_mul_I_mul_integral_wirtingerDba
         rw [hRec_def]; exact IsCompact.reProdIm isCompact_Icc isCompact_Icc
       exact hcont.integrableOn_compact hcompact
     -- Interior points of `Rec` (in the `ζ`-rectangle) map to interior points of `A`.
-    have hInterior_diff : ∀ ζ ∈ RecOpen, DifferentiableAt ℝ u (τ ζ) := by
-      intro ζ hζ
-      rw [hRecOpen_def, Complex.mem_reProdIm] at hζ
-      have hτζ_int : τ ζ ∈ Metric.ball c R \ Metric.closedBall c r := by
-        have hdist : dist (τ ζ) c = Real.exp ζ.re := by
-          rw [hτ_def, dist_eq_norm, show c + Complex.exp ζ - c = Complex.exp ζ from by ring,
-            Complex.norm_exp]
-        have hlt1 : Real.exp ζ.re < R := by rw [← heb]; exact Real.exp_lt_exp.mpr hζ.1.2
-        have hlt2 : r < Real.exp ζ.re := by rw [← hea]; exact Real.exp_lt_exp.mpr hζ.1.1
-        refine ⟨?_, ?_⟩
-        · rw [Metric.mem_ball, hdist]; exact hlt1
-        · rw [Metric.mem_closedBall, not_le, hdist]; exact hlt2
-      have hAmem : A ∈ nhds (τ ζ) := by
-        have hopenset : IsOpen (Metric.ball c R \ Metric.closedBall c r) :=
-          Metric.isOpen_ball.sdiff Metric.isClosed_closedBall
-        have hsub2 : Metric.ball c R \ Metric.closedBall c r ⊆ A := by
-          rw [hA_def]
-          rintro x ⟨hx1, hx2⟩
-          rw [Metric.mem_ball] at hx1
-          rw [Metric.mem_closedBall, not_le] at hx2
-          exact ⟨by rw [Metric.mem_closedBall]; linarith, by rw [Metric.mem_ball, not_lt]; linarith⟩
-        exact Filter.mem_of_superset (hopenset.mem_nhds hτζ_int) hsub2
-      exact (hu.contDiffAt hAmem).differentiableAt (by norm_num)
+    have hInterior_diff := differentiableAt_comp_polarLog h0 hRpos hu
     have hHd : ∀ ζ ∈ RecOpen, HasFDerivAt F (f' ζ) ζ := by
       intro ζ hζ
       have hud : DifferentiableAt ℝ u (τ ζ) := hInterior_diff ζ hζ
