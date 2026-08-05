@@ -350,6 +350,74 @@ theorem tendsto_pole_factor :
 
 /-! ## The residue identity (Forster 20.3/20.5, planar) -/
 
+/-- The two-pole Cauchy atom on the middle circle: the difference of simple poles at `β` and `α`,
+integrated against a holomorphic `Gp`, is `2πi (Gp β - Gp α)`. Split out of `integral_dlog_mul`
+to keep that proof under the 200-line size we hold ourselves to. -/
+private theorem circleIntegral_two_pole {r : ℝ} (hr : P.χ.rOut < r) {Gp : ℂ → ℂ}
+    (hGpdiff : DifferentiableOn ℂ Gp (ball P.c r)) {ρ' : ℝ} (hρ'pos : 0 < ρ')
+    (hρ'1 : P.ρ < ρ') (hρ'2 : ρ' < P.χ.rIn) :
+    (∮ z in C(P.c, ρ'), (1 / (z - P.β) - 1 / (z - P.α)) * Gp z)
+      = 2 * (Real.pi : ℂ) * Complex.I * (Gp P.β - Gp P.α) := by
+  have hGpcl : DiffContOnCl ℂ Gp (ball P.c ρ') := by
+    refine DiffContOnCl.mk (hGpdiff.mono ?_) ((hGpdiff.continuousOn).mono ?_)
+    · exact ball_subset_ball (le_of_lt ((hρ'2.trans P.χ.rIn_lt_rOut).trans hr))
+    · rw [closure_ball P.c hρ'pos.ne']
+      intro z hz
+      rw [Metric.mem_closedBall] at hz
+      rw [Metric.mem_ball]
+      exact hz.trans_lt ((hρ'2.trans P.χ.rIn_lt_rOut).trans hr)
+  have hβball : P.β ∈ ball P.c ρ' := by
+    have := P.hβ
+    rw [mem_ball, dist_zero_right] at this
+    rw [Metric.mem_ball, dist_eq_norm]
+    exact this.trans hρ'1
+  have hαball : P.α ∈ ball P.c ρ' := by
+    have := P.hα
+    rw [mem_ball, dist_zero_right] at this
+    rw [Metric.mem_ball, dist_eq_norm]
+    exact this.trans hρ'1
+  have hβint := hGpcl.circleIntegral_sub_inv_smul hβball
+  have hαint := hGpcl.circleIntegral_sub_inv_smul hαball
+  -- `ContinuousOn.smul` concludes about `f • g` (pointwise), so the two factors are named
+  -- first and combined with `exact`, rather than `refine`d against the lambda form.
+  have hGpsph : ContinuousOn Gp (sphere P.c ρ') :=
+    (hGpdiff.continuousOn).mono (fun z hz => by
+      rw [mem_sphere] at hz
+      rw [Metric.mem_ball, hz]
+      exact (hρ'2.trans P.χ.rIn_lt_rOut).trans hr)
+  have hint1 : CircleIntegrable (fun z => (z - P.β)⁻¹ • Gp z) P.c ρ' := by
+    refine ContinuousOn.circleIntegrable hρ'pos.le ?_
+    have hinv : ContinuousOn (fun z : ℂ => (z - P.β)⁻¹) (sphere P.c ρ') := by
+      refine ContinuousOn.inv₀ ((continuous_id.sub continuous_const).continuousOn) ?_
+      intro z hz
+      rw [mem_sphere, dist_eq_norm] at hz
+      refine sub_ne_zero.mpr (fun heq => ?_)
+      have hmem := P.hβ
+      rw [mem_ball, dist_zero_right] at hmem
+      rw [← heq, hz] at hmem
+      exact absurd hmem (not_lt.mpr hρ'1.le)
+    exact hinv.smul hGpsph
+  have hint2 : CircleIntegrable (fun z => (z - P.α)⁻¹ • Gp z) P.c ρ' := by
+    refine ContinuousOn.circleIntegrable hρ'pos.le ?_
+    have hinv : ContinuousOn (fun z : ℂ => (z - P.α)⁻¹) (sphere P.c ρ') := by
+      refine ContinuousOn.inv₀ ((continuous_id.sub continuous_const).continuousOn) ?_
+      intro z hz
+      rw [mem_sphere, dist_eq_norm] at hz
+      refine sub_ne_zero.mpr (fun heq => ?_)
+      have hmem := P.hα
+      rw [mem_ball, dist_zero_right] at hmem
+      rw [← heq, hz] at hmem
+      exact absurd hmem (not_lt.mpr hρ'1.le)
+    exact hinv.smul hGpsph
+  have hcongr : (∮ z in C(P.c, ρ'), (1 / (z - P.β) - 1 / (z - P.α)) * Gp z)
+      = (∮ z in C(P.c, ρ'), ((z - P.β)⁻¹ • Gp z - (z - P.α)⁻¹ • Gp z)) := by
+    refine circleIntegral.integral_congr hρ'pos.le (fun z _ => ?_)
+    simp only [smul_eq_mul, one_div]
+    ring
+  rw [hcongr, circleIntegral.integral_sub hint1 hint2, hβint, hαint]
+  simp only [smul_eq_mul]
+  ring
+
 /-- **The residue identity**: for a holomorphic primitive `Gp` of `w` on a ball containing the
 whole piece, `∫ dlog · w dA = π (Gp β - Gp α)`. -/
 theorem integral_dlog_mul {r : ℝ} (hr : P.χ.rOut < r) {w Gp : ℂ → ℂ}
@@ -502,67 +570,7 @@ theorem integral_dlog_mul {r : ℝ} (hr : P.χ.rOut < r) {w Gp : ℂ → ℂ}
     have hsplit := circleIntegral.integral_add hint1 hint2
     linear_combination hzero - hsplit
   -- the Cauchy formula evaluation
-  have hcauchy : (∮ z in C(P.c, ρ'), (1 / (z - P.β) - 1 / (z - P.α)) * Gp z)
-      = 2 * (Real.pi : ℂ) * Complex.I * (Gp P.β - Gp P.α) := by
-    have hGpcl : DiffContOnCl ℂ Gp (ball P.c ρ') := by
-      refine DiffContOnCl.mk (hGpdiff.mono ?_) ((hGpdiff.continuousOn).mono ?_)
-      · exact ball_subset_ball (le_of_lt ((hρ'2.trans P.χ.rIn_lt_rOut).trans hr))
-      · rw [closure_ball P.c hρ'pos.ne']
-        intro z hz
-        rw [Metric.mem_closedBall] at hz
-        rw [Metric.mem_ball]
-        exact hz.trans_lt ((hρ'2.trans P.χ.rIn_lt_rOut).trans hr)
-    have hβball : P.β ∈ ball P.c ρ' := by
-      have := P.hβ
-      rw [mem_ball, dist_zero_right] at this
-      rw [Metric.mem_ball, dist_eq_norm]
-      exact this.trans hρ'1
-    have hαball : P.α ∈ ball P.c ρ' := by
-      have := P.hα
-      rw [mem_ball, dist_zero_right] at this
-      rw [Metric.mem_ball, dist_eq_norm]
-      exact this.trans hρ'1
-    have hβint := hGpcl.circleIntegral_sub_inv_smul hβball
-    have hαint := hGpcl.circleIntegral_sub_inv_smul hαball
-    -- `ContinuousOn.smul` concludes about `f • g` (pointwise), so the two factors are named
-    -- first and combined with `exact`, rather than `refine`d against the lambda form.
-    have hGpsph : ContinuousOn Gp (sphere P.c ρ') :=
-      (hGpdiff.continuousOn).mono (fun z hz => by
-        rw [mem_sphere] at hz
-        rw [Metric.mem_ball, hz]
-        exact (hρ'2.trans P.χ.rIn_lt_rOut).trans hr)
-    have hint1 : CircleIntegrable (fun z => (z - P.β)⁻¹ • Gp z) P.c ρ' := by
-      refine ContinuousOn.circleIntegrable hρ'pos.le ?_
-      have hinv : ContinuousOn (fun z : ℂ => (z - P.β)⁻¹) (sphere P.c ρ') := by
-        refine ContinuousOn.inv₀ ((continuous_id.sub continuous_const).continuousOn) ?_
-        intro z hz
-        rw [mem_sphere, dist_eq_norm] at hz
-        refine sub_ne_zero.mpr (fun heq => ?_)
-        have hmem := P.hβ
-        rw [mem_ball, dist_zero_right] at hmem
-        rw [← heq, hz] at hmem
-        exact absurd hmem (not_lt.mpr hρ'1.le)
-      exact hinv.smul hGpsph
-    have hint2 : CircleIntegrable (fun z => (z - P.α)⁻¹ • Gp z) P.c ρ' := by
-      refine ContinuousOn.circleIntegrable hρ'pos.le ?_
-      have hinv : ContinuousOn (fun z : ℂ => (z - P.α)⁻¹) (sphere P.c ρ') := by
-        refine ContinuousOn.inv₀ ((continuous_id.sub continuous_const).continuousOn) ?_
-        intro z hz
-        rw [mem_sphere, dist_eq_norm] at hz
-        refine sub_ne_zero.mpr (fun heq => ?_)
-        have hmem := P.hα
-        rw [mem_ball, dist_zero_right] at hmem
-        rw [← heq, hz] at hmem
-        exact absurd hmem (not_lt.mpr hρ'1.le)
-      exact hinv.smul hGpsph
-    have hcongr : (∮ z in C(P.c, ρ'), (1 / (z - P.β) - 1 / (z - P.α)) * Gp z)
-        = (∮ z in C(P.c, ρ'), ((z - P.β)⁻¹ • Gp z - (z - P.α)⁻¹ • Gp z)) := by
-      refine circleIntegral.integral_congr hρ'pos.le (fun z _ => ?_)
-      simp only [smul_eq_mul, one_div]
-      ring
-    rw [hcongr, circleIntegral.integral_sub hint1 hint2, hβint, hαint]
-    simp only [smul_eq_mul]
-    ring
+  have hcauchy := circleIntegral_two_pole P hr hGpdiff hρ'pos hρ'1 hρ'2
   -- assemble
   rw [houter, hinner, hparts, hcauchy, harea] at hatom
   have hI : (2 : ℂ) * Complex.I ≠ 0 := by

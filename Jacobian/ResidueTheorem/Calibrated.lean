@@ -40,6 +40,36 @@ variable {X Y : Type*}
   [TopologicalSpace Y] [ChartedSpace ℂ Y]
   [IsManifold 𝓘(ℂ) ω X] [IsManifold 𝓘(ℂ) ω Y]
 
+/-- Near the chart image of `x`, points stay in the chart target, pull back into `U`, and their
+`F`-images stay in the target chart's source. Split out of `exists_adaptedChartsAt_translated`
+to keep that proof under the 200-line size we hold ourselves to. -/
+private theorem eventually_target_mem_source {F : X → Y} {x : X} (hFc : ContinuousAt F x)
+    {U : Set X} (hU : U ∈ 𝓝 x) (hxc : x ∈ (chartAt ℂ x).source)
+    (hxc' : F x ∈ (chartAt ℂ (F x)).source)
+    (hsymm_cont : ContinuousAt (chartAt ℂ x).symm (chartAt ℂ x x)) :
+    ∀ᶠ w in 𝓝 (chartAt ℂ x x), w ∈ (chartAt ℂ x).target ∧
+      (chartAt ℂ x).symm w ∈ U ∧ F ((chartAt ℂ x).symm w) ∈ (chartAt ℂ (F x)).source := by
+  have h1 : (chartAt ℂ x).target ∈ 𝓝 (chartAt ℂ x x) :=
+    (chartAt ℂ x).open_target.mem_nhds ((chartAt ℂ x).map_source hxc)
+  have h2 : ∀ᶠ w in 𝓝 (chartAt ℂ x x), (chartAt ℂ x).symm w ∈ U := by
+    have h := hsymm_cont.tendsto
+    rw [(chartAt ℂ x).left_inv hxc] at h
+    exact h.eventually hU
+  have h3 : ∀ᶠ w in 𝓝 (chartAt ℂ x x), F ((chartAt ℂ x).symm w) ∈
+      (chartAt ℂ (F x)).source := by
+    have hcF : ContinuousAt (F ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) := by
+      apply ContinuousAt.comp ?_ hsymm_cont
+      rw [(chartAt ℂ x).left_inv hxc]
+      exact hFc
+    have h := hcF.tendsto
+    have hval : (F ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = F x := by
+      simp only [Function.comp_apply]
+      rw [(chartAt ℂ x).left_inv hxc]
+    rw [hval] at h
+    exact h.eventually ((chartAt ℂ (F x)).open_source.mem_nhds hxc')
+  filter_upwards [h1, h2, h3] with w hw1 hw2 hw3
+  exact ⟨hw1, hw2, hw3⟩
+
 /-- `RS.exists_adaptedChartsAt`, strengthened with the (construction-inherent) conclusion that
 the adapted target chart is, as a raw function on all of `Y`, the recentered preferred chart at
 `F x`. Proof copied from `Jacobian/LocalMultiplicity/AdaptedCharts.lean` (the extra conclusion
@@ -98,28 +128,7 @@ theorem exists_adaptedChartsAt_translated {F : X → Y} {x : X}
     rwa [hΦsymm0] at h
   have hsymm_cont : ContinuousAt (chartAt ℂ x).symm (chartAt ℂ x x) :=
     (chartAt ℂ x).continuousAt_symm ((chartAt ℂ x).map_source hxc)
-  have hE : ∀ᶠ w in 𝓝 (chartAt ℂ x x), w ∈ (chartAt ℂ x).target ∧
-      (chartAt ℂ x).symm w ∈ U ∧ F ((chartAt ℂ x).symm w) ∈ (chartAt ℂ (F x)).source := by
-    have h1 : (chartAt ℂ x).target ∈ 𝓝 (chartAt ℂ x x) :=
-      (chartAt ℂ x).open_target.mem_nhds ((chartAt ℂ x).map_source hxc)
-    have h2 : ∀ᶠ w in 𝓝 (chartAt ℂ x x), (chartAt ℂ x).symm w ∈ U := by
-      have h := hsymm_cont.tendsto
-      rw [(chartAt ℂ x).left_inv hxc] at h
-      exact h.eventually hU
-    have h3 : ∀ᶠ w in 𝓝 (chartAt ℂ x x), F ((chartAt ℂ x).symm w) ∈
-        (chartAt ℂ (F x)).source := by
-      have hcF : ContinuousAt (F ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) := by
-        apply ContinuousAt.comp ?_ hsymm_cont
-        rw [(chartAt ℂ x).left_inv hxc]
-        exact hFc
-      have h := hcF.tendsto
-      have hval : (F ∘ (chartAt ℂ x).symm) (chartAt ℂ x x) = F x := by
-        simp only [Function.comp_apply]
-        rw [(chartAt ℂ x).left_inv hxc]
-      rw [hval] at h
-      exact h.eventually ((chartAt ℂ (F x)).open_source.mem_nhds hxc')
-    filter_upwards [h1, h2, h3] with w hw1 hw2 hw3
-    exact ⟨hw1, hw2, hw3⟩
+  have hE := eventually_target_mem_source hFc hU hxc hxc' hsymm_cont
   have hEv : ∀ᶠ v in 𝓝 (0 : ℂ), (v ∈ Φ.target ∧
       (Φ.symm v ∈ (chartAt ℂ x).target ∧ (chartAt ℂ x).symm (Φ.symm v) ∈ U ∧
         F ((chartAt ℂ x).symm (Φ.symm v)) ∈ (chartAt ℂ (F x)).source)) ∧
