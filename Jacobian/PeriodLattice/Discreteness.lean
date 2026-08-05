@@ -212,6 +212,20 @@ private theorem resAt_twisted_eq_zero_off_base {S : Finset (Fin (genus X))}
       simpa using MForm.ofForm1_ord_nonneg (basis X k) y
   exact MForm.resAt_eq_zero_of_ord_nonneg hordΘ
 
+/-- A base point where the meromorphic function has a genuine pole contributes a nonzero local
+residue. Split out of `exists_isolating_nhds_periodSubgroup` for the 200-line proof size we hold
+ourselves to. -/
+private theorem local_residue_ne_zero {a : Fin (genus X) → X} {F : RS.Mero X}
+    (j₀ : Fin (genus X)) (hordj₀ : F.ord (a j₀) = -1) :
+    RS.resAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) ≠ 0 := by
+  have hordeq : meromorphicOrderAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) = -1 := by
+    rw [← Mero.ord_eq_meromorphicOrderAt_holoRepr, hordj₀]
+  have hmerF : MeromorphicAt (F.holoRepr ∘ ⇑(chartAt ℂ (a j₀)).symm) (chartAt ℂ (a j₀) (a j₀)) :=
+    (meromorphicAtX_iff_of_mem_source (chart_mem_maximalAtlas (a j₀)) (mem_chart_source ℂ (a j₀))).mp
+      (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j₀) (mem_univ _))
+  have := laurentCoeffAt_order_ne_zero hmerF (by rw [hordeq]; simp)
+  rwa [hordeq] at this
+
 /-- **Forster 21.4(a)+(b)**: the local Jacobi map (inverse function theorem) plus the Abel
 `k`-point sufficiency direction plus the residue theorem isolate `0` in the period subgroup. -/
 theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : DiscretenessHyp X) :
@@ -396,15 +410,8 @@ theorem exists_isolating_nhds_periodSubgroup (hg : 1 ≤ genus X) (hupgrade : Di
       exact hForda ⟨j, hSmem.mpr hj⟩
   have hΘres : ∀ k j, (Θ k).resAt (a j) = A k j * c j :=
     resAt_twisted_eq he he_def hc₀_def hAij hFordAll
-  have hcS : c j₀ ≠ 0 := by
-    have hordj₀ : F.ord (a j₀) = -1 := by rw [hFordAll]; simp [hj₀]
-    have hordeq : meromorphicOrderAt (F.holoRepr ∘ ⇑(e j₀).symm) (c₀ j₀) = -1 := by
-      rw [← Mero.ord_eq_meromorphicOrderAt_holoRepr, hordj₀]
-    have hmerF : MeromorphicAt (F.holoRepr ∘ ⇑(e j₀).symm) (c₀ j₀) :=
-      (meromorphicAtX_iff_of_mem_source (he j₀) (mem_chart_source ℂ (a j₀))).mp
-        (MeroGermOn.meromorphicOnX_holoRepr isOpen_univ F (a j₀) (mem_univ _))
-    have := laurentCoeffAt_order_ne_zero hmerF (by rw [hordeq]; simp)
-    rwa [hordeq] at this
+  have hcS : c j₀ ≠ 0 :=
+    local_residue_ne_zero j₀ (by rw [hFordAll]; simp [hj₀])
   have hressum : ∀ k, ∀ x' ∉ (Finset.univ.image a : Set X), (Θ k).resAt x' = 0 :=
     resAt_twisted_eq_zero_off_base ha'_def hFordx hFord0
   have hsupp : ∀ k, Function.support (fun x => (Θ k).resAt x) ⊆
