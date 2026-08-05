@@ -257,6 +257,34 @@ section Twist
 
 variable [T2Space X] [CompactSpace X]
 
+/-- A cocycle member multiplied by the restriction of a germ of divisor order exactly `D` lands in
+the trivial linear system. Split out of `subsingleton_h1Cover_of_isChartDisk` to keep that proof
+under the 200-line size we hold ourselves to. -/
+private theorem mul_restrict_mem_linSysOn {V : Opens X} {D : Divisor X} {𝒱 : FinCover V}
+    (f : C1 D 𝒱) {t : RS.MeroGermOn X (V : Set X)}
+    (hWleV : ∀ p : Fin 𝒱.n × Fin 𝒱.n, (𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) ≤ V)
+    (hord_t : ∀ {x : X}, x ∈ (V : Set X) → t.ord x = (D x : WithTop ℤ)) :
+    ∀ p : Fin 𝒱.n × Fin 𝒱.n,
+      (RS.MeroGermOn.restrict (hWleV p) t) *
+          (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)) ∈
+        RS.LinSysOn (0 : Divisor X) ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X) := by
+  intro p
+  refine (mem_linSysOn_iff_of_isOpen ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2).2 ?_
+  intro x hx
+  have hordmul : (RS.MeroGermOn.restrict (hWleV p) t *
+      (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X))).ord x =
+      (RS.MeroGermOn.restrict (hWleV p) t).ord x +
+        (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)).ord x :=
+    RS.MeroGermOn.ord_mul ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2 hx _ _
+  rw [hordmul, RS.MeroGermOn.ord_restrict (hWleV p) ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2 V.2 hx, hord_t (hWleV p hx)]
+  have hfp : ((-(D x) : ℤ) : WithTop ℤ) ≤ (f p : RS.MeroGermOn X ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X) : Set X)).ord x :=
+    (mem_linSysOn_iff_of_isOpen ((𝒱.U p.1 ⊓ 𝒱.U p.2 : Opens X)).2).1 (f p).2 x hx
+  have hz0 : ((-(0 : Divisor X) x : ℤ) : WithTop ℤ) = 0 := by simp
+  have hcancel : ((D x : ℤ) : WithTop ℤ) + ((-(D x) : ℤ) : WithTop ℤ) = 0 := by
+    rw [← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero]
+  rw [hz0, ← hcancel]
+  gcongr
+
 /-- **MAIN deliverable** (owed to cech §7 / consumed by dolbeault-comparison's Leray 12.8):
 disk acyclicity of the Čech complex of `𝒪_D` on chart disks, for an ARBITRARY divisor `D`. -/
 theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (D : Divisor X)
@@ -359,25 +387,7 @@ theorem subsingleton_h1Cover_of_isChartDisk {V : Opens X} (hV : IsChartDisk V) (
   -- Twist the `D`-cocycle `f` into a `0`-cocycle `g`.
   set W : Fin 𝒱.n × Fin 𝒱.n → Opens X := fun p => 𝒱.U p.1 ⊓ 𝒱.U p.2 with hW_def
   have hWleV : ∀ p, W p ≤ V := fun p => inf_le_left.trans (𝒱.le_base p.1)
-  have hmem_g : ∀ p : Fin 𝒱.n × Fin 𝒱.n,
-      (RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)) ∈
-        RS.LinSysOn (0 : Divisor X) (W p : Set X) := by
-    intro p
-    refine (mem_linSysOn_iff_of_isOpen (W p).2).2 ?_
-    intro x hx
-    have hordmul : (RS.MeroGermOn.restrict (hWleV p) t *
-        (f p : RS.MeroGermOn X (W p : Set X))).ord x =
-        (RS.MeroGermOn.restrict (hWleV p) t).ord x +
-          (f p : RS.MeroGermOn X (W p : Set X)).ord x :=
-      RS.MeroGermOn.ord_mul (W p).2 hx _ _
-    rw [hordmul, RS.MeroGermOn.ord_restrict (hWleV p) (W p).2 V.2 hx, hord_t (hWleV p hx)]
-    have hfp : ((-(D x) : ℤ) : WithTop ℤ) ≤ (f p : RS.MeroGermOn X (W p : Set X)).ord x :=
-      (mem_linSysOn_iff_of_isOpen (W p).2).1 (f p).2 x hx
-    have hz0 : ((-(0 : Divisor X) x : ℤ) : WithTop ℤ) = 0 := by simp
-    have hcancel : ((D x : ℤ) : WithTop ℤ) + ((-(D x) : ℤ) : WithTop ℤ) = 0 := by
-      rw [← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero]
-    rw [hz0, ← hcancel]
-    gcongr
+  have hmem_g := mul_restrict_mem_linSysOn f hWleV hord_t
   set g : C1 (0 : Divisor X) 𝒱 := fun p =>
     ⟨(RS.MeroGermOn.restrict (hWleV p) t) * (f p : RS.MeroGermOn X (W p : Set X)), hmem_g p⟩
     with hg_def
