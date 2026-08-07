@@ -90,7 +90,8 @@ Nothing in the library itself; what remains is the pool's side of the process.
 
 `.github/workflows/pool-dryrun.yml` (on `pool-bump-4.33`) assembles the payload into a real
 lean-pool checkout and runs *their* gates — pins must match, `lake build LeanPool.JacobianDiffgeo`,
-a warning scan over that build log, `lake exe mk_all`, `runLinter`, `lint-style`, and
+a warning scan over that build log, `lake exe mk_all --check` against the index the PR ships
+(`scripts/pool_index.py` regenerates it without a toolchain), `runLinter`, `lint-style`, and
 `python -m lean_pool.quality` — so the PR is only opened once that is green. Nothing in it ever
 writes to the pool repository.
 
