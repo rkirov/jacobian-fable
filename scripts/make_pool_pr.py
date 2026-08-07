@@ -66,11 +66,11 @@ TITLE = "The Jacobian of a Compact Riemann Surface"
 SOURCE_URL = "https://gist.github.com/kbuzzard/778bc714030b3e974ab5f4038783d1a9"
 AUTHORS = ["Rado Kirov"]
 STATUS = "verified"
-# One headline declaration, not all three: the card is a Lean file, so a `Main declarations:` line
-# listing three `JacobianChallenge.…` names would be 157 columns and the pool's build — which runs
-# mathlib's `style.longLine` linter and fails on any warning — would reject it. The other two stay
-# in `main_results`, which is prose and wraps.
-MAIN_DECLARATIONS = ["JacobianChallenge.genus_eq_zero_iff_homeo"]
+# Two of the three headline declarations, not all three: the card is a Lean file, so its
+# `Main declarations:` line is subject to mathlib's `style.longLine` linter, and all three would
+# come to 101 columns. The third stays in `main_results`, which is prose and wraps. The names are
+# the ones the library actually declares — the pool resolves every one with `#check`.
+MAIN_DECLARATIONS = ["genus_eq_zero_iff_homeo", "Jacobian.ofCurve_inj"]
 TAGS = ["riemann-surfaces", "complex-geometry", "abel-jacobi", "riemann-roch", "serre-duality"]
 MSC = ["14H40", "30F30", "32G20"]
 
@@ -120,17 +120,18 @@ CARD = """  - slug: jacobian-diffgeo
     status: verified
     provenance: AI
     main_declarations:
-      - JacobianChallenge.genus_eq_zero_iff_homeo
+      - genus_eq_zero_iff_homeo
+      - Jacobian.ofCurve_inj
     main_results:
-      - declaration: JacobianChallenge.genus_eq_zero_iff_homeo
+      - declaration: genus_eq_zero_iff_homeo
         informal: >-
           A compact connected Riemann surface has genus zero if and only if it
           is homeomorphic to the 2-sphere.
-      - declaration: JacobianChallenge.Jacobian.ofCurve_inj
+      - declaration: Jacobian.ofCurve_inj
         informal: >-
           The Abel-Jacobi map of a compact Riemann surface of positive genus is
           injective: two points with the same image coincide.
-      - declaration: JacobianChallenge.Jacobian.pushforward_pullback
+      - declaration: Jacobian.pushforward_pullback
         informal: >-
           For a non-constant holomorphic map between compact Riemann surfaces,
           the pushforward composed with the pullback on Jacobians is
@@ -150,7 +151,7 @@ CARD = """  - slug: jacobian-diffgeo
 # exactly what the pool's card check rejects, so assert they agree before writing either.
 for _value in [TITLE, SOURCE_URL, STATUS, *AUTHORS, *MAIN_DECLARATIONS, *TAGS, *MSC]:
     assert _value in CARD, f"card field not in projects.yml fragment: {_value}"
-assert CARD.count("      - JacobianChallenge.") == len(MAIN_DECLARATIONS)
+assert CARD.count("    main_declarations:\n") == 1
 
 open(os.path.join(dst_root, "projects.yml.fragment"), "w", encoding="utf-8").write(CARD)
 
