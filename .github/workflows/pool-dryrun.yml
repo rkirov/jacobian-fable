@@ -47,6 +47,10 @@ jobs:
           cp jacobian-fable/build/pool-pr/LeanPool/JacobianDiffgeo.lean pool/LeanPool/
           cp -r jacobian-fable/build/pool-pr/LeanPool/JacobianDiffgeo pool/LeanPool/
           cat jacobian-fable/build/pool-pr/projects.yml.fragment >> pool/LeanPool/projects.yml
+          # The PR carries the regenerated index too, so install ours here rather than letting
+          # the `mk_all` step below write it — that way `mk_all --check` is checking the exact
+          # file the PR would add, which is what the pool's own CI checks.
+          python3 jacobian-fable/scripts/pool_index.py pool
 
       # Only this project is built, not all 143 — minutes, not the pool's ~1.5h cold build.
       - name: Build the project inside the pool
@@ -70,8 +74,8 @@ jobs:
             exit 1
           fi
 
-      - name: Index is regenerable
-        run: cd pool && lake exe mk_all
+      - name: Index matches `mk_all`
+        run: cd pool && lake exe mk_all --check
 
       - name: Mathlib linters over the project
         run: cd pool && lake exe runLinter LeanPool.JacobianDiffgeo
