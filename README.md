@@ -6,7 +6,10 @@ for the Jacobian of a compact Riemann surface over current Mathlib — no future
 geometry, no scheme theory, no abstract sheaf-cohomology library.
 
 **Status: complete.** Every declaration of the challenge gist is provided with **zero `sorry`s**
-and no axioms beyond Lean's standard three (`propext`, `Classical.choice`, `Quot.sound`).
+and no axioms beyond Lean's standard three (`propext`, `Classical.choice`, `Quot.sound`). The
+library is also pooled as [`LeanPool/JacobianDiffgeo`](https://github.com/Vilin97/lean-pool/tree/main/LeanPool/JacobianDiffgeo)
+in [Lean Pool](https://github.com/Vilin97/lean-pool) (merged in
+[#334](https://github.com/Vilin97/lean-pool/pull/334)); see [`POOL.md`](POOL.md).
 
 ## The challenge API, as delivered
 
@@ -45,10 +48,11 @@ lake env lean GistAcceptance.lean   # acceptance test
 scripts/check.sh Jacobian/<Unit>    # per-unit: builds + sorry sweep
 ```
 
-Pinned toolchain: `leanprover/lean4:v4.32.2`; mathlib at
-`905b95818eb32af7874a58b427f50c1711a5e96c` (mathlib tag `v4.32.2`). The gist itself specifies
-`v4.30.0-rc2` / mathlib `5483982`; the development was forward-ported off that pin with all
-challenge statements unchanged.
+Pinned toolchain: `leanprover/lean4:v4.33.0-rc2`; mathlib at
+`51e6992efd06126df61a496bebf8f49482a4e129`. The gist itself specifies `v4.30.0-rc2` / mathlib
+`5483982`; the development was forward-ported off that pin (v4.30.0-rc2 → v4.32.2 → v4.33.0-rc1 →
+v4.33.0-rc2) with all challenge statements unchanged. The `lean-eval` branch stays at `v4.32.2` /
+mathlib `905b9581`, the pin that submission was made against.
 
 ## Architecture
 
