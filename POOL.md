@@ -23,7 +23,7 @@ and `CONTRIBUTING.md`. Status of this repository against them:
 | **Warning-free build** | ✅ zero (was 316) |
 | **No line over 100 columns** | ✅ zero (was 186) |
 | ≤10,000 code lines per file | ✅ largest is ~1,500 |
-| `lake exe lint-style` | ✅ zero (was 25: characters outside mathlib's unicode allowlist) |
+| `lake exe lint-style` (every module by name) | ✅ zero — see the note below |
 | `lake exe runLinter` | ✅ zero (was 84) |
 | Proofs ≤200 lines | ✅ zero over (was 13) |
 | Builds at the pool's pin (`v4.33.0-rc2` / mathlib `51e6992e`) | ✅ on branch `pool-bump-4.33` |
@@ -55,6 +55,18 @@ are in the code rather than in the options:
 | `style.longLine` | 16 | rewrapped |
 | `unusedDecidableInType` / `unusedFintypeInType` | 12 | binder dropped (`omit … in` where it comes from a `variable`), `classical` in the proof |
 | `style.docString`, `style.whitespace`, `style.multiGoal` | 4 | as advised by each linter |
+
+### `lake exe lint-style <library>` under-reports
+
+Passing the library name lints only part of the tree: locally `lake exe lint-style Jacobian` was
+silent while the pool's `lake exe lint-style LeanPool` found six style errors in these same files
+(three trailing-whitespace, three characters outside mathlib's unicode allowlist — `∂̄`'s combining
+macron and `⟺`). Pass every module by name instead:
+
+```bash
+lake exe lint-style $(git ls-files 'Jacobian/*.lean' Jacobian.lean \
+  | sed 's/\.lean$//; s#/#.#g' | tr '\n' ' ')
+```
 
 ## Assembling the PR
 

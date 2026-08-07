@@ -80,8 +80,17 @@ jobs:
       - name: Mathlib linters over the project
         run: cd pool && lake exe runLinter LeanPool.JacobianDiffgeo
 
+      # Every module by name, not the library name: `lake exe lint-style <lib>` silently covers
+      # only part of the tree — locally it passed while the pool's own `lint-style LeanPool` found
+      # six style errors in these same files.
       - name: Style linter over the project
-        run: cd pool && lake exe lint-style LeanPool.JacobianDiffgeo
+        run: |
+          set -euo pipefail
+          cd pool
+          mods=$(cd LeanPool && find JacobianDiffgeo.lean JacobianDiffgeo -name '*.lean' \
+            | sed 's#\.lean$##; s#/#.#g; s#^#LeanPool.#' | tr '\n' ' ')
+          echo "linting $(echo $mods | wc -w) modules"
+          lake exe lint-style $mods
 
       # The pool's own quality checker. Its Lean-side audits (axioms, option backdoors,
       # declaration resolution) need the WHOLE pool built — 146 projects plus Challenge and
