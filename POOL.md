@@ -1,8 +1,10 @@
 # Contributing this library to Lean Pool
 
 Target: [`Vilin97/lean-pool`](https://github.com/Vilin97/lean-pool) — a curated pool for
-`sorry`-free Lean 4 formalizations that don't fit mathlib's scope. Proposal issue:
-[**Vilin97/lean-pool#325**](https://github.com/Vilin97/lean-pool/issues/325).
+`sorry`-free Lean 4 formalizations that don't fit mathlib's scope. Proposed in
+[**#325**](https://github.com/Vilin97/lean-pool/issues/325) (a maintainer invited the PR, and
+closed the issue); the content PR is [**#334**](https://github.com/Vilin97/lean-pool/pull/334),
+from `rkirov/lean-pool` branch `rkirov/import-jacobian-diffgeo` — 215 files, +49,704.
 
 ## Gate status
 
@@ -86,7 +88,8 @@ the dry-run workflow below is for.
 
 ## What is left
 
-Nothing in the library itself; what remains is the pool's side of the process.
+Nothing in the library itself; what remains is the pool's review of PR #334 — five LLM review
+dimensions (faithfulness, novelty, significance, sources, code quality) on top of their CI.
 
 `.github/workflows/pool-dryrun.yml` (on `pool-bump-4.33`) assembles the payload into a real
 lean-pool checkout and runs *their* gates — pins must match, `lake build LeanPool.JacobianDiffgeo`,
