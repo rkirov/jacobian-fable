@@ -70,16 +70,16 @@ theorem isCompactOperator_restrictCLM {S' S : Opens X} {x₀ : X}
   have hKΩ : K ⊆ Ω := Set.image_mono hc
   have hKtarget : K ⊆ e.target := fun w hw => by
     obtain ⟨y, hy, rfl⟩ := hw; exact e.map_source (hcSsrc hy)
-  haveI : CompactSpace ↥K := isCompact_iff_compactSpace.mp hKcompact
+  have : CompactSpace ↥K := isCompact_iff_compactSpace.mp hKcompact
   -- `Φ`: the chart-composite of the carrier witness, into `C(K, ℂ)`.
-  have hΦcont : ∀ f : BddHoloOn S, Continuous (K.restrict (f.2.choose ∘ e.symm)) := by
+  have hΦcont : ∀ f : BddHoloOn S, Continuous (K.domRestrict (f.2.choose ∘ e.symm)) := by
     intro f
-    apply ContinuousOn.restrict
+    apply ContinuousOn.domRestrict
     refine f.2.choose_spec.1.continuousOn.comp' (e.continuousOn_symm.mono hKtarget) ?_
     rintro w ⟨y, hy, rfl⟩
     rw [e.left_inv (hcSsrc hy)]
     exact hc hy
-  set Φ : BddHoloOn S → C(↥K, ℂ) := fun f => ⟨K.restrict (f.2.choose ∘ e.symm), hΦcont f⟩
+  set Φ : BddHoloOn S → C(↥K, ℂ) := fun f => ⟨K.domRestrict (f.2.choose ∘ e.symm), hΦcont f⟩
     with hΦ_def
   have hΦapp : ∀ (f : BddHoloOn S) (z : ↥K), Φ f z = f.2.choose (e.symm z) := fun _ _ => rfl
   have hmontel : Φ '' Metric.closedBall (0 : BddHoloOn S) 1 ⊆ montelFamily Ω K 1 := by
@@ -103,7 +103,8 @@ theorem isCompactOperator_restrictCLM {S' S : Opens X} {x₀ : X}
   have hΨmem : ∀ z : ↥(S' : Set X), e (z : X) ∈ K := fun z => ⟨z.1, subset_closure z.2, rfl⟩
   have hS'src : (S' : Set X) ⊆ e.source := subset_closure.trans hcSsrc
   set G : C(↥(S' : Set X), ↥K) :=
-    ⟨fun z => ⟨e z.1, hΨmem z⟩, Continuous.subtype_mk ((e.continuousOn.mono hS'src).restrict) hΨmem⟩
+    ⟨fun z => ⟨e z.1, hΨmem z⟩,
+      Continuous.subtype_mk ((e.continuousOn.mono hS'src).domRestrict) hΨmem⟩
     with hG_def
   set Ψ : C(↥K, ℂ) → (↥(S' : Set X) →ᵇ ℂ) := fun h => (E h).compContinuous G with hΨ_def
   have hΨcont : Continuous Ψ := (BoundedContinuousFunction.continuous_compContinuous G).comp

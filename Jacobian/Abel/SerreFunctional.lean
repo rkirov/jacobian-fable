@@ -708,7 +708,7 @@ theorem exists_dbar_of_forall_pairing_eq_zero (PU : SurfPoU X)
     {η : RS.Form01 X} (h : ∀ θ : RS.Form1 X, pairing PU η θ = 0) :
     ∃ u : RS.SmoothC X, RS.dbar u = η := by
   rw [← RS.H01.mk_eq_zero_iff]
-  haveI : FiniteDimensional ℂ (RS.H01 X) := RS.finiteDimensional_H01
+  have : FiniteDimensional ℂ (RS.H01 X) := RS.finiteDimensional_H01
   have hfr : Module.finrank ℂ (RS.Form1 X) = Module.finrank ℂ (Module.Dual ℂ (RS.H01 X)) := by
     rw [Subspace.dual_finrank_eq, finrank_H01_eq_genus hsurj]
     rfl

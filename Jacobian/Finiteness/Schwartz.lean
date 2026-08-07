@@ -66,7 +66,7 @@ theorem schwartz_finite_cospan (u v : E →L[ℂ] F) (hu : Surjective u) (hv : I
     hv.isCompact_closure_image_closedBall C
   obtain ⟨t, -, htf, htcov⟩ := finite_cover_balls_of_compact hK (by norm_num : (0 : ℝ) < 2⁻¹)
   set S : Submodule ℂ F := Submodule.span ℂ t with hS_def
-  haveI hSfd : FiniteDimensional ℂ S := FiniteDimensional.span_of_finite ℂ htf
+  have hSfd : FiniteDimensional ℂ S := FiniteDimensional.span_of_finite ℂ htf
   obtain ⟨R', hR'⟩ := (htf.image (‖·‖ : F → ℝ)).bddAbove
   set R : ℝ := max R' 0 with hR_def
   have hRnn : (0 : ℝ) ≤ R := le_max_right _ _
@@ -205,8 +205,8 @@ theorem finiteDimensional_of_cospan {E F P : Type*} [NormedAddCommGroup E] [Norm
     refine ⟨f - (u e - v e), he, ?_⟩
     rw [map_sub, hker e, sub_zero, hf]
   have htop' : Submodule.map χ S = ⊤ := top_le_iff.mp htop
-  haveI : Module.Finite ℂ (Submodule.map χ S) := Module.Finite.map S χ
-  haveI : Module.Finite ℂ (⊤ : Submodule ℂ P) := htop' ▸ this
+  have : Module.Finite ℂ (Submodule.map χ S) := Module.Finite.map S χ
+  have : Module.Finite ℂ (⊤ : Submodule ℂ P) := htop' ▸ this
   exact Module.Finite.equiv (Submodule.topEquiv (R := ℂ) (M := P))
 
 /-- The extension helper: a linear map with finite-dimensional kernel and finite-dimensional
@@ -215,7 +215,7 @@ ledger's `finiteDimensional_linSys`). -/
 theorem FiniteDimensional.of_linearMap_ker_range {M N : Type*} [AddCommGroup M] [Module ℂ M]
     [AddCommGroup N] [Module ℂ N] (f : M →ₗ[ℂ] N) [FiniteDimensional ℂ (LinearMap.ker f)]
     [FiniteDimensional ℂ N] : FiniteDimensional ℂ M := by
-  haveI : Module.Finite ℂ (M ⧸ LinearMap.ker f) :=
+  have : Module.Finite ℂ (M ⧸ LinearMap.ker f) :=
     Module.Finite.equiv f.quotKerEquivRange.symm
   exact Module.Finite.of_submodule_quotient (LinearMap.ker f)
 

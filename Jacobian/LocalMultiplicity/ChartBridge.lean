@@ -82,7 +82,7 @@ section EventuallyConst
 /-- `EventuallyConst` at a neighborhood filter pins the constant to the value at the point. -/
 theorem eventuallyConst_nhds_iff {α β : Type*} [TopologicalSpace α] {f : α → β} {x : α} :
     EventuallyConst f (𝓝 x) ↔ ∀ᶠ y in 𝓝 x, f y = f x := by
-  haveI : Nonempty β := ⟨f x⟩
+  have : Nonempty β := ⟨f x⟩
   rw [eventuallyConst_iff_exists_eventuallyEq]
   constructor
   · rintro ⟨c, hc⟩

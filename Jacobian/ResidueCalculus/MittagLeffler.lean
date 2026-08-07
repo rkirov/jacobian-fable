@@ -59,9 +59,9 @@ def principalPartCarrier (U : Set ℂ) : Submodule ℂ (ℂ → (ℤ →₀ ℂ)
       exact h (by rw [Pi.add_apply, h1, h2, add_zero])
     · apply Set.Finite.subset (hc3.union hd3)
       intro p hp
-      simp only [Set.mem_setOf_eq] at hp
+      simp only [Set.mem_ofPred_eq] at hp
       by_contra hp'
-      simp only [Set.mem_union, Set.mem_setOf_eq, not_or, not_not] at hp'
+      simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_not] at hp'
       exact hp (by rw [Pi.add_apply, hp'.1, hp'.2, add_zero])
   smul_mem' c₀ x hx := by
     obtain ⟨hx1, hx2, hx3⟩ := hx
@@ -71,7 +71,7 @@ def principalPartCarrier (U : Set ℂ) : Submodule ℂ (ℂ → (ℤ →₀ ℂ)
       exact h (by rw [Pi.smul_apply, hc0, smul_zero])
     · apply Set.Finite.subset hx3
       intro p hp
-      simp only [Set.mem_setOf_eq] at hp ⊢
+      simp only [Set.mem_ofPred_eq] at hp ⊢
       by_contra hp'
       exact hp (by rw [Pi.smul_apply, hp', smul_zero])
 
@@ -175,9 +175,9 @@ theorem mlCoeff_finite_support {f : ℂ → ℂ} {U : Set ℂ}
     {p | mlCoeff f U p ≠ 0}.Finite := by
   apply Set.Finite.subset hfin
   intro p hp
-  simp only [Set.mem_setOf_eq] at hp
+  simp only [Set.mem_ofPred_eq] at hp
   by_contra hp'
-  simp only [Set.mem_setOf_eq, not_and, not_lt] at hp'
+  simp only [Set.mem_ofPred_eq, not_and, not_lt] at hp'
   apply hp
   ext k
   rw [mlCoeff_apply]

@@ -45,17 +45,17 @@ instance finiteDimensional_linSys [ConnectedSpace X] (D : RS.Divisor X) :
   set D' := D ⊔ 0 with hD'_def
   have h0 : (0 : RS.Divisor X) ≤ D' := le_sup_right
   have h : D ≤ D' := le_sup_left
-  haveI hz : FiniteDimensional ℂ (RS.LinSys (0 : RS.Divisor X)) := by
+  have hz : FiniteDimensional ℂ (RS.LinSys (0 : RS.Divisor X)) := by
     rw [show RS.LinSys (0 : RS.Divisor X) = Submodule.span ℂ {1} from RS.linSys_zero_eq_span_one]
     exact FiniteDimensional.span_of_finite ℂ (Set.finite_singleton 1)
-  haveI hWfin : FiniteDimensional ℂ (Window (0 : RS.Divisor X) D') :=
+  have hWfin : FiniteDimensional ℂ (Window (0 : RS.Divisor X) D') :=
     finiteDimensional_window (0 : RS.Divisor X) D' h0
   have hexact : LinearMap.ker (windowMap h0) =
       LinearMap.range (Submodule.inclusion (RS.linSys_mono h0)) :=
     (LinearMap.exact_iff).1 (exact_inclusion_windowMap h0)
-  haveI hkerfin : FiniteDimensional ℂ (LinearMap.ker (windowMap h0)) := by
+  have hkerfin : FiniteDimensional ℂ (LinearMap.ker (windowMap h0)) := by
     rw [hexact]; exact LinearMap.finiteDimensional_range _
-  haveI hD'fin : FiniteDimensional ℂ (RS.LinSys D') :=
+  have hD'fin : FiniteDimensional ℂ (RS.LinSys D') :=
     FiniteDimensional.of_linearMap_ker_range (windowMap h0)
   exact Submodule.finiteDimensional_of_le (RS.linSys_mono h)
 
@@ -93,7 +93,7 @@ omit [T1Space X] in
 private theorem sixterm_rank2 [ConnectedSpace X] {D D' : RS.Divisor X} (h : D ≤ D') :
     Module.finrank ℂ (Window D D') = Module.finrank ℂ (LinearMap.range (windowMap h)) +
       Module.finrank ℂ (LinearMap.range (windowConnect h)) := by
-  haveI hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
+  have hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
   have hrn := LinearMap.finrank_range_add_finrank_ker (windowConnect h)
   have hexact : LinearMap.ker (windowConnect h) = LinearMap.range (windowMap h) :=
     (LinearMap.exact_iff).1 (exact_windowMap_windowConnect h)

@@ -134,8 +134,8 @@ theorem subsingleton_H1_of_good [CompactSpace X]
   refine ⟨fun ξ η => ?_⟩
   obtain ⟨𝒰, hgood, c, hc⟩ := exists_rep_good D ξ
   obtain ⟨𝒱, hgood', c', hc'⟩ := exists_rep_good D η
-  haveI := h 𝒰 hgood
-  haveI := h 𝒱 hgood'
+  have := h 𝒰 hgood
+  have := h 𝒱 hgood'
   have hc0 : c = 0 := Subsingleton.elim _ _
   have hc0' : c' = 0 := Subsingleton.elim _ _
   rw [← hc, ← hc', hc0, hc0', map_zero, map_zero]

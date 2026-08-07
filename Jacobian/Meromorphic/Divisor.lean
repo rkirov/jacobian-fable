@@ -291,7 +291,7 @@ theorem finite_setOf_ord_neg [T2Space X] [CompactSpace X] [ConnectedSpace X] {φ
     (h : φ ≠ 0) : {x | φ.ord x < 0}.Finite := by
   apply Set.Finite.subset (finite_support_divisor φ)
   intro y hy
-  simp only [Set.mem_setOf_eq] at hy
+  simp only [Set.mem_ofPred_eq] at hy
   simp only [Function.mem_support, ne_eq, divisor_apply]
   intro hcon
   rw [WithTop.untop₀_eq_zero] at hcon
@@ -303,7 +303,7 @@ theorem finite_setOf_ord_pos [T2Space X] [CompactSpace X] [ConnectedSpace X] {φ
     (h : φ ≠ 0) : {x | 0 < φ.ord x}.Finite := by
   apply Set.Finite.subset (finite_support_divisor φ)
   intro y hy
-  simp only [Set.mem_setOf_eq] at hy
+  simp only [Set.mem_ofPred_eq] at hy
   simp only [Function.mem_support, ne_eq, divisor_apply]
   intro hcon
   rw [WithTop.untop₀_eq_zero] at hcon

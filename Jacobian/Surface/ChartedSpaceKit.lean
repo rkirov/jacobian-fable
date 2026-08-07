@@ -63,7 +63,7 @@ theorem isManifold_of_family (c : ι → OpenPartialHomeomorph Z ℂ) (idx : Z �
     (h : ∀ z, z ∈ (c (idx z)).source)
     (htrans : ∀ i j, AnalyticOnNhd ℂ ((c i).symm ≫ₕ c j) ((c i).symm ≫ₕ c j).source) :
     @IsManifold ℂ _ ℂ _ _ ℂ _ 𝓘(ℂ) ω Z _ (chartedSpaceOfFamily c idx h) := by
-  letI : ChartedSpace ℂ Z := chartedSpaceOfFamily c idx h
+  let : ChartedSpace ℂ Z := chartedSpaceOfFamily c idx h
   refine isManifold_of_analyticOn_transitions ?_
   rintro _ ⟨i, rfl⟩ _ ⟨j, rfl⟩
   exact htrans i j

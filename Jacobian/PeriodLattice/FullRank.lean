@@ -128,11 +128,11 @@ theorem span_real_periodSubgroup :
 theorem isZLattice_periodSubgroup_topologicalClosure (hupgrade : DiscretenessHyp X) :
     haveI := discreteTopology_periodSubgroup_topologicalClosure hupgrade
     IsZLattice ℝ (periodSubgroup X).topologicalClosure.toIntSubmodule := by
-  haveI := discreteTopology_periodSubgroup_topologicalClosure hupgrade
+  have := discreteTopology_periodSubgroup_topologicalClosure hupgrade
   refine ⟨?_⟩
   rw [AddSubgroup.coe_toIntSubmodule, periodSubgroup_topologicalClosure_eq hupgrade]
   by_cases hgen : genus X = 0
-  · haveI hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [hgen]; infer_instance
+  · have hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [hgen]; infer_instance
     apply eq_top_iff.mpr
     intro v _
     rw [hsub.elim v 0]
@@ -143,8 +143,8 @@ theorem isZLattice_periodSubgroup_topologicalClosure (hupgrade : DiscretenessHyp
 discharged, via mathlib's `ZLattice.rank`. -/
 theorem finrank_int_periodSubgroup (hupgrade : DiscretenessHyp X) :
     Module.finrank ℤ (periodSubgroup X).topologicalClosure.toIntSubmodule = 2 * genus X := by
-  haveI := discreteTopology_periodSubgroup_topologicalClosure hupgrade
-  haveI := isZLattice_periodSubgroup_topologicalClosure hupgrade
+  have := discreteTopology_periodSubgroup_topologicalClosure hupgrade
+  have := isZLattice_periodSubgroup_topologicalClosure hupgrade
   rw [ZLattice.rank ℝ, Module.finrank_pi_fintype ℝ]
   simp [Complex.finrank_real_complex, mul_comm]
 

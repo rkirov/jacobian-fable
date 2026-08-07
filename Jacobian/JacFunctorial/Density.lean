@@ -66,7 +66,7 @@ theorem ContinuousOn.eqOn_of_subset_closure {f g : ℂ → ℂ} {U : Set ℂ} (h
     (heq : Set.EqOn f g T) : Set.EqOn f g U := by
   intro z hz
   have hzT : z ∈ closure T := hTU hz
-  haveI : (𝓝[T] z).NeBot := mem_closure_iff_nhdsWithin_neBot.mp hzT
+  have : (𝓝[T] z).NeBot := mem_closure_iff_nhdsWithin_neBot.mp hzT
   have h1 : Tendsto f (𝓝[T] z) (𝓝 (f z)) :=
     ((hf.continuousAt (hUo.mem_nhds hz)).tendsto).mono_left nhdsWithin_le_nhds
   have h2 : Tendsto g (𝓝[T] z) (𝓝 (g z)) :=

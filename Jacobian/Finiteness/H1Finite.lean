@@ -62,7 +62,7 @@ noncomputable instance addCommGroupH1 (D : RS.Divisor X) : AddCommGroup (H1 D) :
 /-- **The unit's headline instance**: `H¹(X, 𝒪)` is finite-dimensional (Forster §14). -/
 instance finiteDimensional_H1_zero : FiniteDimensional ℂ (H1 (0 : RS.Divisor X)) := by
   obtain ⟨T⟩ := ShrinkChain.nonempty (X := X)
-  haveI := finiteDimensional_h1Cover_W T
+  have := finiteDimensional_h1Cover_W T
   exact Module.Finite.of_surjective (toH1 (0 : RS.Divisor X) T.coverW) (toH1_coverW_surjective T)
 
 /-! ### §7: all-`D` finiteness (the six-term skyscraper fragment, decision D2) -/
@@ -77,14 +77,14 @@ instance finiteDimensional_H1 (D : RS.Divisor X) : FiniteDimensional ℂ (H1 D) 
   set D' := D ⊔ 0 with hD'_def
   have h0 : (0 : RS.Divisor X) ≤ D' := le_sup_right
   have h : D ≤ D' := le_sup_left
-  haveI hD'fin : FiniteDimensional ℂ (H1 D') :=
+  have hD'fin : FiniteDimensional ℂ (H1 D') :=
     Module.Finite.of_surjective (H1Incl (0 : RS.Divisor X) h0) (H1Incl_surjective h0)
-  haveI hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
-  haveI hrangefin : FiniteDimensional ℂ (LinearMap.range (windowConnect h)) :=
+  have hWfin : FiniteDimensional ℂ (Window D D') := finiteDimensional_window D D' h
+  have hrangefin : FiniteDimensional ℂ (LinearMap.range (windowConnect h)) :=
     LinearMap.finiteDimensional_range _
   have hexact : LinearMap.ker (H1Incl D h) = LinearMap.range (windowConnect h) :=
     (LinearMap.exact_iff).1 (exact_windowConnect_H1Incl h)
-  haveI : FiniteDimensional ℂ (LinearMap.ker (H1Incl D h)) := hexact ▸ hrangefin
+  have : FiniteDimensional ℂ (LinearMap.ker (H1Incl D h)) := hexact ▸ hrangefin
   exact FiniteDimensional.of_linearMap_ker_range (H1Incl D h)
 
 end RS.Finiteness

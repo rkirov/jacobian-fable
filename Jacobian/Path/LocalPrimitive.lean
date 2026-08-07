@@ -186,7 +186,7 @@ theorem IsPrimitiveAlongMap.sub_eq_sub (hs : IsPreconnected s) (hK : ContinuousO
     filter_upwards [heqb] with b hb y hy
     rw [hy]
     exact hb
-  haveI := Subtype.preconnectedSpace hs
+  have := Subtype.preconnectedSpace hs
   exact (hlc.apply_eq_of_preconnectedSpace (⟨a, ha⟩ : s) (⟨b, hb⟩ : s)).symm
 
 /-- The junction argument: primitives on `s₁`, `s₂` agreeing at a point of the (preconnected)

@@ -64,7 +64,7 @@ for **every** subgroup, no discreteness or full-rank input at all. This is what 
 including at `genus X = 0`. -/
 instance instT2SpaceQuotientTopologicalClosure :
     T2Space (V ⧸ L.topologicalClosure) := by
-  haveI : IsClosed (L.topologicalClosure : Set V) := L.isClosed_topologicalClosure
+  have : IsClosed (L.topologicalClosure : Set V) := L.isClosed_topologicalClosure
   infer_instance
 
 end T2
@@ -282,12 +282,12 @@ variable (L : AddSubgroup V) [DiscreteTopology L] [CompleteSpace V]
 
 omit [NormedSpace ℂ V] [DiscreteTopology ↥L] [CompleteSpace V] in
 theorem continuous_add_torus : Continuous (fun p : (V ⧸ L) × (V ⧸ L) => p.1 + p.2) := by
-  haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
+  have : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
 
 omit [NormedSpace ℂ V] [DiscreteTopology ↥L] [CompleteSpace V] in
 theorem continuous_neg_torus : Continuous (fun q : V ⧸ L => -q) := by
-  haveI : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
+  have : IsTopologicalAddGroup (V ⧸ L) := QuotientAddGroup.instIsTopologicalAddGroup L
   fun_prop
 
 /-- Addition on the torus is `ω`-smooth: in aligned raw charts (codomain chart representative

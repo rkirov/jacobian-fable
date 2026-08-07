@@ -324,7 +324,7 @@ private theorem sixterm_rankT2 {D D' : RS.Divisor X} (h : D ≤ D') :
     Module.finrank ℂ (RS.Cech.Window D D') =
       Module.finrank ℂ (LinearMap.range (RS.Cech.windowMap h)) +
         Module.finrank ℂ (LinearMap.range (windowConnectT h)) := by
-  haveI hWfin : FiniteDimensional ℂ (RS.Cech.Window D D') :=
+  have hWfin : FiniteDimensional ℂ (RS.Cech.Window D D') :=
     RS.Cech.finiteDimensional_window D D' h
   have hrn := LinearMap.finrank_range_add_finrank_ker (windowConnectT h)
   have hexact : LinearMap.ker (windowConnectT h) = LinearMap.range (RS.Cech.windowMap h) :=

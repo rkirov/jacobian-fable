@@ -94,7 +94,7 @@ private theorem infinite_of_chartedSpace_complex {Z : Type*} [TopologicalSpace Z
     exact ⟨{Classical.arbitrary Z}, isOpen_discrete _, rfl, by simp⟩
   exact hne.ne (Filter.empty_mem_iff_bot.mp hmem)
 
-omit [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
+omit [CompactSpace X] [IsManifold 𝓘(ℂ, ℂ) ω X] [T2Space Y] [IsManifold 𝓘(ℂ, ℂ) ω Y] in
 /-- Junk convention (R2, resolved): `trace` vanishes identically for constant `F`. Away from the
 constant value, the fibre is empty, giving a genuine (degenerate, `n = 0`) `FiberStack` directly;
 AT the constant value, `X` being infinite (`infinite_of_chartedSpace_complex`) makes
@@ -125,7 +125,7 @@ theorem trace_of_forall_eq (c : Y) : trace (fun _ : X => c) h = fun _ => 0 := by
         have hmem : S.pt i ∈ Set.range S.pt := Set.mem_range_self i
         rw [hrange] at hmem
         exact hmem
-      haveI := h0
+      have := h0
       simp
     · exact trace_of_not_nonempty hS
 

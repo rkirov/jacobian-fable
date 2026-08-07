@@ -33,7 +33,7 @@ uses `X`'s OWN complex structure via `GlobalPrimitive.lean` — consistent, sinc
 theorem genus_eq_zero_of_homeo_sphere
     (h : Nonempty (X ≃ₜ Metric.sphere (0 : EuclideanSpace ℝ (Fin 3)) 1)) : genus X = 0 := by
   obtain ⟨e⟩ := h
-  haveI : SimplyConnectedSpace X :=
+  have : SimplyConnectedSpace X :=
     simplyConnectedSpace_of_homeoOnePoint (e.trans RS.P1.homeoSphere.symm)
   exact genus_eq_zero_of_simplyConnectedSpace
 

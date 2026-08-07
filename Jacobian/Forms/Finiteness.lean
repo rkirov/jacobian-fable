@@ -51,7 +51,7 @@ theorem eqOn_of_eqOn_of_subset_closure {α β : Type*} [TopologicalSpace α] [To
     [T2Space β] {f g : α → β} {s t : Set α} (hst : s ⊆ t) (hts : t ⊆ closure s)
     (hf : ContinuousOn f t) (hg : ContinuousOn g t) (h : Set.EqOn f g s) : Set.EqOn f g t := by
   intro z hz
-  haveI hne : (𝓝[s] z).NeBot := mem_closure_iff_nhdsWithin_neBot.mp (hts hz)
+  have hne : (𝓝[s] z).NeBot := mem_closure_iff_nhdsWithin_neBot.mp (hts hz)
   have h1 : Filter.Tendsto f (𝓝[s] z) (𝓝 (f z)) := (hf z hz).mono hst
   have h2 : Filter.Tendsto g (𝓝[s] z) (𝓝 (g z)) := (hg z hz).mono hst
   have h3 : Filter.Tendsto f (𝓝[s] z) (𝓝 (g z)) :=
@@ -230,9 +230,9 @@ chart coefficients to the compacta `K i`. The norm `‖J η‖ = max_i sup_{K i}
 is exactly CC1's prescribed norm — it lives on `P`, never as an instance on `Form1 X`. -/
 def J : Form1 X →ₗ[ℂ] G.P where
   toFun η i :=
-    ⟨(G.K i).restrict (coeffIn (G.e i) η),
+    ⟨(G.K i).domRestrict (coeffIn (G.e i) η),
       (((η.analyticOnNhd_coeffIn (G.e_mem_maximalAtlas i)).continuousOn).mono
-        (G.K_subset_target i)).restrict⟩
+        (G.K_subset_target i)).domRestrict⟩
   map_add' η η' := by
     funext i
     ext z
@@ -350,8 +350,8 @@ theorem gext_apply (f : G.P) {i : Fin G.n} {z : ℂ} (hz : z ∈ G.K i) :
 omit [IsManifold 𝓘(ℂ, ℂ) ω X] in
 theorem continuousOn_gext (f : G.P) (i : Fin G.n) :
     ContinuousOn (G.gext f i) (G.K i) := by
-  rw [continuousOn_iff_continuous_restrict]
-  have : (G.K i).restrict (G.gext f i) = ⇑(f i) := funext fun z => G.gext_apply f z.2
+  rw [continuousOn_iff_continuous_domRestrict]
+  have : (G.K i).domRestrict (G.gext f i) = ⇑(f i) := funext fun z => G.gext_apply f z.2
   rw [this]
   exact (f i).continuous
 

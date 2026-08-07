@@ -278,10 +278,10 @@ private theorem finrank_windowAt_aux (p : X) (d : ℤ) (n : ℕ) :
         exact hxy
       rw [map_sub] at hz
       exact sub_eq_zero.1 hz
-    exact ⟨by haveI := hsub; infer_instance, Module.finrank_zero_of_subsingleton⟩
+    exact ⟨by have := hsub; infer_instance, Module.finrank_zero_of_subsingleton⟩
   | succ n ih =>
     obtain ⟨ihFD, ihFR⟩ := ih
-    haveI := ihFD
+    have := ihFD
     have hstep : d + ((n : ℕ) + 1 : ℕ) - 1 = d + (n : ℕ) := by push_cast; ring
     have hle : d ≤ d + ((n : ℕ) + 1 : ℕ) - 1 := by rw [hstep]; omega
     have hequiv := windowAtSuccEquiv p d (d + ((n : ℕ) + 1 : ℕ)) hle
@@ -328,7 +328,7 @@ variable [T2Space X] [CompactSpace X]
 
 theorem finiteDimensional_window (D D' : RS.Divisor X) (h : D ≤ D') :
     FiniteDimensional ℂ (Window D D') := by
-  haveI : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
+  have : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
     finiteDimensional_windowAt (q : X) (Function.locallyFinsuppWithin.le_def.1 h q)
   exact Module.Finite.pi
 
@@ -336,7 +336,7 @@ theorem finrank_window {D D' : RS.Divisor X} (h : D ≤ D') :
     Module.finrank ℂ (Window D D') = ((D' - D).degree).toNat := by
   have hpt : ∀ q : diffSupp D D', (D : RS.Divisor X) q ≤ D' q := fun q =>
     Function.locallyFinsuppWithin.le_def.1 h q
-  haveI : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
+  have : ∀ q : diffSupp D D', FiniteDimensional ℂ (WindowAt (q : X) (D q) (D' q)) := fun q =>
     finiteDimensional_windowAt (q : X) (hpt q)
   have hpi : Module.finrank ℂ (Window D D') =
       ∑ q : diffSupp D D', Module.finrank ℂ (WindowAt (q : X) (D q) (D' q)) :=

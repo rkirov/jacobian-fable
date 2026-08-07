@@ -87,7 +87,7 @@ open scoped Classical in
 /-- The differential of a nonconstant meromorphic function is a nonzero meromorphic 1-form
 (identity-theorem dichotomy: were `d f = 0`, the chart derivative would vanish near some
 nonnegative-order point, forcing `f.holoRepr` to be locally — hence codiscretely — constant). -/
-theorem MForm.d_ne_zero [T2Space X] [CompactSpace X] [ConnectedSpace X] {f : ℳ X}
+theorem MForm.d_ne_zero [T2Space X] [ConnectedSpace X] {f : ℳ X}
     (hf : ∀ c : ℂ, f ≠ algebraMap ℂ (ℳ X) c) : MForm.d f ≠ 0 := by
   intro hd0
   have hf0 : f ≠ 0 := by

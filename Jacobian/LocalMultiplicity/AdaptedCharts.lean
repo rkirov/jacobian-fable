@@ -118,7 +118,7 @@ theorem multiplicity_eq (_hk : k ≠ 0) (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω
     exact ⟨fun _ ↦ 1, analyticAt_const, one_ne_zero, Eventually.of_forall fun z ↦ by simp⟩
   rw [hpow] at hinv
   rw [multiplicity_def, ← hinv]
-  exact ENat.toNat_coe k
+  exact ENat.toNat_natCast k
 
 end ContMDiff
 

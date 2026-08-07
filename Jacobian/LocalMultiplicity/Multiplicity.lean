@@ -102,7 +102,7 @@ theorem multiplicityENat_ne_top (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x)
 theorem natCast_multiplicity (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x)
     (hnc : ¬ EventuallyConst F (𝓝 x)) :
     (multiplicity F x : ℕ∞) = multiplicityENat F x :=
-  ENat.coe_toNat (multiplicityENat_ne_top hF hnc)
+  ENat.natCast_toNat (multiplicityENat_ne_top hF hnc)
 
 theorem one_le_multiplicity (hF : ContMDiffAt 𝓘(ℂ) 𝓘(ℂ) ω F x)
     (hnc : ¬ EventuallyConst F (𝓝 x)) : 1 ≤ multiplicity F x := by

@@ -200,7 +200,7 @@ theorem MeromorphicAt.orderAt_sub_principalPartAt_nonneg (hf : MeromorphicAt f z
   cases analyticOrderAt h z₀ with
   | top => simp
   | coe m =>
-    rw [ENat.map_coe]
+    rw [ENat.map_natCast]
     exact_mod_cast Int.natCast_nonneg m
 
 /-- Uniqueness: any Laurent-tail + analytic decomposition IS the canonical one. -/

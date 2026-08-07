@@ -77,17 +77,17 @@ theorem norm_sub_le_of_bounded_of_cthickening_subset {Ω K : Set ℂ} (hΩ : IsO
 `Ω ⊇ K` with a common bound, restricted to the compact `K`, has compact closure in `C(K, ℂ)`. -/
 theorem isCompact_closure_montelFamily {Ω K : Set ℂ} (hΩ : IsOpen Ω) (hK : IsCompact K)
     (hKΩ : K ⊆ Ω) (C : ℝ) : IsCompact (closure (montelFamily Ω K C)) := by
-  haveI : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  have : CompactSpace K := isCompact_iff_compactSpace.mp hK
   rcases K.eq_empty_or_nonempty with hKe | hKne
   · -- `K` empty: `C(K, ℂ)` is a subsingleton, every subset is compact.
-    haveI : IsEmpty (↥K) := Set.isEmpty_coe_sort.mpr hKe
-    haveI : Subsingleton C(↥K, ℂ) := ⟨fun f g => ContinuousMap.ext fun x => isEmptyElim x⟩
+    have : IsEmpty (↥K) := Set.isEmpty_coe_sort.mpr hKe
+    have : Subsingleton C(↥K, ℂ) := ⟨fun f g => ContinuousMap.ext fun x => isEmptyElim x⟩
     exact Set.subsingleton_of_subsingleton.isCompact
   rcases lt_or_ge C 0 with hC | hC
   · -- negative bound: the family is empty.
     have hfam : montelFamily Ω K C = ∅ := by
       ext f
-      simp only [montelFamily, mem_setOf_eq, mem_empty_iff_false, iff_false, not_exists]
+      simp only [montelFamily, mem_ofPred_eq, mem_empty_iff_false, iff_false, not_exists]
       rintro g ⟨-, hbd, -⟩
       obtain ⟨z, hz⟩ := hKne
       exact absurd ((norm_nonneg (g z)).trans (hbd z (hKΩ hz))) (not_le.mpr hC)

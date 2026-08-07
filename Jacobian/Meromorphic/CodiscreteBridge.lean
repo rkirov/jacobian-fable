@@ -124,7 +124,7 @@ theorem MeromorphicOnX.eventuallyEq_zero_or_forall_ordAtX_ne_top
     rw [mem_closure_iff_frequently] at hx
     -- hx : ∃ᶠ y in 𝓝 x, y ∈ S
     show x ∈ S
-    rw [hS_def, Set.mem_setOf_eq, ordAtX_eq_top_iff]
+    rw [hS_def, Set.mem_ofPred_eq, ordAtX_eq_top_iff]
     apply (MeromorphicAtX.frequently_zero_iff (hf x (mem_univ x))).1
     by_contra hbad
     rw [Filter.not_frequently] at hbad

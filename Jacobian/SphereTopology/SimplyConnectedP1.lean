@@ -69,7 +69,7 @@ theorem isSimplyConnected_compl_coeZero :
 /-- `OnePoint ℂ` is path connected (local path-connectedness transports through the two-chart
 atlas from `ℂ`'s local convexity, combined with the existing `ConnectedSpace` instance). -/
 instance : PathConnectedSpace (OnePoint ℂ) := by
-  haveI : LocallyPathConnectedSpace (OnePoint ℂ) :=
+  have : LocallyPathConnectedSpace (OnePoint ℂ) :=
     ChartedSpace.locallyPathConnectedSpace ℂ (OnePoint ℂ)
   exact PathConnectedSpace.of_locallyPathConnectedSpace
 

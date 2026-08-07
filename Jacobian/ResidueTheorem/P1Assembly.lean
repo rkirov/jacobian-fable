@@ -190,7 +190,7 @@ private theorem finite_setOf_meromorphicOrderAt_neg {θ : RS.MFormData (OnePoint
       ⊆ (fun v : ℂ => ((v : ℂ) : OnePoint ℂ)) ⁻¹'
         {y : OnePoint ℂ | (RS.MForm.mk θ).ord y < 0} := by
     intro v hv
-    simp only [Set.mem_setOf_eq, Set.mem_preimage] at hv ⊢
+    simp only [Set.mem_ofPred_eq, Set.mem_preimage] at hv ⊢
     rw [hord_coe v]
     exact hv
   exact Set.Finite.subset

@@ -113,7 +113,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
       _ = ε := by rw [hρ_def]; exact div_mul_cancel₀ ε (norm_ne_zero_iff.mpr hy_ne_zero)
   -- The two exceptional sets of parameters `t` whose connecting segment meets `T`.
   have hA : Set.Countable {t : ℝ | ([c + x -[ℝ] c + t • y] ∩ T).Nonempty} := by
-    apply countable_setOf_nonempty_of_disjoint _ (fun t ↦ inter_subset_right) hT
+    apply countable_ofPred_nonempty_of_disjoint _ (fun t ↦ inter_subset_right) hT
     intro t t' htt'
     apply disjoint_iff_inter_eq_empty.2
     have N : {c + x} ∩ T = ∅ := by
@@ -122,7 +122,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
     apply inter_subset_inter_left
     exact (segment_inter_eq_endpoint_of_linearIndependent_of_ne hy htt'.symm c).subset
   have hB : Set.Countable {t : ℝ | ([c - x -[ℝ] c + t • y] ∩ T).Nonempty} := by
-    apply countable_setOf_nonempty_of_disjoint _ (fun t ↦ inter_subset_right) hT
+    apply countable_ofPred_nonempty_of_disjoint _ (fun t ↦ inter_subset_right) hT
     intro t t' htt'
     apply disjoint_iff_inter_eq_empty.2
     have N : {c - x} ∩ T = ∅ := by
@@ -138,7 +138,7 @@ theorem Convex.isPathConnected_diff_countable {s : Set ℂ} (hs : Convex ℝ s) 
   have hnonempty : (Ioo (-ρ) ρ).Nonempty := nonempty_Ioo.mpr (by linarith)
   obtain ⟨t, htnotin, ht_mem⟩ :=
     ((hA.union hB).dense_compl ℝ).exists_mem_open hopen hnonempty
-  simp only [compl_union, mem_inter_iff, mem_compl_iff, mem_setOf_eq, not_nonempty_iff_eq_empty]
+  simp only [compl_union, mem_inter_iff, mem_compl_iff, mem_ofPred_eq, not_nonempty_iff_eq_empty]
     at htnotin
   set z : ℂ := c + t • y with hz_def
   have hzs : z ∈ s := hzmem t ht_mem

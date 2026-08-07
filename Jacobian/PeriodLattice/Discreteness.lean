@@ -449,7 +449,7 @@ via `exists_isolating_nhds_periodSubgroup`. -/
 theorem discreteTopology_periodSubgroup (hupgrade : DiscretenessHyp X) :
     DiscreteTopology (periodSubgroup X) := by
   by_cases hgen : genus X = 0
-  · haveI hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [hgen]; infer_instance
+  · have hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [hgen]; infer_instance
     have hsubsingle : Subsingleton (periodSubgroup X) :=
         ⟨fun a b => Subtype.ext (hsub.elim a.1 b.1)⟩
     rw [discreteTopology_iff_forall_isOpen]
@@ -479,7 +479,7 @@ theorem discreteTopology_periodSubgroup (hupgrade : DiscretenessHyp X) :
 closedness (`AddSubgroup.isClosed_of_discrete`). -/
 theorem periodSubgroup_topologicalClosure_eq (hupgrade : DiscretenessHyp X) :
     (periodSubgroup X).topologicalClosure = periodSubgroup X := by
-  haveI := discreteTopology_periodSubgroup hupgrade
+  have := discreteTopology_periodSubgroup hupgrade
   exact SetLike.coe_injective (AddSubgroup.isClosed_of_discrete (H := periodSubgroup X)).closure_eq
 
 /-- The gated `DiscreteTopology` instance for the closure, the shape `jacobian-construction`'s

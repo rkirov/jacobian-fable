@@ -100,7 +100,7 @@ instance : T2Space (Jacobian X) := inferInstance
 module, so `Jacobian X` is (honestly, through the same generic construction, no special-cased
 vacuous instance) a one-point space. -/
 example (h : genus X = 0) : Subsingleton (Jacobian X) := by
-  haveI hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [h]; infer_instance
+  have hsub : Subsingleton (Fin (genus X) → ℂ) := by rw [h]; infer_instance
   have hsurj : Function.Surjective
       (fun z => ULift.up (QuotientAddGroup.mk z) : (Fin (genus X) → ℂ) → Jacobian X) := by
     intro q
@@ -123,8 +123,8 @@ instance instLieAddGroup [DiscreteTopology (RS.periodSubgroup X).topologicalClos
 instance instCompactSpace [DiscreteTopology (RS.periodSubgroup X).topologicalClosure]
     [IsZLattice ℝ (RS.periodSubgroup X).topologicalClosure.toIntSubmodule] :
     CompactSpace (Jacobian X) := by
-  haveI := RS.discreteTopology_toIntSubmodule (RS.periodSubgroup X).topologicalClosure
-  haveI : CompactSpace (RS.Jac₀ X) := by
+  have := RS.discreteTopology_toIntSubmodule (RS.periodSubgroup X).topologicalClosure
+  have : CompactSpace (RS.Jac₀ X) := by
     have h := RS.compactSpace_torus (RS.periodSubgroup X).topologicalClosure.toIntSubmodule
     rwa [AddSubgroup.toIntSubmodule_toAddSubgroup] at h
   infer_instance

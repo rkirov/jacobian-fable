@@ -45,7 +45,7 @@ theorem finite_setOf_ord_neg [T1Space X] [T2Space X] [CompactSpace X] (Θ : MFor
     {x : X | Θ.ord x < 0}.Finite := by
   apply Set.Finite.subset (Θ.divisor.finiteSupport isCompact_univ)
   intro y hy
-  simp only [Set.mem_setOf_eq] at hy
+  simp only [Set.mem_ofPred_eq] at hy
   simp only [Function.mem_support, ne_eq]
   intro hcon
   rw [divisor_apply, WithTop.untop₀_eq_zero] at hcon

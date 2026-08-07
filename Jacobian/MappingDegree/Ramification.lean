@@ -124,7 +124,7 @@ theorem setOf_isRegularValue_mem_cofinite (hF : ContMDiff 𝓘(ℂ) 𝓘(ℂ) ω
   rw [Filter.mem_cofinite]
   apply (branchLocus_finite hF hne).subset
   intro y hy
-  simp only [mem_compl_iff, mem_setOf_eq] at hy
+  simp only [mem_compl_iff, mem_ofPred_eq] at hy
   by_contra hnb
   exact hy ((isRegularValue_iff_notMem_branchLocus F y).mpr hnb)
 

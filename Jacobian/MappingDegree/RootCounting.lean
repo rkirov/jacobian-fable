@@ -102,7 +102,7 @@ theorem sum_toNat_analyticOrderAt_pow_sub {k : ℕ} (hk : k ≠ 0) (w : ℂ) :
     rw [setOf_pow_eq_zero hk, finsum_mem_singleton]
     simp only [sub_zero]
     rw [analyticOrderAt_pow_zero k]
-    exact ENat.toNat_coe k
+    exact ENat.toNat_natCast k
   · -- `k` simple roots
     have h1 : ∀ ζ ∈ {z : ℂ | z ^ k = w},
         (analyticOrderAt (fun z : ℂ ↦ z ^ k - w) ζ).toNat = 1 := by
